@@ -5,5 +5,11 @@
   "main": "dist/index.js",
   "repository": "github.com/DataDog/dd-lambda-js",
   "author": "DataDog",
-  "license": "Apache 2.0"
+  "license": "Apache 2.0",
+  "devDependencies": {
+    "jest": "^24.8.0",
+    "prettier": "^1.17.1",
+    "tslint": "^5.16.0",
+    "typescript": "^3.5.1"
+  }
 }
