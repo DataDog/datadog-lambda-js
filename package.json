@@ -1,0 +1,9 @@
+{
+  "name": "dd-lambda-js",
+  "version": "0.0.1",
+  "description": "Lambda client library that supports datadog tracing in node",
+  "main": "dist/index.js",
+  "repository": "github.com/DataDog/dd-lambda-js",
+  "author": "DataDog",
+  "license": "Apache 2.0"
+}
