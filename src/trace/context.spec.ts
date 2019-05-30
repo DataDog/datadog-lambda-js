@@ -1,4 +1,12 @@
-import { convertToAPMTraceID, parseTraceHeader, convertToAPMParentID } from "./context";
+import {
+  convertToAPMParentID,
+  convertToAPMTraceID,
+  convertToSampleMode,
+  parseTraceHeader,
+  SampleMode,
+  convertTraceContext,
+  readTraceContextFromEnvironment,
+} from "./context";
 
 describe("parseTraceHeader", () => {
   it("returns undefined if header name is absent", () => {
@@ -81,5 +89,69 @@ describe("convertToAPMParentID", () => {
     const xrayParentID = "5e03875";
     const parentID = convertToAPMParentID(xrayParentID);
     expect(parentID).toBeUndefined();
+  });
+});
+
+describe("convertToSampleMode", () => {
+  it("returns USER_KEEP if xray was sampled", () => {
+    const result = convertToSampleMode(1);
+    expect(result).toBe(SampleMode.USER_KEEP);
+  });
+  it("returns USER_REJECT if xray wasn't sampled", () => {
+    const result = convertToSampleMode(0);
+    expect(result).toBe(SampleMode.USER_REJECT);
+  });
+});
+
+describe("convertTraceContext", () => {
+  it("converts a valid xray trace header", () => {
+    const result = convertTraceContext({
+      parentID: "0b11cc4230d3e09e",
+      sampled: 1,
+      traceID: "1-5ce31dc2-ac779014b90ce44db5e03875",
+    });
+    expect(result).toEqual({
+      parentID: "797643193680388254",
+      sampleMode: SampleMode.USER_KEEP,
+      traceID: "4110911582297405557",
+    });
+  });
+  it("returns undefined if traceID is invalid", () => {
+    const result = convertTraceContext({
+      parentID: "0b11cc4230d3e09e",
+      sampled: 1,
+      traceID: "1-5ce31dc2",
+    });
+    expect(result).toBeUndefined();
+  });
+  it("returns undefined if parentID is invalid", () => {
+    const result = convertTraceContext({
+      parentID: "0b11cc4230d;09e",
+      sampled: 1,
+      traceID: "1-5ce31dc2-ac779014b90ce44db5e03875",
+    });
+    expect(result).toBeUndefined();
+  });
+});
+
+describe("readTraceContextFromEnvironment", () => {
+  it("will parse a trace context from the xray environment variable", () => {
+    const env: NodeJS.ProcessEnv = {
+      _X_AMZN_TRACE_ID: "X-Amzn-Trace-Id: Root=1-5ce31dc2-2c779014b90ce44db5e03875;Parent=0b11cc4230d3e09e;Sampled=1",
+    };
+    const traceContext = readTraceContextFromEnvironment(env);
+    expect(traceContext).toEqual({
+      parentID: "797643193680388254",
+      sampleMode: SampleMode.USER_KEEP,
+      traceID: "4110911582297405557",
+    });
+  });
+  it("returns undefined when trace header isn't in environment", () => {
+    const traceContext = readTraceContextFromEnvironment({});
+    expect(traceContext).toBeUndefined();
+  });
+  it("returns undefined when trace header is poorly formatted", () => {
+    const traceContext = readTraceContextFromEnvironment({ _X_AMZN_TRACE_ID: "Bad Format" });
+    expect(traceContext).toBeUndefined();
   });
 });

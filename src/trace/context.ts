@@ -9,7 +9,7 @@ export interface XRayTraceHeader {
 export interface TraceContext {
   traceID: string;
   parentID: string;
-  sampled: number;
+  sampleMode: SampleMode;
 }
 
 export enum SampleMode {
@@ -23,9 +23,39 @@ const traceHeaderPrefix = "X-Amzn-Trace-Id:";
 const traceIDTag = "Root";
 const parentIDTag = "Parent";
 const sampledTag = "Sampled";
+const traceIDHeader = "x-datadog-trace-id";
+const parentIDHeader = "x-datadog-parent-id";
+const samplingPriorityHeader = "x-datadog-sampling-priority";
+const traceEnvVar = "_X_AMZN_TRACE_ID";
 
-export function convertTraceContext(traceHeader: XRayTraceHeader): TraceContext {
-  throw new Error("Unimplemented");
+export function readTraceContextFromEnvironment(env: NodeJS.ProcessEnv) {
+  const traceEnv = env[traceEnvVar];
+  if (traceEnv === undefined) {
+    return;
+  }
+  const traceHeader = parseTraceHeader(traceEnv);
+  if (traceHeader === undefined) {
+    return;
+  }
+  return convertTraceContext(traceHeader);
+}
+
+export function convertTraceContext(traceHeader: XRayTraceHeader): TraceContext | undefined {
+  const sampleMode = convertToSampleMode(traceHeader.sampled);
+  const traceID = convertToAPMTraceID(traceHeader.traceID);
+  const parentID = convertToAPMParentID(traceHeader.parentID);
+  if (traceID === undefined || parentID === undefined) {
+    return;
+  }
+  return {
+    parentID,
+    sampleMode,
+    traceID,
+  };
+}
+
+export function convertToSampleMode(xraySampled: number): SampleMode {
+  return xraySampled === 1 ? SampleMode.USER_KEEP : SampleMode.USER_REJECT;
 }
 
 export function convertToAPMTraceID(xrayTraceID: string): string | undefined {
