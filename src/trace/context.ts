@@ -1,4 +1,15 @@
 import { BigNumber } from "bignumber.js";
+import {
+  parentIDHeader,
+  parentIDTag,
+  sampledTag,
+  SampleMode,
+  samplingPriorityHeader,
+  traceEnvVar,
+  traceHeaderPrefix,
+  traceIDHeader,
+  traceIDTag,
+} from "./constants";
 
 export interface XRayTraceHeader {
   traceID: string;
@@ -12,20 +23,19 @@ export interface TraceContext {
   sampleMode: SampleMode;
 }
 
-export enum SampleMode {
-  USER_REJECT = -1,
-  AUTO_REJECT = 0,
-  AUTO_KEEP = 1,
-  USER_KEEP = 2,
+/**
+ * Reads the trace context from either an incoming lambda event, or the process environment.
+ * @param event An incoming lambda event. This must have incoming trace headers in order to be read.
+ * @param env The process environment that may contain an xray trace id environment variable. This we be used
+ *  if the event doesn't contain trace headers.
+ */
+export function readTraceContext(event: any, env: NodeJS.ProcessEnv) {
+  const trace = readTraceFromEvent(event);
+  if (trace !== undefined) {
+    return trace;
+  }
+  return readTraceContextFromEnvironment(env);
 }
-const traceHeaderPrefix = "X-Amzn-Trace-Id:";
-const traceIDTag = "Root";
-const parentIDTag = "Parent";
-const sampledTag = "Sampled";
-const traceIDHeader = "x-datadog-trace-id";
-const parentIDHeader = "x-datadog-parent-id";
-const samplingPriorityHeader = "x-datadog-sampling-priority";
-const traceEnvVar = "_X_AMZN_TRACE_ID";
 
 export function readTraceFromEvent(event: any): TraceContext | undefined {
   if (typeof event !== "object") {
