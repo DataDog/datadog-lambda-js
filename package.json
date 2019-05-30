@@ -14,6 +14,8 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.26",
+    "@types/bignumber.js": "^5.0.0",
+    "@types/jest": "^24.0.13",
     "jest": "^24.8.0",
     "prettier": "^1.17.1",
     "ts-jest": "^24.0.2",
@@ -31,14 +33,20 @@
       ".(ts|tsx)": "ts-jest"
     },
     "collectCoverage": true,
+    "coverageReporters": [
+      "json",
+      "text-summary"
+    ],
     "testRegex": "(src\\/).*(\\.spec\\.ts)$",
     "testPathIgnorePatterns": [
       "\\.snap$",
       "<rootDir>/node_modules/"
     ],
     "collectCoverageFrom": [
-      "src/**.ts",
-      "!src/**/index.ts"
+      "src/**/*.ts"
     ]
+  },
+  "dependencies": {
+    "bignumber.js": "^9.0.0"
   }
 }
