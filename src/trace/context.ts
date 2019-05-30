@@ -13,12 +13,11 @@ export interface TraceContext {
 }
 
 export enum SampleMode {
-  USER_REJECT = "-1",
-  AUTO_REJECT = "0",
-  AUTO_KEEP = "1",
-  USER_KEEP = "2",
+  USER_REJECT = -1,
+  AUTO_REJECT = 0,
+  AUTO_KEEP = 1,
+  USER_KEEP = 2,
 }
-
 const traceHeaderPrefix = "X-Amzn-Trace-Id:";
 const traceIDTag = "Root";
 const parentIDTag = "Parent";
@@ -27,6 +26,36 @@ const traceIDHeader = "x-datadog-trace-id";
 const parentIDHeader = "x-datadog-parent-id";
 const samplingPriorityHeader = "x-datadog-sampling-priority";
 const traceEnvVar = "_X_AMZN_TRACE_ID";
+
+export function readTraceFromEvent(event: any): TraceContext | undefined {
+  if (typeof event !== "object") {
+    return;
+  }
+  const headers = event.headers;
+
+  if (typeof headers !== "object") {
+    return;
+  }
+  const traceID = headers[traceIDHeader];
+  if (typeof traceID !== "string") {
+    return;
+  }
+  const parentID = headers[parentIDHeader];
+  if (typeof parentID !== "string") {
+    return;
+  }
+  const sampledHeader = headers[samplingPriorityHeader];
+  if (typeof sampledHeader !== "string") {
+    return;
+  }
+  const sampleMode = parseInt(sampledHeader, 10);
+
+  return {
+    parentID,
+    sampleMode,
+    traceID,
+  };
+}
 
 export function readTraceContextFromEnvironment(env: NodeJS.ProcessEnv) {
   const traceEnv = env[traceEnvVar];

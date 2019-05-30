@@ -6,6 +6,7 @@ import {
   SampleMode,
   convertTraceContext,
   readTraceContextFromEnvironment,
+  readTraceFromEvent,
 } from "./context";
 
 describe("parseTraceHeader", () => {
@@ -153,5 +154,57 @@ describe("readTraceContextFromEnvironment", () => {
   it("returns undefined when trace header is poorly formatted", () => {
     const traceContext = readTraceContextFromEnvironment({ _X_AMZN_TRACE_ID: "Bad Format" });
     expect(traceContext).toBeUndefined();
+  });
+});
+
+describe("readTraceFromEvent", () => {
+  it("can read well formed event with headers", () => {
+    const result = readTraceFromEvent({
+      headers: {
+        "x-datadog-parent-id": "797643193680388254",
+        "x-datadog-sampling-priority": "2",
+        "x-datadog-trace-id": "4110911582297405557",
+      },
+    });
+    expect(result).toEqual({
+      parentID: "797643193680388254",
+      sampleMode: SampleMode.USER_KEEP,
+      traceID: "4110911582297405557",
+    });
+  });
+  it("returns undefined when missing trace id", () => {
+    const result = readTraceFromEvent({
+      headers: {
+        "x-datadog-parent-id": "797643193680388254",
+        "x-datadog-sampling-priority": "2",
+      },
+    });
+    expect(result).toBeUndefined();
+  });
+  it("returns undefined when missing parent id", () => {
+    const result = readTraceFromEvent({
+      headers: {
+        "x-datadog-sampling-priority": "2",
+        "x-datadog-trace-id": "4110911582297405557",
+      },
+    });
+    expect(result).toBeUndefined();
+  });
+  it("returns undefined when missing sampling priority id", () => {
+    const result = readTraceFromEvent({
+      headers: {
+        "x-datadog-parent-id": "797643193680388254",
+        "x-datadog-trace-id": "4110911582297405557",
+      },
+    });
+    expect(result).toBeUndefined();
+  });
+  it("returns undefined when missing headers value", () => {
+    const result = readTraceFromEvent({});
+    expect(result).toBeUndefined();
+  });
+  it("returns undefined when event isn't object", () => {
+    const result = readTraceFromEvent("some-value");
+    expect(result).toBeUndefined();
   });
 });
