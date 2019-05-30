@@ -8,13 +8,37 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc",
+    "test": "jest",
+    "test:watch": "jest --watch",
     "lint": "tslint --project tsconfig.json"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.26",
     "jest": "^24.8.0",
     "prettier": "^1.17.1",
+    "ts-jest": "^24.0.2",
     "tslint": "^5.16.0",
     "typescript": "^3.5.1"
+  },
+  "jest": {
+    "verbose": true,
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "transform": {
+      ".(ts|tsx)": "ts-jest"
+    },
+    "collectCoverage": true,
+    "testRegex": "(src\\/).*(\\.spec\\.ts)$",
+    "testPathIgnorePatterns": [
+      "\\.snap$",
+      "<rootDir>/node_modules/"
+    ],
+    "collectCoverageFrom": [
+      "src/**.ts",
+      "!src/**/index.ts"
+    ]
   }
 }
