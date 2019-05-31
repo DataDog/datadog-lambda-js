@@ -16,8 +16,11 @@
     "@types/aws-lambda": "^8.10.26",
     "@types/bignumber.js": "^5.0.0",
     "@types/jest": "^24.0.13",
+    "@types/nock": "^10.0.3",
     "@types/node": "^12.0.3",
+    "@types/semver": "^6.0.0",
     "jest": "^24.8.0",
+    "nock": "^10.0.6",
     "prettier": "^1.17.1",
     "ts-jest": "^24.0.2",
     "tslint": "^5.16.0",
@@ -48,6 +51,9 @@
     ]
   },
   "dependencies": {
-    "bignumber.js": "^9.0.0"
+    "@types/shimmer": "^1.0.1",
+    "bignumber.js": "^9.0.0",
+    "semver": "^6.1.1",
+    "shimmer": "^1.2.1"
   }
 }
