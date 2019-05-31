@@ -12,6 +12,13 @@ const nock = require("nock");
 describe("patchHttp", () => {
   let contextService: TraceContextService;
 
+  function expectHeaders(request: http.ClientRequest) {
+    const headers = request.getHeaders();
+    expect(headers[traceIDHeader]).toEqual("123456");
+    expect(headers[parentIDHeader]).toEqual("78910");
+    expect(headers[samplingPriorityHeader]).toEqual("2");
+  }
+
   beforeEach(() => {
     contextService = new TraceContextService();
     contextService.rootTraceContext = {
@@ -32,10 +39,7 @@ describe("patchHttp", () => {
 
     patchHttp(contextService);
     const req = http.request("http://www.example.com");
-    const headers = req.getHeaders();
-    expect(headers[traceIDHeader]).toEqual("123456");
-    expect(headers[parentIDHeader]).toEqual("78910");
-    expect(headers[samplingPriorityHeader]).toEqual("2");
+    expectHeaders(req);
   });
   it("injects tracing headers into get requests", () => {
     nock("http://www.example.com")
@@ -43,10 +47,7 @@ describe("patchHttp", () => {
       .reply(200, {});
     patchHttp(contextService);
     const req = http.get("http://www.example.com");
-    const headers = req.getHeaders();
-    expect(headers[traceIDHeader]).toEqual("123456");
-    expect(headers[parentIDHeader]).toEqual("78910");
-    expect(headers[samplingPriorityHeader]).toEqual("2");
+    expectHeaders(req);
   });
   it("injects tracing headers into https requests", () => {
     nock("https://www.example.com")
@@ -54,10 +55,7 @@ describe("patchHttp", () => {
       .reply(200, {});
     patchHttp(contextService);
     const req = https.request("https://www.example.com");
-    const headers = req.getHeaders();
-    expect(headers[traceIDHeader]).toEqual("123456");
-    expect(headers[parentIDHeader]).toEqual("78910");
-    expect(headers[samplingPriorityHeader]).toEqual("2");
+    expectHeaders(req);
   });
 
   it("injects tracing headers when using request options", () => {
@@ -72,9 +70,7 @@ describe("patchHttp", () => {
     };
     const req = http.request(opt);
     const headers = req.getHeaders();
-    expect(headers[traceIDHeader]).toEqual("123456");
-    expect(headers[parentIDHeader]).toEqual("78910");
-    expect(headers[samplingPriorityHeader]).toEqual("2");
+    expectHeaders(req);
     expect(headers["some-header"]).toEqual("some-value");
   });
   it("injects tracing headers when using request options and path", () => {
@@ -87,9 +83,7 @@ describe("patchHttp", () => {
     };
     const req = http.request("http://www.example.com", opt);
     const headers = req.getHeaders();
-    expect(headers[traceIDHeader]).toEqual("123456");
-    expect(headers[parentIDHeader]).toEqual("78910");
-    expect(headers[samplingPriorityHeader]).toEqual("2");
+    expectHeaders(req);
     expect(headers["some-header"]).toEqual("some-value");
   });
   it("injects tracing headers when using URL", () => {
@@ -99,10 +93,7 @@ describe("patchHttp", () => {
     patchHttp(contextService);
     const url = parse("http://www.example.com");
     const req = http.request(url);
-    const headers = req.getHeaders();
-    expect(headers[traceIDHeader]).toEqual("123456");
-    expect(headers[parentIDHeader]).toEqual("78910");
-    expect(headers[samplingPriorityHeader]).toEqual("2");
+    expectHeaders(req);
   });
   it("passes callback through to request", (done) => {
     nock("http://www.example.com")
@@ -113,10 +104,7 @@ describe("patchHttp", () => {
       done();
     });
     req.end();
-    const headers = req.getHeaders();
-    expect(headers[traceIDHeader]).toEqual("123456");
-    expect(headers[parentIDHeader]).toEqual("78910");
-    expect(headers[samplingPriorityHeader]).toEqual("2");
+    expectHeaders(req);
   });
   it("passes callback through to request with request options", (done) => {
     nock("http://www.example.com")
@@ -131,9 +119,20 @@ describe("patchHttp", () => {
     });
     req.end();
     const headers = req.getHeaders();
-    expect(headers[traceIDHeader]).toEqual("123456");
-    expect(headers[parentIDHeader]).toEqual("78910");
-    expect(headers[samplingPriorityHeader]).toEqual("2");
+    expectHeaders(req);
     expect(headers["some-header"]).toEqual("a-value");
+  });
+  it("doesn't inject tracing headers when context is empty", () => {
+    nock("http://www.example.com")
+      .get("/")
+      .reply(200, {});
+
+    contextService.rootTraceContext = undefined;
+    patchHttp(contextService);
+    const req = http.request("http://www.example.com");
+    const headers = req.getHeaders();
+    expect(headers[traceIDHeader]).toBeUndefined();
+    expect(headers[parentIDHeader]).toBeUndefined();
+    expect(headers[samplingPriorityHeader]).toBeUndefined();
   });
 });
