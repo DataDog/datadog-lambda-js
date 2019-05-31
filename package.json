@@ -19,12 +19,21 @@
     "@types/nock": "^10.0.3",
     "@types/node": "^12.0.3",
     "@types/semver": "^6.0.0",
+    "@types/shimmer": "^1.0.1",
     "jest": "^24.8.0",
     "nock": "^10.0.6",
     "prettier": "^1.17.1",
     "ts-jest": "^24.0.2",
     "tslint": "^5.16.0",
     "typescript": "^3.5.1"
+  },
+  "dependencies": {
+    "bignumber.js": "^9.0.0",
+    "semver": "^6.1.1",
+    "shimmer": "^1.2.1"
+  },
+  "peerDependencies": {
+    "aws-xray-sdk": "^2.3.3"
   },
   "jest": {
     "verbose": true,
@@ -49,11 +58,5 @@
     "collectCoverageFrom": [
       "src/**/*.ts"
     ]
-  },
-  "dependencies": {
-    "@types/shimmer": "^1.0.1",
-    "bignumber.js": "^9.0.0",
-    "semver": "^6.1.1",
-    "shimmer": "^1.2.1"
   }
 }
