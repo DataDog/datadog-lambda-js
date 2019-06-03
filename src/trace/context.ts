@@ -1,14 +1,10 @@
+import { captureFunc } from "aws-xray-sdk-core";
 import { BigNumber } from "bignumber.js";
+
 import {
-  parentIDHeader,
-  parentIDTag,
-  sampledTag,
-  SampleMode,
-  samplingPriorityHeader,
-  traceEnvVar,
-  traceHeaderPrefix,
-  traceIDHeader,
-  traceIDTag,
+    parentIDHeader, parentIDTag, sampledTag, SampleMode, samplingPriorityHeader, traceEnvVar,
+    traceHeaderPrefix, traceIDHeader, traceIDTag, xraySubsegmentKey, xraySubsegmentName,
+    xraySubsegmentNamespace
 } from "./constants";
 
 export interface XRayTraceHeader {
@@ -29,12 +25,29 @@ export interface TraceContext {
  * @param env The process environment that may contain an xray trace id environment variable. This we be used
  *  if the event doesn't contain trace headers.
  */
-export function readTraceContext(event: any, env: NodeJS.ProcessEnv) {
+export function extractTraceContext(event: any) {
   const trace = readTraceFromEvent(event);
   if (trace !== undefined) {
+    try {
+      addTraceContextToXray(trace);
+    } catch {
+      // This might fail if running in an environment where xray isn't set up, (like for local development).
+    }
     return trace;
   }
-  return readTraceContextFromEnvironment(env);
+  return readTraceContextFromEnvironment(process.env);
+}
+
+export function addTraceContextToXray(traceContext: TraceContext) {
+  const val = {
+    [traceIDHeader]: traceContext.traceID,
+    [parentIDHeader]: traceContext.parentID,
+    [samplingPriorityHeader]: traceContext.sampleMode.toString(10),
+  };
+
+  captureFunc(xraySubsegmentName, (segment) => {
+    segment.addMetadata(xraySubsegmentKey, val, xraySubsegmentNamespace);
+  });
 }
 
 export function readTraceFromEvent(event: any): TraceContext | undefined {

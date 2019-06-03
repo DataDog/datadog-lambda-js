@@ -1,14 +1,8 @@
-import {
-  convertToAPMParentID,
-  convertToAPMTraceID,
-  convertToSampleMode,
-  parseTraceHeader,
-  convertTraceContext,
-  readTraceContextFromEnvironment,
-  readTraceFromEvent,
-  readTraceContext,
-} from "./context";
 import { SampleMode } from "./constants";
+import {
+    convertToAPMParentID, convertToAPMTraceID, convertToSampleMode, convertTraceContext,
+    extractTraceContext, parseTraceHeader, readTraceContextFromEnvironment, readTraceFromEvent
+} from "./context";
 
 describe("parseTraceHeader", () => {
   it("returns undefined if header name is absent", () => {
@@ -209,20 +203,29 @@ describe("readTraceFromEvent", () => {
     expect(result).toBeUndefined();
   });
 });
-describe("readTraceContext", () => {
+describe("extractTraceContext", () => {
+  const oldEnv = process.env;
+  beforeEach(() => {
+    jest.resetModules();
+    process.env = { ...oldEnv };
+  });
+  afterEach(() => {
+    process.env = oldEnv;
+  });
+
   it("returns trace read from header as highest priority", () => {
-    const result = readTraceContext(
-      {
-        headers: {
-          "x-datadog-parent-id": "797643193680388251",
-          "x-datadog-sampling-priority": "2",
-          "x-datadog-trace-id": "4110911582297405551",
-        },
+    process.env = {
+      ...process.env,
+      _X_AMZN_TRACE_ID: "X-Amzn-Trace-Id: Root=1-5ce31dc2-2c779014b90ce44db5e03875;Parent=0b11cc4230d3e09e;Sampled=1",
+    };
+
+    const result = extractTraceContext({
+      headers: {
+        "x-datadog-parent-id": "797643193680388251",
+        "x-datadog-sampling-priority": "2",
+        "x-datadog-trace-id": "4110911582297405551",
       },
-      {
-        _X_AMZN_TRACE_ID: "X-Amzn-Trace-Id: Root=1-5ce31dc2-2c779014b90ce44db5e03875;Parent=0b11cc4230d3e09e;Sampled=1",
-      },
-    );
+    });
     expect(result).toEqual({
       parentID: "797643193680388251",
       sampleMode: SampleMode.USER_KEEP,
@@ -230,12 +233,12 @@ describe("readTraceContext", () => {
     });
   });
   it("returns trace read from env if no headers present", () => {
-    const result = readTraceContext(
-      {},
-      {
-        _X_AMZN_TRACE_ID: "X-Amzn-Trace-Id: Root=1-5ce31dc2-2c779014b90ce44db5e03875;Parent=0b11cc4230d3e09e;Sampled=1",
-      },
-    );
+    process.env = {
+      ...process.env,
+      _X_AMZN_TRACE_ID: "X-Amzn-Trace-Id: Root=1-5ce31dc2-2c779014b90ce44db5e03875;Parent=0b11cc4230d3e09e;Sampled=1",
+    };
+
+    const result = extractTraceContext({});
     expect(result).toEqual({
       parentID: "797643193680388254",
       sampleMode: SampleMode.USER_KEEP,

@@ -12,3 +12,6 @@ export const traceIDHeader = "x-datadog-trace-id";
 export const parentIDHeader = "x-datadog-parent-id";
 export const samplingPriorityHeader = "x-datadog-sampling-priority";
 export const traceEnvVar = "_X_AMZN_TRACE_ID";
+export const xraySubsegmentName = "datadog-metadata";
+export const xraySubsegmentKey = "trace";
+export const xraySubsegmentNamespace = "datadog";

@@ -4,6 +4,19 @@
     "interface-name": false,
     "variable-name": {
       "options": ["allow-leading-underscore"]
-    }
+    },
+    "trailing-comma": [
+      true,
+      {
+        "multiline": {
+          "imports": "ignore",
+          "exports": "ignore",
+          "properties": "always",
+          "functions": "always",
+          "objects": "always",
+          "typeLiterals": "always"
+        }
+      }
+    ]
   }
 }

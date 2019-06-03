@@ -31,7 +31,7 @@ export function datadog<TEvent, TResult>(
   }
 
   return (event, context, callback) => {
-    contextService.rootTraceContext = readTraceContext(event, process.env);
+    contextService.rootTraceContext = readTraceContext(event);
     return handler(event, context, callback);
   };
 }
