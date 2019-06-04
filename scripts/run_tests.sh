@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Unless explicitly stated otherwise all files in this repository are licensed
 # under the Apache License Version 2.0.
@@ -17,7 +17,7 @@ do
         -f scripts/Dockerfile_test . \
         --quiet \
         --build-arg image=node:$node_version-alpine
-    docker run -v `pwd`:/datadog-lambda-layer-node \
+    docker run --rm -v `pwd`:/datadog-lambda-layer-node \
         -w /datadog-lambda-layer-node \
         datadog-lambda-layer-node-test:$node_version \
         yarn test

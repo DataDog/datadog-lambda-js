@@ -29,7 +29,7 @@ function docker_build_zip {
 
     # Run the image by runtime tag, tar its generatd `node` directory to sdout,
     # then extract it to a temp directory.
-    docker run datadog-lambda-layer-node:$1 tar cf - /nodejs | tar -xf - -C $temp_dir
+    docker run --rm datadog-lambda-layer-node:$1 tar cf - /nodejs | tar -xf - -C $temp_dir
 
     # Zip to destination, and keep directory structure as based in $temp_dir
     (cd $temp_dir && zip -q -r $destination ./)

@@ -6,7 +6,7 @@ RUN mkdir -p /nodejs/node_modules/
 
 # Install dev dependencies
 COPY . datadog-lambda-js
-WORKDIR datadog-lambda-js
+WORKDIR /datadog-lambda-js
 RUN yarn install
 
 # Build the lambda layer
