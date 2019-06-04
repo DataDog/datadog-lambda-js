@@ -18,8 +18,8 @@ export function patchHttp(contextService: TraceContextService) {
   // In newer Node versions references internal to modules, such as `http(s).get` calling `http(s).request`, do
   // not use externally patched versions, which is why we need to also patch `get` here separately.
   patchMethod(http, "get", contextService);
-  // Below Node v9 the `https` module invokes `http.request`, which would end up patching requests twice.
-  // So rather then patch the `https` module, we ensure the `http` module is patched.
+  // Note, below Node v9, the `https` module invokes `http.request`. We choose to wrap both anyway, as it's safe
+  // to invoke the patch handler twice.
   patchMethod(https, "request", contextService);
   patchMethod(https, "get", contextService);
 }
