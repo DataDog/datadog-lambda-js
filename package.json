@@ -10,6 +10,7 @@
     "build": "tsc",
     "test": "jest",
     "test:watch": "jest --watch",
+    "bundle-layer": "webpack --mode=production",
     "lint": "tslint --project tsconfig.json"
   },
   "devDependencies": {
@@ -17,15 +18,18 @@
     "@types/bignumber.js": "^5.0.0",
     "@types/jest": "^24.0.13",
     "@types/nock": "^10.0.3",
-    "@types/node": "^12.0.3",
+    "@types/node": "^12.0.4",
     "@types/semver": "^6.0.0",
     "@types/shimmer": "^1.0.1",
     "jest": "^24.8.0",
     "nock": "^10.0.6",
     "prettier": "^1.17.1",
     "ts-jest": "^24.0.2",
+    "ts-loader": "^6.0.2",
     "tslint": "^5.16.0",
-    "typescript": "^3.5.1"
+    "typescript": "^3.5.1",
+    "webpack": "^4.32.2",
+    "webpack-cli": "^3.3.2"
   },
   "dependencies": {
     "aws-xray-sdk-core": "^2.3.3",
