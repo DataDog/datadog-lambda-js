@@ -1,10 +1,10 @@
 {
-  "name": "dd-lambda-js",
+  "name": "datadog-lambda-layer-js",
   "version": "0.0.1",
   "description": "Lambda client library that supports datadog tracing in node",
   "main": "dist/index.js",
-  "repository": "github.com/DataDog/dd-lambda-js",
-  "author": "DataDog",
+  "repository": "github.com/DataDog/datadog-lambda-layer-js",
+  "author": "Datadog",
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc",
