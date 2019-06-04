@@ -2,5 +2,6 @@ node_modules
 dist
 dist-layer
 coverage
-.gitub
+.github
 .git
+.layers
