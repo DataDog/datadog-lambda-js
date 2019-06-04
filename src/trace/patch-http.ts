@@ -41,7 +41,7 @@ function patchMethod(mod: typeof http | typeof https, method: "get" | "request",
   shimmer.wrap(mod, method, (original) => {
     const fn = (arg1: any, arg2: any, arg3: any) => {
       const { options, callback } = normalizeArgs(arg1, arg2, arg3);
-      const requestOpts = requestOptionsWithTraceContext(options, contextService);
+      const requestOpts = getRequestOptionsWithTraceContext(options, contextService);
 
       return original(requestOpts, callback);
     };
@@ -54,6 +54,10 @@ function unpatchMethod(mod: typeof http | typeof https, method: "get" | "request
   }
 }
 
+/**
+ * The input into the http.request function has 6 different overloads. This method normalised the inputs
+ * into a consistent format.
+ */
 function normalizeArgs(
   arg1: string | URL | http.RequestOptions,
   arg2?: RequestCallback | http.RequestOptions,
@@ -70,7 +74,7 @@ function normalizeArgs(
   return { options, callback };
 }
 
-function requestOptionsWithTraceContext(
+function getRequestOptionsWithTraceContext(
   options: http.RequestOptions,
   traceService: TraceContextService,
 ): http.RequestOptions {

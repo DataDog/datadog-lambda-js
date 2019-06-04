@@ -1,6 +1,6 @@
 import { Handler } from "aws-lambda";
 
-import { patchHttp, readTraceContext, TraceContextService } from "./trace";
+import { extractTraceContext, patchHttp, TraceContextService } from "./trace";
 
 /**
  * Configuration options for Datadog's lambda wrapper.
@@ -41,7 +41,7 @@ export function datadog<TEvent, TResult>(
   }
 
   return (event, context, callback) => {
-    contextService.rootTraceContext = readTraceContext(event);
+    contextService.rootTraceContext = extractTraceContext(event);
     return handler(event, context, callback);
   };
 }

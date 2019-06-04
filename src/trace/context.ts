@@ -20,7 +20,8 @@ export interface TraceContext {
 }
 
 /**
- * Reads the trace context from either an incoming lambda event, or the process environment.
+ * Reads the trace context from either an incoming lambda event, or the process environment. When running in lambda,
+ * AWS will set the _X_AMZN_TRACE_ID environment variable with information about the current xray trace.
  * @param event An incoming lambda event. This must have incoming trace headers in order to be read.
  * @param env The process environment that may contain an xray trace id environment variable. This we be used
  *  if the event doesn't contain trace headers.
@@ -30,8 +31,9 @@ export function extractTraceContext(event: any) {
   if (trace !== undefined) {
     try {
       addTraceContextToXray(trace);
-    } catch {
+    } catch (error) {
       // This might fail if running in an environment where xray isn't set up, (like for local development).
+      console.warn(JSON.stringify({ error: `datadog: couldn't add metadata to xray, ${error}` }));
     }
     return trace;
   }

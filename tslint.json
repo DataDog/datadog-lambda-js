@@ -5,6 +5,7 @@
     "variable-name": {
       "options": ["allow-leading-underscore"]
     },
+    "no-console": false,
     "trailing-comma": [
       true,
       {
