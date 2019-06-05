@@ -9,5 +9,5 @@ declare module "aws-xray-sdk-core" {
     addMetadata(key: string, value: object | null, namespace?: string): void;
   }
   export function captureFunc(name: string, fcn: (segment: Segment) => void, parent?: Segment): void;
-  export function getSegment(): Segment | undefined;
+  export function getSegment(): Segment;
 }

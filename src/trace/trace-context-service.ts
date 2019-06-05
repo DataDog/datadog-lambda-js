@@ -13,12 +13,14 @@ export class TraceContextService {
       return;
     }
     const traceContext = { ...this.rootTraceContext };
-    const segment = getSegment();
-    if (segment !== undefined) {
+    try {
+      const segment = getSegment();
       const value = convertToAPMParentID(segment.id);
       if (value !== undefined) {
         traceContext.parentID = value;
       }
+    } catch (error) {
+      console.warn(JSON.stringify({ error: `datadog: couldn't retrieve segment from xray, ${error}` }));
     }
 
     return traceContext;

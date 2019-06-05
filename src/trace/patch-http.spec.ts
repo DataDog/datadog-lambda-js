@@ -57,6 +57,14 @@ describe("patchHttp", () => {
     const req = https.request("https://www.example.com");
     expectHeaders(req);
   });
+  it("injects tracing headers into https get requests", () => {
+    nock("https://www.example.com")
+      .get("/")
+      .reply(200, {});
+    patchHttp(contextService);
+    const req = https.get("https://www.example.com");
+    expectHeaders(req);
+  });
 
   it("injects tracing headers when using request options", () => {
     nock("http://www.example.com")

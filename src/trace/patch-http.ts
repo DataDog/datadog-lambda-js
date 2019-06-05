@@ -15,17 +15,13 @@ type RequestCallback = (res: http.IncomingMessage) => void;
  */
 export function patchHttp(contextService: TraceContextService) {
   patchMethod(http, "request", contextService);
-  if (semver.satisfies(process.version, ">=8")) {
-    // In newer Node versions references internal to modules, such as `http(s).get` calling `http(s).request`, do
-    // not use externally patched versions, which is why we need to also patch `get` here separately.
-    patchMethod(http, "get", contextService);
-  }
-  if (semver.satisfies(process.version, ">=9")) {
-    // Below Node v9 the `https` module invokes `http.request`, which would end up patching requests twice.
-    // So rather then patch the `https` module, we ensure the `http` module is patched.
-    patchMethod(https, "request", contextService);
-    patchMethod(https, "get", contextService);
-  }
+  // In newer Node versions references internal to modules, such as `http(s).get` calling `http(s).request`, do
+  // not use externally patched versions, which is why we need to also patch `get` here separately.
+  patchMethod(http, "get", contextService);
+  // Note, below Node v9, the `https` module invokes `http.request`. We choose to wrap both anyway, as it's safe
+  // to invoke the patch handler twice.
+  patchMethod(https, "request", contextService);
+  patchMethod(https, "get", contextService);
 }
 
 /**
@@ -33,8 +29,9 @@ export function patchHttp(contextService: TraceContextService) {
  */
 export function unpatchHttp() {
   unpatchMethod(http, "request");
+  unpatchMethod(http, "get");
   unpatchMethod(https, "request");
-  unpatchMethod(http, "request");
+  unpatchMethod(https, "get");
 }
 
 function patchMethod(mod: typeof http | typeof https, method: "get" | "request", contextService: TraceContextService) {
@@ -55,7 +52,7 @@ function unpatchMethod(mod: typeof http | typeof https, method: "get" | "request
 }
 
 /**
- * The input into the http.request function has 6 different overloads. This method normalised the inputs
+ * The input into the http.request function has 6 different overloads. This method normalized the inputs
  * into a consistent format.
  */
 function normalizeArgs(

@@ -1,0 +1,5 @@
+ARG image
+FROM $image
+COPY . .
+RUN yarn install
+RUN yarn build

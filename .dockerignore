@@ -1,6 +1,7 @@
 node_modules
 dist
-yarn-error.log
+dist-layer
 coverage
+.github
+.git
 .layers
-.DS_Store
