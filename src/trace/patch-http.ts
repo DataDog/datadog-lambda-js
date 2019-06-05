@@ -46,9 +46,9 @@ function patchMethod(mod: typeof http | typeof https, method: "get" | "request",
   });
 }
 function unpatchMethod(mod: typeof http | typeof https, method: "get" | "request") {
-  //if (mod[method].__wrapped !== undefined) {
-  shimmer.unwrap(mod, method);
-  //}
+  if (mod[method].__wrapped !== undefined) {
+    shimmer.unwrap(mod, method);
+  }
 }
 
 /**
