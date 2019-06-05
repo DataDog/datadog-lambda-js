@@ -2,6 +2,7 @@ import http from "http";
 
 import { datadog } from "./index";
 
+// tslint:disable-next-line: no-var-requires
 const nock = require("nock");
 
 describe("datadog", () => {
