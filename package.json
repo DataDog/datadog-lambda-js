@@ -10,7 +10,6 @@
     "build": "tsc",
     "test": "jest",
     "test:watch": "jest --watch",
-    "bundle-layer": "webpack --mode=production",
     "lint": "tslint --project tsconfig.json"
   },
   "devDependencies": {
