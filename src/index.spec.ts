@@ -1,9 +1,7 @@
 import http from "http";
+import nock from "nock";
 
 import { datadog } from "./index";
-
-// tslint:disable-next-line: no-var-requires
-const nock = require("nock");
 
 describe("datadog", () => {
   let traceId: string | undefined;
