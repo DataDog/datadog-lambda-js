@@ -11,28 +11,33 @@ export interface APIMetric {
   points: APIPoint[];
 }
 
-export interface Metric {
+export interface MetricKey {
   metricType: MetricType;
   name: string;
   tags: string[];
+  host?: string;
+}
 
-  addPoint(timestamp: Date, value: number): void;
+export interface Metric extends MetricKey {
   toAPIMetrics(): APIMetric[];
-  join(metric: Metric): void;
+  /**
+   * Union creates a new metric that is the union of this metric, and another metric.
+   */
+  union(metric: Metric): Metric;
+}
+
+export interface MetricPoint {
+  timestamp: Date;
+  value: number;
 }
 
 export class Distribution implements Metric {
-  public metricType: MetricType = "distribution";
+  public readonly metricType = "distribution";
   public tags: string[];
+  public host?: string;
 
-  public points: Array<{ timestamp: Date; value: number }> = [];
-
-  public constructor(public name: string, ...tags: string[]) {
+  public constructor(public name: string, public points: MetricPoint[], ...tags: string[]) {
     this.tags = tags;
-  }
-
-  public addPoint(timestamp: Date, value: number) {
-    this.points.push({ timestamp, value });
   }
 
   public toAPIMetrics(): APIMetric[] {
@@ -49,11 +54,14 @@ export class Distribution implements Metric {
     ];
   }
 
-  public join(metric: Metric) {
+  public union(metric: Metric): Distribution {
     if (!isDistribution(metric)) {
-      return;
+      return this;
     }
-    this.points.push(...metric.points);
+
+    const distribution = new Distribution(this.name, this.points);
+    Object.assign(distribution, { ...this, points: [...this.points, ...metric.points] });
+    return distribution;
   }
 }
 
