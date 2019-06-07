@@ -54,7 +54,7 @@ describe("APIClient", () => {
     expect(scope.isDone()).toBeTruthy();
   });
 
-  it("throws an error on failure on connection error", async () => {
+  it("throws an error on connection error failure", async () => {
     const scope = nock(baseAPIURL)
       .post("/v1/series?api_key=api_key", JSON.stringify({ series: [] }))
       .replyWithError("Connection closed");
