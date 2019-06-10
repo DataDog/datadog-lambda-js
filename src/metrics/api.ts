@@ -6,10 +6,14 @@ import { APIMetric } from "./model";
 
 const apiKeyQueryParam = "api_key";
 
+export interface Client {
+  sendMetrics(metrics: APIMetric[]): Promise<void>;
+}
+
 /**
  * APIClient interfaces with the Datadog API
  */
-export class APIClient {
+export class APIClient implements Client {
   constructor(private apiKey: string, private baseAPIURL: string) {}
 
   public sendMetrics(metrics: APIMetric[]): Promise<void> {
