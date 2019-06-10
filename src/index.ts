@@ -1,4 +1,5 @@
 import { Handler } from "aws-lambda";
+import { KMS } from "aws-sdk";
 
 import { APIClient, Distribution, Processor } from "./metrics";
 import { extractTraceContext, patchHttp, TraceContextService, unpatchHttp } from "./trace";
@@ -7,6 +8,7 @@ import { logError, wrap } from "./utils";
 const metricsBatchSendIntervalMS = 10000; // 10 seconds
 
 const apiKeyEnvVar = "DD_API_KEY";
+const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
 const siteURLEnvVar = "DD_SITE";
 
 const defaultSiteURL = "datadoghq.com";
@@ -21,18 +23,20 @@ export interface Config {
    */
   autoPatchHTTP: boolean;
   apiKey: string;
+  apiKeyKMS: string;
   shouldRetryMetrics: boolean;
   siteURL: string;
 }
 
 const defaultConfig: Config = {
   apiKey: "",
+  apiKeyKMS: "",
   autoPatchHTTP: true,
   shouldRetryMetrics: false,
   siteURL: "",
 } as const;
 
-let currentProcessor: Processor | undefined;
+let currentProcessor: Promise<Processor> | undefined;
 
 /**
  * Wraps your AWS lambda handle functions to add tracing/metrics support
@@ -52,14 +56,14 @@ export function datadog<TEvent, TResult>(
 ): Handler<TEvent, TResult> {
   const finalConfig = getConfig(config);
 
-  const url = `https://api.${finalConfig.siteURL}`;
-  const client = new APIClient(finalConfig.apiKey, url);
+  // APIKey can take time to retrieve, if the user has a kms key which needs to be decrypted.
+  const apiKey = getAPIKey(finalConfig);
+
   return wrap(
     handler,
     (event) => {
       // Setup hook, (called once per handler invocation)
-      currentProcessor = new Processor(client, metricsBatchSendIntervalMS, finalConfig.shouldRetryMetrics);
-      currentProcessor.startProcessing();
+      currentProcessor = createProcessor(finalConfig, apiKey);
 
       const contextService = new TraceContextService();
       if (finalConfig.autoPatchHTTP) {
@@ -73,8 +77,10 @@ export function datadog<TEvent, TResult>(
         unpatchHttp();
       }
       if (currentProcessor !== undefined) {
-        await currentProcessor.flush();
+        const processor = await currentProcessor;
+        await processor.flush();
       }
+      currentProcessor = undefined;
     },
   );
 }
@@ -88,7 +94,9 @@ export function datadog<TEvent, TResult>(
 export function sendDistributionMetric(name: string, value: number, ...tags: string[]) {
   const dist = new Distribution(name, [{ timestamp: new Date(), value }], ...tags);
   if (currentProcessor !== undefined) {
-    currentProcessor.addMetric(dist);
+    currentProcessor.then((processor) => {
+      processor.addMetric(dist);
+    });
   } else {
     logError("can't send metrics, datadog lambda handler not set up.");
   }
@@ -108,15 +116,53 @@ function getConfig(userConfig?: Partial<Config>): Config {
   if (config.apiKey === "") {
     config.apiKey = getEnvValue(apiKeyEnvVar, "");
   }
-  if (config.apiKey === "") {
-    logError("no api key specified, can't send metrics", {});
-  }
 
   if (config.siteURL === "") {
     config.siteURL = getEnvValue(siteURLEnvVar, defaultSiteURL);
   }
 
+  if (config.apiKeyKMS === "") {
+    config.apiKeyKMS = getEnvValue(apiKeyKMSEnvVar, "");
+  }
+
   return config;
+}
+
+async function decodeKMSValue(value: string): Promise<string> {
+  const kms = new KMS();
+  const buffer = Buffer.from(value);
+
+  const result = await kms.decrypt({ CiphertextBlob: buffer }).promise();
+  if (result.Plaintext === undefined) {
+    throw Error("Couldn't decrypt value");
+  }
+  return result.Plaintext.toString("utf-8");
+}
+
+async function createProcessor(config: Config, apiKey: Promise<string>) {
+  const key = await apiKey;
+  const url = `https://api.${config.siteURL}`;
+  const apiClient = new APIClient(key, url);
+  const processor = new Processor(apiClient, metricsBatchSendIntervalMS, config.shouldRetryMetrics);
+  processor.startProcessing();
+  return processor;
+}
+
+async function getAPIKey(config: Config) {
+  if (config.apiKey !== "") {
+    return config.apiKey;
+  }
+
+  if (config.apiKeyKMS !== "") {
+    try {
+      config.apiKey = await decodeKMSValue(config.apiKeyKMS);
+    } catch (error) {
+      logError("couldn't decrypt kms api key", { innerError: error });
+    }
+  } else {
+    logError("api key not configured");
+  }
+  return "";
 }
 
 function getEnvValue(key: string, defaultValue: string): string {
