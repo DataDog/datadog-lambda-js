@@ -1,6 +1,11 @@
 import { Context, Handler } from "aws-lambda";
 
 import { wrap } from "./handler";
+import { setErrorLoggingEnabled } from "./log";
+
+beforeEach(() => {
+  setErrorLoggingEnabled(false);
+});
 
 describe("wrap", () => {
   it("invokes the original lambda callback, when callback used by the handler ", (done) => {

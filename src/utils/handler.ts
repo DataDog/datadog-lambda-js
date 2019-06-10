@@ -1,5 +1,7 @@
 import { Handler } from "aws-lambda";
 
+import { logError } from "./log";
+
 /**
  * Wraps a lambda handler function, adding an onStart and onComplete hook.
  */
@@ -16,13 +18,15 @@ export function wrap<TEvent, TResult>(
       onStart(event);
     } catch (error) {
       // Swallow the error and continue processing.
-      console.warn(`Error with pre lambda hook ${error}`);
+      logError("Pre-lambda hook threw error", { innerError: error });
     }
 
     // Handle the case where the result comes from a callback
     const modifiedCallback: typeof callback = (err, result) => {
       const cb = onComplete();
-      cb.finally(() => {
+      cb.catch((error) => {
+        logError("Post-lambda hook threw error", { innerError: error });
+      }).finally(() => {
         callback(err, result);
       });
     };
@@ -38,7 +42,7 @@ export function wrap<TEvent, TResult>(
           return cb.then(
             () => result,
             (error) => {
-              console.warn(`Error with post lambda hook ${error}`);
+              logError("Post-lambda hook threw error", { innerError: error });
               return result;
             },
           );
@@ -51,7 +55,7 @@ export function wrap<TEvent, TResult>(
               throw rejection;
             },
             async (error) => {
-              console.warn(`Error with post lambda hook ${error}`);
+              logError("Post-lambda hook threw error", { innerError: error });
               throw rejection;
             },
           );

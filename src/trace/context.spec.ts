@@ -1,5 +1,6 @@
 import AWSXray from "aws-xray-sdk-core";
 
+import { setErrorLoggingEnabled } from "../utils";
 import { SampleMode } from "./constants";
 import {
     convertToAPMParentID, convertToAPMTraceID, convertToSampleMode, convertTraceContext,
@@ -24,6 +25,7 @@ jest.mock("aws-xray-sdk-core", () => {
 
 beforeEach(() => {
   currentSegment = undefined;
+  setErrorLoggingEnabled(false);
 });
 
 describe("convertToAPMTraceID", () => {

@@ -13,7 +13,6 @@ class MockAPIClient implements Client {
 
   public async sendMetrics(metrics: APIMetric[]): Promise<void> {
     this.called++;
-    console.log(`Called ${this.called}`);
     if (this.throwError) {
       throw Error("");
     }
@@ -154,9 +153,11 @@ describe("Processor", () => {
     processor.addMetric(makeMetric("my-metric", 2));
 
     const promise = processor.flush();
+    // Retry logic uses timers internally, so we have to let the event loop run, and yield
+    // control.
     await advanceTime(0);
-    await advanceTime(intervalMS);
-    await advanceTime(intervalMS);
+    await advanceTime(retryIntervalMS);
+    await advanceTime(retryIntervalMS);
 
     await expect(promise).rejects.toMatchInlineSnapshot(`[Error: Failed to send metrics to Datadog]`);
 
