@@ -20,15 +20,6 @@ export class APIClient implements Client {
     return this.post(this.getUrl("v1/series"), { series: metrics });
   }
 
-  public async prewarmConnection(): Promise<void> {
-    return new Promise((resolve) => {
-      const request = https.request(this.getUrl("v1/validate"), () => {
-        resolve();
-      });
-      request.end();
-    });
-  }
-
   private post<T>(url: URL, body: T): Promise<void> {
     const buffer = Buffer.from(JSON.stringify(body));
 

@@ -6,20 +6,6 @@ import { APIMetric } from "./model";
 const baseAPIURL = "https://www.example.com";
 
 describe("APIClient", () => {
-  it("prewarms the connection", async () => {
-    let called = false;
-
-    const scope = nock(baseAPIURL)
-      .get("/v1/validate?api_key=api_key")
-      .reply(200, () => {
-        called = true;
-        return {};
-      });
-    const client = new APIClient("api_key", baseAPIURL);
-    await client.prewarmConnection();
-    expect(called).toBeTruthy();
-  });
-
   it("sends metrics", async () => {
     const input: APIMetric[] = [
       {
