@@ -89,6 +89,8 @@ export function sendDistributionMetric(name: string, value: number, ...tags: str
   const dist = new Distribution(name, [{ timestamp: new Date(), value }], ...tags);
   if (currentProcessor !== undefined) {
     currentProcessor.addMetric(dist);
+  } else {
+    logError("can't send metrics, datadog lambda handler not set up.");
   }
 }
 
