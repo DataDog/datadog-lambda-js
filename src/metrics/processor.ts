@@ -80,6 +80,9 @@ export class Processor {
       }
     }
     const finalMetrics = this.batcher.toAPIMetrics();
+    if (finalMetrics.length === 0) {
+      return;
+    }
     try {
       const options = {
         maxTimeout: this.retryInterval,
