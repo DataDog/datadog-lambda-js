@@ -3,6 +3,12 @@ import nock from "nock";
 
 import { datadog } from "./index";
 
+<<<<<<< HEAD
+=======
+// tslint:disable-next-line: no-var-requires
+const nock = require("nock");
+
+>>>>>>> master
 describe("datadog", () => {
   let traceId: string | undefined;
   let parentId: string | undefined;

@@ -1,10 +1,9 @@
-import { captureFunc } from "aws-xray-sdk-core";
+import { captureFunc, getSegment } from "aws-xray-sdk-core";
 import { BigNumber } from "bignumber.js";
 
 import {
-    parentIDHeader, parentIDTag, sampledTag, SampleMode, samplingPriorityHeader, traceEnvVar,
-    traceHeaderPrefix, traceIDHeader, traceIDTag, xraySubsegmentKey, xraySubsegmentName,
-    xraySubsegmentNamespace
+    parentIDHeader, SampleMode, samplingPriorityHeader, traceIDHeader, xraySubsegmentKey,
+    xraySubsegmentName, xraySubsegmentNamespace
 } from "./constants";
 
 export interface XRayTraceHeader {
@@ -20,11 +19,8 @@ export interface TraceContext {
 }
 
 /**
- * Reads the trace context from either an incoming lambda event, or the process environment. When running in lambda,
- * AWS will set the _X_AMZN_TRACE_ID environment variable with information about the current xray trace.
+ * Reads the trace context from either an incoming lambda event, or the current xray segment.
  * @param event An incoming lambda event. This must have incoming trace headers in order to be read.
- * @param env The process environment that may contain an xray trace id environment variable. This we be used
- *  if the event doesn't contain trace headers.
  */
 export function extractTraceContext(event: any) {
   const trace = readTraceFromEvent(event);
@@ -37,14 +33,14 @@ export function extractTraceContext(event: any) {
     }
     return trace;
   }
-  return readTraceContextFromEnvironment(process.env);
+  return readTraceContextFromXray();
 }
 
 export function addTraceContextToXray(traceContext: TraceContext) {
   const val = {
-    [traceIDHeader]: traceContext.traceID,
-    [parentIDHeader]: traceContext.parentID,
-    [samplingPriorityHeader]: traceContext.sampleMode.toString(10),
+    "parent-id": traceContext.parentID,
+    "sampling-priority": traceContext.sampleMode.toString(10),
+    "trace-id": traceContext.traceID,
   };
 
   captureFunc(xraySubsegmentName, (segment) => {
@@ -82,16 +78,19 @@ export function readTraceFromEvent(event: any): TraceContext | undefined {
   };
 }
 
-export function readTraceContextFromEnvironment(env: NodeJS.ProcessEnv) {
-  const traceEnv = env[traceEnvVar];
-  if (traceEnv === undefined) {
-    return;
+export function readTraceContextFromXray() {
+  try {
+    const segment = getSegment();
+    const traceHeader = {
+      parentID: segment.id,
+      sampled: segment.notTraced ? 0 : 1,
+      traceID: segment.trace_id,
+    };
+    return convertTraceContext(traceHeader);
+  } catch (error) {
+    console.warn(JSON.stringify({ error: `datadog: couldn't read xray trace header, ${error}` }));
   }
-  const traceHeader = parseTraceHeader(traceEnv);
-  if (traceHeader === undefined) {
-    return;
-  }
-  return convertTraceContext(traceHeader);
+  return undefined;
 }
 
 export function convertTraceContext(traceHeader: XRayTraceHeader): TraceContext | undefined {
@@ -143,34 +142,4 @@ export function convertToAPMParentID(xrayParentID: string): string | undefined {
     return;
   }
   return hex.toString(10);
-}
-
-export function parseTraceHeader(traceHeader: string): XRayTraceHeader | undefined {
-  if (!traceHeader.startsWith(traceHeaderPrefix)) {
-    return;
-  }
-  traceHeader = traceHeader.substring(traceHeaderPrefix.length);
-  const parts = traceHeader.split(";");
-  const map = new Map<string, string>();
-  for (const part of parts) {
-    if (part.indexOf("=") === Number.NaN) {
-      continue;
-    }
-    const [key, value] = part.trim().split("=");
-    map.set(key, value);
-  }
-
-  const traceID = map.get(traceIDTag);
-  const parentID = map.get(parentIDTag);
-  const sampledStr = map.get(sampledTag);
-
-  if (traceID === undefined || parentID === undefined || sampledStr === undefined) {
-    return;
-  }
-  const sampled = parseInt(sampledStr, 10);
-  return {
-    parentID,
-    sampled,
-    traceID,
-  };
 }

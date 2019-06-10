@@ -4,6 +4,7 @@ declare module "aws-xray-sdk-core" {
     trace_id: string;
     parent_id: string;
     id: string;
+    notTraced: boolean | undefined;
 
     constructor(name: string, rootId: string, parentId: string);
     addMetadata(key: string, value: object | null, namespace?: string): void;
