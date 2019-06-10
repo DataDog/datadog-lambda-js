@@ -21,6 +21,9 @@ export class Timer {
 
   constructor(private intervalMS: number) {}
 
+  /**
+   * Begins the timer. None of the promises will complete until start is called.
+   */
   public start() {
     if (this.timer !== undefined) {
       return;
@@ -34,6 +37,10 @@ export class Timer {
     }, this.intervalMS);
   }
 
+  /**
+   * Gets a promise which will complete when the next interval times out.
+   * @returns A promise, which will return true if the timer is complete, or false otherwise.
+   */
   public nextTimeout(): Promise<boolean> {
     if (this.isCompleted) {
       return new Promise((resolve) => resolve(true));
@@ -46,6 +53,9 @@ export class Timer {
     return this.currentPromise;
   }
 
+  /**
+   * Completes the timer. This will immediately stop the timer, and complete any pending promises.
+   */
   public complete() {
     this.isCompleted = true;
     if (this.timer !== undefined) {
