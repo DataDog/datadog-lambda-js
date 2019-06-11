@@ -1,5 +1,6 @@
 import { Handler } from "aws-lambda";
 import { KMS } from "aws-sdk";
+import { promisify } from "util";
 
 import { APIClient, Distribution, Processor } from "./metrics";
 import { extractTraceContext, patchHttp, TraceContextService, unpatchHttp } from "./trace";
@@ -77,9 +78,16 @@ export function datadog<TEvent, TResult>(
       if (finalConfig.autoPatchHTTP) {
         unpatchHttp();
       }
+
       // Flush any metrics
       if (currentProcessor !== undefined) {
         const processor = await currentProcessor;
+
+        // After the processor becomes available, it's possible there are some pending
+        // distribution metric promises. We make sure those promises run
+        // first before we flush by yielding control of the event loop.
+        await promisify(setImmediate)();
+
         await processor.flush();
       }
       currentProcessor = undefined;
