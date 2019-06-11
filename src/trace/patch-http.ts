@@ -1,6 +1,5 @@
 import http from "http";
 import https from "https";
-import * as semver from "semver";
 import * as shimmer from "shimmer";
 import { parse, URL } from "url";
 

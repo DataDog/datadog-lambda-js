@@ -1,6 +1,7 @@
 import { captureFunc, getSegment } from "aws-xray-sdk-core";
 import { BigNumber } from "bignumber.js";
 
+import { logError } from "../utils";
 import {
     parentIDHeader, SampleMode, samplingPriorityHeader, traceIDHeader, xraySubsegmentKey,
     xraySubsegmentName, xraySubsegmentNamespace
@@ -29,7 +30,7 @@ export function extractTraceContext(event: any) {
       addTraceContextToXray(trace);
     } catch (error) {
       // This might fail if running in an environment where xray isn't set up, (like for local development).
-      console.warn(JSON.stringify({ error: `datadog: couldn't add metadata to xray, ${error}` }));
+      logError("couldn't add metadata to xray", { innerError: error });
     }
     return trace;
   }
@@ -88,7 +89,7 @@ export function readTraceContextFromXray() {
     };
     return convertTraceContext(traceHeader);
   } catch (error) {
-    console.warn(JSON.stringify({ error: `datadog: couldn't read xray trace header, ${error}` }));
+    logError("couldn't read xray trace header", { innerError: error });
   }
   return undefined;
 }

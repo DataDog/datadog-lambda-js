@@ -1,13 +1,12 @@
 import http from "http";
 import https, { RequestOptions } from "https";
+import nock from "nock";
 import { parse } from "url";
 
+import { setErrorLoggingEnabled } from "../utils";
 import { parentIDHeader, SampleMode, samplingPriorityHeader, traceIDHeader } from "./constants";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
-
-// tslint:disable-next-line: no-var-requires
-const nock = require("nock");
 
 describe("patchHttp", () => {
   let contextService: TraceContextService;
@@ -26,6 +25,7 @@ describe("patchHttp", () => {
       sampleMode: SampleMode.USER_KEEP,
       traceID: "123456",
     };
+    setErrorLoggingEnabled(false);
   });
 
   afterEach(() => {

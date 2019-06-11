@@ -1,5 +1,6 @@
 import { getSegment } from "aws-xray-sdk-core";
 
+import { logError } from "../utils";
 import { convertToAPMParentID, TraceContext } from "./context";
 
 /**
@@ -20,7 +21,7 @@ export class TraceContextService {
         traceContext.parentID = value;
       }
     } catch (error) {
-      console.warn(JSON.stringify({ error: `datadog: couldn't retrieve segment from xray, ${error}` }));
+      logError("couldn't retrieve segment from xray", { innerError: error });
     }
 
     return traceContext;
