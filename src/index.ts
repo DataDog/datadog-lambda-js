@@ -57,6 +57,7 @@ export function datadog<TEvent, TResult>(
   const finalConfig = getConfig(config);
 
   // APIKey can take time to retrieve, if the user has a kms key which needs to be decrypted.
+  // This can be time consuming, so we cache the value for warm lambdas to reuse.
   const apiKey = getAPIKey(finalConfig);
 
   return wrap(
@@ -76,6 +77,7 @@ export function datadog<TEvent, TResult>(
       if (finalConfig.autoPatchHTTP) {
         unpatchHttp();
       }
+      // Flush any metrics
       if (currentProcessor !== undefined) {
         const processor = await currentProcessor;
         await processor.flush();
