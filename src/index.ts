@@ -80,15 +80,21 @@ export function datadog<TEvent, TResult>(
       }
 
       // Flush any metrics
-      if (currentProcessor !== undefined) {
-        const processor = await currentProcessor;
+      try {
+        if (currentProcessor !== undefined) {
+          const processor = await currentProcessor;
 
-        // After the processor becomes available, it's possible there are some pending
-        // distribution metric promises. We make sure those promises run
-        // first before we flush by yielding control of the event loop.
-        await promisify(setImmediate)();
+          // After the processor becomes available, it's possible there are some pending
+          // distribution metric promises. We make sure those promises run
+          // first before we flush by yielding control of the event loop.
+          await promisify(setImmediate)();
 
-        await processor.flush();
+          await processor.flush();
+        }
+      } catch (error) {
+        // This can fail for a variety of reasons, from the API not being reachable,
+        // to KMS key decryption failing.
+        logError(`failed to flush metrics`, { innerError: error });
       }
       currentProcessor = undefined;
     },
