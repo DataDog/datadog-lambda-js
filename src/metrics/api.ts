@@ -17,7 +17,7 @@ export class APIClient implements Client {
   constructor(private apiKey: string, private baseAPIURL: string) {}
 
   public sendMetrics(metrics: APIMetric[]): Promise<void> {
-    return this.post(this.getUrl("v1/series"), { series: metrics });
+    return this.post(this.getUrl("api/v1/distribution_points"), { series: metrics });
   }
 
   private post<T>(url: URL, body: T): Promise<void> {
