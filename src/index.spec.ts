@@ -79,6 +79,24 @@ describe("datadog", () => {
     expect(sampled).toBeUndefined();
   });
 
+  it("reads API key from the environment for metrics", async () => {
+    const apiKey = "123456";
+    const apiKeyVar = "DD_API_KEY";
+    process.env[apiKeyVar] = apiKey;
+
+    nock("https://api.datadoghq.com")
+      .post(`/v1/series?api_key=${apiKey}`, (request: any) => request.series[0].metric === "my-dist")
+      .reply(200, {});
+
+    const wrapped = datadog(async () => {
+      sendDistributionMetric("my-dist", 100, "first-tag", "second-tag");
+      return "";
+    });
+    await wrapped({}, {} as any, () => {});
+
+    expect(nock.isDone()).toBeTruthy();
+  });
+
   it("prefers API key from the config object over the environment variable ", async () => {
     const envApiKey = "123456";
     const apiKeyVar = "DD_API_KEY";
@@ -96,24 +114,6 @@ describe("datadog", () => {
       },
       { apiKey },
     );
-    await wrapped({}, {} as any, () => {});
-
-    expect(nock.isDone()).toBeTruthy();
-  });
-
-  it("reads and decrypts the API from the environment", async () => {
-    const apiKey = "123456";
-    const apiKeyVar = "DD_KMS_API_KEY";
-    process.env[apiKeyVar] = apiKey;
-
-    nock("https://api.datadoghq.com")
-      .post(`/v1/series?api_key=${apiKey}`, (request: any) => request.series[0].metric === "my-dist")
-      .reply(200, {});
-
-    const wrapped = datadog(async () => {
-      sendDistributionMetric("my-dist", 100, "first-tag", "second-tag");
-      return "";
-    });
     await wrapped({}, {} as any, () => {});
 
     expect(nock.isDone()).toBeTruthy();
