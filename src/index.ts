@@ -1,12 +1,9 @@
 import { Handler } from "aws-lambda";
 import { KMS } from "aws-sdk";
-import { promisify } from "util";
 
-import { APIClient, Distribution, Processor } from "./metrics";
-import { extractTraceContext, patchHttp, TraceContextService, unpatchHttp } from "./trace";
+import { MetricsConfig, MetricsListener } from "./metrics/listener";
+import { TraceConfig, TraceListener } from "./trace/listener";
 import { logError, wrap } from "./utils";
-
-const metricsBatchSendIntervalMS = 10000; // 10 seconds
 
 const apiKeyEnvVar = "DD_API_KEY";
 const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
@@ -17,17 +14,7 @@ const defaultSiteURL = "datadoghq.com";
 /**
  * Configuration options for Datadog's lambda wrapper.
  */
-export interface Config {
-  /**
-   * Whether to automatically patch all outgoing http requests with Datadog's hybrid tracing headers.
-   * Defaults to true.
-   */
-  autoPatchHTTP: boolean;
-  apiKey: string;
-  apiKeyKMS: string;
-  shouldRetryMetrics: boolean;
-  siteURL: string;
-}
+export type Config = MetricsConfig & TraceConfig;
 
 const defaultConfig: Config = {
   apiKey: "",
@@ -37,10 +24,10 @@ const defaultConfig: Config = {
   siteURL: "",
 } as const;
 
-let currentProcessor: Promise<Processor> | undefined;
+let metricsListener: MetricsListener | undefined;
 
 /**
- * Wraps your AWS lambda handle functions to add tracing/metrics support
+ * Wraps your AWS lambda handler functions to add tracing/metrics support
  * @param handler A lambda handler function.
  * @param config  Configuration options for datadog.
  * @returns A wrapped handler function.
@@ -56,47 +43,23 @@ export function datadog<TEvent, TResult>(
   config?: Partial<Config>,
 ): Handler<TEvent, TResult> {
   const finalConfig = getConfig(config);
-
-  // APIKey can take time to retrieve, if the user has a kms key which needs to be decrypted.
-  // This can be time consuming, so we cache the value for warm lambdas to reuse.
-  const apiKey = getAPIKey(finalConfig);
+  metricsListener = new MetricsListener(new KMS(), finalConfig);
+  const listeners = [metricsListener, new TraceListener(finalConfig)];
 
   return wrap(
     handler,
     (event) => {
       // Setup hook, (called once per handler invocation)
-      currentProcessor = createProcessor(finalConfig, apiKey);
-
-      const contextService = new TraceContextService();
-      if (finalConfig.autoPatchHTTP) {
-        patchHttp(contextService);
+      for (const listener of listeners) {
+        listener.onStartInvocation(event);
       }
-      contextService.rootTraceContext = extractTraceContext(event);
     },
     async () => {
       // Completion hook, (called once per handler invocation)
-      if (finalConfig.autoPatchHTTP) {
-        unpatchHttp();
+      for (const listener of listeners) {
+        await listener.onCompleteInvocation();
       }
-
-      // Flush any metrics
-      try {
-        if (currentProcessor !== undefined) {
-          const processor = await currentProcessor;
-
-          // After the processor becomes available, it's possible there are some pending
-          // distribution metric promises. We make sure those promises run
-          // first before we flush by yielding control of the event loop.
-          await promisify(setImmediate)();
-
-          await processor.flush();
-        }
-      } catch (error) {
-        // This can fail for a variety of reasons, from the API not being reachable,
-        // to KMS key decryption failing.
-        logError(`failed to flush metrics`, { innerError: error });
-      }
-      currentProcessor = undefined;
+      metricsListener = undefined;
     },
   );
 }
@@ -108,13 +71,10 @@ export function datadog<TEvent, TResult>(
  * @param tags The tags associated with the metric. Should be of the format "tag:value".
  */
 export function sendDistributionMetric(name: string, value: number, ...tags: string[]) {
-  const dist = new Distribution(name, [{ timestamp: new Date(), value }], ...tags);
-  if (currentProcessor !== undefined) {
-    currentProcessor.then((processor) => {
-      processor.addMetric(dist);
-    });
+  if (metricsListener !== undefined) {
+    metricsListener.sendDistributionMetric(name, value, ...tags);
   } else {
-    logError("can't send metrics, datadog lambda handler not set up.");
+    logError("handler not initialized");
   }
 }
 
@@ -142,43 +102,6 @@ function getConfig(userConfig?: Partial<Config>): Config {
   }
 
   return config;
-}
-
-async function decodeKMSValue(value: string): Promise<string> {
-  const kms = new KMS();
-  const buffer = Buffer.from(value);
-
-  const result = await kms.decrypt({ CiphertextBlob: buffer }).promise();
-  if (result.Plaintext === undefined) {
-    throw Error("Couldn't decrypt value");
-  }
-  return result.Plaintext.toString("utf-8");
-}
-
-async function createProcessor(config: Config, apiKey: Promise<string>) {
-  const key = await apiKey;
-  const url = `https://api.${config.siteURL}`;
-  const apiClient = new APIClient(key, url);
-  const processor = new Processor(apiClient, metricsBatchSendIntervalMS, config.shouldRetryMetrics);
-  processor.startProcessing();
-  return processor;
-}
-
-async function getAPIKey(config: Config) {
-  if (config.apiKey !== "") {
-    return config.apiKey;
-  }
-
-  if (config.apiKeyKMS !== "") {
-    try {
-      return await decodeKMSValue(config.apiKeyKMS);
-    } catch (error) {
-      logError("couldn't decrypt kms api key", { innerError: error });
-    }
-  } else {
-    logError("api key not configured");
-  }
-  return "";
 }
 
 function getEnvValue(key: string, defaultValue: string): string {
