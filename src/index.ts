@@ -1,12 +1,12 @@
 import { Handler } from "aws-lambda";
+import { KMS } from "aws-sdk";
 
-import { APIClient, Distribution, Processor } from "./metrics";
-import { extractTraceContext, patchHttp, TraceContextService, unpatchHttp } from "./trace";
+import { MetricsConfig, MetricsListener } from "./metrics/listener";
+import { TraceConfig, TraceListener } from "./trace/listener";
 import { logError, wrap } from "./utils";
 
-const metricsBatchSendIntervalMS = 10000; // 10 seconds
-
 const apiKeyEnvVar = "DD_API_KEY";
+const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
 const siteURLEnvVar = "DD_SITE";
 
 const defaultSiteURL = "datadoghq.com";
@@ -14,28 +14,20 @@ const defaultSiteURL = "datadoghq.com";
 /**
  * Configuration options for Datadog's lambda wrapper.
  */
-export interface Config {
-  /**
-   * Whether to automatically patch all outgoing http requests with Datadog's hybrid tracing headers.
-   * Defaults to true.
-   */
-  autoPatchHTTP: boolean;
-  apiKey: string;
-  shouldRetryMetrics: boolean;
-  siteURL: string;
-}
+export type Config = MetricsConfig & TraceConfig;
 
 const defaultConfig: Config = {
   apiKey: "",
+  apiKeyKMS: "",
   autoPatchHTTP: true,
   shouldRetryMetrics: false,
   siteURL: "",
 } as const;
 
-let currentProcessor: Processor | undefined;
+let metricsListener: MetricsListener | undefined;
 
 /**
- * Wraps your AWS lambda handle functions to add tracing/metrics support
+ * Wraps your AWS lambda handler functions to add tracing/metrics support
  * @param handler A lambda handler function.
  * @param config  Configuration options for datadog.
  * @returns A wrapped handler function.
@@ -51,30 +43,23 @@ export function datadog<TEvent, TResult>(
   config?: Partial<Config>,
 ): Handler<TEvent, TResult> {
   const finalConfig = getConfig(config);
+  metricsListener = new MetricsListener(new KMS(), finalConfig);
+  const listeners = [metricsListener, new TraceListener(finalConfig)];
 
-  const url = `https://api.${finalConfig.siteURL}`;
-  const client = new APIClient(finalConfig.apiKey, url);
   return wrap(
     handler,
     (event) => {
       // Setup hook, (called once per handler invocation)
-      currentProcessor = new Processor(client, metricsBatchSendIntervalMS, finalConfig.shouldRetryMetrics);
-      currentProcessor.startProcessing();
-
-      const contextService = new TraceContextService();
-      if (finalConfig.autoPatchHTTP) {
-        patchHttp(contextService);
+      for (const listener of listeners) {
+        listener.onStartInvocation(event);
       }
-      contextService.rootTraceContext = extractTraceContext(event);
     },
     async () => {
       // Completion hook, (called once per handler invocation)
-      if (finalConfig.autoPatchHTTP) {
-        unpatchHttp();
+      for (const listener of listeners) {
+        await listener.onCompleteInvocation();
       }
-      if (currentProcessor !== undefined) {
-        await currentProcessor.flush();
-      }
+      metricsListener = undefined;
     },
   );
 }
@@ -86,11 +71,10 @@ export function datadog<TEvent, TResult>(
  * @param tags The tags associated with the metric. Should be of the format "tag:value".
  */
 export function sendDistributionMetric(name: string, value: number, ...tags: string[]) {
-  const dist = new Distribution(name, [{ timestamp: new Date(), value }], ...tags);
-  if (currentProcessor !== undefined) {
-    currentProcessor.addMetric(dist);
+  if (metricsListener !== undefined) {
+    metricsListener.sendDistributionMetric(name, value, ...tags);
   } else {
-    logError("can't send metrics, datadog lambda handler not set up.");
+    logError("handler not initialized");
   }
 }
 
@@ -108,12 +92,13 @@ function getConfig(userConfig?: Partial<Config>): Config {
   if (config.apiKey === "") {
     config.apiKey = getEnvValue(apiKeyEnvVar, "");
   }
-  if (config.apiKey === "") {
-    logError("no api key specified, can't send metrics", {});
-  }
 
   if (config.siteURL === "") {
     config.siteURL = getEnvValue(siteURLEnvVar, defaultSiteURL);
+  }
+
+  if (config.apiKeyKMS === "") {
+    config.apiKeyKMS = getEnvValue(apiKeyKMSEnvVar, "");
   }
 
   return config;

@@ -2,6 +2,7 @@ import http from "http";
 import nock from "nock";
 
 import { datadog, sendDistributionMetric } from "./index";
+import { unpatchHttp } from "./trace/patch-http";
 import { setErrorLoggingEnabled } from "./utils";
 
 describe("datadog", () => {
@@ -31,7 +32,7 @@ describe("datadog", () => {
     process.env = oldEnv;
   });
 
-  it("patches http request when autoPatch enabled", () => {
+  it("patches http request when autoPatch enabled", (done) => {
     nock("http://www.example.com")
       .get("/")
       .reply(200, {});
@@ -45,14 +46,16 @@ describe("datadog", () => {
         },
       },
       {} as any,
-      () => {},
+      () => {
+        done();
+      },
     );
 
     expect(traceId).toEqual("123456");
     expect(parentId).toEqual("9101112");
     expect(sampled).toEqual("2");
   });
-  it("doesn't patch http request when autoPatch is disabled", () => {
+  it("doesn't patch http request when autoPatch is disabled", (done) => {
     nock("http://www.example.com")
       .get("/")
       .reply(200, {});
@@ -66,7 +69,9 @@ describe("datadog", () => {
         },
       },
       {} as any,
-      () => {},
+      () => {
+        done();
+      },
     );
 
     expect(traceId).toBeUndefined();
@@ -74,7 +79,7 @@ describe("datadog", () => {
     expect(sampled).toBeUndefined();
   });
 
-  it("reads API keys from the environment for metrics", async () => {
+  it("reads API key from the environment for metrics", async () => {
     const apiKey = "123456";
     const apiKeyVar = "DD_API_KEY";
     process.env[apiKeyVar] = apiKey;
@@ -92,7 +97,7 @@ describe("datadog", () => {
     expect(nock.isDone()).toBeTruthy();
   });
 
-  it("prefers API keys from the config object over the environment variable ", async () => {
+  it("prefers API key from the config object over the environment variable ", async () => {
     const envApiKey = "123456";
     const apiKeyVar = "DD_API_KEY";
     process.env[apiKeyVar] = envApiKey;
