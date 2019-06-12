@@ -171,7 +171,7 @@ async function getAPIKey(config: Config) {
 
   if (config.apiKeyKMS !== "") {
     try {
-      config.apiKey = await decodeKMSValue(config.apiKeyKMS);
+      return await decodeKMSValue(config.apiKeyKMS);
     } catch (error) {
       logError("couldn't decrypt kms api key", { innerError: error });
     }
