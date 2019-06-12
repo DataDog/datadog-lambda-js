@@ -24,7 +24,7 @@ const defaultConfig: Config = {
   siteURL: "",
 } as const;
 
-let metricsListener: MetricsListener | undefined;
+let currentMetricsListener: MetricsListener | undefined;
 
 /**
  * Wraps your AWS lambda handler functions to add tracing/metrics support
@@ -43,12 +43,13 @@ export function datadog<TEvent, TResult>(
   config?: Partial<Config>,
 ): Handler<TEvent, TResult> {
   const finalConfig = getConfig(config);
-  metricsListener = new MetricsListener(new KMS(), finalConfig);
+  const metricsListener = new MetricsListener(new KMS(), finalConfig);
   const listeners = [metricsListener, new TraceListener(finalConfig)];
 
   return wrap(
     handler,
     (event) => {
+      currentMetricsListener = metricsListener;
       // Setup hook, (called once per handler invocation)
       for (const listener of listeners) {
         listener.onStartInvocation(event);
@@ -59,7 +60,7 @@ export function datadog<TEvent, TResult>(
       for (const listener of listeners) {
         await listener.onCompleteInvocation();
       }
-      metricsListener = undefined;
+      currentMetricsListener = undefined;
     },
   );
 }
@@ -71,8 +72,8 @@ export function datadog<TEvent, TResult>(
  * @param tags The tags associated with the metric. Should be of the format "tag:value".
  */
 export function sendDistributionMetric(name: string, value: number, ...tags: string[]) {
-  if (metricsListener !== undefined) {
-    metricsListener.sendDistributionMetric(name, value, ...tags);
+  if (currentMetricsListener !== undefined) {
+    currentMetricsListener.sendDistributionMetric(name, value, ...tags);
   } else {
     logError("handler not initialized");
   }
