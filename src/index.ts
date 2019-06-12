@@ -1,8 +1,8 @@
 import { Handler } from "aws-lambda";
 import { KMS } from "aws-sdk";
 
-import { MetricsConfig, MetricsListener } from "./metrics/listener";
-import { TraceConfig, TraceListener } from "./trace/listener";
+import { MetricsConfig, MetricsListener } from "./metrics";
+import { TraceConfig, TraceListener } from "./trace";
 import { logError, wrap } from "./utils";
 
 const apiKeyEnvVar = "DD_API_KEY";
