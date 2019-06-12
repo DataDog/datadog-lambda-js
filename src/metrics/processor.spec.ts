@@ -53,7 +53,7 @@ describe("Processor", () => {
       [
         {
           metric: "my-metric",
-          points: [[1559941498, 1], [1559941498, 2]],
+          points: [[1559941498, [1]], [1559941498, [2]]],
           tags: ["tag:a", "tag:b"],
           type: "distribution",
         },
@@ -61,7 +61,7 @@ describe("Processor", () => {
       [
         {
           metric: "my-metric",
-          points: [[1559941498, 3]],
+          points: [[1559941498, [3]]],
           tags: ["tag:a", "tag:b"],
           type: "distribution",
         },
@@ -83,7 +83,7 @@ describe("Processor", () => {
       [
         {
           metric: "my-metric",
-          points: [[1559941498, 1], [1559941498, 2]],
+          points: [[1559941498, [1]], [1559941498, [2]]],
           tags: ["tag:a", "tag:b"],
           type: "distribution",
         },
@@ -104,7 +104,7 @@ describe("Processor", () => {
       [
         {
           metric: "my-metric",
-          points: [[1559941498, 1], [1559941498, 2]],
+          points: [[1559941498, [1]], [1559941498, [2]]],
           tags: ["tag:a", "tag:b"],
           type: "distribution",
         },
@@ -133,7 +133,7 @@ describe("Processor", () => {
       [
         {
           metric: "my-metric",
-          points: [[1559941498, 1], [1559941498, 2], [1559941498, 3]],
+          points: [[1559941498, [1]], [1559941498, [2]], [1559941498, [3]]],
           tags: ["tag:a", "tag:b"],
           type: "distribution",
         },
