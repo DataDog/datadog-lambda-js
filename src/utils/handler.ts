@@ -26,7 +26,7 @@ export function wrap<TEvent, TResult>(
       const cb = onComplete();
       cb.catch((error) => {
         logError("Post-lambda hook threw error", { innerError: error });
-      }).finally(() => {
+      }).then(() => {
         callback(err, result);
       });
     };
