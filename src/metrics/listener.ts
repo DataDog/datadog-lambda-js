@@ -76,13 +76,13 @@ export class MetricsListener {
   }
 
   private async decodeKMSValue(value: string): Promise<string> {
-    const buffer = Buffer.from(value);
+    const buffer = Buffer.from(value, "base64");
 
     const result = await this.kmsClient.decrypt({ CiphertextBlob: buffer }).promise();
     if (result.Plaintext === undefined) {
       throw Error("Couldn't decrypt value");
     }
-    return result.Plaintext.toString("utf-8");
+    return result.Plaintext.toString("ascii");
   }
 
   private async createProcessor(config: MetricsConfig, apiKey: Promise<string>) {
