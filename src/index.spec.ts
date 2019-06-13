@@ -85,7 +85,7 @@ describe("datadog", () => {
     process.env[apiKeyVar] = apiKey;
 
     nock("https://api.datadoghq.com")
-      .post(`/v1/series?api_key=${apiKey}`, (request: any) => request.series[0].metric === "my-dist")
+      .post(`/api/v1/distribution_points?api_key=${apiKey}`, (request: any) => request.series[0].metric === "my-dist")
       .reply(200, {});
 
     const wrapped = datadog(async () => {
@@ -104,7 +104,7 @@ describe("datadog", () => {
     const apiKey = "101112";
 
     nock("https://api.datadoghq.com")
-      .post(`/v1/series?api_key=${apiKey}`, (request: any) => request.series[0].metric === "my-dist")
+      .post(`/api/v1/distribution_points?api_key=${apiKey}`, (request: any) => request.series[0].metric === "my-dist")
       .reply(200, {});
 
     const wrapped = datadog(
@@ -126,7 +126,7 @@ describe("datadog", () => {
     process.env[siteEnvVar] = site;
 
     nock("https://api.datadoghq.com")
-      .post(`/v1/series?api_key=${apiKey}`, (request: any) => request.series[0].metric === "my-dist")
+      .post(`/api/v1/distribution_points?api_key=${apiKey}`, (request: any) => request.series[0].metric === "my-dist")
       .reply(200, {});
 
     const wrapped = datadog(

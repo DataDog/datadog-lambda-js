@@ -1,6 +1,6 @@
 export type MetricType = "distribution";
 
-export type APIPoint = [number, number];
+export type APIPoint = [number, number[]];
 
 export interface APIMetric {
   metric: string;
@@ -42,7 +42,7 @@ export class Distribution implements Metric {
 
   public toAPIMetrics(): APIMetric[] {
     const points: APIPoint[] = this.points.map((point) => {
-      return [point.timestamp.getTime(), point.value];
+      return [point.timestamp.getTime(), [point.value]];
     });
     return [
       {
