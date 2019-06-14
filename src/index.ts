@@ -12,22 +12,25 @@ const logLevelEnvVar = "DD_LOG_LEVEL";
 
 const defaultSiteURL = "datadoghq.com";
 
+interface GlobalConfig {
+  /**
+   * Whether to log extra information.
+   * @default false
+   */
+  debugLogging: boolean;
+}
+
 /**
  * Configuration options for Datadog's lambda wrapper.
  */
-export type Config = MetricsConfig &
-  TraceConfig & {
-    /**
-     * Whether to log extra information
-     */
-    debugLogging: boolean;
-  };
+export type Config = MetricsConfig & TraceConfig & GlobalConfig;
 
 const defaultConfig: Config = {
   apiKey: "",
   apiKeyKMS: "",
   autoPatchHTTP: true,
   debugLogging: false,
+  logForwarding: false,
   shouldRetryMetrics: false,
   siteURL: "",
 } as const;
@@ -59,6 +62,7 @@ export function datadog<TEvent, TResult>(
     (event) => {
       setLogLevel(finalConfig.debugLogging ? LogLevel.DEBUG : LogLevel.ERROR);
       currentMetricsListener = metricsListener;
+      currentConfig = finalConfig;
       // Setup hook, (called once per handler invocation)
       for (const listener of listeners) {
         listener.onStartInvocation(event);
@@ -81,8 +85,9 @@ export function datadog<TEvent, TResult>(
  * @param tags The tags associated with the metric. Should be of the format "tag:value".
  */
 export function sendDistributionMetric(name: string, value: number, ...tags: string[]) {
+  tags = [...tags, getRuntimeTag()];
+
   if (currentMetricsListener !== undefined) {
-    tags.push(getRuntimeTag());
     currentMetricsListener.sendDistributionMetric(name, value, ...tags);
   } else {
     logError("handler not initialized");

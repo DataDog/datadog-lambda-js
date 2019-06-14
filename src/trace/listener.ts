@@ -5,7 +5,7 @@ import { TraceContextService } from "./trace-context-service";
 export interface TraceConfig {
   /**
    * Whether to automatically patch all outgoing http requests with Datadog's hybrid tracing headers.
-   * Defaults to true.
+   * @default true.
    */
   autoPatchHTTP: boolean;
 }
