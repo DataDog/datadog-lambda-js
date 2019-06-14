@@ -75,8 +75,10 @@ export class Processor {
       try {
         await this.client.sendMetrics(metrics);
       } catch {
-        // Failed to send metrics, keep the old batch alive
-        this.batcher = oldBatcher;
+        // Failed to send metrics, keep the old batch alive if retrying is enabled
+        if (this.shouldRetryOnFail) {
+          this.batcher = oldBatcher;
+        }
       }
     }
     const finalMetrics = this.batcher.toAPIMetrics();

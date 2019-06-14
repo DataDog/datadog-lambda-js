@@ -116,7 +116,7 @@ describe("Processor", () => {
     const client = new MockAPIClient();
     const intervalMS = 10;
 
-    const processor = new Processor(client, intervalMS, false);
+    const processor = new Processor(client, intervalMS, true);
     processor.startProcessing();
     processor.addMetric(makeMetric("my-metric", 1));
     processor.addMetric(makeMetric("my-metric", 2));
