@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Lambda client library that supports datadog tracing in node",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "repository": "github.com/DataDog/datadog-lambda-layer-js",
   "author": "Datadog",
   "license": "Apache-2.0",
