@@ -3,3 +3,4 @@ FROM $image
 COPY . .
 RUN yarn install
 RUN yarn build
+RUN yarn lint
