@@ -1,6 +1,9 @@
 #!/bin/bash
+set -e
 
-yarn whoami
+npm whoami
+yarn build
+
 git checkout master
 git pull
 
