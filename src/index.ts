@@ -8,6 +8,7 @@ import { logError, LogLevel, setLogLevel, wrap } from "./utils";
 const apiKeyEnvVar = "DD_API_KEY";
 const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
 const siteURLEnvVar = "DD_SITE";
+const logLevelEnvVar = "DD_LOG_LEVEL";
 
 const defaultSiteURL = "datadoghq.com";
 
@@ -109,6 +110,11 @@ function getConfig(userConfig?: Partial<Config>): Config {
 
   if (config.apiKeyKMS === "") {
     config.apiKeyKMS = getEnvValue(apiKeyKMSEnvVar, "");
+  }
+
+  if (userConfig === undefined || userConfig.debugLogging === undefined) {
+    const result = getEnvValue(logLevelEnvVar, "ERROR").toLowerCase();
+    config.debugLogging = result === "debug";
   }
 
   return config;
