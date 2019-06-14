@@ -16,9 +16,9 @@ export function logDebug(message: string, metadata?: object) {
   }
   message = `datadog:${message}`;
   if (metadata === undefined) {
-    console.warn(JSON.stringify({ status: "debug", message }));
+    console.debug(JSON.stringify({ status: "debug", message }));
   } else {
-    console.warn(JSON.stringify({ ...metadata, status: "debug", message }));
+    console.debug(JSON.stringify({ ...metadata, status: "debug", message }));
   }
 }
 
