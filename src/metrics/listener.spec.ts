@@ -7,16 +7,10 @@ import { MetricsListener } from "./listener";
 const siteURL = "example.com";
 
 class MockKMS {
-  public lastInput?: KMS.Types.DecryptRequest;
-
   constructor(public value: string, public error?: Error) {}
 
-  public decrypt(params: KMS.Types.DecryptRequest, _?: (err: AWSError, data: KMS.Types.DecryptResponse) => void): any {
-    this.lastInput = params;
-    const result = this.error ? Promise.reject(this.error) : Promise.resolve({ Plaintext: this.value });
-    return {
-      promise: () => result,
-    };
+  public decrypt(_: string): Promise<string> {
+    return this.error ? Promise.reject(this.error) : Promise.resolve(this.value);
   }
 }
 

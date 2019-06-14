@@ -1,7 +1,7 @@
 {
-  "name": "datadog-lambda-layer-js",
+  "name": "datadog-lambda-js",
   "version": "0.0.1",
-  "description": "Lambda client library that supports datadog tracing in node",
+  "description": "Lambda client library that supports hybrid tracing in node js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "repository": "github.com/DataDog/datadog-lambda-layer-js",
@@ -35,9 +35,7 @@
     "promise-retry": "^1.1.1",
     "shimmer": "^1.2.1"
   },
-  "peerDependencies": {
-    "aws-sdk": "^2.472.0"
-  },
+  "peerDependencies": {},
   "jest": {
     "verbose": true,
     "moduleFileExtensions": [

@@ -1,5 +1,5 @@
 import { Handler } from "aws-lambda";
-import { KMS } from "aws-sdk";
+import { KMSService } from "metrics";
 
 import { MetricsConfig, MetricsListener } from "./metrics";
 import { TraceConfig, TraceListener } from "./trace";
@@ -43,7 +43,7 @@ export function datadog<TEvent, TResult>(
   config?: Partial<Config>,
 ): Handler<TEvent, TResult> {
   const finalConfig = getConfig(config);
-  const metricsListener = new MetricsListener(new KMS(), finalConfig);
+  const metricsListener = new MetricsListener(new KMSService(), finalConfig);
   const listeners = [metricsListener, new TraceListener(finalConfig)];
 
   return wrap(
