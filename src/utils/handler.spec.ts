@@ -1,10 +1,10 @@
 import { Context, Handler } from "aws-lambda";
 
 import { wrap } from "./handler";
-import { setErrorLoggingEnabled } from "./log";
+import { LogLevel, setLogLevel } from "./log";
 
 beforeEach(() => {
-  setErrorLoggingEnabled(false);
+  setLogLevel(LogLevel.NONE);
 });
 
 describe("wrap", () => {

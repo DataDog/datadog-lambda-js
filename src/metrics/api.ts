@@ -2,6 +2,7 @@ import https, { RequestOptions } from "https";
 import querystring from "querystring";
 import { URL } from "url";
 
+import { logDebug } from "../utils";
 import { APIMetric } from "./model";
 
 const apiKeyQueryParam = "api_key";
@@ -21,7 +22,9 @@ export class APIClient implements Client {
   }
 
   private post<T>(url: URL, body: T): Promise<void> {
-    const buffer = Buffer.from(JSON.stringify(body));
+    const bodyJSON = JSON.stringify(body);
+    const buffer = Buffer.from(bodyJSON);
+    logDebug(`sending payload with body ${bodyJSON}`);
 
     return new Promise((resolve, reject) => {
       const options: RequestOptions = {
@@ -31,8 +34,12 @@ export class APIClient implements Client {
         path: `${url.pathname}${url.search}`,
         protocol: url.protocol,
       };
+
       const request = https.request(options, (response) => {
         if (response.statusCode === undefined || response.statusCode < 200 || response.statusCode > 299) {
+          if (response.statusCode === 403) {
+            logDebug(`authorization failed with api key of length ${this.apiKey.length} characters`);
+          }
           reject(`Invalid status code ${response.statusCode}`);
         } else {
           resolve();
@@ -48,6 +55,7 @@ export class APIClient implements Client {
 
   private getUrl(path: string) {
     const url = new URL(path, this.baseAPIURL);
+    logDebug(`sending metadata to api endpoint ${url.toString()}`);
     url.search = querystring.stringify({ [apiKeyQueryParam]: this.apiKey });
     return url;
   }

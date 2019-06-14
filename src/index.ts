@@ -3,7 +3,7 @@ import { KMS } from "aws-sdk";
 
 import { MetricsConfig, MetricsListener } from "./metrics";
 import { TraceConfig, TraceListener } from "./trace";
-import { logError, wrap } from "./utils";
+import { logError, LogLevel, setLogLevel, wrap } from "./utils";
 
 const apiKeyEnvVar = "DD_API_KEY";
 const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
@@ -14,12 +14,19 @@ const defaultSiteURL = "datadoghq.com";
 /**
  * Configuration options for Datadog's lambda wrapper.
  */
-export type Config = MetricsConfig & TraceConfig;
+export type Config = MetricsConfig &
+  TraceConfig & {
+    /**
+     * Whether to log extra information
+     */
+    debugLogging: boolean;
+  };
 
 const defaultConfig: Config = {
   apiKey: "",
   apiKeyKMS: "",
   autoPatchHTTP: true,
+  debugLogging: false,
   shouldRetryMetrics: false,
   siteURL: "",
 } as const;
@@ -49,6 +56,7 @@ export function datadog<TEvent, TResult>(
   return wrap(
     handler,
     (event) => {
+      setLogLevel(finalConfig.debugLogging ? LogLevel.DEBUG : LogLevel.ERROR);
       currentMetricsListener = metricsListener;
       // Setup hook, (called once per handler invocation)
       for (const listener of listeners) {
@@ -73,6 +81,7 @@ export function datadog<TEvent, TResult>(
  */
 export function sendDistributionMetric(name: string, value: number, ...tags: string[]) {
   if (currentMetricsListener !== undefined) {
+    tags.push(getRuntimeTag());
     currentMetricsListener.sendDistributionMetric(name, value, ...tags);
   } else {
     logError("handler not initialized");
@@ -108,4 +117,9 @@ function getConfig(userConfig?: Partial<Config>): Config {
 function getEnvValue(key: string, defaultValue: string): string {
   const val = process.env[key];
   return val !== undefined ? val : defaultValue;
+}
+
+function getRuntimeTag(): string {
+  const version = process.version;
+  return `dd_lambda_layer:datadog-node${version}`;
 }
