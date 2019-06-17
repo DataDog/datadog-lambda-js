@@ -1,7 +1,6 @@
 import { Handler } from "aws-lambda";
-import { KMSService } from "metrics";
 
-import { MetricsConfig, MetricsListener } from "./metrics";
+import { KMSService, MetricsConfig, MetricsListener } from "./metrics";
 import { TraceConfig, TraceListener } from "./trace";
 import { logError, wrap } from "./utils";
 

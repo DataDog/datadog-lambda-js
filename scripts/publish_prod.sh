@@ -23,4 +23,4 @@ git push origin "refs/tags/v$PACKAGE_VERSION"
 
 echo 'Publishing Lambda Layer'
 ./scripts/build_layers.sh
-aws-vault exec prod-engineering -- ./scripts/publish_layers.sh
+./scripts/publish_layers.sh

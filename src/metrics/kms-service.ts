@@ -1,6 +1,7 @@
 // This only imports the type of KMS, not the class. As we don't do an instantiation typescript will compile this away.
 import { KMS } from "aws-sdk";
-import { logError } from "utils";
+
+import { logError } from "../utils";
 
 // In order to avoid the layer adding the 40mb aws-sdk to a deployment, (which is always available
 // in the lambda environment anyway), we use require to import the sdk, and return an error if someone
