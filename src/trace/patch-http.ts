@@ -78,12 +78,11 @@ function getRequestOptionsWithTraceContext(
   if (headers === undefined) {
     headers = {};
   }
-  const context = traceService.currentTraceContext;
-  if (context !== undefined) {
-    headers[traceIDHeader] = context.traceID;
-    headers[parentIDHeader] = context.parentID;
-    headers[samplingPriorityHeader] = context.sampleMode.toString(10);
-  }
+  const traceHeaders = traceService.currentTraceHeaders;
+  headers = {
+    ...headers,
+    ...traceHeaders,
+  };
   return {
     ...options,
     headers,

@@ -1,7 +1,17 @@
 import { getSegment } from "aws-xray-sdk-core";
 
 import { logError } from "../utils";
+import { parentIDHeader, samplingPriorityHeader, traceIDHeader } from "./constants";
 import { convertToAPMParentID, TraceContext } from "./context";
+
+/**
+ * Headers that can be added to a request.
+ */
+export interface TraceHeaders {
+  [traceIDHeader]: string;
+  [parentIDHeader]: string;
+  [samplingPriorityHeader]: string;
+}
 
 /**
  * Service for retrieving the latest version of the request context from xray.
@@ -25,5 +35,16 @@ export class TraceContextService {
     }
 
     return traceContext;
+  }
+
+  get currentTraceHeaders(): Partial<TraceHeaders> {
+    if (this.currentTraceContext === undefined) {
+      return {};
+    }
+    return {
+      [traceIDHeader]: this.currentTraceContext.traceID,
+      [parentIDHeader]: this.currentTraceContext.parentID,
+      [samplingPriorityHeader]: this.currentTraceContext.sampleMode.toString(10),
+    };
   }
 }
