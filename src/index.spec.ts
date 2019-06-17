@@ -3,7 +3,7 @@ import nock from "nock";
 
 import { datadog, sendDistributionMetric } from "./index";
 import { unpatchHttp } from "./trace/patch-http";
-import { setErrorLoggingEnabled } from "./utils";
+import { LogLevel, setLogLevel } from "./utils";
 
 describe("datadog", () => {
   let traceId: string | undefined;
@@ -23,7 +23,7 @@ describe("datadog", () => {
     traceId = undefined;
     parentId = undefined;
     sampled = undefined;
-    setErrorLoggingEnabled(false);
+    setLogLevel(LogLevel.NONE);
     oldEnv = process.env;
     process.env = { ...oldEnv };
     nock.cleanAll();

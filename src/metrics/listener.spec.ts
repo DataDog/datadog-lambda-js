@@ -1,7 +1,7 @@
 import { AWSError, KMS, Request } from "aws-sdk";
 import nock from "nock";
 
-import { setErrorLoggingEnabled } from "../utils";
+import { LogLevel, setLogLevel } from "../utils";
 import { MetricsListener } from "./listener";
 
 const siteURL = "example.com";
@@ -20,7 +20,7 @@ class MockKMS {
   }
 }
 
-setErrorLoggingEnabled(false);
+setLogLevel(LogLevel.NONE);
 
 describe("MetricsListener", () => {
   it("uses unencrypted api key by default", async () => {

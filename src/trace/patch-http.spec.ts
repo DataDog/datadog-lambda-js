@@ -3,7 +3,7 @@ import https, { RequestOptions } from "https";
 import nock from "nock";
 import { parse } from "url";
 
-import { setErrorLoggingEnabled } from "../utils";
+import { LogLevel, setLogLevel } from "../utils";
 import { parentIDHeader, SampleMode, samplingPriorityHeader, traceIDHeader } from "./constants";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
@@ -25,7 +25,7 @@ describe("patchHttp", () => {
       sampleMode: SampleMode.USER_KEEP,
       traceID: "123456",
     };
-    setErrorLoggingEnabled(false);
+    setLogLevel(LogLevel.NONE);
   });
 
   afterEach(() => {
