@@ -13,11 +13,14 @@ npm whoami
 
 PACKAGE_VERSION=$(node -pe "require('./package.json').version")
 
+echo 'Publishing to Node'
 yarn build
 yarn publish --version "$PACKAGE_VERSION"
 
+echo 'Tagging Release'
 git tag "v$PACKAGE_VERSION"
 git push origin "refs/tags/v$PACKAGE_VERSION"
 
+echo 'Publishing Lambda Layer'
 ./scripts/build_layers.sh
 aws-vault exec prod-engineering -- ./scripts/publish_layers.sh
