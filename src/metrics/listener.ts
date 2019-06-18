@@ -77,10 +77,10 @@ export class MetricsListener {
     if (this.config.logForwarding) {
       console.log(
         JSON.stringify({
-          metric_name: name,
-          tags,
-          timestamp: Date.now(),
-          value,
+          e: Date.now(),
+          m: name,
+          t: tags,
+          v: value,
         }),
       );
       return;
