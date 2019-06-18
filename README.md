@@ -4,8 +4,8 @@ Datadog's Lambda node client library enables distributed tracing between serverf
 
 ## Installation
 
-This library is provided both as an aws lambda layer, and a npm package. If you want to get off the ground quickly and don't need to
-bundle your dependencies locally, the lambda layer method is the recommended approach.
+This library is provided both as an AWS Lambda Layer, and a NPM package. If you want to get off the ground quickly and don't need to
+bundle your dependencies locally, the Lambda Layer method is the recommended approach.
 
 ### NPM method
 
@@ -21,7 +21,9 @@ npm install datadog-lambda-js # NPM users
 Datadog Lambda Layer can be added to a Lambda function via AWS Lambda console, [AWS CLI](https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html#configuration-layers-using) or [Serverless Framework](https://serverless.com/framework/docs/providers/aws/guide/layers/#using-your-layers) using the following ARN.
 
 ```
-arn:aws:lambda:<AWS_REGION>:464622532012:layer:Datadog-Python37:<VERSION>
+arn:aws:lambda:<AWS_REGION>:464622532012:layer:Datadog-Node10-x:<VERSION> #TODO Update arn
+# OR
+arn:aws:lambda:<AWS_REGION>:464622532012:layer:Datadog-Node8-10:<VERSION> #TODO Update arn
 ```
 
 Replace `<AWS_REGION>` with the region where your Lambda function lives, and `<VERSION>` with the desired (or the latest) version that can be found from [CHANGELOG](CHANGELOG.md).
