@@ -1,8 +1,7 @@
 import http from "http";
 import nock from "nock";
 
-import { datadog, sendDistributionMetric } from "./index";
-import { unpatchHttp } from "./trace/patch-http";
+import { datadog, getTraceHeaders, sendDistributionMetric, TraceHeaders } from "./index";
 import { LogLevel, setLogLevel } from "./utils";
 
 describe("datadog", () => {
@@ -139,5 +138,27 @@ describe("datadog", () => {
     await wrapped({}, {} as any, () => {});
 
     expect(nock.isDone()).toBeTruthy();
+  });
+
+  it("makes the current trace headers available", async () => {
+    let traceHeaders: Partial<TraceHeaders> = {};
+    const event = {
+      headers: {
+        "x-datadog-parent-id": "9101112",
+        "x-datadog-sampling-priority": "2",
+        "x-datadog-trace-id": "123456",
+      },
+    };
+
+    const wrapped = datadog(async () => {
+      traceHeaders = getTraceHeaders();
+      return "";
+    });
+    await wrapped(event, {} as any, () => {});
+    expect(traceHeaders).toEqual({
+      "x-datadog-parent-id": "9101112",
+      "x-datadog-sampling-priority": "2",
+      "x-datadog-trace-id": "123456",
+    });
   });
 });

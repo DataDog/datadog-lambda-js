@@ -1,8 +1,8 @@
-import { KMS } from "aws-sdk";
 import { promisify } from "util";
 
 import { logError } from "../utils";
 import { APIClient } from "./api";
+import { KMSService } from "./kms-service";
 import { Distribution } from "./model";
 import { Processor } from "./processor";
 
@@ -44,7 +44,7 @@ export class MetricsListener {
   private currentProcessor?: Promise<Processor>;
   private apiKey: Promise<string>;
 
-  constructor(private kmsClient: KMS, private config: MetricsConfig) {
+  constructor(private kmsClient: KMSService, private config: MetricsConfig) {
     this.apiKey = this.getAPIKey(config);
   }
 
@@ -96,16 +96,6 @@ export class MetricsListener {
     }
   }
 
-  private async decodeKMSValue(value: string): Promise<string> {
-    const buffer = Buffer.from(value, "base64");
-
-    const result = await this.kmsClient.decrypt({ CiphertextBlob: buffer }).promise();
-    if (result.Plaintext === undefined) {
-      throw Error("Couldn't decrypt value");
-    }
-    return result.Plaintext.toString("ascii");
-  }
-
   private async createProcessor(config: MetricsConfig, apiKey: Promise<string>) {
     const key = await apiKey;
     const url = `https://api.${config.siteURL}`;
@@ -122,7 +112,7 @@ export class MetricsListener {
 
     if (config.apiKeyKMS !== "") {
       try {
-        return await this.decodeKMSValue(config.apiKeyKMS);
+        return await this.kmsClient.decrypt(config.apiKeyKMS);
       } catch (error) {
         logError("couldn't decrypt kms api key", { innerError: error });
       }
