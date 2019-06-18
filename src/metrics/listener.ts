@@ -75,13 +75,15 @@ export class MetricsListener {
 
   public sendDistributionMetric(name: string, value: number, ...tags: string[]) {
     if (this.config.logForwarding) {
-      console.log(
-        JSON.stringify({
+      // We use process.stdout.write, because console.log will prepend metadata to the start
+      // of the log that log forwarder doesn't know how to read.
+      process.stdout.write(
+        `${JSON.stringify({
           e: Date.now(),
           m: name,
           t: tags,
           v: value,
-        }),
+        })}\n`,
       );
       return;
     }
