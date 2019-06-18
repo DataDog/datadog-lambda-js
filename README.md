@@ -48,7 +48,7 @@ functions:
           path: hello
           method: get
     layers:
-      - arn:aws:lambda:us-east-1:464622532012:layer:Datadog-Python37:1
+      - arn:aws:lambda:us-east-1:464622532012:layer:Datadog-Node10-x:1
     environment:
       DATADOG_API_KEY: xxx
 ```
@@ -112,7 +112,7 @@ If your Lambda function is associated with a VPC, you need to ensure it has acce
 
 ## Distributed Tracing
 
-[Distributed tracing](https://docs.datadoghq.com/tracing/guide/distributed_tracing/?tab=python) allows you to propagate a trace context from a service running on a host to a service running on AWS Lambda, and vice versa, so you can see performance end-to-end. Linking is implemented by injecting Datadog trace context into the HTTP request headers.
+[Distributed tracing](https://docs.datadoghq.com/tracing/guide/distributed_tracing/?tab=nodejs) allows you to propagate a trace context from a service running on a host to a service running on AWS Lambda, and vice versa, so you can see performance end-to-end. Linking is implemented by injecting Datadog trace context into the HTTP request headers.
 
 Distributed tracing headers are language agnostic, e.g., a trace can be propagated between a Java service running on a host to a Lambda function written in Node.
 
@@ -205,7 +205,7 @@ If your Lambda function is deployed by the Serverless Framework, such a mapping 
 
 If you encounter a bug with this package, we want to hear about it. Before opening a new issue, search the existing issues to avoid duplicates.
 
-When opening an issue, include the Datadog Lambda Layer version, Python version, and stack trace if available. In addition, include the steps to reproduce when appropriate.
+When opening an issue, include the Datadog Lambda Layer version, Node version, and stack trace if available. In addition, include the steps to reproduce when appropriate.
 
 You can also open an issue for a feature request.
 
