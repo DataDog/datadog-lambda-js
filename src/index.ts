@@ -10,6 +10,7 @@ const apiKeyEnvVar = "DD_API_KEY";
 const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
 const siteURLEnvVar = "DD_SITE";
 const logLevelEnvVar = "DD_LOG_LEVEL";
+const logForwardingEnvVar = "DD_FLUSH_TO_LOG";
 
 const defaultSiteURL = "datadoghq.com";
 
@@ -134,6 +135,10 @@ function getConfig(userConfig?: Partial<Config>): Config {
   if (userConfig === undefined || userConfig.debugLogging === undefined) {
     const result = getEnvValue(logLevelEnvVar, "ERROR").toLowerCase();
     config.debugLogging = result === "debug";
+  }
+  if (userConfig === undefined || userConfig.logForwarding === undefined) {
+    const result = getEnvValue(logForwardingEnvVar, "false").toLowerCase();
+    config.logForwarding = result === "true";
   }
 
   return config;
