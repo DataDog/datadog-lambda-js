@@ -1,8 +1,10 @@
 import { Handler } from "aws-lambda";
 
 import { KMSService, MetricsConfig, MetricsListener } from "./metrics";
-import { TraceConfig, TraceListener } from "./trace";
+import { TraceConfig, TraceHeaders, TraceListener } from "./trace";
 import { logError, LogLevel, setLogLevel, wrap } from "./utils";
+
+export { TraceHeaders } from "./trace";
 
 const apiKeyEnvVar = "DD_API_KEY";
 const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
@@ -22,7 +24,7 @@ export type Config = MetricsConfig &
     debugLogging: boolean;
   };
 
-const defaultConfig: Config = {
+export const defaultConfig: Config = {
   apiKey: "",
   apiKeyKMS: "",
   autoPatchHTTP: true,
@@ -32,6 +34,7 @@ const defaultConfig: Config = {
 } as const;
 
 let currentMetricsListener: MetricsListener | undefined;
+let currentTraceListener: TraceListener | undefined;
 
 /**
  * Wraps your AWS lambda handler functions to add tracing/metrics support
@@ -51,13 +54,15 @@ export function datadog<TEvent, TResult>(
 ): Handler<TEvent, TResult> {
   const finalConfig = getConfig(config);
   const metricsListener = new MetricsListener(new KMSService(), finalConfig);
-  const listeners = [metricsListener, new TraceListener(finalConfig)];
+  const traceListener = new TraceListener(finalConfig);
+  const listeners = [metricsListener, traceListener];
 
   return wrap(
     handler,
     (event) => {
       setLogLevel(finalConfig.debugLogging ? LogLevel.DEBUG : LogLevel.ERROR);
       currentMetricsListener = metricsListener;
+      currentTraceListener = traceListener;
       // Setup hook, (called once per handler invocation)
       for (const listener of listeners) {
         listener.onStartInvocation(event);
@@ -69,6 +74,7 @@ export function datadog<TEvent, TResult>(
         await listener.onCompleteInvocation();
       }
       currentMetricsListener = undefined;
+      currentTraceListener = undefined;
     },
   );
 }
@@ -86,6 +92,16 @@ export function sendDistributionMetric(name: string, value: number, ...tags: str
   } else {
     logError("handler not initialized");
   }
+}
+
+/**
+ * Retrieves the Datadog headers for the current trace.
+ */
+export function getTraceHeaders(): Partial<TraceHeaders> {
+  if (currentTraceListener === undefined) {
+    return {};
+  }
+  return currentTraceListener.currentTraceHeaders;
 }
 
 function getConfig(userConfig?: Partial<Config>): Config {

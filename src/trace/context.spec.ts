@@ -1,5 +1,3 @@
-import AWSXray from "aws-xray-sdk-core";
-
 import { LogLevel, setLogLevel } from "../utils";
 import { SampleMode } from "./constants";
 import {

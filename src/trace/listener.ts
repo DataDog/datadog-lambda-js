@@ -11,14 +11,19 @@ export interface TraceConfig {
 }
 
 export class TraceListener {
+  private contextService = new TraceContextService();
+
+  public get currentTraceHeaders() {
+    return this.contextService.currentTraceHeaders;
+  }
+
   constructor(private config: TraceConfig) {}
 
   public onStartInvocation(event: any) {
-    const contextService = new TraceContextService();
     if (this.config.autoPatchHTTP) {
-      patchHttp(contextService);
+      patchHttp(this.contextService);
     }
-    contextService.rootTraceContext = extractTraceContext(event);
+    this.contextService.rootTraceContext = extractTraceContext(event);
   }
 
   public async onCompleteInvocation() {
