@@ -1,6 +1,6 @@
 # datadog-lambda-layer-js
 
-Datadog's Lambda node client library enables distributed tracing between serverful and serverless environments.
+Datadog's Lambda node client library enables distributed tracing between serverful and serverless environments, as well as letting you send custom metrics to the Datadog API.
 
 ## Installation
 
