@@ -99,9 +99,11 @@ Custom metrics can be submitted using the `sendDistributionMetric` function. The
 import { sendDistributionMetric } from "datadog-lambda-js";
 
 sendDistributionMetric(
-    "coffee_house.order_value", // Metric name
-    12.45, // The Value
-    "product:latte", "order:online" // Associated tags
+  "coffee_house.order_value", // Metric name
+  12.45, // The Value
+  "product:latte",
+  "order:online", // Associated tags
+);
 ```
 
 ### VPC
