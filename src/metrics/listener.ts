@@ -12,6 +12,7 @@ export interface MetricsConfig {
   /**
    * Whether to retry sending metrics when flushing at the end of the lambda.
    * This can potentially delay the completion of your lambda.
+   * @default false
    */
   shouldRetryMetrics: boolean;
   /**
@@ -27,8 +28,16 @@ export interface MetricsConfig {
   /**
    * The site of the Datadog URL to send to. This should either be 'datadoghq.com', (default),
    * or 'datadoghq.eu', for customers in the eu.
+   * @default "datadoghq.com"
    */
   siteURL: string;
+
+  /**
+   * Whether to send metrics to cloud watch for log forwarding, rather than directly to the Datadog
+   * API. This method requires more setup work, but when enabled won't have any effect on your lambda's performance.
+   * @default false
+   */
+  logForwarding: boolean;
 }
 
 export class MetricsListener {
@@ -65,7 +74,21 @@ export class MetricsListener {
   }
 
   public sendDistributionMetric(name: string, value: number, ...tags: string[]) {
+    if (this.config.logForwarding) {
+      // We use process.stdout.write, because console.log will prepend metadata to the start
+      // of the log that log forwarder doesn't know how to read.
+      process.stdout.write(
+        `${JSON.stringify({
+          e: Date.now(),
+          m: name,
+          t: tags,
+          v: value,
+        })}\n`,
+      );
+      return;
+    }
     const dist = new Distribution(name, [{ timestamp: new Date(), value }], ...tags);
+
     if (this.currentProcessor !== undefined) {
       this.currentProcessor.then((processor) => {
         processor.addMetric(dist);

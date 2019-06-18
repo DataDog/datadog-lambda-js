@@ -10,25 +10,29 @@ const apiKeyEnvVar = "DD_API_KEY";
 const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
 const siteURLEnvVar = "DD_SITE";
 const logLevelEnvVar = "DD_LOG_LEVEL";
+const logForwardingEnvVar = "DD_FLUSH_TO_LOG";
 
 const defaultSiteURL = "datadoghq.com";
+
+interface GlobalConfig {
+  /**
+   * Whether to log extra information.
+   * @default false
+   */
+  debugLogging: boolean;
+}
 
 /**
  * Configuration options for Datadog's lambda wrapper.
  */
-export type Config = MetricsConfig &
-  TraceConfig & {
-    /**
-     * Whether to log extra information
-     */
-    debugLogging: boolean;
-  };
+export type Config = MetricsConfig & TraceConfig & GlobalConfig;
 
 export const defaultConfig: Config = {
   apiKey: "",
   apiKeyKMS: "",
   autoPatchHTTP: true,
   debugLogging: false,
+  logForwarding: false,
   shouldRetryMetrics: false,
   siteURL: "",
 } as const;
@@ -86,8 +90,9 @@ export function datadog<TEvent, TResult>(
  * @param tags The tags associated with the metric. Should be of the format "tag:value".
  */
 export function sendDistributionMetric(name: string, value: number, ...tags: string[]) {
+  tags = [...tags, getRuntimeTag()];
+
   if (currentMetricsListener !== undefined) {
-    tags.push(getRuntimeTag());
     currentMetricsListener.sendDistributionMetric(name, value, ...tags);
   } else {
     logError("handler not initialized");
@@ -130,6 +135,10 @@ function getConfig(userConfig?: Partial<Config>): Config {
   if (userConfig === undefined || userConfig.debugLogging === undefined) {
     const result = getEnvValue(logLevelEnvVar, "ERROR").toLowerCase();
     config.debugLogging = result === "debug";
+  }
+  if (userConfig === undefined || userConfig.logForwarding === undefined) {
+    const result = getEnvValue(logForwardingEnvVar, "false").toLowerCase();
+    config.logForwarding = result === "true";
   }
 
   return config;
