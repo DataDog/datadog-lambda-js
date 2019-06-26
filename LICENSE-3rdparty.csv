@@ -4,7 +4,7 @@ async,github.com/caolan/async,MIT,Copyright (c) 2010-2014 Caolan McMahon
 atomic-batcher,github.com/mafintosh/atomic-batcher,MIT,Copyright (c) 2016 Mathias Buus
 aws-sdk,github.com/aws/aws-sdk-js,Apache-2.0,Copyright (c) 2016 Mathias Buus
 aws-xray-sdk-core,github.com/aws/aws-xray-sdk-node/tree/master/packages/core,Apache-2.0,Copyright (c) 2016 Mathias Buus
-base64-js,github.com/beatgammit/base64-js,MIT,Copyright (c) 2014
+base64-js,github.com/beatgammit/base64-js,MIT,Copyright (c) 2014 Jameson Little
 js,github.com/MikeMcl/bignumber.js,MIT,Copyright (c) 2019 Michael Mclaughlin
 buffer,github.com/feross/buffer,MIT,"Copyright (c) Feross Aboukhadijeh, and other contributors."
 colors,github.com/Marak/colors.js,MIT,"Copyright (c) Feross Aboukhadijeh, and other contributors."

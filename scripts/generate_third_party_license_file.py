@@ -30,6 +30,7 @@ if __name__ == "__main__":
 
         # Extract the "Copyright ..." line from the license file
         # TODO: handle multi-line licenses (example: https://github.com/tim-kos/node-retry/blob/master/License)
+        # TODO: fix this case: github.com/beatgammit/base64-js
         if license_file:
             with open(license_file) as f:
                 matches = [line for line in f if re.match(r"Copyright ", line)]
