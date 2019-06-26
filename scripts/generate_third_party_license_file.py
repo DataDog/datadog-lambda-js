@@ -16,7 +16,7 @@ def get_repo_url(dep_name, dep_meta):
 
 if __name__ == "__main__":
     raw_output = subprocess.check_output(
-        shlex.split("license-checker --json --production")
+        shlex.split("license-checker --json --production --start ..")
     )
     deps = json.loads(raw_output)
     alphabetized_dep_names = sorted(deps.keys())
@@ -26,22 +26,31 @@ if __name__ == "__main__":
         dep_meta = deps[dep]
         dep_name = re.search(r"([\w-]+)@", dep).group(1)
         repo_url = get_repo_url(dep_name, dep_meta)
-        license_file = dep_meta.get("licenseFile", "")
+        license = dep_meta.get("licenses", "LICENSE NOT FOUND")
+
+        if "Custom" in license:
+            print("Custom license for {}".format(dep_name))
 
         # Extract the "Copyright ..." line from the license file
-        # TODO: handle multi-line licenses (example: https://github.com/tim-kos/node-retry/blob/master/License)
+        # TODO: handle multi-line licenses, examples:
+        #   https://github.com/tim-kos/node-retry/blob/master/License)
+        #   https://github.com/lodash/lodash
         # TODO: fix this case: github.com/beatgammit/base64-js
+        license_file = dep_meta.get("licenseFile", None)
+        dep_copyright = None
         if license_file:
             with open(license_file) as f:
                 matches = [line for line in f if re.match(r"Copyright ", line)]
                 if len(matches) > 0:
                     dep_copyright = matches[0].strip()
+        else:
+            print("No license file for {}".format(dep_name))
 
         formatted_deps.append(
             {
                 "Component": dep_name,
                 "Origin": repo_url,
-                "License": dep_meta.get("licenses", "LICENSE NOT FOUND"),
+                "License": license,
                 "Copyright": dep_copyright,
             }
         )
