@@ -69,7 +69,7 @@ if __name__ == "__main__":
             }
         )
 
-    with open("LICENSE-3rdparty.csv", "w") as csv_file:
+    with open("../LICENSE-3rdparty.csv", "w") as csv_file:
         fieldnames = ["Component", "Origin", "License", "Copyright"]
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
         writer.writeheader()
