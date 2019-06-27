@@ -1,22 +1,22 @@
 Component,Origin,License,Copyright
-async-listener,github.com/othiym23/async-listener,BSD-2-Clause,"Copyright (c) 2013-2017, Forrest L Norvell"
+async-listener,github.com/othiym23/async-listener,BSD-2-Clause,"Copyright (c) 2013-2017, Forrest L Norvell All rights reserved."
 async,github.com/caolan/async,MIT,Copyright (c) 2010-2014 Caolan McMahon
 atomic-batcher,github.com/mafintosh/atomic-batcher,MIT,Copyright (c) 2016 Mathias Buus
-aws-sdk,github.com/aws/aws-sdk-js,Apache-2.0,
-aws-xray-sdk-core,github.com/aws/aws-xray-sdk-node/tree/master/packages/core,Apache-2.0,
-base64-js,github.com/beatgammit/base64-js,MIT,Copyright (c) 2014
+aws-sdk,github.com/aws/aws-sdk-js,Apache-2.0,Copyright 2012-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+aws-xray-sdk-core,github.com/aws/aws-xray-sdk-node/tree/master/packages/core,Apache-2.0,Copyright 2012-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+base64-js,github.com/beatgammit/base64-js,MIT,Copyright (c) 2014 Jameson Little
 js,github.com/MikeMcl/bignumber.js,MIT,Copyright (c) 2019 Michael Mclaughlin
 buffer,github.com/feross/buffer,MIT,"Copyright (c) Feross Aboukhadijeh, and other contributors."
-colors,github.com/Marak/colors.js,MIT,
-continuation-local-storage,github.com/othiym23/node-continuation-local-storage,BSD-2-Clause,"Copyright (c) 2013-2016, Forrest L Norvell <ogd@aoaioxxysz.net>"
-cycle,github.com/dscape/cycle,Custom: https://github.com/douglascrockford/JSON-js,
-datadog-lambda-js,github.com/DataDog/datadog-lambda-layer-js,Apache-2.0,
+colors,github.com/Marak/colors.js,MIT,Copyright (c) Marak Squires Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)
+continuation-local-storage,github.com/othiym23/node-continuation-local-storage,BSD-2-Clause,"Copyright (c) 2013-2016, Forrest L Norvell <ogd@aoaioxxysz.net> All rights reserved."
+cycle,github.com/dscape/cycle,JSON,
+datadog-lambda-js,github.com/DataDog/datadog-lambda-layer-js,Apache-2.0,"Copyright 2019 Datadog, Inc."
 date-fns,github.com/date-fns/date-fns,MIT,
 emitter-listener,github.com/othiym23/emitter-listener,BSD-2-Clause,
 err-code,github.com/IndigoUnited/js-err-code,MIT,
 events,github.com/Gozala/events,MIT,"Copyright Joyent, Inc. and other Node contributors."
 eyes,github.com/cloudhead/eyes.js,MIT,Copyright (c) 2009 cloudhead
-ieee754,github.com/feross/ieee754,BSD-3-Clause,"Copyright (c) 2008, Fair Oaks Labs, Inc."
+ieee754,github.com/feross/ieee754,BSD-3-Clause,"Copyright (c) 2008, Fair Oaks Labs, Inc. All rights reserved."
 isarray,github.com/juliangruber/isarray,MIT,Copyright (c) 2013 Julian Gruber &lt;julian@juliangruber.com&gt;
 isstream,github.com/rvagg/isstream,MIT,Copyright (c) 2015 Rod Vagg
 jmespath,github.com/jmespath/jmespath.js,Apache 2.0,Copyright 2014 James Saryerwinnie
@@ -25,10 +25,10 @@ pkginfo,github.com/indexzero/node-pkginfo,MIT,Copyright (c) 2010 Charlie Robbins
 promise-retry,github.com/IndigoUnited/node-promise-retry,MIT,Copyright (c) 2014 IndigoUnited
 punycode,github.com/bestiejs/punycode.js,MIT,Copyright Mathias Bynens <https://mathiasbynens.be/>
 querystring,github.com/Gozala/querystring,MIT,Copyright 2012 Irakli Gozalishvili. All rights reserved.
-retry,github.com/tim-kos/node-retry,MIT,Copyright (c) 2011:
+retry,github.com/tim-kos/node-retry,MIT,Copyright (c) 2011: Tim Koschützki (tim@debuggable.com) Felix Geisendörfer (felix@debuggable.com)
 sax,github.com/isaacs/sax-js,ISC,Copyright (c) Isaac Z. Schlueter and Contributors
 semver,github.com/npm/node-semver,ISC,Copyright (c) Isaac Z. Schlueter and Contributors
-shimmer,github.com/othiym23/shimmer,BSD-2-Clause,"Copyright (c) 2013-2019, Forrest L Norvell"
+shimmer,github.com/othiym23/shimmer,BSD-2-Clause,"Copyright (c) 2013-2019, Forrest L Norvell All rights reserved."
 stack-trace,github.com/felixge/node-stack-trace,MIT,Copyright (c) 2011 Felix Geisendörfer (felix@debuggable.com)
 url,github.com/defunctzombie/node-url,MIT,"Copyright Joyent, Inc. and other Node contributors."
 uuid,github.com/kelektiv/node-uuid,MIT,Copyright (c) 2010-2016 Robert Kieffer and other contributors
