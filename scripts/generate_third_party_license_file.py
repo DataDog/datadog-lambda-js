@@ -6,6 +6,20 @@ import subprocess
 
 REPO_EXCEPTIONS = {"eyes": "https://github.com/cloudhead/eyes.js"}
 
+COPYRIGHT_EXCEPTIONS = ["aws-sdk", "datadog-lambda-layer-js"]
+
+"""
+Exceptions to this scripts assumptions about the formatting of LICENSE files:
+
+querystring contains the whole license
+colors.js doesn't have "Copyright" starting at the beginning of the line (https://github.com/Marak/colors.js/blob/master/LICENSE)
+cycles uses the JSON license (https://github.com/dscape/cycle)
+aws-xray-sdk puts the copyright string in NOTICE.txt instead of in LICENSE
+datadog-lambda-js doesn't put a copyright string in the LICENSE file
+aws-sdk-js uses the same format ^
+base64-js misses the name after the copyright year (github.com/beatgammit/base64-js)
+querystring puts the whole license in one line
+"""
 
 def get_repo_url(dep_name, dep_meta):
     repo_url = dep_meta.get("repository", REPO_EXCEPTIONS.get(dep_name, "NO REPO"))
@@ -31,18 +45,18 @@ if __name__ == "__main__":
         if "Custom" in license:
             print("Custom license for {}".format(dep_name))
 
-        # Extract the "Copyright ..." line from the license file
-        # TODO: handle multi-line licenses, examples:
-        #   https://github.com/tim-kos/node-retry/blob/master/License)
-        #   https://github.com/lodash/lodash
-        # TODO: fix this case: github.com/beatgammit/base64-js
+        # Extract the "Copyright ..." line from the license file.
+        # Naively handles multi-line copyrights starting with "Copyright"
+        # and ending with two newlines.
         license_file = dep_meta.get("licenseFile", None)
-        dep_copyright = None
+        dep_copyright = ""
         if license_file:
             with open(license_file) as f:
-                matches = [line for line in f if re.match(r"Copyright ", line)]
+                contents = f.read()
+                # https://stackoverflow.com/a/52347904
+                matches = re.findall(r"(Copyright.*(\n\S.*)*)", contents)
                 if len(matches) > 0:
-                    dep_copyright = matches[0].strip()
+                    dep_copyright = matches[0][0].replace("\n", " ")
         else:
             print("No license file for {}".format(dep_name))
 
