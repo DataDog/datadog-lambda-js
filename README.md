@@ -26,7 +26,7 @@ arn:aws:lambda:<AWS_REGION>:464622532012:layer:Datadog-Node10-x:<VERSION>
 arn:aws:lambda:<AWS_REGION>:464622532012:layer:Datadog-Node8-10:<VERSION>
 ```
 
-Replace `<AWS_REGION>` with the region where your Lambda function lives, and `<VERSION>` with the desired (or the latest) version that can be found from [CHANGELOG](CHANGELOG.md).
+Replace `<AWS_REGION>` with the region where your Lambda function lives, and `<VERSION>` with the desired (or the latest) version that can be found from [CHANGELOG](https://github.com/DataDog/datadog-lambda-layer-js/releases).
 
 ### The Serverless Framework
 
