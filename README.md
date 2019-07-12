@@ -95,6 +95,8 @@ exports.exports.myHandler = datadog(myHandler, {
 
 Custom metrics can be submitted using the `sendDistributionMetric` function. The metrics are submitted as [distribution metrics](https://docs.datadoghq.com/graphing/metrics/distributions/).
 
+**IMPORTANT NOTE:** If you have already been submitting the same custom metric as non-distribution metric (e.g., gauge, count, or histogram) without using the Datadog Lambda Layer, you MUST pick a new metric name to use for `sendDistributionMetric`. Otherwise that existing metric will be converted to a distribution metric and the historical data prior to the conversion will be no longer queryable.
+
 ```typescript
 import { sendDistributionMetric } from "datadog-lambda-js";
 
