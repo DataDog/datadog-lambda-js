@@ -64,13 +64,11 @@ export function readTraceFromEvent(event: any): TraceContext | undefined {
     return;
   }
 
-  const lowerCaseHeaders = Object.keys(headers).reduce(
-    (prev, header) => {
-      prev[header.toLocaleLowerCase()] = headers[header];
-      return prev;
-    },
-    {} as { [key: string]: string },
-  );
+  const lowerCaseHeaders: { [key: string]: string } = {};
+
+  for (const key of Object.keys(headers)) {
+    lowerCaseHeaders[key.toLocaleLowerCase()] = headers[key];
+  }
 
   const traceID = lowerCaseHeaders[traceIDHeader];
   if (typeof traceID !== "string") {
