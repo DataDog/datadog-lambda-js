@@ -3,8 +3,13 @@ import { BigNumber } from "bignumber.js";
 
 import { logError } from "../utils";
 import {
-    parentIDHeader, SampleMode, samplingPriorityHeader, traceIDHeader, xraySubsegmentKey,
-    xraySubsegmentName, xraySubsegmentNamespace
+  parentIDHeader,
+  SampleMode,
+  samplingPriorityHeader,
+  traceIDHeader,
+  xraySubsegmentKey,
+  xraySubsegmentName,
+  xraySubsegmentNamespace,
 } from "./constants";
 
 export interface XRayTraceHeader {
@@ -58,15 +63,24 @@ export function readTraceFromEvent(event: any): TraceContext | undefined {
   if (typeof headers !== "object") {
     return;
   }
-  const traceID = headers[traceIDHeader];
+
+  const lowerCaseHeaders = Object.keys(headers).reduce(
+    (prev, header) => {
+      prev[header.toLocaleLowerCase()] = headers[header];
+      return prev;
+    },
+    {} as { [key: string]: string },
+  );
+
+  const traceID = lowerCaseHeaders[traceIDHeader];
   if (typeof traceID !== "string") {
     return;
   }
-  const parentID = headers[parentIDHeader];
+  const parentID = lowerCaseHeaders[parentIDHeader];
   if (typeof parentID !== "string") {
     return;
   }
-  const sampledHeader = headers[samplingPriorityHeader];
+  const sampledHeader = lowerCaseHeaders[samplingPriorityHeader];
   if (typeof sampledHeader !== "string") {
     return;
   }
