@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  codecov: codecov/codecov@1.0.1
+
 jobs:
   verify_build:
     working_directory: ~/repo
@@ -26,6 +29,15 @@ jobs:
             - node_modules
           key: v1-dependencies-<< parameters.node >>-{{ checksum "package.json" }}
 
+  upload_coverage:
+    docker:
+      - image: circleci/node:<< parameters.node >>
+    parameters:
+      node:
+        type: string
+    steps:
+      - codecov/upload:
+        file: coverage/lcov.info
 workflows:
   node-v810:
     jobs:
