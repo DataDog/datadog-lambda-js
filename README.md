@@ -3,6 +3,7 @@
 [![CircleCI](https://circleci.com/gh/DataDog/datadog-lambda-layer-js.svg?style=svg)](https://circleci.com/gh/DataDog/datadog-lambda-layer-js)
 [![NPM](https://img.shields.io/npm/v/datadog-lambda-js)](https://www.npmjs.com/package/datadog-lambda-js)
 [![Code Coverage](https://img.shields.io/codecov/c/github/DataDog/datadog-lambda-layer-js)](https://codecov.io/gh/DataDog/datadog-lambda-layer-js)
+[![Slack](https://img.shields.io/badge/slack-%23serverless-green?logo=slack)](https://datadoghq.slack.com/messages/serverless/)
 
 Datadog's Lambda node client library enables distributed tracing between serverful and serverless environments, as well as letting you send custom metrics to the Datadog API.
 
