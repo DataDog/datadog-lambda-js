@@ -1,5 +1,8 @@
 # datadog-lambda-layer-js
 
+[![CircleCI](https://circleci.com/gh/DataDog/datadog-lambda-layer-js.svg?style=svg)](https://circleci.com/gh/DataDog/datadog-lambda-layer-js)
+[![NPM](https://img.shields.io/npm/v/datadog-lambda-js)](https://www.npmjs.com/package/datadog-lambda-js)
+
 Datadog's Lambda node client library enables distributed tracing between serverful and serverless environments, as well as letting you send custom metrics to the Datadog API.
 
 ## Installation
