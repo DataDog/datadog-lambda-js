@@ -23,7 +23,7 @@ jobs:
       - run: yarn lint
       - run: yarn check-formatting
       - run: yarn test
-      - run: test << parameters.upload_coverage>> = "true" && bash <(curl -s https://codecov.io/bash)
+      - run: test << parameters.upload_coverage>> = "true" && bash <(curl -s https://codecov.io/bash) || echo "Skipping coverage upload"
 
       - save_cache:
           paths:
