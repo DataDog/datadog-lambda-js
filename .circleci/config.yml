@@ -8,6 +8,9 @@ jobs:
     parameters:
       node:
         type: string
+      upload_coverage:
+        type: string
+        default: "false"
     steps:
       - checkout
       - restore_cache:
@@ -20,20 +23,12 @@ jobs:
       - run: yarn lint
       - run: yarn check-formatting
       - run: yarn test
+      - run: if [ << parameters.upload_coverage>> = "true" ] && bash <(curl -s https://codecov.io/bash)
 
       - save_cache:
           paths:
             - node_modules
           key: v1-dependencies-<< parameters.node >>-{{ checksum "package.json" }}
-
-  upload_coverage:
-    docker:
-      - image: circleci/node:<< parameters.node >>
-    parameters:
-      node:
-        type: string
-    steps:
-      - run: bash <(curl -s https://codecov.io/bash) -t token
 
 workflows:
   node-v810:
@@ -45,7 +40,4 @@ workflows:
     jobs:
       - verify_build:
           node: "10.15"
-      - upload_coverage:
-          requires:
-            - verify_build
-          node: "10.15"
+          upload_coverage: "true"
