@@ -8,6 +8,9 @@ jobs:
     parameters:
       node:
         type: string
+      upload_coverage:
+        type: string
+        default: "false"
     steps:
       - checkout
       - restore_cache:
@@ -20,6 +23,7 @@ jobs:
       - run: yarn lint
       - run: yarn check-formatting
       - run: yarn test
+      - run: test << parameters.upload_coverage>> = "true" && bash <(curl -s https://codecov.io/bash) || echo "Skipping coverage upload"
 
       - save_cache:
           paths:
@@ -36,3 +40,4 @@ workflows:
     jobs:
       - verify_build:
           node: "10.15"
+          upload_coverage: "true"

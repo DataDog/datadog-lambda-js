@@ -49,8 +49,7 @@
     },
     "collectCoverage": true,
     "coverageReporters": [
-      "json",
-      "text-summary"
+      "lcovonly"
     ],
     "testRegex": "(src\\/).*(\\.spec\\.ts)$",
     "testPathIgnorePatterns": [
