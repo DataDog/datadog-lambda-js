@@ -46,4 +46,6 @@ workflows:
       - verify_build:
           node: "10.15"
       - upload_coverage:
+          requires:
+            - verify_build
           node: "10.15"
