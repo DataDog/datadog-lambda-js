@@ -75,6 +75,10 @@ Which Datadog site to use. Set this to `datadoghq.eu` to send your data to the D
 
 How much logging datadog-lambda-layer-js should do. Set this to "debug" for extensive logs.
 
+### DD_FLUSH_TO_LOG
+
+If you have the Datadog Lambda Log forwarder enabled and are sending custom metrics, set this to true so your metrics will be sent via logs, (instead of being sent at the end of your lambda invocation).
+
 ## Usage
 
 Datadog needs to be able to read headers from the incoming Lambda event.
