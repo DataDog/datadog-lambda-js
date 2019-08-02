@@ -11,6 +11,7 @@ jobs:
       upload_coverage:
         type: string
         default: "false"
+    resource_class: medium+
     steps:
       - checkout
       - restore_cache:
