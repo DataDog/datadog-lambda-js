@@ -56,7 +56,7 @@ functions:
     layers:
       - arn:aws:lambda:us-east-1:464622532012:layer:Datadog-Node10-x:1
     environment:
-      DATADOG_API_KEY: xxx
+      DD_API_KEY: xxx
 ```
 
 ## Environment Variables
