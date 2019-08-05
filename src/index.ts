@@ -11,6 +11,7 @@ const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
 const siteURLEnvVar = "DD_SITE";
 const logLevelEnvVar = "DD_LOG_LEVEL";
 const logForwardingEnvVar = "DD_FLUSH_TO_LOG";
+const experimentalDatadogTracingEnvVar = "DD_EXPERIMENTAL_TRACING";
 
 const defaultSiteURL = "datadoghq.com";
 
@@ -20,6 +21,9 @@ interface GlobalConfig {
    * @default false
    */
   debugLogging: boolean;
+  experimental: {
+    enableDatadogTracing: boolean;
+  };
 }
 
 /**
@@ -35,6 +39,9 @@ export const defaultConfig: Config = {
   logForwarding: false,
   shouldRetryMetrics: false,
   siteURL: "",
+  experimental: {
+    enableDatadogTracing: false,
+  },
 } as const;
 
 let currentMetricsListener: MetricsListener | undefined;
@@ -139,6 +146,10 @@ function getConfig(userConfig?: Partial<Config>): Config {
   if (userConfig === undefined || userConfig.logForwarding === undefined) {
     const result = getEnvValue(logForwardingEnvVar, "false").toLowerCase();
     config.logForwarding = result === "true";
+  }
+  if (userConfig === undefined || userConfig.experimental === undefined) {
+    const result = getEnvValue(experimentalDatadogTracingEnvVar, "false").toLocaleLowerCase();
+    config.experimental.enableDatadogTracing = result === "true";
   }
 
   return config;
