@@ -84,7 +84,7 @@ If you have the Datadog Lambda Log forwarder enabled and are sending custom metr
 Datadog needs to be able to read headers from the incoming Lambda event.
 
 ```typescript
-import { datadog } from "datadog-lambda-js";
+const { datadog } = require("datadog-lambda-js");
 
 async function myHandler(event, context) {
   return {
@@ -108,7 +108,7 @@ Custom metrics can be submitted using the `sendDistributionMetric` function. The
 **IMPORTANT NOTE:** If you have already been submitting the same custom metric as non-distribution metric (e.g., gauge, count, or histogram) without using the Datadog Lambda Layer, you MUST pick a new metric name to use for `sendDistributionMetric`. Otherwise that existing metric will be converted to a distribution metric and the historical data prior to the conversion will be no longer queryable.
 
 ```typescript
-import { sendDistributionMetric } from "datadog-lambda-js";
+const { sendDistributionMetric } = require("datadog-lambda-js");
 
 sendDistributionMetric(
   "coffee_house.order_value", // Metric name
@@ -137,8 +137,8 @@ To enable this feature wrap your handler functions using the `datadog` function.
 By default, requests made using node's inbuilt `http` and `https` libraries, (and libraries which depend on them, such as axios), will be patched with Datadog's tracing context headers. If you would rather add these headers manually on a per request basic, you can disable patching using the autoPatchHTTP option.
 
 ```typescript
-import http from "http";
-import { sendDistributionMetric } from "datadog-lambda-js";
+const https = require("https");
+const { datadog, sendDistributionMetric } = require("datadog-lambda-js");
 
 async function myHandler(event, context) {
   // Add the headers to your request
