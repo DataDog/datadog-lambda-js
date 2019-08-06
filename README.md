@@ -138,7 +138,7 @@ By default, requests made using node's inbuilt `http` and `https` libraries, (an
 
 ```typescript
 const https = require("https");
-const { datadog, sendDistributionMetric } = require("datadog-lambda-js");
+const { datadog, getTraceHeaders } = require("datadog-lambda-js");
 
 async function myHandler(event, context) {
   // Add the headers to your request
