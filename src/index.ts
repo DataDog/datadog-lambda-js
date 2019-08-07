@@ -21,9 +21,6 @@ interface GlobalConfig {
    * @default false
    */
   debugLogging: boolean;
-  experimental: {
-    enableDatadogTracing: boolean;
-  };
 }
 
 /**
