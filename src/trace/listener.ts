@@ -3,6 +3,7 @@ import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
 import Tracer from "dd-trace";
 import { SpanContext, Span } from "dd-trace";
+import { OnWrapFunc } from "utils/handler";
 
 export interface TraceConfig {
   /**
@@ -15,7 +16,7 @@ export interface TraceConfig {
    */
   experimental: {
     /**
-     * Whether to us native datadog tracing with dd-trace-js.
+     * Whether to use native datadog tracing with dd-trace-js.
      */
     enableDatadogTracing: boolean;
   };
@@ -40,33 +41,31 @@ export class TraceListener {
   }
 
   public onStartInvocation(event: any) {
-    if (this.config.autoPatchHTTP) {
+    if (this.config.autoPatchHTTP && !this.config.experimental.enableDatadogTracing) {
       patchHttp(this.contextService);
     }
 
-    const rootTraceContext = extractTraceContext(event);
-    this.contextService.rootTraceContext = rootTraceContext;
+    this.contextService.rootTraceContext = extractTraceContext(event);
+  }
 
-    let rootContext: SpanContext | undefined;
+  public async onCompleteInvocation() {
+    if (this.config.autoPatchHTTP && !this.config.experimental.enableDatadogTracing) {
+      unpatchHttp();
+    }
+  }
+
+  public onWrap<T = (...args: any[]) => any>(func: T): T {
+    const rootTraceContext = this.contextService.rootTraceContext;
+    let spanContext: SpanContext | undefined;
     if (rootTraceContext) {
-      rootContext = {
+      spanContext = {
         toSpanId: () => rootTraceContext.parentID,
         toTraceId: () => rootTraceContext.traceID,
       };
     }
+    //const startSpan = Tracer.startSpan("aws.lambda", { childOf: spanContext });
 
-    this.rootSpan = Tracer.startSpan("aws.lambda", { childOf: rootContext });
-    this.rootSpan.inject();
-  }
-
-  public async onCompleteInvocation() {
-    if (this.rootSpan !== undefined) {
-      this.rootSpan.finish();
-    }
-    this.rootSpan = undefined;
-
-    if (this.config.autoPatchHTTP) {
-      unpatchHttp();
-    }
+    //return Tracer.scope().activate(startSpan, func as any) as T;
+    return Tracer.wrap("aws.lambda", { childOf: spanContext }, func);
   }
 }

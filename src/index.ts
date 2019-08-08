@@ -84,6 +84,7 @@ export function datadog<TEvent, TResult>(
       currentMetricsListener = undefined;
       currentTraceListener = undefined;
     },
+    (func) => traceListener.onWrap(func),
   );
 }
 

@@ -3,6 +3,7 @@ import nock from "nock";
 
 import { datadog, getTraceHeaders, sendDistributionMetric, TraceHeaders } from "./index";
 import { LogLevel, setLogLevel } from "./utils";
+import tracer from "dd-trace";
 
 describe("datadog", () => {
   let traceId: string | undefined;
@@ -31,12 +32,12 @@ describe("datadog", () => {
     process.env = oldEnv;
   });
 
-  it("patches http request when autoPatch enabled", (done) => {
+  it("patches http request when autoPatch enabled", async () => {
     nock("http://www.example.com")
       .get("/")
       .reply(200, {});
     const wrapped = datadog(handler);
-    wrapped(
+    await wrapped(
       {
         headers: {
           "x-datadog-parent-id": "9101112",
@@ -45,8 +46,8 @@ describe("datadog", () => {
         },
       },
       {} as any,
-      () => {
-        done();
+      async () => {
+        return true;
       },
     );
 
@@ -54,12 +55,12 @@ describe("datadog", () => {
     expect(parentId).toEqual("9101112");
     expect(sampled).toEqual("2");
   });
-  it("doesn't patch http request when autoPatch is disabled", (done) => {
+  it("doesn't patch http requests when autoPatch is disabled", async () => {
     nock("http://www.example.com")
       .get("/")
       .reply(200, {});
     const wrapped = datadog(handler, { autoPatchHTTP: false });
-    wrapped(
+    await wrapped(
       {
         headers: {
           "x-datadog-parent-id": "9101112",
@@ -68,8 +69,8 @@ describe("datadog", () => {
         },
       },
       {} as any,
-      () => {
-        done();
+      async () => {
+        return true;
       },
     );
 
