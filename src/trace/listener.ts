@@ -1,9 +1,7 @@
 import { extractTraceContext } from "./context";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
-import Tracer from "dd-trace";
-import { SpanContext, Span } from "dd-trace";
-import { OnWrapFunc } from "utils/handler";
+import Tracer, { SpanOptions, SpanContext } from "dd-trace";
 
 export interface TraceConfig {
   /**
@@ -11,37 +9,19 @@ export interface TraceConfig {
    * @default true.
    */
   autoPatchHTTP: boolean;
-  /**
-   * Experimental features. These may break at any time.
-   */
-  experimental: {
-    /**
-     * Whether to use native datadog tracing with dd-trace-js.
-     */
-    enableDatadogTracing: boolean;
-  };
 }
 
 export class TraceListener {
   private contextService = new TraceContextService();
-  private rootSpan?: Span;
 
   public get currentTraceHeaders() {
     return this.contextService.currentTraceHeaders;
   }
 
-  constructor(private config: TraceConfig) {
-    if (config.experimental.enableDatadogTracing) {
-      Tracer.init({
-        experimental: {
-          useLogTraceExporter: true,
-        },
-      });
-    }
-  }
+  constructor(private config: TraceConfig) {}
 
   public onStartInvocation(event: any) {
-    if (this.config.autoPatchHTTP && !this.config.experimental.enableDatadogTracing) {
+    if (this.config.autoPatchHTTP) {
       patchHttp(this.contextService);
     }
 
@@ -49,23 +29,19 @@ export class TraceListener {
   }
 
   public async onCompleteInvocation() {
-    if (this.config.autoPatchHTTP && !this.config.experimental.enableDatadogTracing) {
+    if (this.config.autoPatchHTTP) {
       unpatchHttp();
     }
   }
 
   public onWrap<T = (...args: any[]) => any>(func: T): T {
-    const rootTraceContext = this.contextService.rootTraceContext;
-    let spanContext: SpanContext | undefined;
-    if (rootTraceContext) {
-      spanContext = {
-        toSpanId: () => rootTraceContext.parentID,
-        toTraceId: () => rootTraceContext.traceID,
-      };
+    const rootTraceContext = this.contextService.currentTraceHeaders;
+    let spanContext: SpanContext | null = Tracer.extract("http_headers", rootTraceContext);
+    let options: SpanOptions = {};
+    if (spanContext !== null) {
+      options.childOf = spanContext;
     }
-    //const startSpan = Tracer.startSpan("aws.lambda", { childOf: spanContext });
 
-    //return Tracer.scope().activate(startSpan, func as any) as T;
-    return Tracer.wrap("aws.lambda", { childOf: spanContext }, func);
+    return Tracer.wrap("aws.lambda", options, func);
   }
 }

@@ -1,7 +1,7 @@
 import { Handler } from "aws-lambda";
 
 import { KMSService, MetricsConfig, MetricsListener } from "./metrics";
-import { TraceConfig, TraceHeaders, TraceListener } from "./trace";
+import { TraceConfig, TraceHeaders, TraceListener, initDatadogTracer } from "./trace";
 import { logError, LogLevel, setLogLevel, wrap } from "./utils";
 
 export { TraceHeaders } from "./trace";
@@ -36,13 +36,17 @@ export const defaultConfig: Config = {
   logForwarding: false,
   shouldRetryMetrics: false,
   siteURL: "",
-  experimental: {
-    enableDatadogTracing: false,
-  },
 } as const;
 
 let currentMetricsListener: MetricsListener | undefined;
 let currentTraceListener: TraceListener | undefined;
+
+// The tracer has to be initialized before tracer.wrap is called in client code, (which normally happens on require).
+// Therefore, this file needs to be the first thing imported by the client, in their handler file.
+const useDatadogTracing = getEnvValue(experimentalDatadogTracingEnvVar, "false").toLocaleLowerCase() === "true";
+if (useDatadogTracing) {
+  initDatadogTracer();
+}
 
 /**
  * Wraps your AWS lambda handler functions to add tracing/metrics support
@@ -144,10 +148,6 @@ function getConfig(userConfig?: Partial<Config>): Config {
   if (userConfig === undefined || userConfig.logForwarding === undefined) {
     const result = getEnvValue(logForwardingEnvVar, "false").toLowerCase();
     config.logForwarding = result === "true";
-  }
-  if (userConfig === undefined || userConfig.experimental === undefined) {
-    const result = getEnvValue(experimentalDatadogTracingEnvVar, "false").toLocaleLowerCase();
-    config.experimental.enableDatadogTracing = result === "true";
   }
 
   return config;

@@ -12,10 +12,10 @@ export function wrap<TEvent, TResult>(
   onStart: (event: TEvent) => void,
   onComplete: () => Promise<void>,
   onWrap?: OnWrapFunc,
-) {
+): Handler<TEvent, TResult> {
   const promHandler = promisifiedHandler(handler);
 
-  return async (event: TEvent, context: Context, callback: Callback<TResult>) => {
+  return async (event: TEvent, context: Context) => {
     try {
       await onStart(event);
     } catch (error) {
@@ -25,7 +25,7 @@ export function wrap<TEvent, TResult>(
     let result: TResult;
     try {
       const wrappedHandler = onWrap !== undefined ? onWrap(promHandler) : promHandler;
-      result = await wrappedHandler(event, context, callback);
+      result = await wrappedHandler(event, context);
     } finally {
       try {
         await onComplete();
@@ -40,12 +40,12 @@ export function wrap<TEvent, TResult>(
 }
 
 export function promisifiedHandler<TEvent, TResult>(handler: Handler<TEvent, TResult>) {
-  return (event: TEvent, context: Context, callback: Callback<TResult>) => {
+  return (event: TEvent, context: Context) => {
     // Lambda functions in node complete in one of two possible ways.
     // 1. By calling the "callback" function with a result.
     // 2. Returning a value directly from the function using a promise.
 
-    let modifiedCallback: typeof callback = () => {};
+    let modifiedCallback: Callback<TResult> = () => {};
 
     const callbackProm = new Promise<TResult>((resolve, reject) => {
       modifiedCallback = (err, result) => {
