@@ -3,7 +3,7 @@ import Tracer from "dd-trace";
 export function initDatadogTracer() {
   Tracer.init({
     experimental: {
-      useLogTraceExporter: true,
+      useLogWriter: true,
     },
   });
 }
