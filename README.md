@@ -93,9 +93,9 @@ async function myHandler(event, context) {
   };
 }
 // Wrap your handler function like this
-exports.exports.myHandler = datadog(myHandler);
+module.exports.myHandler = datadog(myHandler);
 /* OR with manual configuration options
-exports.exports.myHandler = datadog(myHandler, {
+module.exports.myHandler = datadog(myHandler, {
     apiKey: "my-api-key"
 });
 */
@@ -147,7 +147,7 @@ async function myHandler(event, context) {
 }
 
 // Explicitly disable auto patching
-exports.exports.myHandler = datadog(myHandler, { autoPatchHTTP: false });
+module.exports.myHandler = datadog(myHandler, { autoPatchHTTP: false });
 ```
 
 ### Sampling
