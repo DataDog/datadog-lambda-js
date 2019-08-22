@@ -9,7 +9,7 @@ export type OnWrapFunc<T = (...args: any[]) => any> = (fn: T) => T;
  */
 export function wrap<TEvent, TResult>(
   handler: Handler<TEvent, TResult>,
-  onStart: (event: TEvent) => void,
+  onStart: (event: TEvent, context: Context) => void,
   onComplete: () => Promise<void>,
   onWrap?: OnWrapFunc,
 ): Handler<TEvent, TResult> {
@@ -17,7 +17,7 @@ export function wrap<TEvent, TResult>(
 
   return async (event: TEvent, context: Context) => {
     try {
-      await onStart(event);
+      await onStart(event, context);
     } catch (error) {
       // Swallow the error and continue processing.
       logError("Pre-lambda hook threw error", { innerError: error });

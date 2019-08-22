@@ -1,10 +1,12 @@
 import Tracer from "dd-trace";
-import { LOG_EXPORTER } from "dd-trace";
 
 export function initDatadogTracer() {
+  const functionName = process.env["AWS_LAMBDA_FUNCTION_NAME"];
+  const service = functionName ? `${functionName}` : "lambda";
   Tracer.init({
+    service,
     experimental: {
-      exporter: LOG_EXPORTER,
+      exporter: "log-exporter",
     },
   });
 }

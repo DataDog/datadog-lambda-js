@@ -66,18 +66,19 @@ export function datadog<TEvent, TResult>(
 ): Handler<TEvent, TResult> {
   const finalConfig = getConfig(config);
   const metricsListener = new MetricsListener(new KMSService(), finalConfig);
-  const traceListener = new TraceListener(finalConfig);
+  const handlerName = getEnvValue("_HANDLER", "handler");
+  const traceListener = new TraceListener(finalConfig, handlerName);
   const listeners = [metricsListener, traceListener];
 
   return wrap(
     handler,
-    (event) => {
+    (event, context) => {
       setLogLevel(finalConfig.debugLogging ? LogLevel.DEBUG : LogLevel.ERROR);
       currentMetricsListener = metricsListener;
       currentTraceListener = traceListener;
       // Setup hook, (called once per handler invocation)
       for (const listener of listeners) {
-        listener.onStartInvocation(event);
+        listener.onStartInvocation(event, context);
       }
     },
     async () => {
