@@ -1,7 +1,7 @@
 import { Handler } from "aws-lambda";
 
 import { KMSService, MetricsConfig, MetricsListener } from "./metrics";
-import { TraceConfig, TraceHeaders, TraceListener, initDatadogTracer } from "./trace";
+import { initDatadogTracer, TraceConfig, TraceHeaders, TraceListener } from "./trace";
 import { logError, LogLevel, setLogLevel, wrap } from "./utils";
 
 export { TraceHeaders } from "./trace";

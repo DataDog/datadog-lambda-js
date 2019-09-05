@@ -1,8 +1,9 @@
+import { Context } from "aws-lambda";
+import Tracer, { SpanContext, SpanOptions, TraceOptions } from "dd-trace";
+
 import { extractTraceContext } from "./context";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
-import Tracer, { SpanOptions, TraceOptions, SpanContext } from "dd-trace";
-import { Context } from "aws-lambda";
 
 export interface TraceConfig {
   /**
@@ -41,14 +42,14 @@ export class TraceListener {
 
   public onWrap<T = (...args: any[]) => any>(func: T): T {
     const rootTraceContext = this.contextService.currentTraceHeaders;
-    let spanContext: SpanContext | null = Tracer.extract("http_headers", rootTraceContext);
-    let options: SpanOptions & TraceOptions = {};
+    const spanContext: SpanContext | null = Tracer.extract("http_headers", rootTraceContext);
+    const options: SpanOptions & TraceOptions = {};
     if (this.context) {
       options.tags = {
-        request_id: this.context.awsRequestId,
-        function_arn: this.context.invokedFunctionArn,
-        resource_names: this.context.functionName,
         cold_start: this.coldstart,
+        function_arn: this.context.invokedFunctionArn,
+        request_id: this.context.awsRequestId,
+        resource_names: this.context.functionName,
       };
     }
 
