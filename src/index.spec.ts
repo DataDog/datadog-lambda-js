@@ -162,40 +162,4 @@ describe("datadog", () => {
       "x-datadog-trace-id": "123456",
     });
   });
-  it("makes the current trace headers available when autoPatching is disabled, but experimental datadog tracing is enabled", async () => {
-    let activeSpan: Span | null = null;
-
-    const { initDatadogTracer } = require("./trace/datadog-tracer");
-    initDatadogTracer();
-
-    nock("http://www.example.com")
-      .get("/")
-      .reply(200, {});
-    const wrapped = datadog(
-      (event, context, callback) => {
-        activeSpan = tracer.scope().active();
-        return handler(event, context, callback);
-      },
-      {
-        autoPatchHTTP: false,
-      },
-    );
-    const result = await wrapped(
-      {
-        headers: {
-          "x-datadog-parent-id": "9101112",
-          "x-datadog-sampling-priority": "2",
-          "x-datadog-trace-id": "123456",
-        },
-      },
-      {} as any,
-      async () => true,
-    );
-
-    expect(result).toEqual("Result");
-
-    expect(activeSpan).not.toBeNull();
-
-    expect((activeSpan as any).context().toTraceId()).toEqual("123456");
-  });
 });
