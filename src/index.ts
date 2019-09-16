@@ -1,7 +1,7 @@
 import { Handler } from "aws-lambda";
 
 import { KMSService, MetricsConfig, MetricsListener } from "./metrics";
-import { TraceConfig, TraceHeaders, TraceListener } from "./trace";
+import { initDatadogTracer, TraceConfig, TraceHeaders, TraceListener } from "./trace";
 import { logError, LogLevel, setLogLevel, wrap } from "./utils";
 
 export { TraceHeaders } from "./trace";
@@ -11,6 +11,7 @@ const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
 const siteURLEnvVar = "DD_SITE";
 const logLevelEnvVar = "DD_LOG_LEVEL";
 const logForwardingEnvVar = "DD_FLUSH_TO_LOG";
+const experimentalDatadogTracingEnvVar = "DD_EXPERIMENTAL_TRACING";
 
 const defaultSiteURL = "datadoghq.com";
 
@@ -40,6 +41,13 @@ export const defaultConfig: Config = {
 let currentMetricsListener: MetricsListener | undefined;
 let currentTraceListener: TraceListener | undefined;
 
+// The tracer has to be initialized before tracer.wrap is called in client code, (which normally happens on require).
+// Therefore, this file needs to be the first thing imported by the client, in their handler file.
+const useDatadogTracing = getEnvValue(experimentalDatadogTracingEnvVar, "false").toLocaleLowerCase() === "true";
+if (useDatadogTracing) {
+  initDatadogTracer();
+}
+
 /**
  * Wraps your AWS lambda handler functions to add tracing/metrics support
  * @param handler A lambda handler function.
@@ -58,18 +66,19 @@ export function datadog<TEvent, TResult>(
 ): Handler<TEvent, TResult> {
   const finalConfig = getConfig(config);
   const metricsListener = new MetricsListener(new KMSService(), finalConfig);
-  const traceListener = new TraceListener(finalConfig);
+  const handlerName = getEnvValue("_HANDLER", "handler");
+  const traceListener = new TraceListener(finalConfig, handlerName);
   const listeners = [metricsListener, traceListener];
 
   return wrap(
     handler,
-    (event) => {
+    (event, context) => {
       setLogLevel(finalConfig.debugLogging ? LogLevel.DEBUG : LogLevel.ERROR);
       currentMetricsListener = metricsListener;
       currentTraceListener = traceListener;
       // Setup hook, (called once per handler invocation)
       for (const listener of listeners) {
-        listener.onStartInvocation(event);
+        listener.onStartInvocation(event, context);
       }
     },
     async () => {
@@ -80,6 +89,7 @@ export function datadog<TEvent, TResult>(
       currentMetricsListener = undefined;
       currentTraceListener = undefined;
     },
+    (func) => traceListener.onWrap(func),
   );
 }
 

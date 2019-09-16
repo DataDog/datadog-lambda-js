@@ -8,13 +8,14 @@ beforeEach(() => {
 });
 
 describe("wrap", () => {
-  it("invokes the original lambda callback, when callback used by the handler ", (done) => {
+  it("returns a promise when callback used by the handler", async () => {
     const handler: Handler = (event, context, callback) => {
       callback(null, { statusCode: 200, body: "The body of the response" });
     };
 
     let calledStart = false;
     let calledComplete = false;
+    let calledOriginalHandler = false;
 
     const wrappedHandler = wrap(
       handler,
@@ -26,21 +27,23 @@ describe("wrap", () => {
       },
     );
 
-    const result = wrappedHandler({}, {} as Context, () => {
-      done();
+    const result = await wrappedHandler({}, {} as Context, () => {
+      calledOriginalHandler = true;
     });
-    expect(result).toBeUndefined();
+    expect(result).toEqual({ statusCode: 200, body: "The body of the response" });
     expect(calledStart).toBeTruthy();
     expect(calledComplete).toBeTruthy();
+    expect(calledOriginalHandler).toBeFalsy();
   });
 
-  it("recovers from onStart throwing an error and invokes the original lambda callback", (done) => {
+  it("recovers from onStart throwing an error and invokes the original lambda callback", async () => {
     const handler: Handler = (event, context, callback) => {
       callback(null, { statusCode: 200, body: "The body of the response" });
     };
 
     let calledStart = false;
     let calledComplete = false;
+    let calledOriginalHandler = false;
 
     const wrappedHandler = wrap(
       handler,
@@ -53,21 +56,23 @@ describe("wrap", () => {
       },
     );
 
-    const result = wrappedHandler({}, {} as Context, () => {
-      done();
+    const result = await wrappedHandler({}, {} as Context, () => {
+      calledOriginalHandler = true;
     });
-    expect(result).toBeUndefined();
+    expect(result).toEqual({ statusCode: 200, body: "The body of the response" });
     expect(calledStart).toBeTruthy();
     expect(calledComplete).toBeTruthy();
+    expect(calledOriginalHandler).toBeFalsy();
   });
 
-  it("recovers from onComplete throwing an error and invokes the original lambda callback", (done) => {
+  it("recovers from onComplete throwing an error and invokes the original lambda callback", async () => {
     const handler: Handler = (event, context, callback) => {
       callback(null, { statusCode: 200, body: "The body of the response" });
     };
 
     let calledStart = false;
     let calledComplete = false;
+    let calledOriginalHandler = false;
 
     const wrappedHandler = wrap(
       handler,
@@ -80,12 +85,13 @@ describe("wrap", () => {
       },
     );
 
-    const result = wrappedHandler({}, {} as Context, () => {
-      done();
+    const result = await wrappedHandler({}, {} as Context, () => {
+      calledOriginalHandler = true;
     });
-    expect(result).toBeUndefined();
+    expect(result).toEqual({ statusCode: 200, body: "The body of the response" });
     expect(calledStart).toBeTruthy();
     expect(calledComplete).toBeTruthy();
+    expect(calledOriginalHandler).toBeFalsy();
   });
 
   it("returns a promise when the original handler returns a promise", async () => {
@@ -117,9 +123,9 @@ describe("wrap", () => {
     expect(calledOriginalHandler).toBeFalsy();
   });
 
-  it("recovers from onComplete throwing an error and returns a promise", async () => {
-    const handler: Handler = async (event, context, callback) => {
-      return { statusCode: 200, body: "The body of the response" };
+  it("throws an error when the original lambda gives the callback an error", async () => {
+    const handler: Handler = (event, context, callback) => {
+      return callback(new Error("Some error"), { statusCode: 200, body: "The body of the response" });
     };
 
     let calledStart = false;
@@ -137,11 +143,12 @@ describe("wrap", () => {
       },
     );
 
-    const result = await wrappedHandler({}, {} as Context, () => {
+    const result = wrappedHandler({}, {} as Context, () => {
       calledOriginalHandler = true;
     });
 
-    expect(result).toEqual({ statusCode: 200, body: "The body of the response" });
+    await expect(result).rejects.toEqual(new Error("Some error"));
+
     expect(calledStart).toBeTruthy();
     expect(calledComplete).toBeTruthy();
     expect(calledOriginalHandler).toBeFalsy();
