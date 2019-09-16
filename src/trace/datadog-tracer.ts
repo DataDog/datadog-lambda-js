@@ -1,5 +1,5 @@
 import Tracer from "dd-trace";
-import { logDebug } from "utils";
+import { logDebug } from "../utils";
 
 const AWS_LAMBDA_FUNCTION_NAME = "AWS_LAMBDA_FUNCTION_NAME";
 
