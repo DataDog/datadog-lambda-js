@@ -1,4 +1,4 @@
-import { getEventType } from "./event-type";
+import { getEventSource } from "./event-type";
 import { readFileSync } from "fs";
 
 describe("matchEvent", () => {
@@ -19,13 +19,13 @@ describe("matchEvent", () => {
   it("matches expected outputs for sample events", () => {
     for (let event of events) {
       const eventData = JSON.parse(readFileSync(`./event-samples/${event.file}`, "utf8"));
-      const result = getEventType(eventData);
+      const result = getEventSource(eventData);
       expect(result).toEqual(event.result);
     }
   });
   it("returns custom when no event matches", () => {
     const eventData = { a: "Some random event" };
-    const result = getEventType(eventData);
+    const result = getEventSource(eventData);
     expect(result).toEqual("custom");
   });
 });

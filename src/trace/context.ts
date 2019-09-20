@@ -11,6 +11,7 @@ import {
   xraySubsegmentName,
   xraySubsegmentNamespace,
 } from "./constants";
+import { getEventSource } from "./event-source";
 
 export interface XRayTraceHeader {
   traceID: string;
@@ -30,25 +31,31 @@ export interface TraceContext {
  */
 export function extractTraceContext(event: any) {
   const trace = readTraceFromEvent(event);
+  const eventType = getEventSource(event);
+  try {
+    addTraceContextToXray(eventType, trace);
+  } catch (error) {
+    // This might fail if running in an environment where xray isn't set up, (like for local development).
+    logError("couldn't add metadata to xray", { innerError: error });
+  }
   if (trace !== undefined) {
-    try {
-      addTraceContextToXray(trace);
-    } catch (error) {
-      // This might fail if running in an environment where xray isn't set up, (like for local development).
-      logError("couldn't add metadata to xray", { innerError: error });
-    }
     return trace;
   }
   return readTraceContextFromXray();
 }
 
-export function addTraceContextToXray(traceContext: TraceContext) {
-  const val = {
-    "parent-id": traceContext.parentID,
-    "sampling-priority": traceContext.sampleMode.toString(10),
-    "trace-id": traceContext.traceID,
+export function addTraceContextToXray(eventType: string, traceContext?: TraceContext) {
+  let val: Record<string, string> = {
+    "event-source": eventType,
   };
-
+  if (traceContext !== undefined) {
+    val = {
+      ...val,
+      "parent-id": traceContext.parentID,
+      "sampling-priority": traceContext.sampleMode.toString(10),
+      "trace-id": traceContext.traceID,
+    };
+  }
   captureFunc(xraySubsegmentName, (segment) => {
     segment.addMetadata(xraySubsegmentKey, val, xraySubsegmentNamespace);
   });

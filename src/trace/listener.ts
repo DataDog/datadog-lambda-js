@@ -4,6 +4,7 @@ import Tracer, { SpanContext, SpanOptions, TraceOptions } from "dd-trace";
 import { extractTraceContext } from "./context";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
+import { getEventSource } from "./event-source";
 
 export interface TraceConfig {
   /**
@@ -17,6 +18,7 @@ export class TraceListener {
   private contextService = new TraceContextService();
   private context?: Context;
   private coldstart = true;
+  private eventSource?: string;
 
   public get currentTraceHeaders() {
     return this.contextService.currentTraceHeaders;
@@ -31,6 +33,7 @@ export class TraceListener {
     this.context = context;
 
     this.contextService.rootTraceContext = extractTraceContext(event);
+    this.eventSource = getEventSource(event);
   }
 
   public async onCompleteInvocation() {
@@ -50,6 +53,7 @@ export class TraceListener {
         function_arn: this.context.invokedFunctionArn,
         request_id: this.context.awsRequestId,
         resource_names: this.context.functionName,
+        event_source: this.eventSource,
       };
     }
 

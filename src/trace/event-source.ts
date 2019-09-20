@@ -2,7 +2,7 @@
  * Determines whether the object matches a known lambda event type.
  * @param event
  */
-export function getEventType(event: any) {
+export function getEventSource(event: any) {
   if (!isRecord(event)) {
     return "custom";
   }
@@ -21,7 +21,7 @@ export function getEventType(event: any) {
     if (isRecord(firstRecord.cf)) {
       return "cloudfront";
     }
-    const recordType = getEventSource(firstRecord);
+    const recordType = readEventSource(firstRecord);
     if (recordType !== undefined) {
       return recordType;
     }
@@ -53,7 +53,7 @@ const eventSources = {
   "aws:sqs": "sqs",
 } as const;
 
-function getEventSource(record: any) {
+function readEventSource(record: any) {
   const eventSource = (record.eventSource ? record.eventSource : record.EventSource) as string | undefined;
   if (eventSource !== undefined) {
     return (eventSources as Record<string, string>)[eventSource] as keyof typeof eventSources;
