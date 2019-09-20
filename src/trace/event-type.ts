@@ -1,105 +1,62 @@
-export type EventProp = "string" | "number" | "boolean" | RegExp | "object" | "array";
-export type EventMapItem = {
-  [key: string]: EventProp;
-};
-export interface EventMapType {
-  [key: string]: EventMapItem;
-}
-
-const eventMap = {
-  "application-load-balancer": { "requestContext.elb.targetGroupArn": "string" },
-  "api-gateway": { "requestContext.stage": "string" },
-  "cloudwatch-event": { source: /(aws\.events)/ },
-  "cloudwatch-log": { "awslogs.data": "string" },
-  "cognito-sync-trigger": { eventType: /(SyncTrigger)/ },
-  "code-commit": { "Records[].codecommit": "object" },
-  "dynamo-db": { "Records[].dynamodb": "object" },
-  kinesis: { "Records[].kinesis": "object" },
-  s3: { "Records[].s3": "object" },
-  sns: { "Records[].Sns": "object" },
-  cloudfront: { "Records[].cf": "object" },
-  sqs: { "Records[].eventSource": /(aws\:sqs)/ },
-} as const;
-
 /**
  * Determines whether the object matches a known lambda event type.
  * @param event
  */
-export function getEventType(event: any): string {
-  const result = findEventMatch(eventMap, event);
-  return result !== undefined ? result : "custom";
-}
-
-export function findEventMatch(eventMap: EventMapType, event: any): string | undefined {
+export function getEventType(event: any) {
   if (!isRecord(event)) {
-    return undefined;
+    return "custom";
   }
 
-  for (const eventType of Object.keys(eventMap)) {
-    const item = eventMap[eventType];
-    if (eventMatches(event, item)) {
-      return eventType;
+  const firstRecord = Array.isArray(event.Records) && event.Records.length > 0 ? event.Records[0] : undefined;
+  const requestContext = isRecord(event.requestContext) ? event.requestContext : undefined;
+
+  if (requestContext && isRecord(requestContext.elb)) {
+    return "application-load-balancer";
+  }
+  if (requestContext && typeof requestContext.stage === "string") {
+    return "api-gateway";
+  }
+
+  if (firstRecord) {
+    if (isRecord(firstRecord.cf)) {
+      return "cloudfront";
+    }
+    const recordType = getEventSource(firstRecord);
+    if (recordType !== undefined) {
+      return recordType;
     }
   }
+
+  if (event.source === "aws.events") {
+    return "cloudwatch-event";
+  }
+  if (event.awslogs !== undefined) {
+    return "cloudwatch-log";
+  }
+  if (event.eventType === "SyncTrigger") {
+    return "cognito-sync-trigger";
+  }
+
+  return "custom";
 }
 
 function isRecord(event: any): event is Record<string, unknown> {
-  if (typeof event !== "object") {
-    return false;
-  }
-  return true;
+  return typeof event === "object";
 }
 
-function eventMatches(event: Record<string, unknown>, item: EventMapItem): boolean {
-  for (const propertyPath of Object.keys(item)) {
-    const type = item[propertyPath];
-    if (!propertyMatches(event, propertyPath, type)) {
-      return false;
-    }
+const eventSources = {
+  "aws:codecommit": "codecommit",
+  "aws:dynamodb": "dynamodb",
+  "aws:kinesis": "kinesis",
+  "aws:s3": "s3",
+  "aws:sns": "sns",
+  "aws:sqs": "sqs",
+} as const;
+
+function getEventSource(record: any) {
+  const eventSource = (record.eventSource ? record.eventSource : record.EventSource) as string | undefined;
+  if (eventSource !== undefined) {
+    return (eventSources as Record<string, string>)[eventSource] as keyof typeof eventSources;
   }
-  return true;
-}
-
-function propertyMatches(event: Record<string, unknown>, propertyPath: string, type: EventProp): boolean {
-  let obj: any = getObjectForPath(event, propertyPath);
-
-  if (type instanceof RegExp) {
-    return typeof obj === "string" && obj.match(type) !== null;
-  }
-
-  switch (type) {
-    case "array":
-      return Array.isArray(obj);
-    case "object":
-      return !Array.isArray(obj) && typeof obj === "object";
-    default:
-      return typeof obj === type;
-  }
-}
-
-function getObjectForPath(event: Record<string, unknown>, propertyPath: string): any {
-  let obj: any = event;
-  const parts = propertyPath.split(".");
-
-  for (let i = 0; i < parts.length; ++i) {
-    let part = parts[i];
-    const shouldBeArray = part.endsWith("[]");
-    const shouldBeObject = i !== parts.length - 1;
-    if (shouldBeArray) {
-      part = part.substr(0, part.length - 2);
-    }
-    obj = obj[part];
-
-    if (shouldBeArray) {
-      if (!Array.isArray(obj) || obj.length === 0) {
-        return undefined;
-      }
-      obj = obj[0];
-    }
-
-    if (shouldBeObject && (typeof obj !== "object" || Array.isArray(obj))) {
-      return undefined;
-    }
-  }
-  return obj;
+  return undefined;
 }
