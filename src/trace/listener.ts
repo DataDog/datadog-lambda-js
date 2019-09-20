@@ -2,9 +2,9 @@ import { Context } from "aws-lambda";
 import Tracer, { SpanContext, SpanOptions, TraceOptions } from "dd-trace";
 
 import { extractTraceContext } from "./context";
+import { getEventSource } from "./event-source";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
-import { getEventSource } from "./event-source";
 
 export interface TraceConfig {
   /**
@@ -50,10 +50,10 @@ export class TraceListener {
     if (this.context) {
       options.tags = {
         cold_start: this.coldstart,
+        event_source: this.eventSource,
         function_arn: this.context.invokedFunctionArn,
         request_id: this.context.awsRequestId,
         resource_names: this.context.functionName,
-        event_source: this.eventSource,
       };
     }
 
