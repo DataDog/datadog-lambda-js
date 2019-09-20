@@ -1,4 +1,4 @@
-import { getEventSource } from "./event-type";
+import { getEventSource } from "./event-source";
 import { readFileSync } from "fs";
 
 describe("matchEvent", () => {
