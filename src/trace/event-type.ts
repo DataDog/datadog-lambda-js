@@ -6,7 +6,7 @@ export interface EventMapType {
   [key: string]: EventMapItem;
 }
 
-const eventMap: EventMapType = {
+const eventMap = {
   "application-load-balancer": { "requestContext.elb.targetGroupArn": "string" },
   "api-gateway": { "requestContext.stage": "string" },
   "cloudwatch-event": { source: /(aws\.events)/ },
@@ -19,8 +19,12 @@ const eventMap: EventMapType = {
   sns: { "Records[].Sns": "object" },
   cloudfront: { "Records[].cf": "object" },
   sqs: { "Records[].eventSource": /(aws\:sqs)/ },
-};
+} as const;
 
+/**
+ * Determines whether the object matches a known lambda event type.
+ * @param event
+ */
 export function getEventType(event: any): string {
   const result = findEventMatch(eventMap, event);
   return result !== undefined ? result : "custom";
@@ -57,33 +61,8 @@ function eventMatches(event: Record<string, unknown>, item: EventMapItem): boole
 }
 
 function propertyMatches(event: Record<string, unknown>, propertyPath: string, type: EventProp): boolean {
-  let obj: any = event;
-  const parts = propertyPath.split(".");
+  let obj: any = getObjectForPath(event, propertyPath);
 
-  for (let i = 0; i < parts.length; ++i) {
-    let part = parts[i];
-    const shouldBeArray = part.endsWith("[]");
-    if (shouldBeArray) {
-      part = part.substr(0, part.length - 2);
-    }
-
-    obj = obj[part];
-    // Must be an object
-    if (shouldBeArray) {
-      if (!Array.isArray(obj) || obj.length === 0) {
-        return false;
-      }
-      obj = obj[0];
-    }
-    // Last property can be any type
-    if (i === parts.length - 1) {
-      break;
-    }
-
-    if (typeof obj !== "object" || Array.isArray(obj)) {
-      return false;
-    }
-  }
   if (type instanceof RegExp) {
     return typeof obj === "string" && obj.match(type) !== null;
   }
@@ -96,4 +75,31 @@ function propertyMatches(event: Record<string, unknown>, propertyPath: string, t
     default:
       return typeof obj === type;
   }
+}
+
+function getObjectForPath(event: Record<string, unknown>, propertyPath: string): any {
+  let obj: any = event;
+  const parts = propertyPath.split(".");
+
+  for (let i = 0; i < parts.length; ++i) {
+    let part = parts[i];
+    const shouldBeArray = part.endsWith("[]");
+    const shouldBeObject = i !== parts.length - 1;
+    if (shouldBeArray) {
+      part = part.substr(0, part.length - 2);
+    }
+    obj = obj[part];
+
+    if (shouldBeArray) {
+      if (!Array.isArray(obj) || obj.length === 0) {
+        return undefined;
+      }
+      obj = obj[0];
+    }
+
+    if (shouldBeObject && (typeof obj !== "object" || Array.isArray(obj))) {
+      return undefined;
+    }
+  }
+  return obj;
 }
