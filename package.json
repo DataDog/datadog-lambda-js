@@ -1,6 +1,6 @@
 {
   "name": "datadog-lambda-js",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Lambda client library that supports hybrid tracing in node js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -33,7 +33,7 @@
   "dependencies": {
     "aws-xray-sdk-core": "^2.3.3",
     "bignumber.js": "^9.0.0",
-    "dd-trace": "0.16.0-beta.1",
+    "dd-trace": "0.16.0-beta.4",
     "promise-retry": "^1.1.1",
     "shimmer": "^1.2.1"
   },
