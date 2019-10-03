@@ -29,7 +29,10 @@ export interface TraceContext {
  * @param event An incoming lambda event. This must have incoming trace headers in order to be read.
  */
 export function extractTraceContext(event: any) {
-  const trace = readTraceFromEvent(event);
+  let trace = readTraceFromEvent(event);
+  if (trace === undefined) {
+    trace = readTraceFromStepFunctionEvent(event);
+  }
   if (trace !== undefined) {
     try {
       addTraceContextToXray(trace);
@@ -104,6 +107,56 @@ export function readTraceContextFromXray() {
     logError("couldn't read xray trace header", { innerError: error });
   }
   return undefined;
+}
+
+export function readTraceFromStepFunctionEvent(event: any): TraceContext | undefined {
+  if (typeof event !== "object") {
+    return;
+  }
+  const { datadogContext } = event;
+  if (typeof datadogContext !== "object") {
+    return;
+  }
+  const execution = datadogContext.Execution;
+  if (typeof execution !== "object") {
+    return;
+  }
+  const name = execution.Name;
+  if (typeof name !== "string") {
+    return;
+  }
+  const traceID = convertExecutionIDToAPMTraceID(name);
+  if (traceID === undefined) {
+    return;
+  }
+  return {
+    traceID,
+    parentID: "0",
+    sampleMode: SampleMode.USER_KEEP,
+  };
+}
+
+export function convertExecutionIDToAPMTraceID(executionId: string): string | undefined {
+  // fb7b1e15-e4a2-4cb2-863f-8f1fa4aec492
+  const parts = executionId.split("-");
+  if (parts.length < 5) {
+    return;
+  }
+  const lastParts = parts[3] + parts[4];
+  if (lastParts.length !== 16) {
+    return;
+  }
+
+  // We want to turn the last 63 bits into a decimal number in a string representation
+  // Unfortunately, all numbers in javascript are represented by float64 bit numbers, which
+  // means we can't parse 64 bit integers accurately.
+  const hex = new BigNumber(lastParts, 16);
+  if (hex.isNaN()) {
+    return;
+  }
+  // Toggle off the 64th bit
+  const last63Bits = hex.mod(new BigNumber("8000000000000000", 16));
+  return last63Bits.toString(10);
 }
 
 export function convertTraceContext(traceHeader: XRayTraceHeader): TraceContext | undefined {

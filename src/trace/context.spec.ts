@@ -8,6 +8,8 @@ import {
   extractTraceContext,
   readTraceContextFromXray,
   readTraceFromEvent,
+  convertExecutionIDToAPMTraceID,
+  readTraceFromStepFunctionEvent,
 } from "./context";
 
 let currentSegment: any;
@@ -57,6 +59,29 @@ describe("convertToAPMTraceID", () => {
     const xrayTraceID = "1-5ce31dc2-c779014b90ce44db5e03875;";
     const traceID = convertToAPMTraceID(xrayTraceID);
     expect(traceID).toBeUndefined();
+  });
+});
+
+describe("convertExecutionIDToAPMTraceID", () => {
+  it("converts a valid execution id to a trace id", () => {
+    const executionID = "fb7b1e15-e4a2-4cb2-963f-8f1fa4aec492";
+    const result = convertExecutionIDToAPMTraceID(executionID);
+    expect(result).toEqual("1603157358436861074");
+  });
+  it("returns undefined when execution id has too few segments", () => {
+    const executionID = "e4a2-4cb2-963f-8f1fa4aec492";
+    const result = convertExecutionIDToAPMTraceID(executionID);
+    expect(result).toBeUndefined();
+  });
+  it("returns undefined when execution id is too short", () => {
+    const executionID = "fb7b1e15-e4a2-4cb2-963f-8f";
+    const result = convertExecutionIDToAPMTraceID(executionID);
+    expect(result).toBeUndefined();
+  });
+  it("returns undefined when execution id has non-hexidecimal character", () => {
+    const executionID = "fb7b1e15-e4a2-4cb2-963f-8f1fa4ZZZZZZ";
+    const result = convertExecutionIDToAPMTraceID(executionID);
+    expect(result).toBeUndefined();
   });
 });
 
@@ -219,6 +244,56 @@ describe("readTraceFromEvent", () => {
     expect(result).toBeUndefined();
   });
 });
+
+describe("readTraceFromStepFunctionEvent", () => {
+  it("reads a trace from an execution id", () => {
+    const result = readTraceFromStepFunctionEvent({
+      datadogContext: {
+        Execution: {
+          Name: "fb7b1e15-e4a2-4cb2-963f-8f1fa4aec492",
+        },
+      },
+    });
+    expect(result).toEqual({
+      parentID: "0",
+      sampleMode: SampleMode.USER_KEEP,
+      traceID: "1603157358436861074",
+    });
+  });
+  it("returns undefined when event isn't an object", () => {
+    const result = readTraceFromStepFunctionEvent("event");
+    expect(result).toBeUndefined();
+  });
+  it("returns undefined when event is missing datadogContext property", () => {
+    const result = readTraceFromStepFunctionEvent({});
+    expect(result).toBeUndefined();
+  });
+  it("returns undefined when datadogContext is missing Execution property", () => {
+    const result = readTraceFromStepFunctionEvent({
+      datadogContext: {},
+    });
+    expect(result).toBeUndefined();
+  });
+  it("returns undefined when Execution is missing Name field", () => {
+    const result = readTraceFromStepFunctionEvent({
+      datadogContext: {
+        Execution: {},
+      },
+    });
+    expect(result).toBeUndefined();
+  });
+  it("returns undefined when Name isn't a valid execution id", () => {
+    const result = readTraceFromStepFunctionEvent({
+      datadogContext: {
+        Execution: {
+          Name: "12345",
+        },
+      },
+    });
+    expect(result).toBeUndefined();
+  });
+});
+
 describe("extractTraceContext", () => {
   it("returns trace read from header as highest priority", () => {
     currentSegment = {
@@ -232,11 +307,35 @@ describe("extractTraceContext", () => {
         "x-datadog-sampling-priority": "2",
         "x-datadog-trace-id": "4110911582297405551",
       },
+      datadogContext: {
+        Execution: {
+          Name: "fb7b1e15-e4a2-4cb2-963f-8f1fa4aec492",
+        },
+      },
     });
     expect(result).toEqual({
       parentID: "797643193680388251",
       sampleMode: SampleMode.USER_KEEP,
       traceID: "4110911582297405551",
+    });
+  });
+  it("returns trace read from execution context", () => {
+    currentSegment = {
+      id: "0b11cc4230d3e09e",
+      trace_id: "1-5ce31dc2-2c779014b90ce44db5e03875",
+    };
+    const result = extractTraceContext({
+      datadogContext: {
+        Execution: {
+          Name: "fb7b1e15-e4a2-4cb2-963f-8f1fa4aec492",
+        },
+      },
+    });
+
+    expect(result).toEqual({
+      parentID: "0",
+      sampleMode: SampleMode.USER_KEEP,
+      traceID: "1603157358436861074",
     });
   });
   it("returns trace read from env if no headers present", () => {
