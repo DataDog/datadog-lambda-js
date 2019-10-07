@@ -255,7 +255,7 @@ describe("readTraceFromStepFunctionEvent", () => {
       },
     });
     expect(result).toEqual({
-      parentID: "0",
+      parentID: "8897738568179535026",
       sampleMode: SampleMode.USER_KEEP,
       traceID: "1603157358436861074",
     });
@@ -333,7 +333,7 @@ describe("extractTraceContext", () => {
     });
 
     expect(result).toEqual({
-      parentID: "0",
+      parentID: "8897738568179535026",
       sampleMode: SampleMode.USER_KEEP,
       traceID: "1603157358436861074",
     });

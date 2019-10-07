@@ -1,7 +1,7 @@
 import { Context } from "aws-lambda";
 import Tracer, { SpanContext, SpanOptions, TraceOptions } from "dd-trace";
 
-import { extractTraceContext } from "./context";
+import { extractTraceContext, logStepFunctionRootSpan } from "./context";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
 
@@ -34,6 +34,11 @@ export class TraceListener {
   }
 
   public async onCompleteInvocation() {
+    const rootTraceContext = this.contextService.rootTraceContext;
+    if (rootTraceContext !== undefined && rootTraceContext.isStepFunction) {
+      logStepFunctionRootSpan(rootTraceContext);
+    }
+
     if (this.config.autoPatchHTTP) {
       unpatchHttp();
     }
@@ -51,6 +56,11 @@ export class TraceListener {
         request_id: this.context.awsRequestId,
         resource_names: this.context.functionName,
       };
+      const rootTraceContext = this.contextService.rootTraceContext;
+      if (rootTraceContext !== undefined && rootTraceContext.isStepFunction) {
+        options.tags["aws.step_function.retry_count"] = rootTraceContext.retryCount;
+        options.tags["aws.step_function.execution_id"] = rootTraceContext.executionID;
+      }
     }
 
     if (spanContext !== null) {
