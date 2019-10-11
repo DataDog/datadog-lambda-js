@@ -1,5 +1,6 @@
 import { Callback, Context, Handler } from "aws-lambda";
 
+import { incrementErrorsMetric, incrementInvocationsMetric } from "../metrics/enhanced-lambda-metrics";
 import { logError } from "./log";
 
 export type OnWrapFunc<T = (...args: any[]) => any> = (fn: T) => T;
@@ -18,6 +19,7 @@ export function wrap<TEvent, TResult>(
   return async (event: TEvent, context: Context) => {
     try {
       await onStart(event, context);
+      incrementInvocationsMetric(context.invokedFunctionArn);
     } catch (error) {
       // Swallow the error and continue processing.
       logError("Pre-lambda hook threw error", { innerError: error });
@@ -26,6 +28,9 @@ export function wrap<TEvent, TResult>(
     try {
       const wrappedHandler = onWrap !== undefined ? onWrap(promHandler) : promHandler;
       result = await wrappedHandler(event, context);
+    } catch (error) {
+      incrementErrorsMetric(context.invokedFunctionArn);
+      throw error;
     } finally {
       try {
         await onComplete();
