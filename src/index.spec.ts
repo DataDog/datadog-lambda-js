@@ -1,9 +1,25 @@
 import http from "http";
 import nock from "nock";
 
+import { Context, Handler } from "aws-lambda";
 import { datadog, getTraceHeaders, sendDistributionMetric, TraceHeaders } from "./index";
+import { incrementErrorsMetric, incrementInvocationsMetric } from "./metrics/enhanced-metrics";
+import { MetricsListener } from "./metrics/listener";
 import { LogLevel, setLogLevel } from "./utils";
-import tracer, { Span } from "dd-trace";
+
+jest.mock("./metrics/enhanced-metrics");
+
+const mockedIncrementErrors = incrementErrorsMetric as jest.Mock<typeof incrementErrorsMetric>;
+const mockedIncrementInvocations = incrementInvocationsMetric as jest.Mock<typeof incrementInvocationsMetric>;
+
+const mockARN = "arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda";
+const mockContext = ({
+  invokedFunctionArn: mockARN,
+} as any) as Context;
+
+// const MockedListener = OriginalListenerModule.MetricsListener as jest.Mocked<
+//   typeof OriginalListenerModule.MetricsListener
+// >;
 
 describe("datadog", () => {
   let traceId: string | undefined;
@@ -27,6 +43,9 @@ describe("datadog", () => {
     oldEnv = process.env;
     process.env = { ...oldEnv };
     nock.cleanAll();
+
+    mockedIncrementErrors.mockClear();
+    mockedIncrementInvocations.mockClear();
   });
   afterEach(() => {
     process.env = oldEnv;
@@ -161,5 +180,37 @@ describe("datadog", () => {
       "x-datadog-sampling-priority": "2",
       "x-datadog-trace-id": "123456",
     });
+  });
+
+  it("increments invocations for each function call", async () => {
+    const wrapped = datadog(handler);
+
+    await wrapped({}, mockContext, () => {});
+
+    expect(mockedIncrementInvocations).toBeCalledTimes(1);
+    expect(mockedIncrementInvocations).toBeCalledWith(mockARN);
+
+    await wrapped({}, mockContext, () => {});
+    await wrapped({}, mockContext, () => {});
+    await wrapped({}, mockContext, () => {});
+
+    expect(mockedIncrementInvocations).toBeCalledTimes(4);
+  });
+
+  it("increments errors correctly", async () => {
+    const handlerError: Handler = (event, context, callback) => {
+      throw Error("Some error");
+    };
+
+    const wrappedHandler = datadog(handlerError);
+
+    const result = wrappedHandler({}, mockContext, () => {});
+    await expect(result).rejects.toEqual(Error("Some error"));
+
+    expect(mockedIncrementInvocations).toBeCalledTimes(1);
+    expect(mockedIncrementErrors).toBeCalledTimes(1);
+
+    expect(mockedIncrementInvocations).toBeCalledWith(mockARN);
+    expect(mockedIncrementErrors).toBeCalledWith(mockARN);
   });
 });

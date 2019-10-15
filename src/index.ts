@@ -1,6 +1,12 @@
 import { Handler } from "aws-lambda";
 
-import { KMSService, MetricsConfig, MetricsListener } from "./metrics";
+import {
+  incrementErrorsMetric,
+  incrementInvocationsMetric,
+  KMSService,
+  MetricsConfig,
+  MetricsListener,
+} from "./metrics";
 import { TraceConfig, TraceHeaders, TraceListener } from "./trace";
 import { logError, LogLevel, setLogLevel, wrap } from "./utils";
 
@@ -72,8 +78,12 @@ export function datadog<TEvent, TResult>(
       for (const listener of listeners) {
         listener.onStartInvocation(event, context);
       }
+      incrementInvocationsMetric(context.invokedFunctionArn);
     },
-    async () => {
+    async (event, context, error?) => {
+      if (error) {
+        incrementErrorsMetric(context.invokedFunctionArn);
+      }
       // Completion hook, (called once per handler invocation)
       for (const listener of listeners) {
         await listener.onCompleteInvocation();
@@ -146,7 +156,7 @@ function getConfig(userConfig?: Partial<Config>): Config {
   return config;
 }
 
-function getEnvValue(key: string, defaultValue: string): string {
+export function getEnvValue(key: string, defaultValue: string): string {
   const val = process.env[key];
   return val !== undefined ? val : defaultValue;
 }

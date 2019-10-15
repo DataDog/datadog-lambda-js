@@ -1,19 +1,19 @@
-let _didFunctionColdStart = true;
+let functionDidColdStart = true;
 
-let _isColdStartSet = false;
+let isColdStartSet = false;
 
 /**
  * Use global variables to determine whether the container cold started
- * On the first container run, _isColdStartSet and _didFunctionColdStart are true
- * For subsequent executions _isColdStartSet will be true and _didFunctionColdStart will be false
+ * On the first container run, isColdStartSet and functionDidColdStart are true
+ * For subsequent executions isColdStartSet will be true and functionDidColdStart will be false
  */
 export function setColdStart() {
-  _didFunctionColdStart = !_isColdStartSet;
-  _isColdStartSet = true;
+  functionDidColdStart = !isColdStartSet;
+  isColdStartSet = true;
 }
 
 export function didFunctionColdStart() {
-  return _didFunctionColdStart;
+  return functionDidColdStart;
 }
 
 export function getColdStartTag() {
@@ -22,6 +22,6 @@ export function getColdStartTag() {
 
 // For testing, reset the globals to their original values
 export function _resetColdStart() {
-  _didFunctionColdStart = true;
-  _isColdStartSet = false;
+  functionDidColdStart = true;
+  isColdStartSet = false;
 }
