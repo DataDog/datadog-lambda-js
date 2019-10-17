@@ -182,7 +182,8 @@ describe("datadog", () => {
     });
   });
 
-  it("increments invocations for each function call", async () => {
+  it("increments invocations for each function call with env var", async () => {
+    process.env.DD_ENHANCED_METRICS = "true";
     const wrapped = datadog(handler);
 
     await wrapped({}, mockContext, () => {});
@@ -197,7 +198,9 @@ describe("datadog", () => {
     expect(mockedIncrementInvocations).toBeCalledTimes(4);
   });
 
-  it("increments errors correctly", async () => {
+  it("increments errors correctly with env var", async () => {
+    process.env.DD_ENHANCED_METRICS = "true";
+
     const handlerError: Handler = (event, context, callback) => {
       throw Error("Some error");
     };
@@ -212,5 +215,36 @@ describe("datadog", () => {
 
     expect(mockedIncrementInvocations).toBeCalledWith(mockARN);
     expect(mockedIncrementErrors).toBeCalledWith(mockARN);
+  });
+
+  it("increments errors and invocations with config setting", async () => {
+    const handlerError: Handler = (event, context, callback) => {
+      throw Error("Some error");
+    };
+
+    const wrappedHandler = datadog(handlerError, { enhancedMetrics: true });
+
+    const result = wrappedHandler({}, mockContext, () => {});
+    await expect(result).rejects.toEqual(Error("Some error"));
+
+    expect(mockedIncrementInvocations).toBeCalledTimes(1);
+    expect(mockedIncrementErrors).toBeCalledTimes(1);
+
+    expect(mockedIncrementInvocations).toBeCalledWith(mockARN);
+    expect(mockedIncrementErrors).toBeCalledWith(mockARN);
+  });
+
+  it("doesn't increment enhanced metrics without env var or config", async () => {
+    const handlerError: Handler = (event, context, callback) => {
+      throw Error("Some error");
+    };
+
+    const wrappedHandler = datadog(handlerError);
+
+    const result = wrappedHandler({}, mockContext, () => {});
+    await expect(result).rejects.toEqual(Error("Some error"));
+
+    expect(mockedIncrementInvocations).toBeCalledTimes(0);
+    expect(mockedIncrementErrors).toBeCalledTimes(0);
   });
 });
