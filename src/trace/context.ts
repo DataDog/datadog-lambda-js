@@ -18,27 +18,18 @@ export interface XRayTraceHeader {
   sampled: number;
 }
 
-export interface BaseTraceContext {
+export interface TraceContext {
   traceID: string;
   parentID: string;
   sampleMode: SampleMode;
-  isStepFunction: boolean;
 }
 
-export interface RegularTraceContext extends BaseTraceContext {
-  isStepFunction: false;
+export interface StepFunctionContext {
+  "aws.step_function.retry_count": number;
+  "aws.step_function.execution_id": string;
+  "aws.step_function.state_machine_name": string;
+  "aws.step_function.state_machine_arn": string;
 }
-export interface StepFunctionTraceContext extends BaseTraceContext {
-  isStepFunction: true;
-  executionStartTime: Date;
-  retryCount: number;
-  stepName: string;
-  stateMachineArn: string;
-  stateMachineName: string;
-  executionID: string;
-}
-
-export type TraceContext = RegularTraceContext | StepFunctionTraceContext;
 
 /**
  * Reads the trace context from either an incoming lambda event, or the current xray segment.
@@ -46,8 +37,13 @@ export type TraceContext = RegularTraceContext | StepFunctionTraceContext;
  */
 export function extractTraceContext(event: any) {
   let trace = readTraceFromEvent(event);
-  if (trace === undefined) {
-    trace = readTraceFromStepFunctionEvent(event);
+  let stepFuncContext = readStepFunctionContextFromEvent(event);
+  if (stepFuncContext) {
+    try {
+      addStepFunctionContextToXray(stepFuncContext);
+    } catch (error) {
+      logError("couldn't add step function metadata to xray", { innerError: error });
+    }
   }
   if (trace !== undefined) {
     try {
@@ -70,6 +66,12 @@ export function addTraceContextToXray(traceContext: TraceContext) {
 
   captureFunc(xraySubsegmentName, (segment) => {
     segment.addMetadata(xraySubsegmentKey, val, xraySubsegmentNamespace);
+  });
+}
+
+export function addStepFunctionContextToXray(context: StepFunctionContext) {
+  captureFunc(xraySubsegmentName, (segment) => {
+    segment.addMetadata(xraySubsegmentKey, context, xraySubsegmentNamespace);
   });
 }
 
@@ -107,7 +109,6 @@ export function readTraceFromEvent(event: any): TraceContext | undefined {
     parentID,
     sampleMode,
     traceID,
-    isStepFunction: false,
   };
 }
 
@@ -126,7 +127,7 @@ export function readTraceContextFromXray() {
   return undefined;
 }
 
-export function readTraceFromStepFunctionEvent(event: any): StepFunctionTraceContext | undefined {
+export function readStepFunctionContextFromEvent(event: any): StepFunctionContext | undefined {
   if (typeof event !== "object") {
     return;
   }
@@ -142,16 +143,6 @@ export function readTraceFromStepFunctionEvent(event: any): StepFunctionTraceCon
   if (typeof executionID !== "string") {
     return;
   }
-  const traceID = convertExecutionIDToAPMTraceID(executionID);
-  if (traceID === undefined) {
-    return;
-  }
-  const startTime = execution.StartTime;
-  if (typeof startTime !== "string") {
-    return;
-  }
-  const executionStartTime = new Date(startTime);
-
   const state = datadogContext.State;
   if (typeof state !== "object") {
     return;
@@ -176,77 +167,12 @@ export function readTraceFromStepFunctionEvent(event: any): StepFunctionTraceCon
   if (typeof stateMachineName !== "string") {
     return;
   }
-
   return {
-    traceID,
-    parentID: traceID,
-    sampleMode: SampleMode.USER_KEEP,
-    isStepFunction: true,
-    executionStartTime,
-    retryCount,
-    stepName,
-    stateMachineArn,
-    executionID,
-    stateMachineName,
+    "aws.step_function.retry_count": retryCount,
+    "aws.step_function.execution_id": executionID,
+    "aws.step_function.state_machine_name": stateMachineName,
+    "aws.step_function.state_machine_arn": stateMachineArn,
   };
-}
-
-export function logStepFunctionRootSpan(traceContext: StepFunctionTraceContext) {
-  const { stateMachineArn, stateMachineName, executionID } = traceContext;
-  const traceID = new BigNumber(traceContext.traceID, 10).toString(16);
-  const startDate = traceContext.executionStartTime.valueOf();
-  const endDate = Date.now();
-
-  const duration = endDate - startDate;
-  const trace = {
-    traces: [
-      [
-        {
-          trace_id: traceID,
-          span_id: traceID,
-          parentID: "0",
-          name: `aws.step_function_execution`,
-          resource: stateMachineArn,
-          error: 0,
-          metrics: {
-            _sample_rate: 1,
-            _sampling_priority_v1: 2,
-          },
-          meta: {
-            "aws.step_function.execution_id": traceContext.executionID,
-          },
-          start: startDate * 1000000,
-          duration: duration * 1000000,
-          service: stateMachineName,
-        },
-      ],
-    ],
-  };
-
-  process.stdout.write(JSON.stringify(trace) + "\n");
-}
-
-export function convertExecutionIDToAPMTraceID(executionId: string, useLast16: boolean = true): string | undefined {
-  // fb7b1e15-e4a2-4cb2-863f-8f1fa4aec492
-  const parts = executionId.split("-");
-  if (parts.length < 5) {
-    return;
-  }
-  const lastParts = useLast16 ? parts[3] + parts[4] : parts[0] + parts[2] + parts[2];
-  if (lastParts.length !== 16) {
-    return;
-  }
-
-  // We want to turn the last 63 bits into a decimal number in a string representation
-  // Unfortunately, all numbers in javascript are represented by float64 bit numbers, which
-  // means we can't parse 64 bit integers accurately.
-  const hex = new BigNumber(lastParts, 16);
-  if (hex.isNaN()) {
-    return;
-  }
-  // Toggle off the 64th bit
-  const last63Bits = hex.mod(new BigNumber("8000000000000000", 16));
-  return last63Bits.toString(10);
 }
 
 export function convertTraceContext(traceHeader: XRayTraceHeader): TraceContext | undefined {
@@ -260,7 +186,6 @@ export function convertTraceContext(traceHeader: XRayTraceHeader): TraceContext 
     parentID,
     sampleMode,
     traceID,
-    isStepFunction: false,
   };
 }
 

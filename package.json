@@ -50,7 +50,8 @@
     },
     "collectCoverage": true,
     "coverageReporters": [
-      "lcovonly"
+      "lcovonly",
+      "text-summary"
     ],
     "testRegex": "(src\\/).*(\\.spec\\.ts)$",
     "testPathIgnorePatterns": [
