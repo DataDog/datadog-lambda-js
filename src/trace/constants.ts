@@ -10,4 +10,5 @@ export const parentIDHeader = "x-datadog-parent-id";
 export const samplingPriorityHeader = "x-datadog-sampling-priority";
 export const xraySubsegmentName = "datadog-metadata";
 export const xraySubsegmentKey = "trace";
+export const xrayBaggageSubsegmentKey = "baggage";
 export const xraySubsegmentNamespace = "datadog";

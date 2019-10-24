@@ -1,7 +1,7 @@
 import { Context } from "aws-lambda";
 import Tracer, { SpanContext, SpanOptions, TraceOptions } from "dd-trace";
 
-import { extractTraceContext, StepFunctionContext } from "./context";
+import { extractTraceContext, StepFunctionContext, readStepFunctionContextFromEvent } from "./context";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
 
@@ -31,6 +31,7 @@ export class TraceListener {
     }
     this.context = context;
     this.contextService.rootTraceContext = extractTraceContext(event);
+    this.stepFunctionContext = readStepFunctionContextFromEvent(event);
   }
 
   public async onCompleteInvocation() {

@@ -21,7 +21,6 @@ describe("patchHttp", () => {
   beforeEach(() => {
     contextService = new TraceContextService();
     contextService.rootTraceContext = {
-      isStepFunction: false,
       parentID: "78910",
       sampleMode: SampleMode.USER_KEEP,
       traceID: "123456",

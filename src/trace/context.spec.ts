@@ -227,7 +227,7 @@ describe("readTraceFromEvent", () => {
 
 describe("readStepFunctionContextFromEvent", () => {
   const stepFunctionEvent = {
-    datadogContext: {
+    dd: {
       Execution: {
         Name: "fb7b1e15-e4a2-4cb2-963f-8f1fa4aec492",
         StartTime: "2019-09-30T20:28:24.236Z",
@@ -250,6 +250,7 @@ describe("readStepFunctionContextFromEvent", () => {
       "aws.step_function.state_machine_arn":
         "arn:aws:states:us-east-1:601427279990:stateMachine:HelloStepOneStepFunctionsStateMachine-z4T0mJveJ7pJ",
       "aws.step_function.state_machine_name": "my-state-machine",
+      "aws.step_function.step_name": "step-one",
     });
   });
   it("returns undefined when event isn't an object", () => {
@@ -262,14 +263,14 @@ describe("readStepFunctionContextFromEvent", () => {
   });
   it("returns undefined when datadogContext is missing Execution property", () => {
     const result = readStepFunctionContextFromEvent({
-      datadogContext: {},
+      dd: {},
     });
     expect(result).toBeUndefined();
   });
   it("returns undefined when Execution is missing Name field", () => {
     const result = readStepFunctionContextFromEvent({
-      datadogContext: {
-        ...stepFunctionEvent.datadogContext,
+      dd: {
+        ...stepFunctionEvent.dd,
         Execution: {},
       },
     });
@@ -277,8 +278,8 @@ describe("readStepFunctionContextFromEvent", () => {
   });
   it("returns undefined when Name isn't a string", () => {
     const result = readStepFunctionContextFromEvent({
-      datadogContext: {
-        ...stepFunctionEvent.datadogContext,
+      dd: {
+        ...stepFunctionEvent.dd,
         Execution: {
           Name: 12345,
         },
@@ -288,8 +289,8 @@ describe("readStepFunctionContextFromEvent", () => {
   });
   it("returns undefined when State isn't defined", () => {
     const result = readStepFunctionContextFromEvent({
-      datadogContext: {
-        ...stepFunctionEvent.datadogContext,
+      dd: {
+        ...stepFunctionEvent.dd,
         State: undefined,
       },
     });
@@ -297,10 +298,10 @@ describe("readStepFunctionContextFromEvent", () => {
   });
   it("returns undefined when try retry count isn't a number", () => {
     const result = readStepFunctionContextFromEvent({
-      datadogContext: {
-        ...stepFunctionEvent.datadogContext,
+      dd: {
+        ...stepFunctionEvent.dd,
         State: {
-          ...stepFunctionEvent.datadogContext.State,
+          ...stepFunctionEvent.dd.State,
           RetryCount: "1",
         },
       },
@@ -309,10 +310,10 @@ describe("readStepFunctionContextFromEvent", () => {
   });
   it("returns undefined when try step name isn't a string", () => {
     const result = readStepFunctionContextFromEvent({
-      datadogContext: {
-        ...stepFunctionEvent.datadogContext,
+      dd: {
+        ...stepFunctionEvent.dd,
         State: {
-          ...stepFunctionEvent.datadogContext.State,
+          ...stepFunctionEvent.dd.State,
           Name: 1,
         },
       },
@@ -321,8 +322,8 @@ describe("readStepFunctionContextFromEvent", () => {
   });
   it("returns undefined when StateMachine is undefined", () => {
     const result = readStepFunctionContextFromEvent({
-      datadogContext: {
-        ...stepFunctionEvent.datadogContext,
+      dd: {
+        ...stepFunctionEvent.dd,
         StateMachine: undefined,
       },
     });
@@ -330,10 +331,10 @@ describe("readStepFunctionContextFromEvent", () => {
   });
   it("returns undefined when StateMachineId isn't a string", () => {
     const result = readStepFunctionContextFromEvent({
-      datadogContext: {
-        ...stepFunctionEvent.datadogContext,
+      dd: {
+        ...stepFunctionEvent.dd,
         StateMachine: {
-          ...stepFunctionEvent.datadogContext.StateMachine,
+          ...stepFunctionEvent.dd.StateMachine,
           Id: 1,
         },
       },
@@ -342,10 +343,10 @@ describe("readStepFunctionContextFromEvent", () => {
   });
   it("returns undefined when StateMachineName isn't a string", () => {
     const result = readStepFunctionContextFromEvent({
-      datadogContext: {
-        ...stepFunctionEvent.datadogContext,
+      dd: {
+        ...stepFunctionEvent.dd,
         StateMachine: {
-          ...stepFunctionEvent.datadogContext.StateMachine,
+          ...stepFunctionEvent.dd.StateMachine,
           Name: 1,
         },
       },
@@ -403,7 +404,7 @@ describe("extractTraceContext", () => {
 
   it("adds step function metadata to xray", () => {
     const stepFunctionEvent = {
-      datadogContext: {
+      dd: {
         Execution: {
           Name: "fb7b1e15-e4a2-4cb2-963f-8f1fa4aec492",
           StartTime: "2019-09-30T20:28:24.236Z",
@@ -429,6 +430,7 @@ describe("extractTraceContext", () => {
         "aws.step_function.state_machine_arn":
           "arn:aws:states:us-east-1:601427279990:stateMachine:HelloStepOneStepFunctionsStateMachine-z4T0mJveJ7pJ",
         "aws.step_function.state_machine_name": "my-state-machine",
+        "aws.step_function.step_name": "step-one",
       },
       xraySubsegmentNamespace,
     );

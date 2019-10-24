@@ -1,7 +1,7 @@
 import { captureFunc, getSegment } from "aws-xray-sdk-core";
 import { BigNumber } from "bignumber.js";
 
-import { logError } from "../utils";
+import { logError, logDebug } from "../utils";
 import {
   parentIDHeader,
   SampleMode,
@@ -10,6 +10,7 @@ import {
   xraySubsegmentKey,
   xraySubsegmentName,
   xraySubsegmentNamespace,
+  xrayBaggageSubsegmentKey,
 } from "./constants";
 
 export interface XRayTraceHeader {
@@ -29,6 +30,7 @@ export interface StepFunctionContext {
   "aws.step_function.execution_id": string;
   "aws.step_function.state_machine_name": string;
   "aws.step_function.state_machine_arn": string;
+  "aws.step_function.step_name": string;
 }
 
 /**
@@ -71,7 +73,7 @@ export function addTraceContextToXray(traceContext: TraceContext) {
 
 export function addStepFunctionContextToXray(context: StepFunctionContext) {
   captureFunc(xraySubsegmentName, (segment) => {
-    segment.addMetadata(xraySubsegmentKey, context, xraySubsegmentNamespace);
+    segment.addMetadata(xrayBaggageSubsegmentKey, context, xraySubsegmentNamespace);
   });
 }
 
@@ -115,6 +117,7 @@ export function readTraceFromEvent(event: any): TraceContext | undefined {
 export function readTraceContextFromXray() {
   try {
     const segment = getSegment();
+    logDebug(`Setting X-Ray parent trace to segment with ${segment.id} and trace ${segment.trace_id}`);
     const traceHeader = {
       parentID: segment.id,
       sampled: segment.notTraced ? 0 : 1,
@@ -131,11 +134,11 @@ export function readStepFunctionContextFromEvent(event: any): StepFunctionContex
   if (typeof event !== "object") {
     return;
   }
-  const { datadogContext } = event;
-  if (typeof datadogContext !== "object") {
+  const { dd } = event;
+  if (typeof dd !== "object") {
     return;
   }
-  const execution = datadogContext.Execution;
+  const execution = dd.Execution;
   if (typeof execution !== "object") {
     return;
   }
@@ -143,7 +146,7 @@ export function readStepFunctionContextFromEvent(event: any): StepFunctionContex
   if (typeof executionID !== "string") {
     return;
   }
-  const state = datadogContext.State;
+  const state = dd.State;
   if (typeof state !== "object") {
     return;
   }
@@ -155,7 +158,7 @@ export function readStepFunctionContextFromEvent(event: any): StepFunctionContex
   if (typeof stepName !== "string") {
     return;
   }
-  const stateMachine = datadogContext.StateMachine;
+  const stateMachine = dd.StateMachine;
   if (typeof stateMachine !== "object") {
     return;
   }
@@ -172,6 +175,7 @@ export function readStepFunctionContextFromEvent(event: any): StepFunctionContex
     "aws.step_function.execution_id": executionID,
     "aws.step_function.state_machine_name": stateMachineName,
     "aws.step_function.state_machine_arn": stateMachineArn,
+    "aws.step_function.step_name": stepName,
   };
 }
 
