@@ -38,6 +38,12 @@ export interface MetricsConfig {
    * @default false
    */
   logForwarding: boolean;
+
+  /**
+   * Whether to increment invocations and errors Lambda integration metrics from this layer.
+   * @default false
+   */
+  enhancedMetrics: boolean;
 }
 
 export class MetricsListener {

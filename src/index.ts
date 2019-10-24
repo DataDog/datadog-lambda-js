@@ -1,6 +1,12 @@
 import { Handler } from "aws-lambda";
 
-import { KMSService, MetricsConfig, MetricsListener } from "./metrics";
+import {
+  incrementErrorsMetric,
+  incrementInvocationsMetric,
+  KMSService,
+  MetricsConfig,
+  MetricsListener,
+} from "./metrics";
 import { TraceConfig, TraceHeaders, TraceListener } from "./trace";
 import { logError, LogLevel, setLogLevel, wrap } from "./utils";
 
@@ -11,6 +17,7 @@ const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
 const siteURLEnvVar = "DD_SITE";
 const logLevelEnvVar = "DD_LOG_LEVEL";
 const logForwardingEnvVar = "DD_FLUSH_TO_LOG";
+const enhancedMetricsEnvVar = "DD_ENHANCED_METRICS";
 
 const defaultSiteURL = "datadoghq.com";
 
@@ -32,6 +39,7 @@ export const defaultConfig: Config = {
   apiKeyKMS: "",
   autoPatchHTTP: true,
   debugLogging: false,
+  enhancedMetrics: false,
   logForwarding: false,
   shouldRetryMetrics: false,
   siteURL: "",
@@ -72,8 +80,14 @@ export function datadog<TEvent, TResult>(
       for (const listener of listeners) {
         listener.onStartInvocation(event, context);
       }
+      if (finalConfig.enhancedMetrics) {
+        incrementInvocationsMetric(context.invokedFunctionArn);
+      }
     },
-    async () => {
+    async (event, context, error?) => {
+      if (finalConfig.enhancedMetrics && error) {
+        incrementErrorsMetric(context.invokedFunctionArn);
+      }
       // Completion hook, (called once per handler invocation)
       for (const listener of listeners) {
         await listener.onCompleteInvocation();
@@ -142,11 +156,15 @@ function getConfig(userConfig?: Partial<Config>): Config {
     const result = getEnvValue(logForwardingEnvVar, "false").toLowerCase();
     config.logForwarding = result === "true";
   }
+  if (userConfig === undefined || userConfig.enhancedMetrics === undefined) {
+    const result = getEnvValue(enhancedMetricsEnvVar, "false").toLowerCase();
+    config.enhancedMetrics = result === "true";
+  }
 
   return config;
 }
 
-function getEnvValue(key: string, defaultValue: string): string {
+export function getEnvValue(key: string, defaultValue: string): string {
   const val = process.env[key];
   return val !== undefined ? val : defaultValue;
 }

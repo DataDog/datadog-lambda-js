@@ -5,6 +5,8 @@ import { extractTraceContext, readStepFunctionContextFromEvent, StepFunctionCont
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
 
+import { didFunctionColdStart } from "../utils/cold-start";
+
 export interface TraceConfig {
   /**
    * Whether to automatically patch all outgoing http requests with Datadog's hybrid tracing headers.
@@ -17,7 +19,6 @@ export class TraceListener {
   private contextService = new TraceContextService();
   private context?: Context;
   private stepFunctionContext?: StepFunctionContext;
-  private coldstart = true;
 
   public get currentTraceHeaders() {
     return this.contextService.currentTraceHeaders;
@@ -38,7 +39,6 @@ export class TraceListener {
     if (this.config.autoPatchHTTP) {
       unpatchHttp();
     }
-    this.coldstart = false;
   }
 
   public onWrap<T = (...args: any[]) => any>(func: T): T {
@@ -47,7 +47,7 @@ export class TraceListener {
     const options: SpanOptions & TraceOptions = {};
     if (this.context) {
       options.tags = {
-        cold_start: this.coldstart,
+        cold_start: didFunctionColdStart(),
         function_arn: this.context.invokedFunctionArn,
         request_id: this.context.awsRequestId,
         resource_names: this.context.functionName,

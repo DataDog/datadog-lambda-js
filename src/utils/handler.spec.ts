@@ -1,7 +1,12 @@
 import { Context, Handler } from "aws-lambda";
 
+import { didFunctionColdStart } from "./cold-start";
 import { wrap } from "./handler";
 import { LogLevel, setLogLevel } from "./log";
+
+const mockContext = ({
+  invokedFunctionArn: "arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda",
+} as any) as Context;
 
 beforeEach(() => {
   setLogLevel(LogLevel.NONE);
@@ -27,7 +32,7 @@ describe("wrap", () => {
       },
     );
 
-    const result = await wrappedHandler({}, {} as Context, () => {
+    const result = await wrappedHandler({}, mockContext, () => {
       calledOriginalHandler = true;
     });
     expect(result).toEqual({ statusCode: 200, body: "The body of the response" });
@@ -56,7 +61,7 @@ describe("wrap", () => {
       },
     );
 
-    const result = await wrappedHandler({}, {} as Context, () => {
+    const result = await wrappedHandler({}, mockContext, () => {
       calledOriginalHandler = true;
     });
     expect(result).toEqual({ statusCode: 200, body: "The body of the response" });
@@ -85,7 +90,7 @@ describe("wrap", () => {
       },
     );
 
-    const result = await wrappedHandler({}, {} as Context, () => {
+    const result = await wrappedHandler({}, mockContext, () => {
       calledOriginalHandler = true;
     });
     expect(result).toEqual({ statusCode: 200, body: "The body of the response" });
@@ -113,7 +118,7 @@ describe("wrap", () => {
       },
     );
 
-    const result = await wrappedHandler({}, {} as Context, () => {
+    const result = await wrappedHandler({}, mockContext, () => {
       calledOriginalHandler = true;
     });
 
@@ -143,7 +148,7 @@ describe("wrap", () => {
       },
     );
 
-    const result = wrappedHandler({}, {} as Context, () => {
+    const result = wrappedHandler({}, mockContext, () => {
       calledOriginalHandler = true;
     });
 
@@ -173,7 +178,7 @@ describe("wrap", () => {
       },
     );
 
-    const result = wrappedHandler({}, {} as Context, () => {
+    const result = wrappedHandler({}, mockContext, () => {
       calledOriginalHandler = true;
     });
     await expect(result).rejects.toEqual(Error("Some error"));

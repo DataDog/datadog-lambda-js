@@ -10,7 +10,7 @@ export type OnWrapFunc<T = (...args: any[]) => any> = (fn: T) => T;
 export function wrap<TEvent, TResult>(
   handler: Handler<TEvent, TResult>,
   onStart: (event: TEvent, context: Context) => void,
-  onComplete: () => Promise<void>,
+  onComplete: (event: TEvent, context: Context, error?: Error) => Promise<void>,
   onWrap?: OnWrapFunc,
 ): Handler<TEvent, TResult> {
   const promHandler = promisifiedHandler(handler);
@@ -23,12 +23,24 @@ export function wrap<TEvent, TResult>(
       logError("Pre-lambda hook threw error", { innerError: error });
     }
     let result: TResult;
+    // Need to disable linter rule to explicitly assign the variable, otherwise TS
+    // won't reccognize that the var may be assigned in the catch block
+    // tslint:disable-next-line: no-unnecessary-initializer
+    let handlerError: Error | undefined = undefined;
+
     try {
       const wrappedHandler = onWrap !== undefined ? onWrap(promHandler) : promHandler;
       result = await wrappedHandler(event, context);
+    } catch (error) {
+      handlerError = error;
+      throw error;
     } finally {
       try {
-        await onComplete();
+        if (handlerError) {
+          await onComplete(event, context, handlerError);
+        } else {
+          await onComplete(event, context);
+        }
       } catch (error) {
         // Swallow the error and continue processing.
         logError("Post-lambda hook threw error", { innerError: error });
