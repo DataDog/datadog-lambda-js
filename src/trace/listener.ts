@@ -1,7 +1,7 @@
 import { Context } from "aws-lambda";
 import Tracer, { SpanContext, SpanOptions, TraceOptions } from "dd-trace";
 
-import { extractTraceContext, StepFunctionContext, readStepFunctionContextFromEvent } from "./context";
+import { extractTraceContext, readStepFunctionContextFromEvent, StepFunctionContext } from "./context";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
 

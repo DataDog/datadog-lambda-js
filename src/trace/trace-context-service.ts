@@ -1,6 +1,6 @@
 import { getSegment } from "aws-xray-sdk-core";
 
-import { logError, logDebug } from "../utils";
+import { logDebug, logError } from "../utils";
 import { parentIDHeader, samplingPriorityHeader, traceIDHeader } from "./constants";
 import { convertToAPMParentID, TraceContext } from "./context";
 
@@ -24,16 +24,16 @@ export class TraceContextService {
       return;
     }
     const traceContext = { ...this.rootTraceContext };
-    /*try {
+    try {
       const segment = getSegment();
       const value = convertToAPMParentID(segment.id);
       if (value !== undefined) {
-        logDebug(`set trace context from xray with parent ${value} from segemt`);
+        logDebug(`set trace context from xray with parent ${value} from segment`);
         traceContext.parentID = value;
       }
     } catch (error) {
       logError("couldn't retrieve segment from xray", { innerError: error });
-    }*/
+    }
 
     return traceContext;
   }

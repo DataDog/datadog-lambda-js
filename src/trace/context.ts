@@ -1,16 +1,16 @@
 import { captureFunc, getSegment } from "aws-xray-sdk-core";
 import { BigNumber } from "bignumber.js";
 
-import { logError, logDebug } from "../utils";
+import { logDebug, logError } from "../utils";
 import {
   parentIDHeader,
   SampleMode,
   samplingPriorityHeader,
   traceIDHeader,
+  xrayBaggageSubsegmentKey,
   xraySubsegmentKey,
   xraySubsegmentName,
   xraySubsegmentNamespace,
-  xrayBaggageSubsegmentKey,
 } from "./constants";
 
 export interface XRayTraceHeader {
@@ -38,8 +38,8 @@ export interface StepFunctionContext {
  * @param event An incoming lambda event. This must have incoming trace headers in order to be read.
  */
 export function extractTraceContext(event: any) {
-  let trace = readTraceFromEvent(event);
-  let stepFuncContext = readStepFunctionContextFromEvent(event);
+  const trace = readTraceFromEvent(event);
+  const stepFuncContext = readStepFunctionContextFromEvent(event);
   if (stepFuncContext) {
     try {
       addStepFunctionContextToXray(stepFuncContext);
@@ -171,10 +171,10 @@ export function readStepFunctionContextFromEvent(event: any): StepFunctionContex
     return;
   }
   return {
-    "aws.step_function.retry_count": retryCount,
     "aws.step_function.execution_id": executionID,
-    "aws.step_function.state_machine_name": stateMachineName,
+    "aws.step_function.retry_count": retryCount,
     "aws.step_function.state_machine_arn": stateMachineArn,
+    "aws.step_function.state_machine_name": stateMachineName,
     "aws.step_function.step_name": stepName,
   };
 }
