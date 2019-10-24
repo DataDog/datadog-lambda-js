@@ -1,5 +1,5 @@
 import { LogLevel, setLogLevel } from "../utils";
-import { SampleMode, xraySubsegmentKey, xraySubsegmentNamespace } from "./constants";
+import { SampleMode, xrayBaggageSubsegmentKey, xraySubsegmentNamespace } from "./constants";
 import {
   convertToAPMParentID,
   convertToAPMTraceID,
@@ -423,7 +423,7 @@ describe("extractTraceContext", () => {
     currentSegment = { addMetadata };
     extractTraceContext(stepFunctionEvent);
     expect(addMetadata).toHaveBeenCalledWith(
-      xraySubsegmentKey,
+      xrayBaggageSubsegmentKey,
       {
         "aws.step_function.execution_id": "fb7b1e15-e4a2-4cb2-963f-8f1fa4aec492",
         "aws.step_function.retry_count": 2,
