@@ -26,6 +26,7 @@ describe("MetricsListener", () => {
     const listener = new MetricsListener(kms as any, {
       apiKey: "api-key",
       apiKeyKMS: "kms-api-key-encrypted",
+      enhancedMetrics: false,
       logForwarding: false,
       shouldRetryMetrics: false,
       siteURL,
@@ -46,6 +47,7 @@ describe("MetricsListener", () => {
     const listener = new MetricsListener(kms as any, {
       apiKey: "",
       apiKeyKMS: "kms-api-key-encrypted",
+      enhancedMetrics: false,
       logForwarding: false,
       shouldRetryMetrics: false,
       siteURL,
@@ -62,6 +64,7 @@ describe("MetricsListener", () => {
     const listener = new MetricsListener(kms as any, {
       apiKey: "",
       apiKeyKMS: "kms-api-key-encrypted",
+      enhancedMetrics: false,
       logForwarding: false,
       shouldRetryMetrics: false,
       siteURL,
