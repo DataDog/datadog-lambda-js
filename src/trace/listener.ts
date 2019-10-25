@@ -1,7 +1,7 @@
 import { Context } from "aws-lambda";
 import Tracer, { SpanContext, SpanOptions, TraceOptions } from "dd-trace";
 
-import { extractTraceContext } from "./context";
+import { extractTraceContext, readStepFunctionContextFromEvent, StepFunctionContext } from "./context";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
 
@@ -18,6 +18,7 @@ export interface TraceConfig {
 export class TraceListener {
   private contextService = new TraceContextService();
   private context?: Context;
+  private stepFunctionContext?: StepFunctionContext;
 
   public get currentTraceHeaders() {
     return this.contextService.currentTraceHeaders;
@@ -30,8 +31,8 @@ export class TraceListener {
       patchHttp(this.contextService);
     }
     this.context = context;
-
     this.contextService.rootTraceContext = extractTraceContext(event);
+    this.stepFunctionContext = readStepFunctionContextFromEvent(event);
   }
 
   public async onCompleteInvocation() {
@@ -51,6 +52,12 @@ export class TraceListener {
         request_id: this.context.awsRequestId,
         resource_names: this.context.functionName,
       };
+      if (this.stepFunctionContext) {
+        options.tags = {
+          ...options.tags,
+          ...this.stepFunctionContext,
+        };
+      }
     }
 
     if (spanContext !== null) {

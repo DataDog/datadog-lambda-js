@@ -1,12 +1,13 @@
 import { captureFunc, getSegment } from "aws-xray-sdk-core";
 import { BigNumber } from "bignumber.js";
 
-import { logError } from "../utils";
+import { logDebug, logError } from "../utils";
 import {
   parentIDHeader,
   SampleMode,
   samplingPriorityHeader,
   traceIDHeader,
+  xrayBaggageSubsegmentKey,
   xraySubsegmentKey,
   xraySubsegmentName,
   xraySubsegmentNamespace,
@@ -24,12 +25,28 @@ export interface TraceContext {
   sampleMode: SampleMode;
 }
 
+export interface StepFunctionContext {
+  "step_function.retry_count": number;
+  "step_function.execution_id": string;
+  "step_function.state_machine_name": string;
+  "step_function.state_machine_arn": string;
+  "step_function.step_name": string;
+}
+
 /**
  * Reads the trace context from either an incoming lambda event, or the current xray segment.
  * @param event An incoming lambda event. This must have incoming trace headers in order to be read.
  */
 export function extractTraceContext(event: any) {
   const trace = readTraceFromEvent(event);
+  const stepFuncContext = readStepFunctionContextFromEvent(event);
+  if (stepFuncContext) {
+    try {
+      addStepFunctionContextToXray(stepFuncContext);
+    } catch (error) {
+      logError("couldn't add step function metadata to xray", { innerError: error });
+    }
+  }
   if (trace !== undefined) {
     try {
       addTraceContextToXray(trace);
@@ -51,6 +68,12 @@ export function addTraceContextToXray(traceContext: TraceContext) {
 
   captureFunc(xraySubsegmentName, (segment) => {
     segment.addMetadata(xraySubsegmentKey, val, xraySubsegmentNamespace);
+  });
+}
+
+export function addStepFunctionContextToXray(context: StepFunctionContext) {
+  captureFunc(xraySubsegmentName, (segment) => {
+    segment.addMetadata(xrayBaggageSubsegmentKey, context, xraySubsegmentNamespace);
   });
 }
 
@@ -94,6 +117,7 @@ export function readTraceFromEvent(event: any): TraceContext | undefined {
 export function readTraceContextFromXray() {
   try {
     const segment = getSegment();
+    logDebug(`Setting X-Ray parent trace to segment with ${segment.id} and trace ${segment.trace_id}`);
     const traceHeader = {
       parentID: segment.id,
       sampled: segment.notTraced ? 0 : 1,
@@ -104,6 +128,55 @@ export function readTraceContextFromXray() {
     logError("couldn't read xray trace header", { innerError: error });
   }
   return undefined;
+}
+
+export function readStepFunctionContextFromEvent(event: any): StepFunctionContext | undefined {
+  if (typeof event !== "object") {
+    return;
+  }
+  const { dd } = event;
+  if (typeof dd !== "object") {
+    return;
+  }
+  const execution = dd.Execution;
+  if (typeof execution !== "object") {
+    return;
+  }
+  const executionID = execution.Name;
+  if (typeof executionID !== "string") {
+    return;
+  }
+  const state = dd.State;
+  if (typeof state !== "object") {
+    return;
+  }
+  const retryCount = state.RetryCount;
+  if (typeof retryCount !== "number") {
+    return;
+  }
+  const stepName = state.Name;
+  if (typeof stepName !== "string") {
+    return;
+  }
+  const stateMachine = dd.StateMachine;
+  if (typeof stateMachine !== "object") {
+    return;
+  }
+  const stateMachineArn = stateMachine.Id;
+  if (typeof stateMachineArn !== "string") {
+    return;
+  }
+  const stateMachineName = stateMachine.Name;
+  if (typeof stateMachineName !== "string") {
+    return;
+  }
+  return {
+    "step_function.execution_id": executionID,
+    "step_function.retry_count": retryCount,
+    "step_function.state_machine_arn": stateMachineArn,
+    "step_function.state_machine_name": stateMachineName,
+    "step_function.step_name": stepName,
+  };
 }
 
 export function convertTraceContext(traceHeader: XRayTraceHeader): TraceContext | undefined {
