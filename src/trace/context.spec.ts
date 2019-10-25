@@ -245,12 +245,12 @@ describe("readStepFunctionContextFromEvent", () => {
   it("reads a trace from an execution id", () => {
     const result = readStepFunctionContextFromEvent(stepFunctionEvent);
     expect(result).toEqual({
-      "aws.step_function.execution_id": "fb7b1e15-e4a2-4cb2-963f-8f1fa4aec492",
-      "aws.step_function.retry_count": 2,
-      "aws.step_function.state_machine_arn":
+      "step_function.execution_id": "fb7b1e15-e4a2-4cb2-963f-8f1fa4aec492",
+      "step_function.retry_count": 2,
+      "step_function.state_machine_arn":
         "arn:aws:states:us-east-1:601427279990:stateMachine:HelloStepOneStepFunctionsStateMachine-z4T0mJveJ7pJ",
-      "aws.step_function.state_machine_name": "my-state-machine",
-      "aws.step_function.step_name": "step-one",
+      "step_function.state_machine_name": "my-state-machine",
+      "step_function.step_name": "step-one",
     });
   });
   it("returns undefined when event isn't an object", () => {
@@ -425,12 +425,12 @@ describe("extractTraceContext", () => {
     expect(addMetadata).toHaveBeenCalledWith(
       xrayBaggageSubsegmentKey,
       {
-        "aws.step_function.execution_id": "fb7b1e15-e4a2-4cb2-963f-8f1fa4aec492",
-        "aws.step_function.retry_count": 2,
-        "aws.step_function.state_machine_arn":
+        "step_function.execution_id": "fb7b1e15-e4a2-4cb2-963f-8f1fa4aec492",
+        "step_function.retry_count": 2,
+        "step_function.state_machine_arn":
           "arn:aws:states:us-east-1:601427279990:stateMachine:HelloStepOneStepFunctionsStateMachine-z4T0mJveJ7pJ",
-        "aws.step_function.state_machine_name": "my-state-machine",
-        "aws.step_function.step_name": "step-one",
+        "step_function.state_machine_name": "my-state-machine",
+        "step_function.step_name": "step-one",
       },
       xraySubsegmentNamespace,
     );

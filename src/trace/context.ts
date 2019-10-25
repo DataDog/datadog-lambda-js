@@ -26,11 +26,11 @@ export interface TraceContext {
 }
 
 export interface StepFunctionContext {
-  "aws.step_function.retry_count": number;
-  "aws.step_function.execution_id": string;
-  "aws.step_function.state_machine_name": string;
-  "aws.step_function.state_machine_arn": string;
-  "aws.step_function.step_name": string;
+  "step_function.retry_count": number;
+  "step_function.execution_id": string;
+  "step_function.state_machine_name": string;
+  "step_function.state_machine_arn": string;
+  "step_function.step_name": string;
 }
 
 /**
@@ -171,11 +171,11 @@ export function readStepFunctionContextFromEvent(event: any): StepFunctionContex
     return;
   }
   return {
-    "aws.step_function.execution_id": executionID,
-    "aws.step_function.retry_count": retryCount,
-    "aws.step_function.state_machine_arn": stateMachineArn,
-    "aws.step_function.state_machine_name": stateMachineName,
-    "aws.step_function.step_name": stepName,
+    "step_function.execution_id": executionID,
+    "step_function.retry_count": retryCount,
+    "step_function.state_machine_arn": stateMachineArn,
+    "step_function.state_machine_name": stateMachineName,
+    "step_function.step_name": stepName,
   };
 }
 
