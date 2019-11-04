@@ -81,12 +81,12 @@ export function datadog<TEvent, TResult>(
         listener.onStartInvocation(event, context);
       }
       if (finalConfig.enhancedMetrics) {
-        incrementInvocationsMetric(context.invokedFunctionArn);
+        incrementInvocationsMetric(context);
       }
     },
     async (event, context, error?) => {
       if (finalConfig.enhancedMetrics && error) {
-        incrementErrorsMetric(context.invokedFunctionArn);
+        incrementErrorsMetric(context);
       }
       // Completion hook, (called once per handler invocation)
       for (const listener of listeners) {

@@ -189,7 +189,7 @@ describe("datadog", () => {
     await wrapped({}, mockContext, () => {});
 
     expect(mockedIncrementInvocations).toBeCalledTimes(1);
-    expect(mockedIncrementInvocations).toBeCalledWith(mockARN);
+    expect(mockedIncrementInvocations).toBeCalledWith(mockContext);
 
     await wrapped({}, mockContext, () => {});
     await wrapped({}, mockContext, () => {});
@@ -213,8 +213,8 @@ describe("datadog", () => {
     expect(mockedIncrementInvocations).toBeCalledTimes(1);
     expect(mockedIncrementErrors).toBeCalledTimes(1);
 
-    expect(mockedIncrementInvocations).toBeCalledWith(mockARN);
-    expect(mockedIncrementErrors).toBeCalledWith(mockARN);
+    expect(mockedIncrementInvocations).toBeCalledWith(mockContext);
+    expect(mockedIncrementErrors).toBeCalledWith(mockContext);
   });
 
   it("increments errors and invocations with config setting", async () => {
@@ -230,8 +230,8 @@ describe("datadog", () => {
     expect(mockedIncrementInvocations).toBeCalledTimes(1);
     expect(mockedIncrementErrors).toBeCalledTimes(1);
 
-    expect(mockedIncrementInvocations).toBeCalledWith(mockARN);
-    expect(mockedIncrementErrors).toBeCalledWith(mockARN);
+    expect(mockedIncrementInvocations).toBeCalledWith(mockContext);
+    expect(mockedIncrementErrors).toBeCalledWith(mockContext);
   });
 
   it("doesn't increment enhanced metrics without env var or config", async () => {

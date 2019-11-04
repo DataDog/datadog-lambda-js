@@ -81,7 +81,7 @@ If you have the Datadog Lambda Log forwarder enabled and are sending custom metr
 
 ### DD_ENHANCED_METRICS
 
-If you set the value of this variable to "true" then the Lambda layer will increment a Lambda integration metric called `aws.lambda.enhanced.invocations` with each invocation and `aws.lambda.enhanced.errors` if the invocation results in an error. These metrics are tagged with the function name, region, and account, as well as `cold_start:true|false`.
+If you set the value of this variable to "true" then the Lambda layer will increment a Lambda integration metric called `aws.lambda.enhanced.invocations` with each invocation and `aws.lambda.enhanced.errors` if the invocation results in an error. These metrics are tagged with the function name, region, account, runtime, memorysize, and `cold_start:true|false`.
 
 ## Usage
 
