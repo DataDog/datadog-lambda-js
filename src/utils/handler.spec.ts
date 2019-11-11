@@ -205,4 +205,24 @@ describe("wrap", () => {
     expect(result).toEqual({ statusCode: 204, body: "The callback response" });
     expect(calledOriginalHandler).toBeFalsy();
   });
+
+  it("doesn't complete using non-promise return values", async () => {
+    const handler: Handler = (event, context, callback) => {
+      setTimeout(() => {
+        callback(null, { statusCode: 204, body: "The callback response" });
+      }, 10);
+      return ({ statusCode: 200, body: "The promise response" } as unknown) as void;
+    };
+
+    let calledOriginalHandler = false;
+
+    const wrappedHandler = wrap(handler, () => {}, async () => {});
+
+    const result = await wrappedHandler({}, mockContext, () => {
+      calledOriginalHandler = true;
+    });
+
+    expect(result).toEqual({ statusCode: 204, body: "The callback response" });
+    expect(calledOriginalHandler).toBeFalsy();
+  });
 });
