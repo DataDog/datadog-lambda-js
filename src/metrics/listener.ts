@@ -1,6 +1,6 @@
 import { promisify } from "util";
 
-import { logError } from "../utils";
+import { logError, logDebug } from "../utils";
 import { APIClient } from "./api";
 import { KMSService } from "./kms-service";
 import { Distribution } from "./model";
@@ -55,6 +55,9 @@ export class MetricsListener {
   }
 
   public onStartInvocation(_: any) {
+    if (this.config.logForwarding) {
+      return;
+    }
     this.currentProcessor = this.createProcessor(this.config, this.apiKey);
   }
 
@@ -124,8 +127,13 @@ export class MetricsListener {
       } catch (error) {
         logError("couldn't decrypt kms api key", { innerError: error });
       }
-    } else {
-      logError("api key not configured");
+    } else if (!config.logForwarding) {
+      const errorMessage = "api key not configured, see https://dtdg.co/sls-node-metrics";
+      if (config.logForwarding) {
+        logDebug(errorMessage);
+      } else {
+        logError(errorMessage);
+      }
     }
     return "";
   }
