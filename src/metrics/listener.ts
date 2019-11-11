@@ -1,6 +1,6 @@
 import { promisify } from "util";
 
-import { logError, logDebug } from "../utils";
+import { logDebug, logError } from "../utils";
 import { APIClient } from "./api";
 import { KMSService } from "./kms-service";
 import { Distribution } from "./model";
