@@ -187,4 +187,42 @@ describe("wrap", () => {
     expect(calledComplete).toBeTruthy();
     expect(calledOriginalHandler).toBeFalsy();
   });
+
+  it("returns the first result to complete between the callback and the handler promise", async () => {
+    const handler: Handler = async (event, context, callback) => {
+      callback(null, { statusCode: 204, body: "The callback response" });
+      return { statusCode: 200, body: "The promise response" };
+    };
+
+    let calledOriginalHandler = false;
+
+    const wrappedHandler = wrap(handler, () => {}, async () => {});
+
+    const result = await wrappedHandler({}, mockContext, () => {
+      calledOriginalHandler = true;
+    });
+
+    expect(result).toEqual({ statusCode: 204, body: "The callback response" });
+    expect(calledOriginalHandler).toBeFalsy();
+  });
+
+  it("doesn't complete using non-promise return values", async () => {
+    const handler: Handler = (event, context, callback) => {
+      setTimeout(() => {
+        callback(null, { statusCode: 204, body: "The callback response" });
+      }, 10);
+      return ({ statusCode: 200, body: "The promise response" } as unknown) as void;
+    };
+
+    let calledOriginalHandler = false;
+
+    const wrappedHandler = wrap(handler, () => {}, async () => {});
+
+    const result = await wrappedHandler({}, mockContext, () => {
+      calledOriginalHandler = true;
+    });
+
+    expect(result).toEqual({ statusCode: 204, body: "The callback response" });
+    expect(calledOriginalHandler).toBeFalsy();
+  });
 });

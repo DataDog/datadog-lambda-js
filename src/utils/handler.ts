@@ -23,10 +23,8 @@ export function wrap<TEvent, TResult>(
       logError("Pre-lambda hook threw error", { innerError: error });
     }
     let result: TResult;
-    // Need to disable linter rule to explicitly assign the variable, otherwise TS
-    // won't reccognize that the var may be assigned in the catch block
-    // tslint:disable-next-line: no-unnecessary-initializer
-    let handlerError: Error | undefined = undefined;
+
+    let handlerError: Error | undefined;
 
     try {
       const wrappedHandler = onWrap !== undefined ? onWrap(promHandler) : promHandler;
@@ -69,9 +67,11 @@ export function promisifiedHandler<TEvent, TResult>(handler: Handler<TEvent, TRe
       };
     });
 
-    let promise = handler(event, context, modifiedCallback) as Promise<TResult> | undefined;
-    if (promise === undefined) {
-      promise = callbackProm;
+    const asyncProm = handler(event, context, modifiedCallback) as Promise<TResult> | undefined;
+    let promise: Promise<TResult> = callbackProm;
+    if (asyncProm !== undefined && typeof asyncProm.then === "function") {
+      // Mimics behaviour of lambda runtime, the first method of returning a result always wins.
+      promise = Promise.race([callbackProm, asyncProm]);
     }
     return promise;
   };
