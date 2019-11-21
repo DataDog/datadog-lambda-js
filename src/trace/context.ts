@@ -11,6 +11,7 @@ import {
   xraySubsegmentKey,
   xraySubsegmentName,
   xraySubsegmentNamespace,
+  Source,
 } from "./constants";
 
 export interface XRayTraceHeader {
@@ -23,6 +24,7 @@ export interface TraceContext {
   traceID: string;
   parentID: string;
   sampleMode: SampleMode;
+  source: Source;
 }
 
 export interface StepFunctionContext {
@@ -111,6 +113,7 @@ export function readTraceFromEvent(event: any): TraceContext | undefined {
     parentID,
     sampleMode,
     traceID,
+    source: Source.Event,
   };
 }
 
@@ -190,6 +193,7 @@ export function convertTraceContext(traceHeader: XRayTraceHeader): TraceContext 
     parentID,
     sampleMode,
     traceID,
+    source: Source.Xray,
   };
 }
 

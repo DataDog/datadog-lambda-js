@@ -6,6 +6,7 @@ import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
 
 import { didFunctionColdStart } from "../utils/cold-start";
+import { Source } from "./constants";
 
 export interface TraceConfig {
   /**
@@ -13,6 +14,11 @@ export interface TraceConfig {
    * @default true.
    */
   autoPatchHTTP: boolean;
+  /**
+   * Whether to merge traces produced from dd-trace with X-Ray
+   * @default false
+   */
+  mergeDatadogXrayTraces: boolean;
 }
 
 export class TraceListener {
@@ -23,7 +29,6 @@ export class TraceListener {
   public get currentTraceHeaders() {
     return this.contextService.currentTraceHeaders;
   }
-
   constructor(private config: TraceConfig, private handlerName: string) {}
 
   public onStartInvocation(event: any, context: Context) {
@@ -42,8 +47,13 @@ export class TraceListener {
   }
 
   public onWrap<T = (...args: any[]) => any>(func: T): T {
-    const rootTraceContext = this.contextService.currentTraceHeaders;
-    const spanContext: SpanContext | null = Tracer.extract("http_headers", rootTraceContext);
+    const rootTraceContext = this.currentTraceHeaders;
+    let spanContext: SpanContext | null = null;
+
+    if (this.contextService.traceSource === Source.Event || this.config.mergeDatadogXrayTraces) {
+      spanContext = Tracer.extract("http_headers", rootTraceContext);
+    }
+
     const options: SpanOptions & TraceOptions = {};
     if (this.context) {
       options.tags = {
@@ -52,18 +62,18 @@ export class TraceListener {
         request_id: this.context.awsRequestId,
         resource_names: this.context.functionName,
       };
-      if (this.stepFunctionContext) {
-        options.tags = {
-          ...options.tags,
-          ...this.stepFunctionContext,
-        };
-      }
+    }
+    if (this.stepFunctionContext) {
+      options.tags = {
+        ...options.tags,
+        ...this.stepFunctionContext,
+      };
     }
 
     if (spanContext !== null) {
       options.childOf = spanContext;
     }
-
-    return Tracer.wrap(this.handlerName, options, func);
+    options.resource = this.handlerName;
+    return Tracer.wrap("aws.lambda", options, func);
   }
 }

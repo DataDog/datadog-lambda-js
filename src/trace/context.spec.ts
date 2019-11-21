@@ -1,5 +1,5 @@
 import { LogLevel, setLogLevel } from "../utils";
-import { SampleMode, xrayBaggageSubsegmentKey, xraySubsegmentNamespace } from "./constants";
+import { SampleMode, xrayBaggageSubsegmentKey, xraySubsegmentNamespace, Source } from "./constants";
 import {
   convertToAPMParentID,
   convertToAPMTraceID,
@@ -105,6 +105,7 @@ describe("convertTraceContext", () => {
       parentID: "797643193680388254",
       sampleMode: SampleMode.USER_KEEP,
       traceID: "4110911582297405557",
+      source: Source.Xray,
     });
   });
   it("returns undefined if traceID is invalid", () => {
@@ -137,9 +138,10 @@ describe("readTraceContextFromXray", () => {
       parentID: "797643193680388254",
       sampleMode: SampleMode.USER_KEEP,
       traceID: "4110911582297405557",
+      source: Source.Xray,
     });
   });
-  it("will parse a trace context from the xray, with sampling turned off", () => {
+  it("will ignore a trace context from the xray, when sampling is turned off", () => {
     currentSegment = {
       id: "0b11cc4230d3e09e",
       notTraced: true,
@@ -151,6 +153,7 @@ describe("readTraceContextFromXray", () => {
       parentID: "797643193680388254",
       sampleMode: SampleMode.USER_REJECT,
       traceID: "4110911582297405557",
+      source: Source.Xray,
     });
   });
   it("returns undefined when trace header isn't in environment", () => {
@@ -172,6 +175,7 @@ describe("readTraceFromEvent", () => {
       parentID: "797643193680388254",
       sampleMode: SampleMode.USER_KEEP,
       traceID: "4110911582297405557",
+      source: Source.Event,
     });
   });
   it("can read well formed headers with mixed casing", () => {
@@ -186,6 +190,7 @@ describe("readTraceFromEvent", () => {
       parentID: "797643193680388254",
       sampleMode: SampleMode.USER_KEEP,
       traceID: "4110911582297405557",
+      source: Source.Event,
     });
   });
   it("returns undefined when missing trace id", () => {
@@ -373,6 +378,7 @@ describe("extractTraceContext", () => {
       parentID: "797643193680388251",
       sampleMode: SampleMode.USER_KEEP,
       traceID: "4110911582297405551",
+      source: Source.Event,
     });
   });
   it("returns trace read from env if no headers present", () => {
@@ -386,6 +392,7 @@ describe("extractTraceContext", () => {
       parentID: "797643193680388254",
       sampleMode: SampleMode.USER_KEEP,
       traceID: "4110911582297405557",
+      source: "xray",
     });
   });
   it("returns trace read from env if no headers present", () => {
@@ -399,6 +406,7 @@ describe("extractTraceContext", () => {
       parentID: "797643193680388254",
       sampleMode: SampleMode.USER_KEEP,
       traceID: "4110911582297405557",
+      source: "xray",
     });
   });
 

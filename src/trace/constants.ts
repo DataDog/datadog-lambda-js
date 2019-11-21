@@ -4,6 +4,10 @@ export enum SampleMode {
   AUTO_KEEP = 1,
   USER_KEEP = 2,
 }
+export enum Source {
+  Xray = "xray",
+  Event = "event",
+}
 
 export const traceIDHeader = "x-datadog-trace-id";
 export const parentIDHeader = "x-datadog-parent-id";

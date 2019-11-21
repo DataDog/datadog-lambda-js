@@ -43,6 +43,7 @@ export const defaultConfig: Config = {
   logForwarding: false,
   shouldRetryMetrics: false,
   siteURL: "",
+  mergeDatadogXrayTraces: false,
 } as const;
 
 let currentMetricsListener: MetricsListener | undefined;
