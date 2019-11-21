@@ -7,6 +7,7 @@ import { TraceContextService } from "./trace-context-service";
 
 import { didFunctionColdStart } from "../utils/cold-start";
 import { Source } from "./constants";
+import { isTracerInitialised } from "./dd-trace-utils";
 
 export interface TraceConfig {
   /**
@@ -32,7 +33,7 @@ export class TraceListener {
   constructor(private config: TraceConfig, private handlerName: string) {}
 
   public onStartInvocation(event: any, context: Context) {
-    if (this.config.autoPatchHTTP) {
+    if (this.config.autoPatchHTTP && !isTracerInitialised()) {
       patchHttp(this.contextService);
     }
     this.context = context;
