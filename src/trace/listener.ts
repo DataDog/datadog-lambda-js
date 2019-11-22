@@ -86,7 +86,6 @@ export class TraceListener {
     }
 
     if (spanContext !== null) {
-      logDebug("Parenting datadog trace", { traceId: spanContext.toTraceId(), spanId: spanContext.toSpanId() });
       options.childOf = spanContext;
     }
     options.resource = this.handlerName;
