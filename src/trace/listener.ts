@@ -5,7 +5,10 @@ import { extractTraceContext, readStepFunctionContextFromEvent, StepFunctionCont
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
 
+import { logDebug } from "../utils";
 import { didFunctionColdStart } from "../utils/cold-start";
+import { Source } from "./constants";
+import { isTracerInitialized } from "./dd-trace-utils";
 
 export interface TraceConfig {
   /**
@@ -13,6 +16,11 @@ export interface TraceConfig {
    * @default true.
    */
   autoPatchHTTP: boolean;
+  /**
+   * Whether to merge traces produced from dd-trace with X-Ray
+   * @default false
+   */
+  mergeDatadogXrayTraces: boolean;
 }
 
 export class TraceListener {
@@ -23,12 +31,15 @@ export class TraceListener {
   public get currentTraceHeaders() {
     return this.contextService.currentTraceHeaders;
   }
-
   constructor(private config: TraceConfig, private handlerName: string) {}
 
   public onStartInvocation(event: any, context: Context) {
-    if (this.config.autoPatchHTTP) {
+    const tracerInitialized = isTracerInitialized();
+    if (this.config.autoPatchHTTP && !tracerInitialized) {
+      logDebug("Patching HTTP libraries");
       patchHttp(this.contextService);
+    } else {
+      logDebug("Not patching HTTP libraries", { autoPatchHTTP: this.config.autoPatchHTTP, tracerInitialized });
     }
     this.context = context;
     this.contextService.rootTraceContext = extractTraceContext(event);
@@ -37,33 +48,47 @@ export class TraceListener {
 
   public async onCompleteInvocation() {
     if (this.config.autoPatchHTTP) {
+      logDebug("Unpatching HTTP libraries");
       unpatchHttp();
     }
   }
 
   public onWrap<T = (...args: any[]) => any>(func: T): T {
-    const rootTraceContext = this.contextService.currentTraceHeaders;
-    const spanContext: SpanContext | null = Tracer.extract("http_headers", rootTraceContext);
+    const rootTraceContext = this.currentTraceHeaders;
+    let spanContext: SpanContext | null = null;
+
+    if (this.contextService.traceSource === Source.Event || this.config.mergeDatadogXrayTraces) {
+      spanContext = Tracer.extract("http_headers", rootTraceContext);
+      logDebug("Attempting to find parent for datadog trace trace");
+    } else {
+      logDebug("Didn't attempt to find parent for datadog trace", {
+        mergeDatadogXrayTraces: this.config.mergeDatadogXrayTraces,
+        traceSource: this.contextService.traceSource,
+      });
+    }
+
     const options: SpanOptions & TraceOptions = {};
     if (this.context) {
+      logDebug("Applying lambda context to datadog traces");
       options.tags = {
         cold_start: didFunctionColdStart(),
         function_arn: this.context.invokedFunctionArn,
         request_id: this.context.awsRequestId,
         resource_names: this.context.functionName,
       };
-      if (this.stepFunctionContext) {
-        options.tags = {
-          ...options.tags,
-          ...this.stepFunctionContext,
-        };
-      }
+    }
+    if (this.stepFunctionContext) {
+      logDebug("Applying step function context to datadog traces");
+      options.tags = {
+        ...options.tags,
+        ...this.stepFunctionContext,
+      };
     }
 
     if (spanContext !== null) {
       options.childOf = spanContext;
     }
-
-    return Tracer.wrap(this.handlerName, options, func);
+    options.resource = this.handlerName;
+    return Tracer.wrap("aws.lambda", options, func);
   }
 }

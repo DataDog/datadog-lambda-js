@@ -41,6 +41,7 @@ export const defaultConfig: Config = {
   debugLogging: false,
   enhancedMetrics: false,
   logForwarding: false,
+  mergeDatadogXrayTraces: false,
   shouldRetryMetrics: false,
   siteURL: "",
 } as const;
