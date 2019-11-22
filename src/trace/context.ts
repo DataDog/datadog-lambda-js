@@ -6,12 +6,12 @@ import {
   parentIDHeader,
   SampleMode,
   samplingPriorityHeader,
+  Source,
   traceIDHeader,
   xrayBaggageSubsegmentKey,
   xraySubsegmentKey,
   xraySubsegmentName,
   xraySubsegmentNamespace,
-  Source,
 } from "./constants";
 
 export interface XRayTraceHeader {
@@ -112,8 +112,8 @@ export function readTraceFromEvent(event: any): TraceContext | undefined {
   return {
     parentID,
     sampleMode,
-    traceID,
     source: Source.Event,
+    traceID,
   };
 }
 
@@ -192,8 +192,8 @@ export function convertTraceContext(traceHeader: XRayTraceHeader): TraceContext 
   return {
     parentID,
     sampleMode,
-    traceID,
     source: Source.Xray,
+    traceID,
   };
 }
 

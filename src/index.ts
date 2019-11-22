@@ -41,9 +41,9 @@ export const defaultConfig: Config = {
   debugLogging: false,
   enhancedMetrics: false,
   logForwarding: false,
+  mergeDatadogXrayTraces: false,
   shouldRetryMetrics: false,
   siteURL: "",
-  mergeDatadogXrayTraces: false,
 } as const;
 
 let currentMetricsListener: MetricsListener | undefined;

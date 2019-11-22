@@ -5,10 +5,10 @@ import { extractTraceContext, readStepFunctionContextFromEvent, StepFunctionCont
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
 
+import { logDebug } from "../utils";
 import { didFunctionColdStart } from "../utils/cold-start";
 import { Source } from "./constants";
 import { isTracerInitialized } from "./dd-trace-utils";
-import { logDebug } from "utils";
 
 export interface TraceConfig {
   /**
@@ -62,8 +62,8 @@ export class TraceListener {
       logDebug("Attempting to find parent for datadog trace trace");
     } else {
       logDebug("Didn't attempt to find parent for datadog trace", {
-        traceSource: this.contextService.traceSource,
         mergeDatadogXrayTraces: this.config.mergeDatadogXrayTraces,
+        traceSource: this.contextService.traceSource,
       });
     }
 
