@@ -1,8 +1,8 @@
-describe("isTracerInitialised", () => {
-  let isTracerInitialised: () => boolean;
+describe("isTracerInitialized", () => {
+  let isTracerInitialized: () => boolean;
   let tracer: any;
   beforeEach(() => {
-    isTracerInitialised = require("./dd-trace-utils").isTracerInitialised;
+    isTracerInitialized = require("./dd-trace-utils").isTracerInitialized;
     tracer = require("dd-trace");
     process.env["AWS_LAMBDA_FUNCTION_NAME"] = "my-lambda";
   });
@@ -12,9 +12,9 @@ describe("isTracerInitialised", () => {
   });
   it("should return true when tracer has been initialised", () => {
     tracer.init();
-    expect(isTracerInitialised()).toBeTruthy();
+    expect(isTracerInitialized()).toBeTruthy();
   });
   it("should return false when tracer hasn't been initialised", () => {
-    expect(isTracerInitialised()).toBeFalsy();
+    expect(isTracerInitialized()).toBeFalsy();
   });
 });

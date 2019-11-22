@@ -7,7 +7,8 @@ import { TraceContextService } from "./trace-context-service";
 
 import { didFunctionColdStart } from "../utils/cold-start";
 import { Source } from "./constants";
-import { isTracerInitialised } from "./dd-trace-utils";
+import { isTracerInitialized } from "./dd-trace-utils";
+import { logDebug } from "utils";
 
 export interface TraceConfig {
   /**
@@ -33,8 +34,12 @@ export class TraceListener {
   constructor(private config: TraceConfig, private handlerName: string) {}
 
   public onStartInvocation(event: any, context: Context) {
-    if (this.config.autoPatchHTTP && !isTracerInitialised()) {
+    const tracerInitialized = isTracerInitialized();
+    if (this.config.autoPatchHTTP && !tracerInitialized) {
+      logDebug("Patching HTTP libraries");
       patchHttp(this.contextService);
+    } else {
+      logDebug("Not patching HTTP libraries", { autoPatchHTTP: this.config.autoPatchHTTP, tracerInitialized });
     }
     this.context = context;
     this.contextService.rootTraceContext = extractTraceContext(event);
@@ -43,6 +48,7 @@ export class TraceListener {
 
   public async onCompleteInvocation() {
     if (this.config.autoPatchHTTP) {
+      logDebug("Unpatching HTTP libraries");
       unpatchHttp();
     }
   }
@@ -53,10 +59,17 @@ export class TraceListener {
 
     if (this.contextService.traceSource === Source.Event || this.config.mergeDatadogXrayTraces) {
       spanContext = Tracer.extract("http_headers", rootTraceContext);
+      logDebug("Attempting to find parent for datadog trace trace");
+    } else {
+      logDebug("Didn't attempt to find parent for datadog trace", {
+        traceSource: this.contextService.traceSource,
+        mergeDatadogXrayTraces: this.config.mergeDatadogXrayTraces,
+      });
     }
 
     const options: SpanOptions & TraceOptions = {};
     if (this.context) {
+      logDebug("Applying lambda context to datadog traces");
       options.tags = {
         cold_start: didFunctionColdStart(),
         function_arn: this.context.invokedFunctionArn,
@@ -65,6 +78,7 @@ export class TraceListener {
       };
     }
     if (this.stepFunctionContext) {
+      logDebug("Applying step function context to datadog traces");
       options.tags = {
         ...options.tags,
         ...this.stepFunctionContext,
@@ -72,6 +86,7 @@ export class TraceListener {
     }
 
     if (spanContext !== null) {
+      logDebug("Parenting datadog trace", { traceId: spanContext.toTraceId(), spanId: spanContext.toSpanId() });
       options.childOf = spanContext;
     }
     options.resource = this.handlerName;
