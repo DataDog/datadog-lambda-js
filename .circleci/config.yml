@@ -42,3 +42,8 @@ workflows:
       - verify_build:
           node: "10.15"
           upload_coverage: "true"
+  node-v1213:
+    jobs:
+      - verify_build:
+          node: "12.13"
+          upload_coverage: "true"
