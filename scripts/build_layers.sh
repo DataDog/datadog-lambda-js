@@ -10,7 +10,7 @@ set -e
 
 LAYER_DIR=".layers"
 LAYER_FILES_PREFIX="datadog_lambda_node"
-NODE_VERSIONS=("8.10" "10.15")
+NODE_VERSIONS=("8.10" "10.15" "12.13")
 
 function make_path_absolute {
     echo "$(cd "$(dirname "$1")"; pwd)/$(basename "$1")"
