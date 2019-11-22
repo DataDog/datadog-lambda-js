@@ -48,4 +48,8 @@ export class TraceContextService {
       [samplingPriorityHeader]: this.currentTraceContext.sampleMode.toString(10),
     };
   }
+
+  get traceSource() {
+    return this.rootTraceContext !== undefined ? this.rootTraceContext.source : undefined;
+  }
 }

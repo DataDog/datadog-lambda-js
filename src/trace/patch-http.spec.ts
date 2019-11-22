@@ -4,7 +4,7 @@ import nock from "nock";
 import { parse } from "url";
 
 import { LogLevel, setLogLevel } from "../utils";
-import { parentIDHeader, SampleMode, samplingPriorityHeader, traceIDHeader } from "./constants";
+import { parentIDHeader, SampleMode, samplingPriorityHeader, traceIDHeader, Source } from "./constants";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
 
@@ -23,6 +23,7 @@ describe("patchHttp", () => {
     contextService.rootTraceContext = {
       parentID: "78910",
       sampleMode: SampleMode.USER_KEEP,
+      source: Source.Event,
       traceID: "123456",
     };
     setLogLevel(LogLevel.NONE);
