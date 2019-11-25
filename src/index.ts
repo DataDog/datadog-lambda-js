@@ -8,8 +8,7 @@ import {
   MetricsListener,
 } from "./metrics";
 import { TraceConfig, TraceHeaders, TraceListener } from "./trace";
-import { logError, LogLevel, setLogLevel, wrap } from "./utils";
-import { setColdStart } from "utils/cold-start";
+import { logError, LogLevel, setColdStart, setLogLevel, wrap } from "./utils";
 
 export { TraceHeaders } from "./trace";
 
