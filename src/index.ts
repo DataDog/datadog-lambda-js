@@ -9,6 +9,7 @@ import {
 } from "./metrics";
 import { TraceConfig, TraceHeaders, TraceListener } from "./trace";
 import { logError, LogLevel, setLogLevel, wrap } from "./utils";
+import { setColdStart } from "utils/cold-start";
 
 export { TraceHeaders } from "./trace";
 
@@ -74,6 +75,7 @@ export function datadog<TEvent, TResult>(
   return wrap(
     handler,
     (event, context) => {
+      setColdStart();
       setLogLevel(finalConfig.debugLogging ? LogLevel.DEBUG : LogLevel.ERROR);
       currentMetricsListener = metricsListener;
       currentTraceListener = traceListener;
