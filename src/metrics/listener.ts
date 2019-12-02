@@ -127,7 +127,7 @@ export class MetricsListener {
       } catch (error) {
         logError("couldn't decrypt kms api key", { innerError: error });
       }
-    } else if (!config.logForwarding) {
+    } else {
       const errorMessage = "api key not configured, see https://dtdg.co/sls-node-metrics";
       if (config.logForwarding) {
         logDebug(errorMessage);
