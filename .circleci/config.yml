@@ -2,6 +2,8 @@ version: 2.1
 
 jobs:
   verify_build:
+    environment:
+      NODE_OPTIONS: --max_old_space_size=4096
     working_directory: ~/repo
     docker:
       - image: circleci/node:<< parameters.node >>
