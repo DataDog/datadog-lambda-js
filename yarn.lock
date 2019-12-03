@@ -1041,10 +1041,10 @@ date-fns@^1.29.0:
   resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-1.30.1.tgz#2e71bf0b119153dbb4cc4e88d9ea5acfb50dc05c"
   integrity sha512-hBSVCvSmWC+QypYObzwGOd9wqdDpOt+0wl0KbU+R+uuZBS1jN8VsD1ss3irQDknRj5NvxiTF6oj/nDRnN/UQNw==
 
-dd-trace@0.17.0-beta.3:
-  version "0.17.0-beta.3"
-  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-0.17.0-beta.3.tgz#47ac808696868c9d049eeaaa0fb337fde34f0366"
-  integrity sha512-nWWEdR32bHN8lzGy88mRTsGGSif5vQIhXn1Tb9pokszHXFPCrfmpjemcBDbUhIMbWX04K5Py7Xp27C+UPlhoCA==
+dd-trace@^0.17.0-beta.1:
+  version "0.17.0-beta.11"
+  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-0.17.0-beta.11.tgz#9e625546f854dd3fe329a293cafe3ca23f13227d"
+  integrity sha512-Px+8s2szPwW9DDVrbmhs2cJb+/Mti4FvAlIJUwwl6kTf107X6T//nQLU+qv9aqinDdM2AR+J3IZjSEfVhwWjrw==
   dependencies:
     "@types/node" "^10.12.18"
     bowser "^2.5.3"
