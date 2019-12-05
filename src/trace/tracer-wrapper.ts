@@ -1,6 +1,5 @@
+import { logDebug } from "../utils";
 import { TraceHeaders } from "./trace-context-service";
-import { logDebug, logError } from "../utils";
-import { dirname } from "path";
 
 export interface SpanContext {
   toTraceId(): string;
