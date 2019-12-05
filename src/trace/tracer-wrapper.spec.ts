@@ -29,7 +29,6 @@ describe("TracerWrapper", () => {
     delete process.env["AWS_LAMBDA_FUNCTION_NAME"];
   });
   it("isTracerAvailable should return true when dd-trace is present and initialised", () => {
-    mockNoTracer = false;
     const wrapper = new TracerWrapper();
     expect(wrapper.isTracerAvailable).toBeTruthy();
   });
