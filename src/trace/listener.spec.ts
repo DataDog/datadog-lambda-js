@@ -44,7 +44,7 @@ jest.mock("./trace-context-service", () => {
 });
 
 describe("TraceListener", () => {
-  const defaultConfig = { autoPatchHTTP: true, mergeDatadogXrayTraces: false };
+  const defaultConfig = { autoPatchHTTP: true, mergeDatadogXrayTraces: false, injectLogContext: false };
   const context = {
     invokedFunctionArn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
     awsRequestId: "1234",

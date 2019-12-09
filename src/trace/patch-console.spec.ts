@@ -1,5 +1,5 @@
-import { SampleMode, Source } from "../trace/constants";
-import { TraceContextService } from "../trace/trace-context-service";
+import { SampleMode, Source } from "./constants";
+import { TraceContextService } from "./trace-context-service";
 import { patchConsole, unpatchConsole } from "./patch-console";
 
 describe("patchConsole", () => {

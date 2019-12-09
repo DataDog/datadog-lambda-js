@@ -1,6 +1,6 @@
 import * as shimmer from "shimmer";
 
-import { TraceContextService } from "../trace/trace-context-service";
+import { TraceContextService } from "./trace-context-service";
 import { getLogLevel, setLogLevel, LogLevel } from "../utils/log";
 
 type LogMethod = "log" | "info" | "debug" | "error" | "warn" | "trace";
@@ -31,6 +31,10 @@ export function unpatchConsole(cnsle: Console) {
 }
 
 function patchMethod(mod: Console, method: LogMethod, contextService: TraceContextService) {
+  if (mod[method].__wrapped !== undefined) {
+    return; // Only patch once
+  }
+
   shimmer.wrap(mod, method, (original) => {
     return function emitWithContext(this: any, message?: any, ...optionalParams: any[]) {
       // Disable internal logging during this call, so we don't generate an infinite loop.

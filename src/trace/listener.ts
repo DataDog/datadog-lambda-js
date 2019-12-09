@@ -8,6 +8,7 @@ import { logDebug } from "../utils";
 import { didFunctionColdStart } from "../utils/cold-start";
 import { Source } from "./constants";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
+import { patchConsole } from "./patch-console";
 
 export interface TraceConfig {
   /**
@@ -15,6 +16,10 @@ export interface TraceConfig {
    * @default true.
    */
   autoPatchHTTP: boolean;
+  /**
+   * Whether to automatically patch console.log with Datadog's tracing ids.
+   */
+  injectLogContext: boolean;
   /**
    * Whether to merge traces produced from dd-trace with X-Ray
    * @default false
@@ -38,12 +43,20 @@ export class TraceListener {
 
   public onStartInvocation(event: any, context: Context) {
     const tracerInitialized = this.tracerWrapper.isTracerAvailable;
+    if (this.config.injectLogContext) {
+      patchConsole(console, this.contextService);
+      logDebug("Patched console output with trace context");
+    } else {
+      logDebug("Didn't patch console output with trace context");
+    }
+
     if (this.config.autoPatchHTTP && !tracerInitialized) {
       logDebug("Patching HTTP libraries");
       patchHttp(this.contextService);
     } else {
       logDebug("Not patching HTTP libraries", { autoPatchHTTP: this.config.autoPatchHTTP, tracerInitialized });
     }
+
     this.context = context;
     this.contextService.rootTraceContext = extractTraceContext(event);
     this.stepFunctionContext = readStepFunctionContextFromEvent(event);
