@@ -6,12 +6,26 @@ let mockExtract: jest.Mock<any, any>;
 let mockTraceHeaders: Record<string, string> | undefined = undefined;
 let mockTraceSource: Source | undefined = undefined;
 
-jest.mock("dd-trace", () => {
+jest.mock("./tracer-wrapper", () => {
   mockWrap = jest.fn().mockImplementation((name, options, func) => func);
-  mockExtract = jest.fn().mockImplementation((_, val) => val);
+  mockExtract = jest.fn().mockImplementation((val) => val);
+  class MockTraceWrapper {
+    get isTraceAvailable() {
+      return true;
+    }
+
+    constructor() {}
+
+    wrap(name: any, options: any, fn: any): any {
+      return mockWrap(name, options, fn);
+    }
+
+    extract(event: any): any {
+      return mockExtract(event);
+    }
+  }
   return {
-    wrap: mockWrap,
-    extract: mockExtract,
+    TracerWrapper: MockTraceWrapper,
   };
 });
 

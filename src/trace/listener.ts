@@ -1,5 +1,4 @@
 import { Context } from "aws-lambda";
-import Tracer, { SpanContext, SpanOptions, TraceOptions } from "dd-trace";
 
 import { extractTraceContext, readStepFunctionContextFromEvent, StepFunctionContext } from "./context";
 import { patchHttp, unpatchHttp } from "./patch-http";
@@ -8,7 +7,7 @@ import { TraceContextService } from "./trace-context-service";
 import { logDebug } from "../utils";
 import { didFunctionColdStart } from "../utils/cold-start";
 import { Source } from "./constants";
-import { isTracerInitialized } from "./dd-trace-utils";
+import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 
 export interface TraceConfig {
   /**
@@ -27,6 +26,7 @@ export class TraceListener {
   private contextService = new TraceContextService();
   private context?: Context;
   private stepFunctionContext?: StepFunctionContext;
+  private tracerWrapper = new TracerWrapper();
 
   public get currentTraceHeaders() {
     return this.contextService.currentTraceHeaders;
@@ -34,7 +34,7 @@ export class TraceListener {
   constructor(private config: TraceConfig, private handlerName: string) {}
 
   public onStartInvocation(event: any, context: Context) {
-    const tracerInitialized = isTracerInitialized();
+    const tracerInitialized = this.tracerWrapper.isTracerAvailable;
     if (this.config.autoPatchHTTP && !tracerInitialized) {
       logDebug("Patching HTTP libraries");
       patchHttp(this.contextService);
@@ -58,7 +58,7 @@ export class TraceListener {
     let spanContext: SpanContext | null = null;
 
     if (this.contextService.traceSource === Source.Event || this.config.mergeDatadogXrayTraces) {
-      spanContext = Tracer.extract("http_headers", rootTraceContext);
+      spanContext = this.tracerWrapper.extract(rootTraceContext);
       logDebug("Attempting to find parent for datadog trace trace");
     } else {
       logDebug("Didn't attempt to find parent for datadog trace", {
@@ -67,7 +67,7 @@ export class TraceListener {
       });
     }
 
-    const options: SpanOptions & TraceOptions = {};
+    const options: TraceOptions = {};
     if (this.context) {
       logDebug("Applying lambda context to datadog traces");
       options.tags = {
@@ -89,6 +89,6 @@ export class TraceListener {
       options.childOf = spanContext;
     }
     options.resource = this.handlerName;
-    return Tracer.wrap("aws.lambda", options, func);
+    return this.tracerWrapper.wrap("aws.lambda", options, func);
   }
 }
