@@ -1,5 +1,7 @@
 import { logDebug } from "../utils";
 import { TraceHeaders } from "./trace-context-service";
+import { TraceContext } from "./context";
+import { SampleMode, Source } from "./constants";
 
 export interface SpanContext {
   toTraceId(): string;
@@ -46,7 +48,26 @@ export class TracerWrapper {
   public wrap<T = (...args: any[]) => any>(name: string, options: TraceOptions, fn: T) {
     if (!this.isTracerAvailable) {
       return fn;
-    }
+    } 
     return this.tracer.wrap(name, options, fn);
+  }
+
+  public traceContext(): TraceContext | undefined {
+    if (!this.isTracerAvailable) {
+      return;
+    }
+    const scope = this.tracer.scope();
+    const span = scope.active();
+    if (span === null) {
+      return;
+    }
+    const parentID = span.context().toSpanId();
+    const traceID = span.context().toTraceId();
+    return {
+      parentID,
+      traceID,
+      sampleMode: SampleMode.AUTO_KEEP,
+      source: Source.Event
+    };
   }
 }

@@ -9,6 +9,14 @@ import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
 
 describe("patchHttp", () => {
+
+  let traceWrapper = {
+    isTracerAvailable: false,
+    extract: () => null,
+    wrap: (fn: any) => fn,
+    traceContext: () => undefined
+  };
+
   let contextService: TraceContextService;
 
   function expectHeaders(request: http.ClientRequest) {
@@ -19,7 +27,7 @@ describe("patchHttp", () => {
   }
 
   beforeEach(() => {
-    contextService = new TraceContextService();
+    contextService = new TraceContextService(traceWrapper as any);
     contextService.rootTraceContext = {
       parentID: "78910",
       sampleMode: SampleMode.USER_KEEP,

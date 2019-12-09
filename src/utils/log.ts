@@ -10,6 +10,10 @@ export function setLogLevel(level: LogLevel) {
   logLevel = level;
 }
 
+export function getLogLevel(): LogLevel {
+  return logLevel;
+}
+
 export function logDebug(message: string, metadata?: object) {
   if (logLevel > LogLevel.DEBUG) {
     return;

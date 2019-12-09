@@ -23,15 +23,18 @@ export interface TraceConfig {
 }
 
 export class TraceListener {
-  private contextService = new TraceContextService();
+  private contextService: TraceContextService;
   private context?: Context;
   private stepFunctionContext?: StepFunctionContext;
-  private tracerWrapper = new TracerWrapper();
+  private tracerWrapper: TracerWrapper;
 
   public get currentTraceHeaders() {
     return this.contextService.currentTraceHeaders;
   }
-  constructor(private config: TraceConfig, private handlerName: string) {}
+  constructor(private config: TraceConfig, private handlerName: string) {
+    this.tracerWrapper = new TracerWrapper();
+    this.contextService = new TraceContextService(this.tracerWrapper);
+  }
 
   public onStartInvocation(event: any, context: Context) {
     const tracerInitialized = this.tracerWrapper.isTracerAvailable;
