@@ -17,7 +17,7 @@ const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
 const siteURLEnvVar = "DD_SITE";
 const logLevelEnvVar = "DD_LOG_LEVEL";
 const logForwardingEnvVar = "DD_FLUSH_TO_LOG";
-const logInjectionEnvVar = "DD_INJECT_LOG_CONTEXT";
+const logInjectionEnvVar = "DD_LOGS_INJECTION";
 const enhancedMetricsEnvVar = "DD_ENHANCED_METRICS";
 
 const defaultSiteURL = "datadoghq.com";
@@ -154,7 +154,7 @@ function getConfig(userConfig?: Partial<Config>): Config {
 
   if (userConfig === undefined || userConfig.injectLogContext === undefined) {
     const result = getEnvValue(logInjectionEnvVar, "false").toLowerCase();
-    config.injectLogContext = result === "false";
+    config.injectLogContext = result === "true";
   }
 
   if (userConfig === undefined || userConfig.debugLogging === undefined) {
