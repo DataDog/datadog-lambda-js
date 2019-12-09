@@ -7,8 +7,8 @@ import { TraceContextService } from "./trace-context-service";
 import { logDebug } from "../utils";
 import { didFunctionColdStart } from "../utils/cold-start";
 import { Source } from "./constants";
-import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 import { patchConsole } from "./patch-console";
+import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 
 export interface TraceConfig {
   /**

@@ -1,7 +1,7 @@
 import * as shimmer from "shimmer";
 
+import { getLogLevel, LogLevel, setLogLevel } from "../utils/log";
 import { TraceContextService } from "./trace-context-service";
-import { getLogLevel, setLogLevel, LogLevel } from "../utils/log";
 
 type LogMethod = "log" | "info" | "debug" | "error" | "warn" | "trace";
 
