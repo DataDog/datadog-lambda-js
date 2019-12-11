@@ -7,6 +7,7 @@ import { TraceContextService } from "./trace-context-service";
 import { logDebug } from "../utils";
 import { didFunctionColdStart } from "../utils/cold-start";
 import { Source } from "./constants";
+import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 
 export interface TraceConfig {
@@ -16,6 +17,10 @@ export interface TraceConfig {
    */
   autoPatchHTTP: boolean;
   /**
+   * Whether to automatically patch console.log with Datadog's tracing ids.
+   */
+  injectLogContext: boolean;
+  /**
    * Whether to merge traces produced from dd-trace with X-Ray
    * @default false
    */
@@ -23,24 +28,35 @@ export interface TraceConfig {
 }
 
 export class TraceListener {
-  private contextService = new TraceContextService();
+  private contextService: TraceContextService;
   private context?: Context;
   private stepFunctionContext?: StepFunctionContext;
-  private tracerWrapper = new TracerWrapper();
+  private tracerWrapper: TracerWrapper;
 
   public get currentTraceHeaders() {
     return this.contextService.currentTraceHeaders;
   }
-  constructor(private config: TraceConfig, private handlerName: string) {}
+  constructor(private config: TraceConfig, private handlerName: string) {
+    this.tracerWrapper = new TracerWrapper();
+    this.contextService = new TraceContextService(this.tracerWrapper);
+  }
 
   public onStartInvocation(event: any, context: Context) {
     const tracerInitialized = this.tracerWrapper.isTracerAvailable;
+    if (this.config.injectLogContext) {
+      patchConsole(console, this.contextService);
+      logDebug("Patched console output with trace context");
+    } else {
+      logDebug("Didn't patch console output with trace context");
+    }
+
     if (this.config.autoPatchHTTP && !tracerInitialized) {
       logDebug("Patching HTTP libraries");
       patchHttp(this.contextService);
     } else {
       logDebug("Not patching HTTP libraries", { autoPatchHTTP: this.config.autoPatchHTTP, tracerInitialized });
     }
+
     this.context = context;
     this.contextService.rootTraceContext = extractTraceContext(event);
     this.stepFunctionContext = readStepFunctionContextFromEvent(event);

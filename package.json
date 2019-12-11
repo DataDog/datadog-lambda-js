@@ -47,7 +47,7 @@
     "transform": {
       ".(ts|tsx)": "ts-jest"
     },
-    "collectCoverage": false,
+    "collectCoverage": true,
     "coverageReporters": [
       "lcovonly",
       "text-summary"

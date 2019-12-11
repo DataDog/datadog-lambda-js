@@ -1,7 +1,9 @@
 import { TracerWrapper } from "./tracer-wrapper";
+import { Source, SampleMode } from "./constants";
 
 let mockNoTracer = false;
 let mockTracerInitialised = false;
+let mockSpan: any = null;
 const mockSpanContext = {
   toTraceId: () => "1234",
   toSpanId: () => "45678",
@@ -14,6 +16,9 @@ jest.mock("dd-trace", () => {
       _tracer: mockTracerInitialised ? { _service: {} } : {},
       extract: () => mockSpanContext,
       wrap: (name: any, options: any, fn: any) => fn,
+      scope: () => ({
+        active: () => mockSpan 
+      })
     };
   }
 });
@@ -23,6 +28,7 @@ describe("TracerWrapper", () => {
     process.env["AWS_LAMBDA_FUNCTION_NAME"] = "my-lambda";
     mockNoTracer = false;
     mockTracerInitialised = true;
+    mockSpan = null;
   });
   afterEach(() => {
     jest.resetModules();
@@ -51,5 +57,30 @@ describe("TracerWrapper", () => {
     mockNoTracer = true;
     const wrapper = new TracerWrapper();
     expect(wrapper.extract({})).toBeNull();
+  });
+
+  it("should find the current span context", () => {
+    const spanID = "1234";
+    const traceID = "45678";
+
+    mockSpan = {
+      context: () => ({
+        toSpanId: () => spanID,
+        toTraceId: () => traceID
+      })
+    };
+    const wrapper = new TracerWrapper();
+    const traceContext = wrapper.traceContext();
+    expect(traceContext).toEqual({
+      parentID: spanID,
+      traceID: traceID,
+      source: Source.Event,
+      sampleMode: SampleMode.AUTO_KEEP
+    });
+  });
+  it("should return undefined when no span is available", () => {
+    const wrapper = new TracerWrapper();
+    const traceContext = wrapper.traceContext();
+    expect(traceContext).toBeUndefined();
   });
 });

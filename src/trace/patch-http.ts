@@ -3,7 +3,6 @@ import https from "https";
 import * as shimmer from "shimmer";
 import { parse, URL } from "url";
 
-import { parentIDHeader, samplingPriorityHeader, traceIDHeader } from "./constants";
 import { TraceContextService } from "./trace-context-service";
 
 type RequestCallback = (res: http.IncomingMessage) => void;

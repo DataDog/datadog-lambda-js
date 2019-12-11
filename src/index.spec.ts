@@ -182,6 +182,49 @@ describe("datadog", () => {
     });
   });
 
+  it("injects context into console.log messages", async () => {
+    const event = {
+      headers: {
+        "x-datadog-parent-id": "9101112",
+        "x-datadog-sampling-priority": "2",
+        "x-datadog-trace-id": "123456",
+      },
+    };
+    const spy = jest.spyOn(console, "log");
+
+    const wrapped = datadog(
+      async () => {
+        console.log("Hello");
+        return "";
+      },
+      { injectLogContext: true },
+    );
+
+    await wrapped(event, {} as any, () => {});
+    expect(spy).toHaveBeenCalledWith("[dd.trace_id=123456 dd.span_id=9101112] Hello");
+  });
+
+  it("injects context into console.log messages with env var", async () => {
+    process.env.DD_LOGS_INJECTION = "true";
+
+    const event = {
+      headers: {
+        "x-datadog-parent-id": "9101112",
+        "x-datadog-sampling-priority": "2",
+        "x-datadog-trace-id": "123456",
+      },
+    };
+    const spy = jest.spyOn(console, "log");
+
+    const wrapped = datadog(async () => {
+      console.log("Hello");
+      return "";
+    });
+
+    await wrapped(event, {} as any, () => {});
+    expect(spy).toHaveBeenCalledWith("[dd.trace_id=123456 dd.span_id=9101112] Hello");
+  });
+
   it("increments invocations for each function call with env var", async () => {
     process.env.DD_ENHANCED_METRICS = "true";
     const wrapped = datadog(handler);

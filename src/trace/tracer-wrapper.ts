@@ -1,4 +1,6 @@
 import { logDebug } from "../utils";
+import { SampleMode, Source } from "./constants";
+import { TraceContext } from "./context";
 import { TraceHeaders } from "./trace-context-service";
 
 export interface SpanContext {
@@ -24,7 +26,7 @@ export class TracerWrapper {
       // Try and use the same version of the tracing library the user has installed.
       // This handles edge cases where two versions of dd-trace are installed, one in the layer
       // and one in the user's code.
-      const path = require.resolve("dd-trace", { paths: ["/var/task/node_modules", ...module.paths ] });
+      const path = require.resolve("dd-trace", { paths: ["/var/task/node_modules", ...module.paths] });
       this.tracer = require(path);
       return;
     } catch {
@@ -48,5 +50,24 @@ export class TracerWrapper {
       return fn;
     }
     return this.tracer.wrap(name, options, fn);
+  }
+
+  public traceContext(): TraceContext | undefined {
+    if (!this.isTracerAvailable) {
+      return;
+    }
+    const scope = this.tracer.scope();
+    const span = scope.active();
+    if (span === null) {
+      return;
+    }
+    const parentID = span.context().toSpanId();
+    const traceID = span.context().toTraceId();
+    return {
+      parentID,
+      sampleMode: SampleMode.AUTO_KEEP,
+      source: Source.Event,
+      traceID,
+    };
   }
 }

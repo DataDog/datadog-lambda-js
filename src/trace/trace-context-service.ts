@@ -3,6 +3,7 @@ import { getSegment } from "aws-xray-sdk-core";
 import { logDebug, logError } from "../utils";
 import { parentIDHeader, samplingPriorityHeader, traceIDHeader } from "./constants";
 import { convertToAPMParentID, TraceContext } from "./context";
+import { TracerWrapper } from "./tracer-wrapper";
 
 /**
  * Headers that can be added to a request.
@@ -19,14 +20,21 @@ export interface TraceHeaders {
 export class TraceContextService {
   public rootTraceContext?: TraceContext;
 
+  constructor(private tracerWrapper: TracerWrapper) {}
+
   get currentTraceContext(): TraceContext | undefined {
     if (this.rootTraceContext === undefined) {
       return;
     }
     const traceContext = { ...this.rootTraceContext };
+    const datadogContext = this.tracerWrapper.traceContext();
+    if (datadogContext) {
+      logDebug(`set trace context from dd-trace with parent ${datadogContext.parentID}`);
+      return datadogContext;
+    }
     try {
-      const segment = getSegment();
-      const value = convertToAPMParentID(segment.id);
+      const xraySegment = getSegment();
+      const value = convertToAPMParentID(xraySegment.id);
       if (value !== undefined) {
         logDebug(`set trace context from xray with parent ${value} from segment`);
         traceContext.parentID = value;
