@@ -27,6 +27,8 @@ npm install datadog-lambda-js # NPM users
 Datadog Lambda Layer can be added to a Lambda function via AWS Lambda console, [AWS CLI](https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html#configuration-layers-using) or [Serverless Framework](https://serverless.com/framework/docs/providers/aws/guide/layers/#using-your-layers) using the following ARN.
 
 ```
+arn:aws:lambda:<AWS_REGION>:464622532012:layer:Datadog-Node12-x:<VERSION>
+# OR
 arn:aws:lambda:<AWS_REGION>:464622532012:layer:Datadog-Node10-x:<VERSION>
 # OR
 arn:aws:lambda:<AWS_REGION>:464622532012:layer:Datadog-Node8-10:<VERSION>
