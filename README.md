@@ -213,11 +213,49 @@ The file content for `datadog-sampling-priority-2.json`:
 }
 ```
 
-## Non-proxy integration
+### Non-proxy integration
 
 If your Lambda function is triggered by API Gateway via the non-proxy integration, then you have to set up a mapping template, which passes the Datadog trace context from the incoming HTTP request headers to the Lambda function via the event object.
 
 If your Lambda function is deployed by the Serverless Framework, such a mapping template gets created by default.
+
+## Datadog Tracer (**Experimental**)
+
+Instead of relying on AWS X-Ray, you can now trace Lambda functions using the Datadog tracer ([dd-trace-js](https://github.com/DataDog/dd-trace-js)).
+
+1. If you are using the Lambda layer, upgrade it to the version 9 or the latest.
+1. If you are using the npm package `datadog-lambda-js`, upgrade it to version `v0.9.0` or the latest. You also need to install the beta version of the datadog tracer: `npm install dd-trace@dev` (e.g., dd-trace@0.17.0-beta.13).
+1. Install (or update to) the latest version of [Datadog forwarder Lambda function](https://docs.datadoghq.com/integrations/amazon_web_services/?tab=allpermissions#set-up-the-datadog-lambda-function). Ensure the trace forwarding layer is attached to the forwarder, e.g., ARN for Python 2.7 `arn:aws:lambda:<AWS_REGION>:464622532012:layer:Datadog-Trace-Forwarder-Python27:3`.
+1. Instrument your function using `dd-trace`.
+    ```js
+    const { datadog } = require("datadog-lambda-js");
+    const tracer = require("dd-trace").init();
+
+    // This emits a span named "sleep"
+    const sleep = tracer.wrap("sleep", (ms) => {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    });
+
+    exports.handler = datadog(async (event) => {
+      await sleep(1000);
+      const response = {
+        statusCode: 200,
+        body: JSON.stringify('Hello from Lambda!'),
+      };
+      return response;
+    });
+    ```
+1. You can also use `dd-trace` and the X-Ray tracer together and merge the traces into one, using the `mergeDatadogXrayTraces`.
+    ```js
+    exports.handler = datadog(async (event) => {
+      await sleep(1000);
+      const response = {
+        statusCode: 200,
+        body: JSON.stringify('Hello from Lambda!'),
+      };
+      return response;
+    }, { mergeDatadogXrayTraces: true });
+    ```
 
 ## Opening Issues
 
