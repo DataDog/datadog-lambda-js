@@ -257,6 +257,10 @@ Instead of relying on AWS X-Ray, you can now trace Lambda functions using the Da
     }, { mergeDatadogXrayTraces: true });
     ```
 
+## Log and Trace Correlations
+
+To connect logs and traces, set the environment variable `DD_LOGS_INJECTION` to `true` if `console` is used for logging. For other logging libraries, see instructions for [automatic](https://docs.datadoghq.com/tracing/advanced/connect_logs_and_traces/?tab=nodejs#automatic-trace-id-injection) and [manual](https://docs.datadoghq.com/tracing/advanced/connect_logs_and_traces/?tab=nodejs#manual-trace-id-injection) trace id injection.
+
 ## Opening Issues
 
 If you encounter a bug with this package, we want to hear about it. Before opening a new issue, search the existing issues to avoid duplicates.
