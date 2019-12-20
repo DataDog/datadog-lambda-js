@@ -13,7 +13,7 @@ jobs:
       upload_coverage:
         type: string
         default: "false"
-    resource_class: medium+
+    resource_class: large
     steps:
       - checkout
       - restore_cache:
