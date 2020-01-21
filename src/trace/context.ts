@@ -1,4 +1,4 @@
-import { captureFunc, getSegment } from "aws-xray-sdk-core";
+import { captureFunc } from "aws-xray-sdk-core";
 import { BigNumber } from "bignumber.js";
 
 import { logDebug, logError } from "../utils";
@@ -118,40 +118,19 @@ export function readTraceFromEvent(event: any): TraceContext | undefined {
   };
 }
 
-export function readTraceContextFromXray() {
-  try {
-    const segment = getSegment();
-    logDebug(`Setting X-Ray parent trace to segment with ${segment.id} and trace ${segment.trace_id}`);
-    const traceHeader = {
-      parentID: segment.id,
-      sampled: segment.notTraced ? 0 : 1,
-      traceID: segment.trace_id,
-    };
-    const contextFromSegment = convertTraceContext(traceHeader);
-    const contextFromEnv = readTraceContextFromXrayEnv();
-    // Due to a bug with the x-ray sdk's async await support, sometimes the X-Ray SDK will incorrectly report segments
-    // from previous traces. The x-ray trace environment variable usually has the correct trace id, but might not have
-    // the most recent parent segment. If the segment is from the wrong trace, we will use the trace context read from
-    // the environment instead.
-    if (contextFromSegment?.traceID !== contextFromEnv?.traceID && contextFromEnv !== undefined) {
-      logDebug(
-        `Trace ID from X-Ray SDK ${contextFromSegment?.traceID} didn't match traceID from x-ray env var ${contextFromEnv?.traceID}. Using env var trace context instead`,
-      );
-      return contextFromEnv;
-    }
-    return contextFromSegment;
-  } catch (error) {
-    logError("couldn't read xray trace header", { innerError: error });
-  }
-  return undefined;
-}
-
-export function readTraceContextFromXrayEnv(): TraceContext | undefined {
+export function readTraceContextFromXray(): TraceContext | undefined {
   const header = process.env[xrayTraceEnvVar];
   if (header === undefined) {
+    logError("couldn't read xray trace header from env");
     return;
   }
-  return parseTraceContextHeader(header);
+  const context = parseTraceContextHeader(header);
+  if (context === undefined) {
+    logError("couldn't read xray trace context from env, variable had invalid format");
+  } else {
+    logDebug("read trace context from environment", context);
+  }
+  return context;
 }
 
 export function parseTraceContextHeader(header: string): TraceContext | undefined {

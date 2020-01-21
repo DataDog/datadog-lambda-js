@@ -9,7 +9,6 @@ import {
   readTraceContextFromXray,
   readTraceFromEvent,
   readStepFunctionContextFromEvent,
-  readTraceContextFromXrayEnv,
 } from "./context";
 
 let currentSegment: any;
@@ -22,12 +21,6 @@ jest.mock("aws-xray-sdk-core", () => {
       } else {
         throw Error("Unimplemented");
       }
-    },
-    getSegment: () => {
-      if (currentSegment === undefined) {
-        throw Error("Empty");
-      }
-      return currentSegment;
     },
   };
 });
@@ -131,63 +124,9 @@ describe("readTraceContextFromXray", () => {
   afterEach(() => {
     process.env["_X_AMZN_TRACE_ID"] = undefined;
   });
-  it("will parse a trace context from the xray", () => {
-    currentSegment = {
-      id: "0b11cc4230d3e09e",
-      trace_id: "1-5ce31dc2-2c779014b90ce44db5e03875",
-    };
-
-    const traceContext = readTraceContextFromXray();
-    expect(traceContext).toEqual({
-      parentID: "797643193680388254",
-      sampleMode: SampleMode.USER_KEEP,
-      traceID: "4110911582297405557",
-      source: Source.Xray,
-    });
-  });
-  it("will ignore a trace context from the xray, when sampling is turned off", () => {
-    currentSegment = {
-      id: "0b11cc4230d3e09e",
-      notTraced: true,
-      trace_id: "1-5ce31dc2-2c779014b90ce44db5e03875",
-    };
-
-    const traceContext = readTraceContextFromXray();
-    expect(traceContext).toEqual({
-      parentID: "797643193680388254",
-      sampleMode: SampleMode.USER_REJECT,
-      traceID: "4110911582297405557",
-      source: Source.Xray,
-    });
-  });
-  it("returns undefined when trace header isn't in environment", () => {
-    const traceContext = readTraceContextFromXray();
-    expect(traceContext).toBeUndefined();
-  });
-
-  it("returns trace context read from env, when traceID mismatches most recent segment from X-Ray sdk", () => {
-    currentSegment = {
-      id: "0b11cc4230d3e09e",
-      trace_id: "1-5ce31dc2-2c779014b90ce44db5e03875",
-    };
-    process.env["_X_AMZN_TRACE_ID"] = "Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1";
-    const traceContext = readTraceContextFromXray();
-    expect(traceContext).toEqual({
-      parentID: "10713633173203262661",
-      sampleMode: 2,
-      source: "xray",
-      traceID: "3995693151288333088",
-    });
-  });
-});
-
-describe("readTraceContextFromXrayEnv", () => {
-  afterEach(() => {
-    process.env["_X_AMZN_TRACE_ID"] = undefined;
-  });
   it("returns a trace context from a valid env var", () => {
     process.env["_X_AMZN_TRACE_ID"] = "Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1";
-    const context = readTraceContextFromXrayEnv();
+    const context = readTraceContextFromXray();
     expect(context).toEqual({
       parentID: "10713633173203262661",
       sampleMode: 2,
@@ -204,10 +143,11 @@ describe("readTraceContextFromXrayEnv", () => {
       "Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;1",
       "Root=a;Parent=94ae789b969f1cc5;Sampled=1",
       "Root=1-5e272390-8c398be037738dc042009320;Parent=b;Sampled=1",
+      undefined,
     ];
     for (const badCase of badCases) {
       process.env["_X_AMZN_TRACE_ID"] = badCase;
-      expect(readTraceContextFromXrayEnv()).toBeUndefined();
+      expect(readTraceContextFromXray()).toBeUndefined();
     }
   });
 });
@@ -411,11 +351,11 @@ describe("readStepFunctionContextFromEvent", () => {
 });
 
 describe("extractTraceContext", () => {
+  afterEach(() => {
+    process.env["_X_AMZN_TRACE_ID"] = undefined;
+  });
   it("returns trace read from header as highest priority", () => {
-    currentSegment = {
-      parent_id: "0b11cc4230d3e09e",
-      trace_id: "1-5ce31dc2-2c779014b90ce44db5e03875",
-    };
+    process.env["_X_AMZN_TRACE_ID"] = "Root=1-5ce31dc2-2c779014b90ce44db5e03875;Parent=0b11cc4230d3e09e;Sampled=1";
 
     const result = extractTraceContext({
       headers: {
@@ -432,10 +372,7 @@ describe("extractTraceContext", () => {
     });
   });
   it("returns trace read from env if no headers present", () => {
-    currentSegment = {
-      id: "0b11cc4230d3e09e",
-      trace_id: "1-5ce31dc2-2c779014b90ce44db5e03875",
-    };
+    process.env["_X_AMZN_TRACE_ID"] = "Root=1-5ce31dc2-2c779014b90ce44db5e03875;Parent=0b11cc4230d3e09e;Sampled=1";
 
     const result = extractTraceContext({});
     expect(result).toEqual({
@@ -446,10 +383,7 @@ describe("extractTraceContext", () => {
     });
   });
   it("returns trace read from env if no headers present", () => {
-    currentSegment = {
-      id: "0b11cc4230d3e09e",
-      trace_id: "1-5ce31dc2-2c779014b90ce44db5e03875",
-    };
+    process.env["_X_AMZN_TRACE_ID"] = "Root=1-5ce31dc2-2c779014b90ce44db5e03875;Parent=0b11cc4230d3e09e;Sampled=1";
 
     const result = extractTraceContext({});
     expect(result).toEqual({
