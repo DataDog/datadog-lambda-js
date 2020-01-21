@@ -155,6 +155,7 @@ export function readTraceContextFromXrayEnv(): TraceContext | undefined {
 
 export function parseTraceContextHeader(header: string): TraceContext | undefined {
   // Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1
+  logDebug(`Reading trace context from env var ${header}`);
   const [root, parent, sampled] = header.split(";");
   if (parent === undefined || sampled === undefined) {
     return;
