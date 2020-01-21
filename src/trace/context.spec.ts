@@ -9,6 +9,7 @@ import {
   readTraceContextFromXray,
   readTraceFromEvent,
   readStepFunctionContextFromEvent,
+  readTraceContextFromXrayEnv,
 } from "./context";
 
 let currentSegment: any;
@@ -127,6 +128,9 @@ describe("convertTraceContext", () => {
 });
 
 describe("readTraceContextFromXray", () => {
+  afterEach(() => {
+    process.env["_X_AMZN_TRACE_ID"] = undefined;
+  });
   it("will parse a trace context from the xray", () => {
     currentSegment = {
       id: "0b11cc4230d3e09e",
@@ -159,6 +163,52 @@ describe("readTraceContextFromXray", () => {
   it("returns undefined when trace header isn't in environment", () => {
     const traceContext = readTraceContextFromXray();
     expect(traceContext).toBeUndefined();
+  });
+
+  it("returns trace context read from env, when traceID mismatches most recent segment from X-Ray sdk", () => {
+    currentSegment = {
+      id: "0b11cc4230d3e09e",
+      trace_id: "1-5ce31dc2-2c779014b90ce44db5e03875",
+    };
+    process.env["_X_AMZN_TRACE_ID"] = "Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1";
+    const traceContext = readTraceContextFromXray();
+    expect(traceContext).toEqual({
+      parentID: "10713633173203262661",
+      sampleMode: 2,
+      source: "xray",
+      traceID: "3995693151288333088",
+    });
+  });
+});
+
+describe("readTraceContextFromXrayEnv", () => {
+  afterEach(() => {
+    process.env["_X_AMZN_TRACE_ID"] = undefined;
+  });
+  it("returns a trace context from a valid env var", () => {
+    process.env["_X_AMZN_TRACE_ID"] = "Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1";
+    const context = readTraceContextFromXrayEnv();
+    expect(context).toEqual({
+      parentID: "10713633173203262661",
+      sampleMode: 2,
+      source: "xray",
+      traceID: "3995693151288333088",
+    });
+  });
+  it("returns undefined when given an invalid env var", () => {
+    const badCases = [
+      "Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5",
+      "Root=1-5e272390-8c398be037738dc042009320",
+      "1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1",
+      "Root=1-5e272390-8c398be037738dc042009320;94ae789b969f1cc5;Sampled=1",
+      "Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;1",
+      "Root=a;Parent=94ae789b969f1cc5;Sampled=1",
+      "Root=1-5e272390-8c398be037738dc042009320;Parent=b;Sampled=1",
+    ];
+    for (const badCase of badCases) {
+      process.env["_X_AMZN_TRACE_ID"] = badCase;
+      expect(readTraceContextFromXrayEnv()).toBeUndefined();
+    }
   });
 });
 

@@ -12,6 +12,7 @@ import {
   xraySubsegmentKey,
   xraySubsegmentName,
   xraySubsegmentNamespace,
+  xrayTraceEnvVar,
 } from "./constants";
 
 export interface XRayTraceHeader {
@@ -126,11 +127,65 @@ export function readTraceContextFromXray() {
       sampled: segment.notTraced ? 0 : 1,
       traceID: segment.trace_id,
     };
-    return convertTraceContext(traceHeader);
+    const contextFromSegment = convertTraceContext(traceHeader);
+    const contextFromEnv = readTraceContextFromXrayEnv();
+    // Due to a bug with the x-ray sdk's async await support, sometimes the X-Ray SDK will incorrectly report segments from previous traces.
+    // The x-ray trace environment variable usually has the correct trace id, but might not have the most recent parent segment. If the segment is from
+    // the wrong trace, we will use the trace context read from the environment instead.
+    if (contextFromSegment?.traceID != contextFromEnv?.traceID && contextFromEnv !== undefined) {
+      logDebug(
+        `Trace ID from X-Ray SDK ${contextFromSegment?.traceID} didn't match traceID from x-ray env var ${contextFromEnv?.traceID}. Using env var trace context instead`,
+      );
+      return contextFromEnv;
+    }
+    return contextFromSegment;
   } catch (error) {
     logError("couldn't read xray trace header", { innerError: error });
   }
   return undefined;
+}
+
+export function readTraceContextFromXrayEnv(): TraceContext | undefined {
+  const header = process.env[xrayTraceEnvVar];
+  if (header === undefined) {
+    return;
+  }
+  return parseTraceContextHeader(header);
+}
+
+export function parseTraceContextHeader(header: string): TraceContext | undefined {
+  // Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1
+  const [root, parent, sampled] = header.split(";");
+  if (parent === undefined || sampled === undefined) {
+    return;
+  }
+  const [, rawTraceID] = root.split("=");
+  if (rawTraceID === undefined) {
+    return;
+  }
+  const traceID = convertToAPMTraceID(rawTraceID);
+  if (traceID === undefined) {
+    return;
+  }
+  const [, rawParentID] = parent.split("=");
+  if (rawParentID === undefined) {
+    return;
+  }
+  const parentID = convertToAPMParentID(rawParentID);
+  if (parentID === undefined) {
+    return;
+  }
+  const [, rawSampled] = sampled.split("=");
+  if (rawSampled === undefined) {
+    return;
+  }
+  const sampleMode = convertToSampleMode(parseInt(rawSampled));
+  return {
+    traceID,
+    parentID,
+    sampleMode,
+    source: Source.Xray,
+  };
 }
 
 export function readStepFunctionContextFromEvent(event: any): StepFunctionContext | undefined {
