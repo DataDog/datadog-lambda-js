@@ -129,10 +129,11 @@ export function readTraceContextFromXray() {
     };
     const contextFromSegment = convertTraceContext(traceHeader);
     const contextFromEnv = readTraceContextFromXrayEnv();
-    // Due to a bug with the x-ray sdk's async await support, sometimes the X-Ray SDK will incorrectly report segments from previous traces.
-    // The x-ray trace environment variable usually has the correct trace id, but might not have the most recent parent segment. If the segment is from
-    // the wrong trace, we will use the trace context read from the environment instead.
-    if (contextFromSegment?.traceID != contextFromEnv?.traceID && contextFromEnv !== undefined) {
+    // Due to a bug with the x-ray sdk's async await support, sometimes the X-Ray SDK will incorrectly report segments
+    // from previous traces. The x-ray trace environment variable usually has the correct trace id, but might not have
+    // the most recent parent segment. If the segment is from the wrong trace, we will use the trace context read from
+    // the environment instead.
+    if (contextFromSegment?.traceID !== contextFromEnv?.traceID && contextFromEnv !== undefined) {
       logDebug(
         `Trace ID from X-Ray SDK ${contextFromSegment?.traceID} didn't match traceID from x-ray env var ${contextFromEnv?.traceID}. Using env var trace context instead`,
       );
@@ -180,12 +181,12 @@ export function parseTraceContextHeader(header: string): TraceContext | undefine
   if (rawSampled === undefined) {
     return;
   }
-  const sampleMode = convertToSampleMode(parseInt(rawSampled));
+  const sampleMode = convertToSampleMode(parseInt(rawSampled, 10));
   return {
-    traceID,
     parentID,
     sampleMode,
     source: Source.Xray,
+    traceID,
   };
 }
 
