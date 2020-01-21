@@ -98,6 +98,6 @@ describe("MetricsListener", () => {
     listener.sendDistributionMetric("my-metric", 10, "tag:a", "tag:b");
     await listener.onCompleteInvocation();
 
-    expect(spy).toHaveBeenCalledWith(`{"e":1487076708000,"m":"my-metric","t":["tag:a","tag:b"],"v":10}\n`);
+    expect(spy).toHaveBeenCalledWith(`{"e":1487076708,"m":"my-metric","t":["tag:a","tag:b"],"v":10}\n`);
   });
 });
