@@ -91,6 +91,7 @@ export class TraceListener {
         function_arn: this.context.invokedFunctionArn,
         request_id: this.context.awsRequestId,
         resource_names: this.context.functionName,
+        "_dd.origin": "lambda",
       };
     }
     if (this.stepFunctionContext) {
