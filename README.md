@@ -85,6 +85,10 @@ If you have the Datadog Lambda Log forwarder enabled and are sending custom metr
 
 If you set the value of this variable to "true" then the Lambda layer will increment a Lambda integration metric called `aws.lambda.enhanced.invocations` with each invocation and `aws.lambda.enhanced.errors` if the invocation results in an error. These metrics are tagged with the function name, region, account, runtime, memorysize, and `cold_start:true|false`.
 
+### DD_LOGS_INJECTION
+
+To connect logs and traces, set the environment variable `DD_LOGS_INJECTION` to `true` if `console` is used for logging. For other logging libraries, see instructions for [automatic](https://docs.datadoghq.com/tracing/advanced/connect_logs_and_traces/?tab=nodejs#automatic-trace-id-injection) and [manual](https://docs.datadoghq.com/tracing/advanced/connect_logs_and_traces/?tab=nodejs#manual-trace-id-injection) trace id injection.
+
 ## Usage
 
 Datadog needs to be able to read headers from the incoming Lambda event.
@@ -256,10 +260,6 @@ You can now trace Lambda functions using Datadog APM's tracing libraries ([dd-tr
       return response;
     }, { mergeDatadogXrayTraces: true });
     ```
-
-## Log and Trace Correlations
-
-To connect logs and traces, set the environment variable `DD_LOGS_INJECTION` to `true` if `console` is used for logging. For other logging libraries, see instructions for [automatic](https://docs.datadoghq.com/tracing/advanced/connect_logs_and_traces/?tab=nodejs#automatic-trace-id-injection) and [manual](https://docs.datadoghq.com/tracing/advanced/connect_logs_and_traces/?tab=nodejs#manual-trace-id-injection) trace id injection.
 
 ## Opening Issues
 
