@@ -1,4 +1,4 @@
-import { buildMetricLog } from "./build-metric-log";
+import { buildMetricLog } from "./metric-log";
 
 describe("buildMetricLog", () => {
   jest.spyOn(Date, "now").mockImplementation(() => 1487076708123);

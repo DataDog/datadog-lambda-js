@@ -1,4 +1,4 @@
-import { getEnvValue, sendDistributionMetric } from "../index";
+import { sendDistributionMetric } from "../index";
 
 import { Context } from "aws-lambda";
 import { parseTagsFromARN } from "../utils/arn";
