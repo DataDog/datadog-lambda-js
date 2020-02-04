@@ -4,6 +4,7 @@ import { Context } from "aws-lambda";
 import { parseTagsFromARN } from "../utils/arn";
 import { getColdStartTag } from "../utils/cold-start";
 import { getProcessVersion } from "../utils/process-version";
+import { writeMetricToStdout } from "./metric-log";
 
 const ENHANCED_LAMBDA_METRICS_NAMESPACE = "aws.lambda.enhanced";
 
@@ -11,6 +12,7 @@ const ENHANCED_LAMBDA_METRICS_NAMESPACE = "aws.lambda.enhanced";
 enum RuntimeTagValues {
   Node8 = "nodejs8.10",
   Node10 = "nodejs10.x",
+  Node12 = "nodejs12.x",
 }
 
 /**
@@ -28,6 +30,10 @@ export function getRuntimeTag(): string | null {
 
   if (processVersion.startsWith("v10")) {
     processVersionTagString = RuntimeTagValues.Node10;
+  }
+
+  if (processVersion.startsWith("v12")) {
+    processVersionTagString = RuntimeTagValues.Node12;
   }
 
   if (!processVersionTagString) {
@@ -52,10 +58,20 @@ export function getEnhancedMetricTags(context: Context): string[] {
   return tags;
 }
 
+/**
+ * Increments the specified enhanced metric, applying all relevant tags
+ * @param context object passed to invocation by AWS
+ * @param metricName name of the enhanced metric without namespace prefix, i.e. "invocations" or "errors"
+ */
+function incrementEnhancedMetric(metricName: string, context: Context) {
+  // Always write enhanced metrics to standard out
+  writeMetricToStdout(`${ENHANCED_LAMBDA_METRICS_NAMESPACE}.${metricName}`, 1, getEnhancedMetricTags(context));
+}
+
 export function incrementInvocationsMetric(context: Context): void {
-  sendDistributionMetric(`${ENHANCED_LAMBDA_METRICS_NAMESPACE}.invocations`, 1, ...getEnhancedMetricTags(context));
+  incrementEnhancedMetric("invocations", context);
 }
 
 export function incrementErrorsMetric(context: Context): void {
-  sendDistributionMetric(`${ENHANCED_LAMBDA_METRICS_NAMESPACE}.errors`, 1, ...getEnhancedMetricTags(context));
+  incrementEnhancedMetric("errors", context);
 }

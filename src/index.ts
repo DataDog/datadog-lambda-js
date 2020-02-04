@@ -40,7 +40,7 @@ export const defaultConfig: Config = {
   apiKeyKMS: "",
   autoPatchHTTP: true,
   debugLogging: false,
-  enhancedMetrics: false,
+  enhancedMetrics: true,
   injectLogContext: false,
   logForwarding: false,
   mergeDatadogXrayTraces: false,
@@ -166,7 +166,7 @@ function getConfig(userConfig?: Partial<Config>): Config {
     config.logForwarding = result === "true";
   }
   if (userConfig === undefined || userConfig.enhancedMetrics === undefined) {
-    const result = getEnvValue(enhancedMetricsEnvVar, "false").toLowerCase();
+    const result = getEnvValue(enhancedMetricsEnvVar, "true").toLowerCase();
     config.enhancedMetrics = result === "true";
   }
 
