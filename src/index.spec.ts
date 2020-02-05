@@ -225,8 +225,7 @@ describe("datadog", () => {
     expect(spy).toHaveBeenCalledWith("[dd.trace_id=123456 dd.span_id=9101112] Hello");
   });
 
-  it("increments invocations for each function call with env var", async () => {
-    process.env.DD_ENHANCED_METRICS = "true";
+  it("increments invocations for each function call", async () => {
     const wrapped = datadog(handler);
 
     await wrapped({}, mockContext, () => {});
@@ -241,9 +240,7 @@ describe("datadog", () => {
     expect(mockedIncrementInvocations).toBeCalledTimes(4);
   });
 
-  it("increments errors correctly with env var", async () => {
-    process.env.DD_ENHANCED_METRICS = "true";
-
+  it("increments errors enhanced metric", async () => {
     const handlerError: Handler = (event, context, callback) => {
       throw Error("Some error");
     };
@@ -260,24 +257,23 @@ describe("datadog", () => {
     expect(mockedIncrementErrors).toBeCalledWith(mockContext);
   });
 
-  it("increments errors and invocations with config setting", async () => {
+  it("doesn't increment errors or invocations with config false setting", async () => {
     const handlerError: Handler = (event, context, callback) => {
       throw Error("Some error");
     };
 
-    const wrappedHandler = datadog(handlerError, { enhancedMetrics: true });
+    const wrappedHandler = datadog(handlerError, { enhancedMetrics: false });
 
     const result = wrappedHandler({}, mockContext, () => {});
     await expect(result).rejects.toEqual(Error("Some error"));
 
-    expect(mockedIncrementInvocations).toBeCalledTimes(1);
-    expect(mockedIncrementErrors).toBeCalledTimes(1);
-
-    expect(mockedIncrementInvocations).toBeCalledWith(mockContext);
-    expect(mockedIncrementErrors).toBeCalledWith(mockContext);
+    expect(mockedIncrementInvocations).toBeCalledTimes(0);
+    expect(mockedIncrementErrors).toBeCalledTimes(0);
   });
 
-  it("doesn't increment enhanced metrics without env var or config", async () => {
+  it("doesn't increment enhanced metrics with env var set to false", async () => {
+    process.env.DD_ENHANCED_METRICS = "false";
+
     const handlerError: Handler = (event, context, callback) => {
       throw Error("Some error");
     };
