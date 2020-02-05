@@ -2,8 +2,8 @@ import { promisify } from "util";
 
 import { logDebug, logError } from "../utils";
 import { APIClient } from "./api";
-import { writeMetricToStdout } from "./metric-log";
 import { KMSService } from "./kms-service";
+import { writeMetricToStdout } from "./metric-log";
 import { Distribution } from "./model";
 import { Processor } from "./processor";
 
