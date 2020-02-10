@@ -41,7 +41,7 @@ export const defaultConfig: Config = {
   autoPatchHTTP: true,
   debugLogging: false,
   enhancedMetrics: true,
-  injectLogContext: false,
+  injectLogContext: true,
   logForwarding: false,
   mergeDatadogXrayTraces: false,
   shouldRetryMetrics: false,
@@ -153,7 +153,7 @@ function getConfig(userConfig?: Partial<Config>): Config {
   }
 
   if (userConfig === undefined || userConfig.injectLogContext === undefined) {
-    const result = getEnvValue(logInjectionEnvVar, "false").toLowerCase();
+    const result = getEnvValue(logInjectionEnvVar, "true").toLowerCase();
     config.injectLogContext = result === "true";
   }
 

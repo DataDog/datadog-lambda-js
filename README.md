@@ -87,7 +87,11 @@ If you set the value of this variable to "true" then the Lambda layer will incre
 
 ### DD_LOGS_INJECTION
 
-To connect logs and traces, set the environment variable `DD_LOGS_INJECTION` to `true` if `console` is used for logging. For other logging libraries, see instructions for [automatic](https://docs.datadoghq.com/tracing/advanced/connect_logs_and_traces/?tab=nodejs#automatic-trace-id-injection) and [manual](https://docs.datadoghq.com/tracing/advanced/connect_logs_and_traces/?tab=nodejs#manual-trace-id-injection) trace id injection.
+By default, the Datadog trace id gets automatically injected into the logs for correlation, if using `console` or a logging library supported for [automatic](https://docs.datadoghq.com/tracing/connect_logs_and_traces/?tab=nodejs#automatic-trace-id-injection)  trace id injection.
+
+See instructions for [manual](https://docs.datadoghq.com/tracing/connect_logs_and_traces/?tab=nodejs#manual-trace-id-injection) trace id injection, if using other logging libraries.
+
+Set the environment variable `DD_LOGS_INJECTION` to `false` to disable this feature.
 
 ## Usage
 
