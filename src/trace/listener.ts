@@ -50,6 +50,7 @@ export class TraceListener {
       logDebug("Didn't patch console output with trace context");
     }
 
+    // If the DD tracer is initialized then it's doing http patching so we don't again here
     if (this.config.autoPatchHTTP && !tracerInitialized) {
       logDebug("Patching HTTP libraries");
       patchHttp(this.contextService);
@@ -63,7 +64,9 @@ export class TraceListener {
   }
 
   public async onCompleteInvocation() {
-    if (this.config.autoPatchHTTP) {
+    // If the DD tracer is initialized it manages patching of the http lib on its own
+    const tracerInitialized = this.tracerWrapper.isTracerAvailable;
+    if (this.config.autoPatchHTTP && !tracerInitialized) {
       logDebug("Unpatching HTTP libraries");
       unpatchHttp();
     }
