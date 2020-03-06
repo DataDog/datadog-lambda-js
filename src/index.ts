@@ -51,10 +51,13 @@ export const defaultConfig: Config = {
 let currentMetricsListener: MetricsListener | undefined;
 let currentTraceListener: TraceListener | undefined;
 
+let wrapped = false;
+
 /**
  * Wraps your AWS lambda handler functions to add tracing/metrics support
  * @param handler A lambda handler function.
- * @param config  Configuration options for datadog.
+ * @param forceWrap Force to wrap.
+ * @param config Configuration options for datadog.
  * @returns A wrapped handler function.
  *
  * ```javascript
@@ -65,6 +68,7 @@ let currentTraceListener: TraceListener | undefined;
  */
 export function datadog<TEvent, TResult>(
   handler: Handler<TEvent, TResult>,
+  forceWrap = false,
   config?: Partial<Config>,
 ): Handler<TEvent, TResult> {
   const finalConfig = getConfig(config);
@@ -72,6 +76,12 @@ export function datadog<TEvent, TResult>(
   const handlerName = getEnvValue("_HANDLER", "handler");
   const traceListener = new TraceListener(finalConfig, handlerName);
   const listeners = [metricsListener, traceListener];
+
+  // Only wrap the handler once
+  if (wrapped && !forceWrap) {
+    return handler;
+  }
+  wrapped = true;
 
   return wrap(
     handler,

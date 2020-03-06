@@ -55,7 +55,7 @@ describe("datadog", () => {
     nock("http://www.example.com")
       .get("/")
       .reply(200, {});
-    const wrapped = datadog(handler);
+    const wrapped = datadog(handler, true);
     await wrapped(
       {
         headers: {
@@ -78,7 +78,7 @@ describe("datadog", () => {
     nock("http://www.example.com")
       .get("/")
       .reply(200, {});
-    const wrapped = datadog(handler, { autoPatchHTTP: false });
+    const wrapped = datadog(handler, true, { autoPatchHTTP: false });
     await wrapped(
       {
         headers: {
@@ -110,7 +110,7 @@ describe("datadog", () => {
     const wrapped = datadog(async () => {
       sendDistributionMetric("my-dist", 100, "first-tag", "second-tag");
       return "";
-    });
+    }, true);
     await wrapped({}, {} as any, () => {});
 
     expect(nock.isDone()).toBeTruthy();
@@ -131,6 +131,7 @@ describe("datadog", () => {
         sendDistributionMetric("my-dist", 100, "first-tag", "second-tag");
         return "";
       },
+      true,
       { apiKey },
     );
     await wrapped({}, {} as any, () => {});
@@ -153,6 +154,7 @@ describe("datadog", () => {
         sendDistributionMetric("my-dist", 100, "first-tag", "second-tag");
         return "";
       },
+      true,
       { apiKey },
     );
     await wrapped({}, {} as any, () => {});
@@ -173,7 +175,7 @@ describe("datadog", () => {
     const wrapped = datadog(async () => {
       traceHeaders = getTraceHeaders();
       return "";
-    });
+    }, true);
     await wrapped(event, {} as any, () => {});
     expect(traceHeaders).toEqual({
       "x-datadog-parent-id": "9101112",
@@ -197,6 +199,7 @@ describe("datadog", () => {
         console.log("Hello");
         return "";
       },
+      true,
       { injectLogContext: true },
     );
 
@@ -219,14 +222,14 @@ describe("datadog", () => {
     const wrapped = datadog(async () => {
       console.log("Hello");
       return "";
-    });
+    }, true);
 
     await wrapped(event, {} as any, () => {});
     expect(spy).toHaveBeenCalledWith("[dd.trace_id=123456 dd.span_id=9101112] Hello");
   });
 
   it("increments invocations for each function call", async () => {
-    const wrapped = datadog(handler);
+    const wrapped = datadog(handler, true);
 
     await wrapped({}, mockContext, () => {});
 
@@ -245,7 +248,7 @@ describe("datadog", () => {
       throw Error("Some error");
     };
 
-    const wrappedHandler = datadog(handlerError);
+    const wrappedHandler = datadog(handlerError, true);
 
     const result = wrappedHandler({}, mockContext, () => {});
     await expect(result).rejects.toEqual(Error("Some error"));
@@ -262,7 +265,7 @@ describe("datadog", () => {
       throw Error("Some error");
     };
 
-    const wrappedHandler = datadog(handlerError, { enhancedMetrics: false });
+    const wrappedHandler = datadog(handlerError, true, { enhancedMetrics: false });
 
     const result = wrappedHandler({}, mockContext, () => {});
     await expect(result).rejects.toEqual(Error("Some error"));
@@ -278,7 +281,7 @@ describe("datadog", () => {
       throw Error("Some error");
     };
 
-    const wrappedHandler = datadog(handlerError);
+    const wrappedHandler = datadog(handlerError, true);
 
     const result = wrappedHandler({}, mockContext, () => {});
     await expect(result).rejects.toEqual(Error("Some error"));
