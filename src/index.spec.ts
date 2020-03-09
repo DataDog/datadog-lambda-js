@@ -55,7 +55,7 @@ describe("datadog", () => {
     nock("http://www.example.com")
       .get("/")
       .reply(200, {});
-    const wrapped = datadog(handler, {forceWrap: true});
+    const wrapped = datadog(handler, { forceWrap: true });
     await wrapped(
       {
         headers: {
@@ -107,10 +107,13 @@ describe("datadog", () => {
       .post(`/api/v1/distribution_points?api_key=${apiKey}`, (request: any) => request.series[0].metric === "my-dist")
       .reply(200, {});
 
-    const wrapped = datadog(async () => {
-      sendDistributionMetric("my-dist", 100, "first-tag", "second-tag");
-      return "";
-    }, { forceWrap: true });
+    const wrapped = datadog(
+      async () => {
+        sendDistributionMetric("my-dist", 100, "first-tag", "second-tag");
+        return "";
+      },
+      { forceWrap: true },
+    );
     await wrapped({}, {} as any, () => {});
 
     expect(nock.isDone()).toBeTruthy();
@@ -170,10 +173,13 @@ describe("datadog", () => {
       },
     };
 
-    const wrapped = datadog(async () => {
-      traceHeaders = getTraceHeaders();
-      return "";
-    }, { forceWrap: true });
+    const wrapped = datadog(
+      async () => {
+        traceHeaders = getTraceHeaders();
+        return "";
+      },
+      { forceWrap: true },
+    );
     await wrapped(event, {} as any, () => {});
     expect(traceHeaders).toEqual({
       "x-datadog-parent-id": "9101112",
@@ -216,10 +222,13 @@ describe("datadog", () => {
     };
     const spy = jest.spyOn(console, "log");
 
-    const wrapped = datadog(async () => {
-      console.log("Hello");
-      return "";
-    }, { forceWrap: true });
+    const wrapped = datadog(
+      async () => {
+        console.log("Hello");
+        return "";
+      },
+      { forceWrap: true },
+    );
 
     await wrapped(event, {} as any, () => {});
     expect(spy).toHaveBeenCalledWith("[dd.trace_id=123456 dd.span_id=9101112] Hello");
