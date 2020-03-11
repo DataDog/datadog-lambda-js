@@ -1,0 +1,34 @@
+service: integration-tester
+
+provider:
+  name: aws
+  tracing:
+    lambda: true
+    apiGateway: true
+  environment:
+    DD_INTEGRATION_TEST: true
+    DD_API_KEY: ${env:DD_API_KEY}
+
+layers:
+  node10:
+    package:
+      artifact: ../.layers/datadog_lambda_node10.15.zip
+  node12:
+    package:
+      artifact: ../.layers/datadog_lambda_node12.13.zip
+
+functions:
+  # sync-metrics
+  # async-metrics_python27:
+  #   handler: handle.handle
+  #   runtime: python2.7
+  #   layers:
+  #     - { Ref: Python27LambdaLayer }
+  #   environment:
+  #     DD_FLUSH_TO_LOG: true
+
+  sync-metrics_node-8-10:
+    handler: send-metrics.handle
+    runtime: nodejs10.x
+    layers:
+      - { Ref: Node10LambdaLayer }
