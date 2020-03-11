@@ -27,8 +27,30 @@ functions:
   #   environment:
   #     DD_FLUSH_TO_LOG: true
 
-  sync-metrics_node-8-10:
+  async-metrics_node10:
     handler: send-metrics.handle
     runtime: nodejs10.x
     layers:
       - { Ref: Node10LambdaLayer }
+    environment:
+      DD_FLUSH_TO_LOG: true
+
+  async-metrics_node12:
+    handler: send-metrics.handle
+    runtime: nodejs12.x
+    layers:
+      - { Ref: Node12LambdaLayer }
+    environment:
+      DD_FLUSH_TO_LOG: true
+
+  sync-metrics_node10:
+    handler: send-metrics.handle
+    runtime: nodejs10.x
+    layers:
+      - { Ref: Node10LambdaLayer }
+
+  sync-metrics_node12:
+    handler: send-metrics.handle
+    runtime: nodejs12.x
+    layers:
+      - { Ref: Node12LambdaLayer }

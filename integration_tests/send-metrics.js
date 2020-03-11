@@ -1,9 +1,50 @@
-const { datadog, getTraceHeaders } = require("datadog-lambda-js");
+const { datadog, sendDistributionMetric } = require("datadog-lambda-js");
 
 async function handle(event, context) {
-  console.log("This is an example log line");
+  const responsePayload = { message: "hello, dog!" };
 
-  return "hello, dog!";
+  if (event.requestContext) {
+    responsePayload.eventType = "APIGateway";
+    responsePayload.requestId = event.requestContext.requestId;
+  }
+
+  if (event.Records) {
+    responsePayload.recordIds = [];
+
+    event.Records.forEach((record) => {
+      if (record.messageId) {
+        responsePayload.eventType = "SQS";
+        responsePayload.recordIds.push(record.messageId);
+        sendDistributionMetric(
+          "serverless.integration_test.records_processed",
+          1,
+          "tagkey:tagvalue",
+          `eventsource:${responsePayload.eventType}`,
+        );
+      }
+      if (record.Sns) {
+        responsePayload.eventType = "SNS";
+        responsePayload.recordIds.push(record.Sns.MessageId);
+        sendDistributionMetric(
+          "serverless.integration_test.records_processed",
+          1,
+          "tagkey:tagvalue",
+          `eventsource:${responsePayload.eventType}`,
+        );
+      }
+    });
+  }
+
+  sendDistributionMetric(
+    "serverless.integration_test.execution",
+    1,
+    "tagkey:tagvalue",
+    `eventsource:${responsePayload.eventType}`,
+  );
+
+  console.log("I am an example log line");
+
+  return responsePayload;
 }
 
 module.exports.handle = datadog(handle);
