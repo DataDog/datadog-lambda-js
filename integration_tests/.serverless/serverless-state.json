@@ -154,7 +154,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/integration-tester/dev/1583960530149-2020-03-11T21:02:10.149Z/datadog_lambda_node10.15.zip"
+                "S3Key": "serverless/integration-tester/dev/1583965684965-2020-03-11T22:28:04.965Z/datadog_lambda_node10.15.zip"
               },
               "LayerName": "node10"
             }
@@ -166,7 +166,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/integration-tester/dev/1583960530149-2020-03-11T21:02:10.149Z/datadog_lambda_node12.13.zip"
+                "S3Key": "serverless/integration-tester/dev/1583965684965-2020-03-11T22:28:04.965Z/datadog_lambda_node12.13.zip"
               },
               "LayerName": "node12"
             }
@@ -178,7 +178,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/integration-tester/dev/1583960530149-2020-03-11T21:02:10.149Z/integration-tester.zip"
+                "S3Key": "serverless/integration-tester/dev/1583965684965-2020-03-11T22:28:04.965Z/integration-tester.zip"
               },
               "FunctionName": "integration-tester-dev-async-metrics_node10",
               "Handler": "send-metrics.handle",
@@ -212,14 +212,14 @@
               "IamRoleLambdaExecution"
             ]
           },
-          "AsyncDashmetricsUnderscorenode10LambdaVersionpiP9r9JggcJoMTf0LUZS39qUrXXhMj6GzGsO9RuerU": {
+          "AsyncDashmetricsUnderscorenode10LambdaVersion9iFREfFa2OCQuamuiFghY2hnv69H4w6JcXXnRY3iP0": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "AsyncDashmetricsUnderscorenode10LambdaFunction"
               },
-              "CodeSha256": "J7bpYcm2z7edffgot6kL8PIdPqAOSKzlNLP/n3ScivI="
+              "CodeSha256": "xCvyLa383RvKnmIGSEksb5IjLrZzpY4SFvzY7PaBOjc="
             }
           },
           "AsyncDashmetricsUnderscorenode12LambdaFunction": {
@@ -229,7 +229,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/integration-tester/dev/1583960530149-2020-03-11T21:02:10.149Z/integration-tester.zip"
+                "S3Key": "serverless/integration-tester/dev/1583965684965-2020-03-11T22:28:04.965Z/integration-tester.zip"
               },
               "FunctionName": "integration-tester-dev-async-metrics_node12",
               "Handler": "send-metrics.handle",
@@ -263,14 +263,14 @@
               "IamRoleLambdaExecution"
             ]
           },
-          "AsyncDashmetricsUnderscorenode12LambdaVersionr42Tba4XWHDy5h5zsgJVAYXMjdWI34SLI6gFZGxwo": {
+          "AsyncDashmetricsUnderscorenode12LambdaVersionkmC8lKvH85MRTlyOJ9noLrNQj2mDZTZyIMyYBB9w": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "AsyncDashmetricsUnderscorenode12LambdaFunction"
               },
-              "CodeSha256": "J7bpYcm2z7edffgot6kL8PIdPqAOSKzlNLP/n3ScivI="
+              "CodeSha256": "xCvyLa383RvKnmIGSEksb5IjLrZzpY4SFvzY7PaBOjc="
             }
           },
           "SyncDashmetricsUnderscorenode10LambdaFunction": {
@@ -280,7 +280,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/integration-tester/dev/1583960530149-2020-03-11T21:02:10.149Z/integration-tester.zip"
+                "S3Key": "serverless/integration-tester/dev/1583965684965-2020-03-11T22:28:04.965Z/integration-tester.zip"
               },
               "FunctionName": "integration-tester-dev-sync-metrics_node10",
               "Handler": "send-metrics.handle",
@@ -313,14 +313,14 @@
               "IamRoleLambdaExecution"
             ]
           },
-          "SyncDashmetricsUnderscorenode10LambdaVersion4GkD1AytNNPtbvrVZJL1PgVMV8jC8hS2da0kNmVo": {
+          "SyncDashmetricsUnderscorenode10LambdaVersion7wpQQ2EWIlHLyhgQ7vbrbZf4vMWhMIWAdZqFB4EQ": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "SyncDashmetricsUnderscorenode10LambdaFunction"
               },
-              "CodeSha256": "J7bpYcm2z7edffgot6kL8PIdPqAOSKzlNLP/n3ScivI="
+              "CodeSha256": "xCvyLa383RvKnmIGSEksb5IjLrZzpY4SFvzY7PaBOjc="
             }
           },
           "SyncDashmetricsUnderscorenode12LambdaFunction": {
@@ -330,7 +330,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/integration-tester/dev/1583960530149-2020-03-11T21:02:10.149Z/integration-tester.zip"
+                "S3Key": "serverless/integration-tester/dev/1583965684965-2020-03-11T22:28:04.965Z/integration-tester.zip"
               },
               "FunctionName": "integration-tester-dev-sync-metrics_node12",
               "Handler": "send-metrics.handle",
@@ -363,14 +363,14 @@
               "IamRoleLambdaExecution"
             ]
           },
-          "SyncDashmetricsUnderscorenode12LambdaVersionf2ONgPTcNHpsKyqD6fDXBvFQkzjYGFRGv495tkf0Mb0": {
+          "SyncDashmetricsUnderscorenode12LambdaVersionSuPc67tIIk22C4KU2kgRAiRso76RtGEqRasPiKjWww": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "SyncDashmetricsUnderscorenode12LambdaFunction"
               },
-              "CodeSha256": "J7bpYcm2z7edffgot6kL8PIdPqAOSKzlNLP/n3ScivI="
+              "CodeSha256": "xCvyLa383RvKnmIGSEksb5IjLrZzpY4SFvzY7PaBOjc="
             }
           }
         },
@@ -395,25 +395,25 @@
           "AsyncDashmetricsUnderscorenode10LambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "AsyncDashmetricsUnderscorenode10LambdaVersionpiP9r9JggcJoMTf0LUZS39qUrXXhMj6GzGsO9RuerU"
+              "Ref": "AsyncDashmetricsUnderscorenode10LambdaVersion9iFREfFa2OCQuamuiFghY2hnv69H4w6JcXXnRY3iP0"
             }
           },
           "AsyncDashmetricsUnderscorenode12LambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "AsyncDashmetricsUnderscorenode12LambdaVersionr42Tba4XWHDy5h5zsgJVAYXMjdWI34SLI6gFZGxwo"
+              "Ref": "AsyncDashmetricsUnderscorenode12LambdaVersionkmC8lKvH85MRTlyOJ9noLrNQj2mDZTZyIMyYBB9w"
             }
           },
           "SyncDashmetricsUnderscorenode10LambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "SyncDashmetricsUnderscorenode10LambdaVersion4GkD1AytNNPtbvrVZJL1PgVMV8jC8hS2da0kNmVo"
+              "Ref": "SyncDashmetricsUnderscorenode10LambdaVersion7wpQQ2EWIlHLyhgQ7vbrbZf4vMWhMIWAdZqFB4EQ"
             }
           },
           "SyncDashmetricsUnderscorenode12LambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "SyncDashmetricsUnderscorenode12LambdaVersionf2ONgPTcNHpsKyqD6fDXBvFQkzjYGFRGv495tkf0Mb0"
+              "Ref": "SyncDashmetricsUnderscorenode12LambdaVersionSuPc67tIIk22C4KU2kgRAiRso76RtGEqRasPiKjWww"
             }
           }
         }
@@ -532,7 +532,7 @@
     "artifact": "/Users/stephenfirrincieli/go/src/github.com/DataDog/datadog-lambda-layer-js/integration_tests/.serverless/integration-tester.zip"
   },
   "package": {
-    "artifactDirectoryName": "serverless/integration-tester/dev/1583960530149-2020-03-11T21:02:10.149Z",
+    "artifactDirectoryName": "serverless/integration-tester/dev/1583965684965-2020-03-11T22:28:04.965Z",
     "artifact": "integration-tester.zip"
   }
 }
