@@ -42,7 +42,7 @@ async function handle(event, context) {
     `eventsource:${responsePayload.eventType}`,
   );
 
-  console.log("I am an example log line");
+  console.log(`Processed ${responsePayload.eventType} request`);
 
   return responsePayload;
 }

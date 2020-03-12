@@ -10,7 +10,7 @@ set -e
 
 # These values need to be in sync with serverless.yml, where there needs to be a function
 # defined for every handler_runtime combination
-LAMBDA_HANDLERS=("async-metrics" "sync-metrics")
+LAMBDA_HANDLERS=("async-metrics" "sync-metrics" "http-requests" "http-requests-traced")
 RUNTIMES=("node10" "node12")
 
 LOGS_WAIT_SECONDS=20
@@ -122,7 +122,7 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
                 # Normalize execution ID in logs prefix
                 sed -E $'s/[0-9a-z]+\-[0-9a-z]+\-[0-9a-z]+\-[0-9a-z]+\-[0-9a-z]+\t/XXXX-XXXX-XXXX-XXXX-XXXX\t/' |
                 # Normalize minor package version tag so that these snapshots aren't broken on version bumps
-                sed -E "s/(dd_lambda_layer:datadog-nodev[0-9]+\.)[0-9]+\.0/\1XX\.0/g"
+                sed -E "s/(dd_lambda_layer:datadog-nodev[0-9]+\.)[0-9]+\.[0-9]+/\1XX\.X/g"
         )
 
         if [ ! -f $function_snapshot_path ]; then
