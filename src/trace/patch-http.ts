@@ -121,6 +121,6 @@ function _logHttpRequest(options: http.RequestOptions) {
 
   const url = `${options.protocol}//${options.host}${options.path}`;
 
-  const requestMessage = `HTTP ${options.method} ${url} ${headerMessage} Data: TODO\n`;
+  const requestMessage = `HTTP ${options.method} ${url} ${headerMessage}\n`;
   process.stdout.write(requestMessage);
 }
