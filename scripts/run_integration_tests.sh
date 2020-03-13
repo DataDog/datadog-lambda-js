@@ -10,7 +10,7 @@ set -e
 
 # These values need to be in sync with serverless.yml, where there needs to be a function
 # defined for every handler_runtime combination
-LAMBDA_HANDLERS=("async-metrics" "sync-metrics" "http-requests" "http-requests-traced")
+LAMBDA_HANDLERS=("async-metrics" "sync-metrics" "http-requests" "process-input-traced")
 RUNTIMES=("node10" "node12")
 
 LOGS_WAIT_SECONDS=20
@@ -80,8 +80,6 @@ for input_event_file in "${input_event_files[@]}"; do
                     echo "Ok: Return value for $function_name with $input_event_name event matches snapshot"
                 fi
             fi
-
-            sleep 2
         done
     done
 done
@@ -104,8 +102,6 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
             echo "$raw_logs" |
                 # Filter serverless cli errors
                 sed '/Serverless: Recoverable error occurred/d' |
-                # Remove blank lines
-                sed '/^$/d' |
                 # Normalize Lambda runtime report logs
                 sed -E 's/(RequestId|TraceId|SegmentId|Duration|Memory Used|"e"):( )?[a-z0-9\.\-]+/\1:\2XXXX/g' |
                 # Normalize DD APM headers and AWS account ID

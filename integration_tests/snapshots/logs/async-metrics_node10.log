@@ -5,6 +5,7 @@ XXXX-XX-XX XX:XX:XX.XXX	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span_
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	Init Duration: XXXX ms	
 XRAY TraceId: XXXX	SegmentId: XXXX	Sampled: true	
+
 START RequestId: XXXX Version: $LATEST
 {"e":XXXX,"m":"aws.lambda.enhanced.invocations","t":["region:us-east-1","account_id:XXXX","functionname:integration-tester-dev-async-metrics_node10","cold_start:false","memorysize:1024","runtime:nodejs10.x"],"v":1}
 {"e":XXXX,"m":"serverless.integration_test.records_processed","t":["tagkey:tagvalue","eventsource:SNS","dd_lambda_layer:datadog-nodev10.XX.X"],"v":1}
@@ -13,6 +14,7 @@ XXXX-XX-XX XX:XX:XX.XXX	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span_
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	
 XRAY TraceId: XXXX	SegmentId: XXXX	Sampled: true	
+
 START RequestId: XXXX Version: $LATEST
 {"e":XXXX,"m":"aws.lambda.enhanced.invocations","t":["region:us-east-1","account_id:XXXX","functionname:integration-tester-dev-async-metrics_node10","cold_start:false","memorysize:1024","runtime:nodejs10.x"],"v":1}
 {"e":XXXX,"m":"serverless.integration_test.records_processed","t":["tagkey:tagvalue","eventsource:SQS","dd_lambda_layer:datadog-nodev10.XX.X"],"v":1}

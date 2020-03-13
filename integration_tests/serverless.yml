@@ -67,14 +67,18 @@ functions:
     layers:
       - { Ref: Node12LambdaLayer }
 
-  http-requests-traced_node10:
-    handler: http-requests-traced.handle
+  process-input-traced_node10:
+    handler: process-input-traced.handle
     runtime: nodejs10.x
     layers:
       - { Ref: Node10LambdaLayer }
+    environment:
+      DD_FLUSH_TO_LOG: true
 
-  http-requests-traced_node12:
-    handler: http-requests-traced.handle
+  process-input-traced_node12:
+    handler: process-input-traced.handle
     runtime: nodejs12.x
     layers:
       - { Ref: Node12LambdaLayer }
+    environment:
+      DD_FLUSH_TO_LOG: true
