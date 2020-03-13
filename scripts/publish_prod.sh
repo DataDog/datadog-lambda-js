@@ -24,7 +24,7 @@ fi
 
 yarn login
 
-# ./scripts/run_tests.sh
+./scripts/run_tests.sh
 
 PACKAGE_VERSION=$(node -pe "require('./package.json').version")
 

@@ -98,11 +98,7 @@ function isIntegrationTest() {
     return false;
   }
 
-  if (integrationTestEnvVar.toLowerCase() === "true") {
-    return true;
-  }
-
-  return false;
+  return integrationTestEnvVar.toLowerCase() === "true";
 }
 
 /**
