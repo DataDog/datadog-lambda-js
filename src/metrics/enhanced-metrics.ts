@@ -44,11 +44,11 @@ export function getRuntimeTag(): string | null {
 }
 
 export function getEnhancedMetricTags(context: Context): string[] {
-  const tags = [
-    ...parseTagsFromARN(context.invokedFunctionArn),
-    getColdStartTag(),
-    `memorysize:${context.memoryLimitInMB}`,
-  ];
+  let arnTags = [`functionname:${context.functionName}`];
+  if (context.invokedFunctionArn) {
+    arnTags = parseTagsFromARN(context.invokedFunctionArn);
+  }
+  const tags = [...arnTags, getColdStartTag(), `memorysize:${context.memoryLimitInMB}`];
 
   const runtimeTag = getRuntimeTag();
   if (runtimeTag) {
