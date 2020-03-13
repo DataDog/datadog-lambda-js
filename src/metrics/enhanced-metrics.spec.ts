@@ -12,6 +12,10 @@ const mockContext = ({
   invokedFunctionArn: mockARN,
   memoryLimitInMB: "128",
 } as any) as Context;
+const mockContextLocal = ({
+  functionName: "my-test-lambda",
+  memoryLimitInMB: "128",
+} as any) as Context;
 
 describe("getRuntimeTag", () => {
   it("returns a null runtime tag when version is not recognized", () => {
@@ -48,6 +52,16 @@ describe("getEnhancedMetricTags", () => {
     expect(getEnhancedMetricTags(mockContext)).toStrictEqual([
       "region:us-east-1",
       "account_id:123497598159",
+      "functionname:my-test-lambda",
+      "cold_start:true",
+      "memorysize:128",
+      "runtime:nodejs8.10",
+    ]);
+  });
+
+  it("generates tag list with local runtime", () => {
+    mockedGetProcessVersion.mockReturnValue("v8.10.0");
+    expect(getEnhancedMetricTags(mockContextLocal)).toStrictEqual([
       "functionname:my-test-lambda",
       "cold_start:true",
       "memorysize:128",
