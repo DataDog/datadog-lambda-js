@@ -18,15 +18,7 @@ layers:
       artifact: ../.layers/datadog_lambda_node12.13.zip
 
 functions:
-  # sync-metrics
-  # async-metrics_python27:
-  #   handler: handle.handle
-  #   runtime: python2.7
-  #   layers:
-  #     - { Ref: Python27LambdaLayer }
-  #   environment:
-  #     DD_FLUSH_TO_LOG: true
-
+  # async-metrics
   async-metrics_node10:
     handler: send-metrics.handle
     runtime: nodejs10.x
@@ -43,6 +35,7 @@ functions:
     environment:
       DD_FLUSH_TO_LOG: true
 
+  # sync-metrics
   sync-metrics_node10:
     handler: send-metrics.handle
     runtime: nodejs10.x
@@ -55,6 +48,7 @@ functions:
     layers:
       - { Ref: Node12LambdaLayer }
 
+  # http-requests
   http-requests_node10:
     handler: http-requests.handle
     runtime: nodejs10.x
@@ -67,6 +61,7 @@ functions:
     layers:
       - { Ref: Node12LambdaLayer }
 
+  # process-input-traced
   process-input-traced_node10:
     handler: process-input-traced.handle
     runtime: nodejs10.x

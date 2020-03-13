@@ -93,7 +93,7 @@ function getRequestOptionsWithTraceContext(
 }
 
 function isIntegrationTest() {
-  const integrationTestEnvVar = process.env["DD_INTEGRATION_TEST"];
+  const integrationTestEnvVar = process.env.DD_INTEGRATION_TEST;
   if (typeof integrationTestEnvVar !== "string") {
     return false;
   }
