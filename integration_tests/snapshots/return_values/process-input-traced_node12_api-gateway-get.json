@@ -1,3 +1,5 @@
 {
-    "message": "hello, dog!"
+    "message": "hello, dog!",
+    "recordIds": [],
+    "eventType": "APIGateway"
 }
