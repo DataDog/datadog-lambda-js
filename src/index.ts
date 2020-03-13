@@ -28,6 +28,11 @@ interface GlobalConfig {
    * @default false
    */
   debugLogging: boolean;
+  /**
+   * Whether to force the `datadog()` wrapper to always wrap.
+   * @default false
+   */
+  forceWrap: boolean;
 }
 
 /**
@@ -41,6 +46,7 @@ export const defaultConfig: Config = {
   autoPatchHTTP: true,
   debugLogging: false,
   enhancedMetrics: true,
+  forceWrap: false,
   injectLogContext: true,
   logForwarding: false,
   mergeDatadogXrayTraces: false,
@@ -54,7 +60,7 @@ let currentTraceListener: TraceListener | undefined;
 /**
  * Wraps your AWS lambda handler functions to add tracing/metrics support
  * @param handler A lambda handler function.
- * @param config  Configuration options for datadog.
+ * @param config Configuration options for datadog.
  * @returns A wrapped handler function.
  *
  * ```javascript
@@ -73,7 +79,13 @@ export function datadog<TEvent, TResult>(
   const traceListener = new TraceListener(finalConfig, handlerName);
   const listeners = [metricsListener, traceListener];
 
-  return wrap(
+  // Only wrap the handler once unless forced
+  const _ddWrappedKey = "_ddWrapped";
+  if ((handler as any)[_ddWrappedKey] !== undefined && !finalConfig.forceWrap) {
+    return handler;
+  }
+
+  const wrappedFunc = wrap(
     handler,
     (event, context) => {
       setColdStart();
@@ -101,6 +113,8 @@ export function datadog<TEvent, TResult>(
     },
     (func) => traceListener.onWrap(func),
   );
+  (wrappedFunc as any)[_ddWrappedKey] = true;
+  return wrappedFunc;
 }
 
 /**

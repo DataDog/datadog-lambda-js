@@ -55,7 +55,7 @@ describe("datadog", () => {
     nock("http://www.example.com")
       .get("/")
       .reply(200, {});
-    const wrapped = datadog(handler);
+    const wrapped = datadog(handler, { forceWrap: true });
     await wrapped(
       {
         headers: {
@@ -78,7 +78,7 @@ describe("datadog", () => {
     nock("http://www.example.com")
       .get("/")
       .reply(200, {});
-    const wrapped = datadog(handler, { autoPatchHTTP: false });
+    const wrapped = datadog(handler, { autoPatchHTTP: false, forceWrap: true });
     await wrapped(
       {
         headers: {
@@ -107,10 +107,13 @@ describe("datadog", () => {
       .post(`/api/v1/distribution_points?api_key=${apiKey}`, (request: any) => request.series[0].metric === "my-dist")
       .reply(200, {});
 
-    const wrapped = datadog(async () => {
-      sendDistributionMetric("my-dist", 100, "first-tag", "second-tag");
-      return "";
-    });
+    const wrapped = datadog(
+      async () => {
+        sendDistributionMetric("my-dist", 100, "first-tag", "second-tag");
+        return "";
+      },
+      { forceWrap: true },
+    );
     await wrapped({}, {} as any, () => {});
 
     expect(nock.isDone()).toBeTruthy();
@@ -131,7 +134,7 @@ describe("datadog", () => {
         sendDistributionMetric("my-dist", 100, "first-tag", "second-tag");
         return "";
       },
-      { apiKey },
+      { apiKey, forceWrap: true },
     );
     await wrapped({}, {} as any, () => {});
 
@@ -153,7 +156,7 @@ describe("datadog", () => {
         sendDistributionMetric("my-dist", 100, "first-tag", "second-tag");
         return "";
       },
-      { apiKey },
+      { apiKey, forceWrap: true },
     );
     await wrapped({}, {} as any, () => {});
 
@@ -170,10 +173,13 @@ describe("datadog", () => {
       },
     };
 
-    const wrapped = datadog(async () => {
-      traceHeaders = getTraceHeaders();
-      return "";
-    });
+    const wrapped = datadog(
+      async () => {
+        traceHeaders = getTraceHeaders();
+        return "";
+      },
+      { forceWrap: true },
+    );
     await wrapped(event, {} as any, () => {});
     expect(traceHeaders).toEqual({
       "x-datadog-parent-id": "9101112",
@@ -197,7 +203,7 @@ describe("datadog", () => {
         console.log("Hello");
         return "";
       },
-      { injectLogContext: true },
+      { injectLogContext: true, forceWrap: true },
     );
 
     await wrapped(event, {} as any, () => {});
@@ -216,17 +222,20 @@ describe("datadog", () => {
     };
     const spy = jest.spyOn(console, "log");
 
-    const wrapped = datadog(async () => {
-      console.log("Hello");
-      return "";
-    });
+    const wrapped = datadog(
+      async () => {
+        console.log("Hello");
+        return "";
+      },
+      { forceWrap: true },
+    );
 
     await wrapped(event, {} as any, () => {});
     expect(spy).toHaveBeenCalledWith("[dd.trace_id=123456 dd.span_id=9101112] Hello");
   });
 
   it("increments invocations for each function call", async () => {
-    const wrapped = datadog(handler);
+    const wrapped = datadog(handler, { forceWrap: true });
 
     await wrapped({}, mockContext, () => {});
 
@@ -245,7 +254,7 @@ describe("datadog", () => {
       throw Error("Some error");
     };
 
-    const wrappedHandler = datadog(handlerError);
+    const wrappedHandler = datadog(handlerError, { forceWrap: true });
 
     const result = wrappedHandler({}, mockContext, () => {});
     await expect(result).rejects.toEqual(Error("Some error"));
@@ -262,7 +271,7 @@ describe("datadog", () => {
       throw Error("Some error");
     };
 
-    const wrappedHandler = datadog(handlerError, { enhancedMetrics: false });
+    const wrappedHandler = datadog(handlerError, { enhancedMetrics: false, forceWrap: true });
 
     const result = wrappedHandler({}, mockContext, () => {});
     await expect(result).rejects.toEqual(Error("Some error"));
@@ -278,7 +287,7 @@ describe("datadog", () => {
       throw Error("Some error");
     };
 
-    const wrappedHandler = datadog(handlerError);
+    const wrappedHandler = datadog(handlerError, { forceWrap: true });
 
     const result = wrappedHandler({}, mockContext, () => {});
     await expect(result).rejects.toEqual(Error("Some error"));
