@@ -1,0 +1,79 @@
+service: integration-tester
+
+provider:
+  name: aws
+  tracing:
+    lambda: true
+    apiGateway: true
+  environment:
+    DD_INTEGRATION_TEST: true
+    DD_API_KEY: ${env:DD_API_KEY}
+
+layers:
+  node10:
+    package:
+      artifact: ../.layers/datadog_lambda_node10.15.zip
+  node12:
+    package:
+      artifact: ../.layers/datadog_lambda_node12.13.zip
+
+functions:
+  # async-metrics
+  async-metrics_node10:
+    handler: send-metrics.handle
+    runtime: nodejs10.x
+    layers:
+      - { Ref: Node10LambdaLayer }
+    environment:
+      DD_FLUSH_TO_LOG: true
+
+  async-metrics_node12:
+    handler: send-metrics.handle
+    runtime: nodejs12.x
+    layers:
+      - { Ref: Node12LambdaLayer }
+    environment:
+      DD_FLUSH_TO_LOG: true
+
+  # sync-metrics
+  sync-metrics_node10:
+    handler: send-metrics.handle
+    runtime: nodejs10.x
+    layers:
+      - { Ref: Node10LambdaLayer }
+
+  sync-metrics_node12:
+    handler: send-metrics.handle
+    runtime: nodejs12.x
+    layers:
+      - { Ref: Node12LambdaLayer }
+
+  # http-requests
+  http-requests_node10:
+    handler: http-requests.handle
+    runtime: nodejs10.x
+    layers:
+      - { Ref: Node10LambdaLayer }
+
+  http-requests_node12:
+    handler: http-requests.handle
+    runtime: nodejs12.x
+    layers:
+      - { Ref: Node12LambdaLayer }
+
+  # process-input-traced
+  process-input-traced_node10:
+    handler: process-input-traced.handle
+    runtime: nodejs10.x
+    layers:
+      - { Ref: Node10LambdaLayer }
+    environment:
+      DD_FLUSH_TO_LOG: true
+
+  process-input-traced_node12:
+    handler: process-input-traced.handle
+    runtime: nodejs12.x
+    layers:
+      - { Ref: Node12LambdaLayer }
+    environment:
+      DD_FLUSH_TO_LOG: true

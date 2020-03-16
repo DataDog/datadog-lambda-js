@@ -38,6 +38,10 @@ function patchMethod(mod: typeof http | typeof https, method: "get" | "request",
       const { options, callback } = normalizeArgs(arg1, arg2, arg3);
       const requestOpts = getRequestOptionsWithTraceContext(options, contextService);
 
+      if (isIntegrationTest()) {
+        _logHttpRequest(requestOpts);
+      }
+
       return original(requestOpts, callback);
     };
     return fn as any;
@@ -86,4 +90,33 @@ function getRequestOptionsWithTraceContext(
     ...options,
     headers,
   };
+}
+
+function isIntegrationTest() {
+  const integrationTestEnvVar = process.env.DD_INTEGRATION_TEST;
+  if (typeof integrationTestEnvVar !== "string") {
+    return false;
+  }
+
+  return integrationTestEnvVar.toLowerCase() === "true";
+}
+
+/**
+ * Log each HTTP request in this format for integration tests:
+ * HTTP GET https://ip-ranges.datadoghq.com/ Headers: ["x-datadog-parent-id:abc"] Data: {}
+ * @param options The options for the HTTP request
+ */
+function _logHttpRequest(options: http.RequestOptions) {
+  let headerMessage = "Headers: []";
+
+  if (options.headers) {
+    const headerStrings = Object.entries(options.headers).map(([name, value]) => `${name}:${value}`);
+    headerStrings.sort();
+    headerMessage = `Headers: ${JSON.stringify(headerStrings)}`;
+  }
+
+  const url = `${options.protocol}//${options.host}${options.path}`;
+
+  const requestMessage = `HTTP ${options.method} ${url} ${headerMessage}\n`;
+  process.stdout.write(requestMessage);
 }

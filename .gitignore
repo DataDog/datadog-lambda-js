@@ -5,3 +5,5 @@ coverage
 .layers
 .DS_Store
 package-lock.json
+
+**/.serverless
