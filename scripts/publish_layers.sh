@@ -13,9 +13,9 @@ set -e
 # Makes sure any subprocesses will be terminated with this process
 trap "pkill -P $$; exit 1;" INT
 
-NODE_VERSIONS_FOR_AWS_CLI=("nodejs8.10" "nodejs10.x" "nodejs12.x")
-LAYER_PATHS=(".layers/datadog_lambda_node8.10.zip" ".layers/datadog_lambda_node10.15.zip" ".layers/datadog_lambda_node12.13.zip")
-LAYER_NAMES=("Datadog-Node8-10" "Datadog-Node10-x" "Datadog-Node12-x")
+NODE_VERSIONS_FOR_AWS_CLI=("nodejs10.x" "nodejs12.x")
+LAYER_PATHS=(".layers/datadog_lambda_node10.15.zip" ".layers/datadog_lambda_node12.13.zip")
+LAYER_NAMES=("Datadog-Node10-x" "Datadog-Node12-x")
 AVAILABLE_REGIONS=(us-east-2 us-east-1 us-west-1 us-west-2 ap-south-1 ap-northeast-2 ap-southeast-1 ap-southeast-2 ap-northeast-1 ca-central-1 eu-north-1 eu-central-1 eu-west-1 eu-west-2 eu-west-3 sa-east-1)
 
 # Check that the layer files exist

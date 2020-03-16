@@ -34,11 +34,6 @@ jobs:
           key: v1-dependencies-<< parameters.node >>-{{ checksum "package.json" }}
 
 workflows:
-  node-v810:
-    jobs:
-      - verify_build:
-          node: "8.10"
-
   node-v1015:
     jobs:
       - verify_build:
