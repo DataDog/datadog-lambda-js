@@ -2,7 +2,13 @@ import http from "http";
 import nock from "nock";
 
 import { Context, Handler } from "aws-lambda";
-import { datadog, getTraceHeaders, sendDistributionMetric, TraceHeaders, sendDistributionMetricWithDate } from "./index";
+import {
+  datadog,
+  getTraceHeaders,
+  sendDistributionMetric,
+  TraceHeaders,
+  sendDistributionMetricWithDate,
+} from "./index";
 import { incrementErrorsMetric, incrementInvocationsMetric } from "./metrics/enhanced-metrics";
 import { MetricsListener } from "./metrics/listener";
 import { LogLevel, setLogLevel } from "./utils";
