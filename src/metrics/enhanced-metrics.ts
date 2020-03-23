@@ -65,7 +65,7 @@ export function getEnhancedMetricTags(context: Context): string[] {
  */
 function incrementEnhancedMetric(metricName: string, context: Context) {
   // Always write enhanced metrics to standard out
-  writeMetricToStdout(`${ENHANCED_LAMBDA_METRICS_NAMESPACE}.${metricName}`, 1, getEnhancedMetricTags(context));
+  writeMetricToStdout(`${ENHANCED_LAMBDA_METRICS_NAMESPACE}.${metricName}`, 1, new Date(), getEnhancedMetricTags(context));
 }
 
 export function incrementInvocationsMetric(context: Context): void {

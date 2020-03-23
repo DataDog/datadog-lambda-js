@@ -100,4 +100,25 @@ describe("MetricsListener", () => {
 
     expect(spy).toHaveBeenCalledWith(`{"e":1487076708,"m":"my-metric","t":["tag:a","tag:b"],"v":10}\n`);
   });
+
+  it("logs metrics when logForwarding is enabled with custom timestamp", async () => {
+    const spy = jest.spyOn(process.stdout, "write");
+    // jest.spyOn(Date, "now").mockImplementation(() => 1487076708000);
+    const kms = new MockKMS("kms-api-key-decrypted");
+    const listener = new MetricsListener(kms as any, {
+      apiKey: "api-key",
+      apiKeyKMS: "kms-api-key-encrypted",
+      enhancedMetrics: false,
+      logForwarding: true,
+      shouldRetryMetrics: false,
+      siteURL,
+    });
+    // jest.useFakeTimers();
+
+    listener.onStartInvocation({});
+    listener.sendDistributionMetricWithDate("my-metric", 10, new Date(1584983836 * 1000), "tag:a", "tag:b");
+    await listener.onCompleteInvocation();
+
+    expect(spy).toHaveBeenCalledWith(`{"e":1584983836,"m":"my-metric","t":["tag:a","tag:b"],"v":10}\n`);
+  });
 });
