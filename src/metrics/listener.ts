@@ -83,12 +83,12 @@ export class MetricsListener {
     this.currentProcessor = undefined;
   }
 
-  public sendDistributionMetric(name: string, value: number, ...tags: string[]) {
+  public sendDistributionMetricWithDate(name: string, value: number, metricTime: Date, ...tags: string[]) {
     if (this.config.logForwarding) {
-      writeMetricToStdout(name, value, tags);
+      writeMetricToStdout(name, value, metricTime, tags);
       return;
     }
-    const dist = new Distribution(name, [{ timestamp: new Date(), value }], ...tags);
+    const dist = new Distribution(name, [{ timestamp: metricTime, value }], ...tags);
 
     if (this.currentProcessor !== undefined) {
       this.currentProcessor.then((processor) => {
@@ -97,6 +97,10 @@ export class MetricsListener {
     } else {
       logError("can't send metrics, datadog lambda handler not set up.");
     }
+  }
+
+  public sendDistributionMetric(name: string, value: number, ...tags: string[]) {
+    this.sendDistributionMetricWithDate(name, value, new Date(Date.now()), ...tags);
   }
 
   private async createProcessor(config: MetricsConfig, apiKey: Promise<string>) {

@@ -121,6 +121,23 @@ export function datadog<TEvent, TResult>(
  * Sends a Distribution metric asynchronously to the Datadog API.
  * @param name The name of the metric to send.
  * @param value The value of the metric
+ * @param metricTime The timesamp associated with this metric data point.
+ * @param tags The tags associated with the metric. Should be of the format "tag:value".
+ */
+export function sendDistributionMetricWithDate(name: string, value: number, metricTime: Date, ...tags: string[]) {
+  tags = [...tags, getRuntimeTag()];
+
+  if (currentMetricsListener !== undefined) {
+    currentMetricsListener.sendDistributionMetricWithDate(name, value, metricTime, ...tags);
+  } else {
+    logError("handler not initialized");
+  }
+}
+
+/**
+ * Sends a Distribution metric asynchronously to the Datadog API.
+ * @param name The name of the metric to send.
+ * @param value The value of the metric
  * @param tags The tags associated with the metric. Should be of the format "tag:value".
  */
 export function sendDistributionMetric(name: string, value: number, ...tags: string[]) {

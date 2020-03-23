@@ -2,7 +2,7 @@ import http from "http";
 import nock from "nock";
 
 import { Context, Handler } from "aws-lambda";
-import { datadog, getTraceHeaders, sendDistributionMetric, TraceHeaders } from "./index";
+import { datadog, getTraceHeaders, sendDistributionMetric, TraceHeaders, sendDistributionMetricWithDate } from "./index";
 import { incrementErrorsMetric, incrementInvocationsMetric } from "./metrics/enhanced-metrics";
 import { MetricsListener } from "./metrics/listener";
 import { LogLevel, setLogLevel } from "./utils";
@@ -154,6 +154,28 @@ describe("datadog", () => {
     const wrapped = datadog(
       async () => {
         sendDistributionMetric("my-dist", 100, "first-tag", "second-tag");
+        return "";
+      },
+      { apiKey, forceWrap: true },
+    );
+    await wrapped({}, {} as any, () => {});
+
+    expect(nock.isDone()).toBeTruthy();
+  });
+
+  it("reads site keys from the environment using custom timestamp", async () => {
+    const site = "datadoghq.com";
+    const siteEnvVar = "DD_SITE";
+    const apiKey = "12345";
+    process.env[siteEnvVar] = site;
+
+    nock("https://api.datadoghq.com")
+      .post(`/api/v1/distribution_points?api_key=${apiKey}`, (request: any) => request.series[0].metric === "my-dist")
+      .reply(200, {});
+
+    const wrapped = datadog(
+      async () => {
+        sendDistributionMetricWithDate("my-dist", 100, new Date(), "first-tag", "second-tag");
         return "";
       },
       { apiKey, forceWrap: true },
