@@ -147,9 +147,8 @@ as `context.awsRequestId`. It should be included in your log line as `@lambda.re
 
 For example, using the [Pino](https://getpino.io/) logger:
 
-```js
-
-const logger = require('pino')()
+```typescript
+const logger = require('pino')();
 
 exports.handler = async function(event, context) {
  
@@ -159,7 +158,7 @@ exports.handler = async function(event, context) {
   //Carry on with whatever the lambda needs to do
   const work = do.Work();
 
-  //Write a log messagew
+  //Write a log message
   req_logger.info("Work complete");
 
   return work;
