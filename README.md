@@ -136,6 +136,37 @@ sendDistributionMetric(
 
 If your Lambda function is associated with a VPC, you need to ensure it has access to the [public internet](https://aws.amazon.com/premiumsupport/knowledge-center/internet-access-lambda-function/).
 
+## Log correlation with other logging libraries
+
+In order to correlate logs emitted by your Lambda with specific invocations, it
+is necessary to add the AWS Request ID to your logs. This is done automatically
+for `console.log()`, but you will have to implement this for other logging libraries.
+
+The AWS Request ID is available in the context that is passed to your lambda handler,
+as `context.awsRequestId`. It should be included in your log line as `@lambda.request_id`.
+
+For example, using the [Pino](https://getpino.io/) logger:
+
+```js
+
+const logger = require('pino')()
+
+exports.handler = async function(event, context) {
+ 
+  //This sets up your request-specific logger to emit logs with the Request ID property.
+  const req_logger = logger.child({ '@lambda.request_id': context.awsRequestId });
+
+  //Carry on with whatever the lambda needs to do
+  const work = do.Work();
+
+  //Write a log messagew
+  req_logger.info("Work complete");
+
+  return work;
+}
+
+```
+
 ## Distributed Tracing
 
 [Distributed tracing](https://docs.datadoghq.com/tracing/guide/distributed_tracing/?tab=nodejs) allows you to propagate a trace context from a service running on a host to a service running on AWS Lambda, and vice versa, so you can see performance end-to-end. Linking is implemented by injecting Datadog trace context into the HTTP request headers.
