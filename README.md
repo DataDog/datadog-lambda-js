@@ -153,7 +153,7 @@ const logger = require('pino')();
 exports.handler = async function(event, context) {
  
   //This sets up your request-specific logger to emit logs with the Request ID property.
-  const req_logger = logger.child({ '@lambda.request_id': context.awsRequestId });
+  const req_logger = logger.child({ 'lambda.request_id': context.awsRequestId });
 
   //Carry on with whatever the lambda needs to do
   const work = do.Work();
