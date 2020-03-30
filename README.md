@@ -87,7 +87,7 @@ If you set the value of this variable to "true" then the Lambda layer will incre
 
 ### DD_LOGS_INJECTION
 
-Controlls whether or not the request ID is injected into log lines. See [DD_LOGS_INJECTION](#DD_LOGS_INJECTION-environment-variable) under
+Controlls whether or not the Datadog Trace ID is injected into log lines. See [DD_LOGS_INJECTION](#DD_LOGS_INJECTION-environment-variable) under
 the Trace & Log Correlation section below.
 
 ## Usage
