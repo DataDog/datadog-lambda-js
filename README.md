@@ -137,8 +137,8 @@ If your Lambda function is associated with a VPC, you need to ensure it has acce
 
 ### Using the Datadog Tracer
 
-If you are using the [Datadog Tracer](#datadog-tracer-experimental), your log messages
-will be correlated within the appropriate traces automatically.
+If you are using the [Datadog Tracer](#datadog-tracer-experimental), follow [these instructions](https://docs.datadoghq.com/tracing/connect_logs_and_traces/nodejs/#automatic-trace-id-injection)
+to set up automatic trace-log correlation.
 
 ### Without using the Datadog Tracer
 
