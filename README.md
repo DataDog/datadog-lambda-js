@@ -87,11 +87,8 @@ If you set the value of this variable to "true" then the Lambda layer will incre
 
 ### DD_LOGS_INJECTION
 
-By default, the Datadog trace id gets automatically injected into the logs for correlation, if using `console` or a logging library supported for [automatic](https://docs.datadoghq.com/tracing/connect_logs_and_traces/?tab=nodejs#automatic-trace-id-injection)  trace id injection.
-
-See instructions for [manual](https://docs.datadoghq.com/tracing/connect_logs_and_traces/?tab=nodejs#manual-trace-id-injection) trace id injection, if using other logging libraries.
-
-Set the environment variable `DD_LOGS_INJECTION` to `false` to disable this feature.
+Controlls whether or not the request ID is injected into log lines. See [DD_LOGS_INJECTION](#DD_LOGS_INJECTION-environment-variable) under
+the Trace & Log Correlation section below.
 
 ## Usage
 
@@ -136,14 +133,21 @@ sendDistributionMetric(
 
 If your Lambda function is associated with a VPC, you need to ensure it has access to the [public internet](https://aws.amazon.com/premiumsupport/knowledge-center/internet-access-lambda-function/).
 
-## Log correlation with other logging libraries
+## Trace & Log Correlation
+
+### Using the Datadog Tracer
+
+If you are using the [Datadog Tracer](#datadog-tracer-experimental), your log messages
+will be correlated within the appropriate traces automatically.
+
+### Without using the Datadog Tracer
 
 In order to correlate logs emitted by your Lambda with specific invocations, it
 is necessary to add the AWS Request ID to your logs. This is done automatically
 for `console.log()`, but you will have to implement this for other logging libraries.
 
 The AWS Request ID is available in the context that is passed to your lambda handler,
-as `context.awsRequestId`. It should be included in your log line as `@lambda.request_id`.
+as `context.awsRequestId`. It should be included in your log line as `lambda.request_id`.
 
 For example, using the [Pino](https://getpino.io/) logger:
 
@@ -165,6 +169,15 @@ exports.handler = async function(event, context) {
 }
 
 ```
+
+### DD_LOGS_INJECTION environment variable
+
+By default, the Datadog trace id gets automatically injected into the logs for correlation, if using `console` or a logging library supported for [automatic](https://docs.datadoghq.com/tracing/connect_logs_and_traces/?tab=nodejs#automatic-trace-id-injection)  trace id injection.
+
+See instructions for [manual](https://docs.datadoghq.com/tracing/connect_logs_and_traces/?tab=nodejs#manual-trace-id-injection) trace id injection, if using other logging libraries.
+
+Set the environment variable `DD_LOGS_INJECTION` to `false` to disable this feature.
+
 
 ## Distributed Tracing
 
