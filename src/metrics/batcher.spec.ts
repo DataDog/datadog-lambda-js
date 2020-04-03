@@ -4,7 +4,7 @@ import { Distribution } from "./model";
 describe("Batcher", () => {
   it("joins metrics with different tag orders", () => {
     const batcher = new Batcher();
-    const timestamp = new Date(1559928315);
+    const timestamp = new Date(1559928315000);
     const distribution1 = new Distribution(
       "my-dist",
       [{ timestamp, value: 1 }, { timestamp, value: 2 }],
@@ -29,7 +29,7 @@ describe("Batcher", () => {
 
   it("doesn't join metrics with different tags", () => {
     const batcher = new Batcher();
-    const timestamp = new Date(1559928315);
+    const timestamp = new Date(1559928315000);
     const distribution1 = new Distribution(
       "my-dist",
       [{ timestamp, value: 1 }, { timestamp, value: 2 }],
