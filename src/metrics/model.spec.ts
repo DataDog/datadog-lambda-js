@@ -2,7 +2,7 @@ import { Distribution } from "./model";
 
 describe("Distribution", () => {
   it("converts to a APIMetric", () => {
-    const timestamp = new Date(1559928315);
+    const timestamp = new Date(1559928315000);
 
     const distribution = new Distribution(
       "my-dist",
