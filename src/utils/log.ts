@@ -4,10 +4,15 @@ export enum LogLevel {
   NONE,
 }
 
-let logger = console;
+export interface Logger {
+  debug(message: string): void;
+  error(message: string): void;
+}
+
+let logger: Logger = console;
 let logLevel = LogLevel.ERROR;
 
-export function setLogger(customLogger: any) {
+export function setLogger(customLogger: Logger) {
   logger = customLogger;
 }
 
