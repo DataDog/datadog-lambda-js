@@ -8,7 +8,7 @@ import {
   MetricsListener,
 } from "./metrics";
 import { TraceConfig, TraceHeaders, TraceListener } from "./trace";
-import { logError, LogLevel, setColdStart, setLogLevel, setLogger, wrap } from "./utils";
+import { logError, LogLevel, Logger, setColdStart, setLogLevel, setLogger, wrap } from "./utils";
 
 export { TraceHeaders } from "./trace";
 
@@ -36,7 +36,7 @@ interface GlobalConfig {
   /**
    * Custom logger.
    */
-  logger?: any;
+  logger?: Logger;
 }
 
 /**
