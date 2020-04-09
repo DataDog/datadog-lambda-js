@@ -155,7 +155,7 @@ For example, using the [Pino](https://getpino.io/) logger:
 const logger = require('pino')();
 
 exports.handler = async function(event, context) {
- 
+
   //This sets up your request-specific logger to emit logs with the Request ID property.
   const req_logger = logger.child({ 'lambda.request_id': context.awsRequestId });
 
@@ -172,12 +172,42 @@ exports.handler = async function(event, context) {
 
 ### DD_LOGS_INJECTION environment variable
 
-By default, the Datadog trace id gets automatically injected into the logs for correlation, if using `console` or a logging library supported for [automatic](https://docs.datadoghq.com/tracing/connect_logs_and_traces/?tab=nodejs#automatic-trace-id-injection)  trace id injection.
+By default, the Datadog trace id gets automatically injected into the logs for correlation, if using `console` or a logging library supported for [automatic](https://docs.datadoghq.com/tracing/connect_logs_and_traces/?tab=nodejs#automatic-trace-id-injection) trace id injection.
 
 See instructions for [manual](https://docs.datadoghq.com/tracing/connect_logs_and_traces/?tab=nodejs#manual-trace-id-injection) trace id injection, if using other logging libraries.
 
 Set the environment variable `DD_LOGS_INJECTION` to `false` to disable this feature.
 
+### Custom logger
+
+You can use your own logger to log layer error and debug logs instead of default `console`
+usage.
+
+For example, using the [Pino](https://getpino.io/) logger:
+
+```typescript
+const { datadog } = require("datadog-lambda-js");
+const logger = require("pino")();
+
+// convert message string to object metadata and message
+const messageToObject = (stringMessage) => {
+  const { message, status, ...metadata } = JSON.parse(stringMessage);
+
+  return [metadata, message];
+};
+
+async function myHandler(event, context) {
+  // ...
+}
+
+// Use your own logger
+module.exports.myHandler = datadog(myHandler, {
+  logger: {
+    debug: (message) => logger.debug(...messageToObject(message)),
+    error: (message) => logger.error(...messageToObject(message)),
+  },
+});
+```
 
 ## Distributed Tracing
 
@@ -278,35 +308,40 @@ You can now trace Lambda functions using Datadog APM's tracing libraries ([dd-tr
 1. If you are using the npm package `datadog-lambda-js`, upgrade it to at least version `v0.9.0`. You also need to install the beta version of the datadog tracer: `npm install dd-trace@dev` (e.g., dd-trace@0.17.0-beta.13).
 1. Install (or update to) the latest version of [Datadog forwarder Lambda function](https://docs.datadoghq.com/integrations/amazon_web_services/?tab=allpermissions#set-up-the-datadog-lambda-function). Ensure the trace forwarding layer is attached to the forwarder, e.g., ARN for Python 2.7 `arn:aws:lambda:<AWS_REGION>:464622532012:layer:Datadog-Trace-Forwarder-Python27:4`.
 1. Instrument your function using `dd-trace`.
-    ```js
-    const { datadog } = require("datadog-lambda-js");
-    const tracer = require("dd-trace").init();
 
-    // This emits a span named "sleep"
-    const sleep = tracer.wrap("sleep", (ms) => {
-      return new Promise(resolve => setTimeout(resolve, ms));
-    });
+   ```js
+   const { datadog } = require("datadog-lambda-js");
+   const tracer = require("dd-trace").init();
 
-    exports.handler = datadog(async (event) => {
-      await sleep(1000);
-      const response = {
-        statusCode: 200,
-        body: JSON.stringify('Hello from Lambda!'),
-      };
-      return response;
-    });
-    ```
+   // This emits a span named "sleep"
+   const sleep = tracer.wrap("sleep", (ms) => {
+     return new Promise((resolve) => setTimeout(resolve, ms));
+   });
+
+   exports.handler = datadog(async (event) => {
+     await sleep(1000);
+     const response = {
+       statusCode: 200,
+       body: JSON.stringify("Hello from Lambda!"),
+     };
+     return response;
+   });
+   ```
+
 1. You can also use `dd-trace` and the X-Ray tracer together and merge the traces into one, using the `mergeDatadogXrayTraces`.
-    ```js
-    exports.handler = datadog(async (event) => {
-      await sleep(1000);
-      const response = {
-        statusCode: 200,
-        body: JSON.stringify('Hello from Lambda!'),
-      };
-      return response;
-    }, { mergeDatadogXrayTraces: true });
-    ```
+   ```js
+   exports.handler = datadog(
+     async (event) => {
+       await sleep(1000);
+       const response = {
+         statusCode: 200,
+         body: JSON.stringify("Hello from Lambda!"),
+       };
+       return response;
+     },
+     { mergeDatadogXrayTraces: true },
+   );
+   ```
 
 ## Opening Issues
 

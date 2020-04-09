@@ -323,4 +323,20 @@ describe("datadog", () => {
     expect(mockedIncrementInvocations).toBeCalledTimes(0);
     expect(mockedIncrementErrors).toBeCalledTimes(0);
   });
+
+  it("use custom logger to log debug messages", async () => {
+    const logger = {
+      debug: jest.fn(),
+      error: jest.fn(),
+    };
+
+    const wrapped = datadog(handler, { forceWrap: true, logger: logger, debugLogging: true });
+
+    await wrapped({}, mockContext, () => {});
+
+    expect(mockedIncrementInvocations).toBeCalledTimes(1);
+    expect(mockedIncrementInvocations).toBeCalledWith(mockContext);
+    expect(logger.debug).toHaveBeenCalledTimes(5);
+    expect(logger.debug).toHaveBeenLastCalledWith('{"status":"debug","message":"datadog:Unpatching HTTP libraries"}');
+  });
 });
