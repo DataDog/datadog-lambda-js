@@ -42,7 +42,9 @@ export class Distribution implements Metric {
 
   public toAPIMetrics(): APIMetric[] {
     const points: APIPoint[] = this.points.map((point) => {
-      return [point.timestamp.getTime(), [point.value]];
+      // Convert the milliseconds we get from getTime to seconds for the Datadog API
+      const unixSeconds = Math.floor(point.timestamp.getTime() / 1000);
+      return [unixSeconds, [point.value]];
     });
     return [
       {

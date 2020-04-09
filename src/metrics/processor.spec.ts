@@ -22,7 +22,7 @@ class MockAPIClient implements Client {
 }
 
 function makeMetric(name: string = "my-metric", value: number = 1): Metric {
-  const timestamp = new Date(1559941498);
+  const timestamp = new Date(1559941498000);
   return new Distribution(name, [{ timestamp, value }], "tag:a", "tag:b");
 }
 

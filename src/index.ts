@@ -8,7 +8,7 @@ import {
   MetricsListener,
 } from "./metrics";
 import { TraceConfig, TraceHeaders, TraceListener } from "./trace";
-import { logError, LogLevel, setColdStart, setLogLevel, wrap } from "./utils";
+import { logError, LogLevel, Logger, setColdStart, setLogLevel, setLogger, wrap } from "./utils";
 
 export { TraceHeaders } from "./trace";
 
@@ -33,6 +33,10 @@ interface GlobalConfig {
    * @default false
    */
   forceWrap: boolean;
+  /**
+   * Custom logger.
+   */
+  logger?: Logger;
 }
 
 /**
@@ -90,6 +94,9 @@ export function datadog<TEvent, TResult>(
     (event, context) => {
       setColdStart();
       setLogLevel(finalConfig.debugLogging ? LogLevel.DEBUG : LogLevel.ERROR);
+      if (finalConfig.logger) {
+        setLogger(finalConfig.logger);
+      }
       currentMetricsListener = metricsListener;
       currentTraceListener = traceListener;
       // Setup hook, (called once per handler invocation)
