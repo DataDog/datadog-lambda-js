@@ -89,9 +89,10 @@ export class TraceListener {
     const options: TraceOptions = {};
     if (this.context) {
       logDebug("Applying lambda context to datadog traces");
+      const functionArn = (this.context.invokedFunctionArn ?? "").toLowerCase();
       options.tags = {
         cold_start: didFunctionColdStart(),
-        function_arn: this.context.invokedFunctionArn,
+        function_arn: functionArn,
         request_id: this.context.awsRequestId,
         resource_names: this.context.functionName,
       };
