@@ -300,12 +300,12 @@ If your Lambda function is triggered by API Gateway via the non-proxy integratio
 
 If your Lambda function is deployed by the Serverless Framework, such a mapping template gets created by default.
 
-## Datadog Tracer (**Experimental**)
+## Datadog Tracer
 
 You can now trace Lambda functions using Datadog APM's tracing libraries ([dd-trace-js](https://github.com/DataDog/dd-trace-js)).
 
 1. If you are using the Lambda layer, upgrade it to at least version 9.
-1. If you are using the npm package `datadog-lambda-js`, upgrade it to at least version `v0.9.0`. You also need to install the beta version of the datadog tracer: `npm install dd-trace@dev` (e.g., dd-trace@0.17.0-beta.13).
+1. If you are using the npm package `datadog-lambda-js`, upgrade it to at least version `v0.9.0`. You also need to install at least version 0.20.0 of the datadog tracer: `npm install dd-trace`.
 1. Install (or update to) the latest version of [Datadog forwarder Lambda function](https://docs.datadoghq.com/integrations/amazon_web_services/?tab=allpermissions#set-up-the-datadog-lambda-function). Ensure the trace forwarding layer is attached to the forwarder, e.g., ARN for Python 2.7 `arn:aws:lambda:<AWS_REGION>:464622532012:layer:Datadog-Trace-Forwarder-Python27:4`.
 1. Instrument your function using `dd-trace`.
 
