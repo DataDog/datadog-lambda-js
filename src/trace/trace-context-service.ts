@@ -40,7 +40,7 @@ export class TraceContextService {
         traceContext.parentID = value;
       }
     } catch (error) {
-      logError("couldn't retrieve segment from xray", { innerError: error });
+      logDebug("couldn't retrieve segment from xray", { innerError: error });
     }
 
     return traceContext;
