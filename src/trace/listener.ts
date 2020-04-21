@@ -108,6 +108,7 @@ export class TraceListener {
     if (spanContext !== null) {
       options.childOf = spanContext;
     }
+    options.type = "serverless";
     options.resource = this.handlerName;
     return this.tracerWrapper.wrap("aws.lambda", options, func);
   }
