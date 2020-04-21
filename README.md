@@ -300,7 +300,7 @@ If your Lambda function is triggered by API Gateway via the non-proxy integratio
 
 If your Lambda function is deployed by the Serverless Framework, such a mapping template gets created by default.
 
-## Datadog Tracer (**Experimental**)
+## Datadog Tracer
 
 You can now trace Lambda functions using Datadog APM's tracing libraries ([dd-trace-js](https://github.com/DataDog/dd-trace-js)).
 
