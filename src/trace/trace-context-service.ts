@@ -13,13 +13,12 @@ export interface TraceHeaders {
   [parentIDHeader]: string;
   [samplingPriorityHeader]: string;
 }
-
-class NoopXrayLogger implements Logger {
-  warn(message: string) {}
-  debug(message: string) {}
-  info(message: string) {}
-  error(message: string) {}
-}
+const noopXrayLogger: Logger = {
+  warn: (message: string) => {},
+  debug: (message: string) => {},
+  info: (message: string) => {},
+  error: (message: string) => {},
+};
 
 /**
  * Service for retrieving the latest version of the request context from xray.
@@ -74,9 +73,9 @@ export class TraceContextService {
     // an exception or log a noisy output message when segment is empty.
     // We temporarily disabled logging on the library as a work around.
     const oldLogger = getLogger();
-    let xraySegment: Segment | undefined = undefined;
+    let xraySegment: Segment | undefined;
     try {
-      setLogger(new NoopXrayLogger());
+      setLogger(noopXrayLogger);
       xraySegment = getSegment();
     } catch (error) {}
     setLogger(oldLogger);

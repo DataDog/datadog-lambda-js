@@ -124,7 +124,7 @@ export function sendXraySubsegment(segment: string) {
   if (xrayDaemonEnv !== undefined) {
     const parts = xrayDaemonEnv.split(":");
     if (parts.length > 1) {
-      port = parseInt(parts[1]);
+      port = parseInt(parts[1], 10);
       address = parts[0];
     }
   }
