@@ -75,6 +75,7 @@ describe("TraceListener", () => {
           request_id: "1234",
           resource_names: "my-lambda",
         },
+        type: "serverless",
       },
       unwrappedFunc,
     );
@@ -104,6 +105,7 @@ describe("TraceListener", () => {
           request_id: "1234",
           resource_names: "my-lambda",
         },
+        type: "serverless",
         childOf: mockTraceHeaders,
       },
       unwrappedFunc,
@@ -135,6 +137,7 @@ describe("TraceListener", () => {
           request_id: "1234",
           resource_names: "my-lambda",
         },
+        type: "serverless",
       },
       unwrappedFunc,
     );
@@ -165,6 +168,7 @@ describe("TraceListener", () => {
           request_id: "1234",
           resource_names: "my-lambda",
         },
+        type: "serverless",
         childOf: mockTraceHeaders,
       },
       unwrappedFunc,
