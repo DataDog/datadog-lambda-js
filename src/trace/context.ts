@@ -15,8 +15,6 @@ import {
   xraySubsegmentNamespace,
   xrayTraceEnvVar,
   awsXrayDaemonAddressEnvVar,
-  xrayUDPPort,
-  localHost,
 } from "./constants";
 
 export interface XRayTraceHeader {
@@ -119,15 +117,16 @@ export function generateXraySubsegment(key: string, metadata: Record<string, any
 
 export function sendXraySubsegment(segment: string) {
   const xrayDaemonEnv = process.env[awsXrayDaemonAddressEnvVar];
-  let port = xrayUDPPort;
-  let address = localHost;
-  if (xrayDaemonEnv !== undefined) {
-    const parts = xrayDaemonEnv.split(":");
-    if (parts.length > 1) {
-      port = parseInt(parts[1], 10);
-      address = parts[0];
-    }
+  if (xrayDaemonEnv === undefined) {
+    return;
   }
+  const parts = xrayDaemonEnv.split(":");
+  if (parts.length <= 1) {
+    return;
+  }
+  const port = parseInt(parts[1], 10);
+  const address = parts[0];
+
   const message = new Buffer(`{\"format\": \"json\", \"version\": 1}\n${segment}`);
   const client = createSocket("udp4");
   // Send segment asynchronously to xray daemon

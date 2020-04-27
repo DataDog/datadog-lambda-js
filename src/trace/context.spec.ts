@@ -1,5 +1,12 @@
 import { LogLevel, setLogLevel } from "../utils";
-import { SampleMode, xrayBaggageSubsegmentKey, xraySubsegmentNamespace, Source, xrayTraceEnvVar } from "./constants";
+import {
+  SampleMode,
+  xrayBaggageSubsegmentKey,
+  xraySubsegmentNamespace,
+  Source,
+  xrayTraceEnvVar,
+  awsXrayDaemonAddressEnvVar,
+} from "./constants";
 import {
   convertToAPMParentID,
   convertToAPMTraceID,
@@ -358,6 +365,7 @@ describe("readStepFunctionContextFromEvent", () => {
 describe("extractTraceContext", () => {
   afterEach(() => {
     process.env["_X_AMZN_TRACE_ID"] = undefined;
+    process.env[awsXrayDaemonAddressEnvVar] = undefined;
   });
   it("returns trace read from header as highest priority", () => {
     process.env["_X_AMZN_TRACE_ID"] = "Root=1-5ce31dc2-2c779014b90ce44db5e03875;Parent=0b11cc4230d3e09e;Sampled=1";
@@ -418,6 +426,7 @@ describe("extractTraceContext", () => {
     } as const;
     jest.spyOn(Date, "now").mockImplementation(() => 1487076708000);
     process.env[xrayTraceEnvVar] = "Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1";
+    process.env[awsXrayDaemonAddressEnvVar] = "localhost:127.0.0.1:2000";
 
     extractTraceContext(stepFunctionEvent);
 
