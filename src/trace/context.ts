@@ -118,21 +118,27 @@ export function generateXraySubsegment(key: string, metadata: Record<string, any
 export function sendXraySubsegment(segment: string) {
   const xrayDaemonEnv = process.env[awsXrayDaemonAddressEnvVar];
   if (xrayDaemonEnv === undefined) {
+    logDebug("X-Ray daemon env var not set, not sending sub-segment");
     return;
   }
   const parts = xrayDaemonEnv.split(":");
   if (parts.length <= 1) {
+    logDebug("X-Ray daemon env var has invalid format, not sending sub-segment");
     return;
   }
   const port = parseInt(parts[1], 10);
   const address = parts[0];
 
   const message = new Buffer(`{\"format\": \"json\", \"version\": 1}\n${segment}`);
-  const client = createSocket("udp4");
-  // Send segment asynchronously to xray daemon
-  client.send(message, 0, message.length, port, address, (error, bytes) => {
-    logDebug(`Xray daemon received metadata payload`, { error, bytes });
-  });
+  try {
+    const client = createSocket("udp4");
+    // Send segment asynchronously to xray daemon
+    client.send(message, 0, message.length, port, address, (error, bytes) => {
+      logDebug(`Xray daemon received metadata payload`, { error, bytes });
+    });
+  } catch (error) {
+    logDebug("Error occurred submitting to xray daemon", { error });
+  }
 }
 
 export function readTraceFromEvent(event: any): TraceContext | undefined {

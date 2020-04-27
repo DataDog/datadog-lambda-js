@@ -406,6 +406,40 @@ describe("extractTraceContext", () => {
       source: "xray",
     });
   });
+  it("adds datadog metadata segment to xray when trace context is in event", () => {
+    jest.spyOn(Date, "now").mockImplementation(() => 1487076708000);
+    process.env[xrayTraceEnvVar] = "Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1";
+    process.env[awsXrayDaemonAddressEnvVar] = "localhost:127.0.0.1:2000";
+
+    const result = extractTraceContext({
+      headers: {
+        "x-datadog-parent-id": "797643193680388251",
+        "x-datadog-sampling-priority": "2",
+        "x-datadog-trace-id": "4110911582297405551",
+      },
+    });
+
+    expect(sentSegment instanceof Buffer).toBeTruthy();
+    const sentMessage = sentSegment.toString();
+    expect(sentMessage).toMatchInlineSnapshot(`
+      "{\\"format\\": \\"json\\", \\"version\\": 1}
+      {\\"id\\":\\"11111\\",\\"trace_id\\":\\"1-5e272390-8c398be037738dc042009320\\",\\"parent_id\\":\\"94ae789b969f1cc5\\",\\"name\\":\\"datadog-metadata\\",\\"start_time\\":1487076708000,\\"end_time\\":1487076708000,\\"type\\":\\"subsegment\\",\\"metadata\\":{\\"datadog\\":{\\"trace\\":{\\"parent-id\\":\\"797643193680388251\\",\\"sampling-priority\\":\\"2\\",\\"trace-id\\":\\"4110911582297405551\\"}}}}"
+    `);
+  });
+  it("skips adding datadog metadata to x-ray when daemon isn't present", () => {
+    jest.spyOn(Date, "now").mockImplementation(() => 1487076708000);
+    process.env[xrayTraceEnvVar] = "Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1";
+
+    const result = extractTraceContext({
+      headers: {
+        "x-datadog-parent-id": "797643193680388251",
+        "x-datadog-sampling-priority": "2",
+        "x-datadog-trace-id": "4110911582297405551",
+      },
+    });
+
+    expect(sentSegment).toBeUndefined();
+  });
 
   it("adds step function metadata to xray", () => {
     const stepFunctionEvent = {
