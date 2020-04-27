@@ -17,3 +17,6 @@ export const xraySubsegmentKey = "trace";
 export const xrayBaggageSubsegmentKey = "root_span_metadata";
 export const xraySubsegmentNamespace = "datadog";
 export const xrayTraceEnvVar = "_X_AMZN_TRACE_ID";
+export const xrayUDPPort = 2000;
+export const localHost = "127.0.0.1";
+export const awsXrayDaemonAddressEnvVar = "AWS_XRAY_DAEMON_ADDRESS";

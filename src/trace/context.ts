@@ -1,5 +1,6 @@
-import { captureFunc } from "aws-xray-sdk-core";
 import { BigNumber } from "bignumber.js";
+import { randomBytes } from "crypto";
+import { createSocket } from "dgram";
 
 import { logDebug, logError } from "../utils";
 import {
@@ -13,6 +14,9 @@ import {
   xraySubsegmentName,
   xraySubsegmentNamespace,
   xrayTraceEnvVar,
+  awsXrayDaemonAddressEnvVar,
+  xrayUDPPort,
+  localHost,
 } from "./constants";
 
 export interface XRayTraceHeader {
@@ -69,14 +73,66 @@ export function addTraceContextToXray(traceContext: TraceContext) {
     "trace-id": traceContext.traceID,
   };
 
-  captureFunc(xraySubsegmentName, (segment) => {
-    segment.addMetadata(xraySubsegmentKey, val, xraySubsegmentNamespace);
-  });
+  addXrayMetadata(xraySubsegmentKey, val);
 }
 
 export function addStepFunctionContextToXray(context: StepFunctionContext) {
-  captureFunc(xraySubsegmentName, (segment) => {
-    segment.addMetadata(xrayBaggageSubsegmentKey, context, xraySubsegmentNamespace);
+  addXrayMetadata(xrayBaggageSubsegmentKey, context);
+}
+
+export function addXrayMetadata(key: string, metadata: Record<string, any>) {
+  const segment = generateXraySubsegment(key, metadata);
+  if (segment === undefined) {
+    return;
+  }
+  sendXraySubsegment(segment);
+}
+
+export function generateXraySubsegment(key: string, metadata: Record<string, any>) {
+  const header = process.env[xrayTraceEnvVar];
+  if (header === undefined) {
+    logDebug("couldn't read xray trace header from env");
+    return;
+  }
+  const context = parseXrayTraceContextHeader(header);
+  if (context === undefined) {
+    logDebug("couldn't parse xray trace header from env");
+    return;
+  }
+  const time = Date.now();
+
+  return JSON.stringify({
+    id: randomBytes(8).toString("hex"),
+    trace_id: context.xrayTraceID,
+    parent_id: context.xrayParentID,
+    name: xraySubsegmentName,
+    start_time: time,
+    end_time: time,
+    type: "subsegment",
+    metadata: {
+      [xraySubsegmentNamespace]: {
+        [key]: metadata,
+      },
+    },
+  });
+}
+
+export function sendXraySubsegment(segment: string) {
+  const xrayDaemonEnv = process.env[awsXrayDaemonAddressEnvVar];
+  let port = xrayUDPPort;
+  let address = localHost;
+  if (xrayDaemonEnv !== undefined) {
+    const parts = xrayDaemonEnv.split(":");
+    if (parts.length > 1) {
+      port = parseInt(parts[1]);
+      address = parts[0];
+    }
+  }
+  const message = new Buffer(`{\"format\": \"json\", \"version\": 1}\n${segment}`);
+  const client = createSocket("udp4");
+  // Send segment asynchronously to xray daemon
+  client.send(message, 0, message.length, port, address, (error, bytes) => {
+    logDebug(`Xray daemon received metadata payload`, { error, bytes });
   });
 }
 
@@ -124,48 +180,57 @@ export function readTraceContextFromXray(): TraceContext | undefined {
     logError("couldn't read xray trace header from env");
     return;
   }
-  const context = parseTraceContextHeader(header);
+  const context = parseXrayTraceContextHeader(header);
+
   if (context === undefined) {
     logError("couldn't read xray trace context from env, variable had invalid format");
-  } else {
-    logDebug("read trace context from environment", context);
+    return undefined;
   }
-  return context;
-}
-
-export function parseTraceContextHeader(header: string): TraceContext | undefined {
-  // Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1
-  logDebug(`Reading trace context from env var ${header}`);
-  const [root, parent, sampled] = header.split(";");
-  if (parent === undefined || sampled === undefined) {
-    return;
-  }
-  const [, rawTraceID] = root.split("=");
-  if (rawTraceID === undefined) {
-    return;
-  }
-  const traceID = convertToAPMTraceID(rawTraceID);
-  if (traceID === undefined) {
-    return;
-  }
-  const [, rawParentID] = parent.split("=");
-  if (rawParentID === undefined) {
-    return;
-  }
-  const parentID = convertToAPMParentID(rawParentID);
+  const parentID = convertToAPMParentID(context.xrayParentID);
   if (parentID === undefined) {
+    logDebug("couldn't parse xray parent ID", context);
     return;
   }
-  const [, rawSampled] = sampled.split("=");
-  if (rawSampled === undefined) {
+  const traceID = convertToAPMTraceID(context.xrayTraceID);
+  if (traceID === undefined) {
+    logDebug("couldn't parse xray trace ID", context);
     return;
   }
-  const sampleMode = convertToSampleMode(parseInt(rawSampled, 10));
+  const sampleMode = convertToSampleMode(parseInt(context.xraySampled, 10));
+
   return {
     parentID,
     sampleMode,
     source: Source.Xray,
     traceID,
+  };
+}
+
+export function parseXrayTraceContextHeader(header: string) {
+  // Example: Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1
+  logDebug(`Reading trace context from env var ${header}`);
+  const [root, parent, sampled] = header.split(";");
+  if (parent === undefined || sampled === undefined) {
+    return;
+  }
+  const [, xrayTraceID] = root.split("=");
+  if (xrayTraceID === undefined) {
+    return;
+  }
+
+  const [, xrayParentID] = parent.split("=");
+  if (xrayParentID === undefined) {
+    return;
+  }
+
+  const [, xraySampled] = sampled.split("=");
+  if (xraySampled === undefined) {
+    return;
+  }
+  return {
+    xrayTraceID,
+    xraySampled,
+    xrayParentID,
   };
 }
 

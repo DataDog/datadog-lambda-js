@@ -5,12 +5,17 @@ import { SampleMode, Source } from "./constants";
 let mockXRaySegment: any;
 let mockXRayShouldThrow = false;
 jest.mock("aws-xray-sdk-core", () => {
+  let logger = { debug: () => {}, info: () => {}, error: () => {}, warn: () => {} };
   return {
     getSegment: () => {
       if (mockXRayShouldThrow) {
         throw new Error("Xray unitialised");
       }
       return mockXRaySegment;
+    },
+    getLogger: () => logger,
+    setLogger: (l: any) => {
+      logger = l;
     },
   };
 });

@@ -1,5 +1,5 @@
 import { LogLevel, setLogLevel } from "../utils";
-import { SampleMode, xrayBaggageSubsegmentKey, xraySubsegmentNamespace, Source } from "./constants";
+import { SampleMode, xrayBaggageSubsegmentKey, xraySubsegmentNamespace, Source, xrayTraceEnvVar } from "./constants";
 import {
   convertToAPMParentID,
   convertToAPMTraceID,
@@ -11,22 +11,27 @@ import {
   readStepFunctionContextFromEvent,
 } from "./context";
 
-let currentSegment: any;
+let sentSegment: any;
 
-jest.mock("aws-xray-sdk-core", () => {
+jest.mock("dgram", () => {
   return {
-    captureFunc: (subsegmentName: string, callback: (segment: any) => void) => {
-      if (currentSegment) {
-        callback(currentSegment);
-      } else {
-        throw Error("Unimplemented");
-      }
+    createSocket: () => {
+      return {
+        send: (message: string) => {
+          sentSegment = message;
+        },
+      };
     },
+  };
+});
+jest.mock("crypto", () => {
+  return {
+    randomBytes: () => "11111",
   };
 });
 
 beforeEach(() => {
-  currentSegment = undefined;
+  sentSegment = undefined;
   setLogLevel(LogLevel.NONE);
 });
 
@@ -411,20 +416,16 @@ describe("extractTraceContext", () => {
         },
       },
     } as const;
-    const addMetadata = jest.fn();
-    currentSegment = { addMetadata };
+    jest.spyOn(Date, "now").mockImplementation(() => 1487076708000);
+    process.env[xrayTraceEnvVar] = "Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1";
+
     extractTraceContext(stepFunctionEvent);
-    expect(addMetadata).toHaveBeenCalledWith(
-      xrayBaggageSubsegmentKey,
-      {
-        "step_function.execution_id": "fb7b1e15-e4a2-4cb2-963f-8f1fa4aec492",
-        "step_function.retry_count": 2,
-        "step_function.state_machine_arn":
-          "arn:aws:states:us-east-1:601427279990:stateMachine:HelloStepOneStepFunctionsStateMachine-z4T0mJveJ7pJ",
-        "step_function.state_machine_name": "my-state-machine",
-        "step_function.step_name": "step-one",
-      },
-      xraySubsegmentNamespace,
-    );
+
+    expect(sentSegment instanceof Buffer).toBeTruthy();
+    const sentMessage = sentSegment.toString();
+    expect(sentMessage).toMatchInlineSnapshot(`
+      "{\\"format\\": \\"json\\", \\"version\\": 1}
+      {\\"id\\":\\"11111\\",\\"trace_id\\":\\"1-5e272390-8c398be037738dc042009320\\",\\"parent_id\\":\\"94ae789b969f1cc5\\",\\"name\\":\\"datadog-metadata\\",\\"start_time\\":1487076708000,\\"end_time\\":1487076708000,\\"type\\":\\"subsegment\\",\\"metadata\\":{\\"datadog\\":{\\"root_span_metadata\\":{\\"step_function.execution_id\\":\\"fb7b1e15-e4a2-4cb2-963f-8f1fa4aec492\\",\\"step_function.retry_count\\":2,\\"step_function.state_machine_arn\\":\\"arn:aws:states:us-east-1:601427279990:stateMachine:HelloStepOneStepFunctionsStateMachine-z4T0mJveJ7pJ\\",\\"step_function.state_machine_name\\":\\"my-state-machine\\",\\"step_function.step_name\\":\\"step-one\\"}}}}"
+    `);
   });
 });

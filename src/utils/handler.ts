@@ -1,6 +1,6 @@
 import { Callback, Context, Handler } from "aws-lambda";
 
-import { logError } from "./log";
+import { logError, logDebug } from "./log";
 
 export type OnWrapFunc<T = (...args: any[]) => any> = (fn: T) => T;
 
@@ -25,9 +25,16 @@ export function wrap<TEvent, TResult>(
     let result: TResult;
 
     let handlerError: Error | undefined;
+    let wrappedHandler = promHandler;
+    // Try to apply onWrap to the handler, and if it fails, fall back to the original
+    // handler.
+    try {
+      wrappedHandler = onWrap !== undefined ? onWrap(promHandler) : promHandler;
+    } catch (error) {
+      logError(`Failed to apply wrap to handler functio ${error}`);
+    }
 
     try {
-      const wrappedHandler = onWrap !== undefined ? onWrap(promHandler) : promHandler;
       result = await wrappedHandler(event, context);
     } catch (error) {
       handlerError = error;
