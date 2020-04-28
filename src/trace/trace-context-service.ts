@@ -1,4 +1,4 @@
-import { getSegment } from "aws-xray-sdk-core";
+import { getSegment, getLogger, setLogger, Logger, Segment } from "aws-xray-sdk-core";
 
 import { logDebug, logError } from "../utils";
 import { parentIDHeader, samplingPriorityHeader, traceIDHeader } from "./constants";
@@ -13,6 +13,12 @@ export interface TraceHeaders {
   [parentIDHeader]: string;
   [samplingPriorityHeader]: string;
 }
+const noopXrayLogger: Logger = {
+  warn: (message: string) => {},
+  debug: (message: string) => {},
+  info: (message: string) => {},
+  error: (message: string) => {},
+};
 
 /**
  * Service for retrieving the latest version of the request context from xray.
@@ -32,15 +38,16 @@ export class TraceContextService {
       logDebug(`set trace context from dd-trace with parent ${datadogContext.parentID}`);
       return datadogContext;
     }
-    try {
-      const xraySegment = getSegment();
+
+    const xraySegment = this.getXraySegment();
+    if (xraySegment === undefined) {
+      logError("couldn't retrieve segment from xray");
+    } else {
       const value = convertToAPMParentID(xraySegment.id);
       if (value !== undefined) {
         logDebug(`set trace context from xray with parent ${value} from segment`);
         traceContext.parentID = value;
       }
-    } catch (error) {
-      logDebug("couldn't retrieve segment from xray", { innerError: error });
     }
 
     return traceContext;
@@ -59,5 +66,19 @@ export class TraceContextService {
 
   get traceSource() {
     return this.rootTraceContext !== undefined ? this.rootTraceContext.source : undefined;
+  }
+
+  private getXraySegment(): Segment | undefined {
+    // Newer versions of X-Ray core sdk will either throw
+    // an exception or log a noisy output message when segment is empty.
+    // We temporarily disabled logging on the library as a work around.
+    const oldLogger = getLogger();
+    let xraySegment: Segment | undefined;
+    try {
+      setLogger(noopXrayLogger);
+      xraySegment = getSegment();
+    } catch (error) {}
+    setLogger(oldLogger);
+    return xraySegment;
   }
 }

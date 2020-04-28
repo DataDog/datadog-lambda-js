@@ -36,24 +36,38 @@ function patchMethod(mod: Console, method: LogMethod, contextService: TraceConte
   }
 
   shimmer.wrap(mod, method, (original) => {
+    let isLogging = false;
     return function emitWithContext(this: any, message?: any, ...optionalParams: any[]) {
       // Disable internal logging during this call, so we don't generate an infinite loop.
+
+      // Re-entrance check, incase any of the code below tries to call a log method
+      if (isLogging) {
+        return original.apply(this as any, arguments as any);
+      }
+      isLogging = true;
+
+      let prefix = "";
       const oldLogLevel = getLogLevel();
       setLogLevel(LogLevel.NONE);
-
-      const context = contextService.currentTraceContext;
-      let prefix = "";
-      if (context !== undefined) {
-        const { traceID, parentID } = context;
-        prefix = `[dd.trace_id=${traceID} dd.span_id=${parentID}]`;
-        if (arguments.length === 0) {
-          arguments.length = 1;
-          arguments[0] = prefix;
-        } else {
-          arguments[0] = `${prefix} ${arguments[0]}`;
+      try {
+        const context = contextService.currentTraceContext;
+        if (context !== undefined) {
+          const { traceID, parentID } = context;
+          prefix = `[dd.trace_id=${traceID} dd.span_id=${parentID}]`;
+          if (arguments.length === 0) {
+            arguments.length = 1;
+            arguments[0] = prefix;
+          } else {
+            arguments[0] = `${prefix} ${arguments[0]}`;
+          }
         }
+      } catch (error) {
+        // Swallow the error, because logging inside log shouldn't be supported
       }
+
       setLogLevel(oldLogLevel);
+      isLogging = false;
+
       return original.apply(this as any, arguments as any);
     };
   });

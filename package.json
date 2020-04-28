@@ -31,7 +31,7 @@
     "typescript": "^3.8.3"
   },
   "dependencies": {
-    "aws-xray-sdk-core": "^2.5.0",
+    "aws-xray-sdk-core": "^3.0.0",
     "bignumber.js": "^9.0.0",
     "promise-retry": "^1.1.1",
     "shimmer": "^1.2.1"

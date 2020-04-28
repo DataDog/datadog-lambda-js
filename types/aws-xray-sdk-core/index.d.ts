@@ -9,6 +9,15 @@ declare module "aws-xray-sdk-core" {
     constructor(name: string, rootId: string, parentId: string);
     addMetadata(key: string, value: object | null, namespace?: string): void;
   }
+
+  export interface Logger {
+    error(message: string): void;
+    info(message: string): void;
+    warn(message: string): void;
+    debug(message: string): void;
+  }
   export function captureFunc(name: string, fcn: (segment: Segment) => void, parent?: Segment): void;
   export function getSegment(): Segment;
+  export function getLogger(): Logger;
+  export function setLogger(logger: Logger): void;
 }
