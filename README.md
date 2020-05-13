@@ -306,7 +306,7 @@ You can now trace Lambda functions using Datadog APM's tracing libraries ([dd-tr
 
 1. If you are using the Lambda layer, upgrade it to at least version 22.
 1. If you are using the npm package `datadog-lambda-js`, upgrade it to at least version `v2.22.0`. You also need to install the latest datadog tracer: `npm install dd-trace` (e.g., dd-trace@0.20.0).
-1. Install (or update to) the latest version of [Datadog forwarder Lambda function](https://docs.datadoghq.com/integrations/amazon_web_services/?tab=allpermissions#set-up-the-datadog-lambda-function).
+1. Install (or update to) the latest version of [Datadog forwarder Lambda function](https://docs.datadoghq.com/integrations/amazon_web_services/?tab=allpermissions#log-collection).
 1. Instrument your function using `dd-trace`.
 
    ```js
