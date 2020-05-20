@@ -1,7 +1,7 @@
 import { Context, Handler } from "aws-lambda";
 
 import { didFunctionColdStart } from "./cold-start";
-import { wrap } from "./handler";
+import { wrap } from "./wrapper";
 import { LogLevel, setLogLevel } from "./log";
 
 const mockContext = ({
@@ -196,7 +196,11 @@ describe("wrap", () => {
 
     let calledOriginalHandler = false;
 
-    const wrappedHandler = wrap(handler, () => {}, async () => {});
+    const wrappedHandler = wrap(
+      handler,
+      () => {},
+      async () => {},
+    );
 
     const result = await wrappedHandler({}, mockContext, () => {
       calledOriginalHandler = true;
@@ -216,7 +220,11 @@ describe("wrap", () => {
 
     let calledOriginalHandler = false;
 
-    const wrappedHandler = wrap(handler, () => {}, async () => {});
+    const wrappedHandler = wrap(
+      handler,
+      () => {},
+      async () => {},
+    );
 
     const result = await wrappedHandler({}, mockContext, () => {
       calledOriginalHandler = true;

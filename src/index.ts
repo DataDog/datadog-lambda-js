@@ -79,7 +79,8 @@ export function datadog<TEvent, TResult>(
 ): Handler<TEvent, TResult> {
   const finalConfig = getConfig(config);
   const metricsListener = new MetricsListener(new KMSService(), finalConfig);
-  const handlerName = getEnvValue("_HANDLER", "handler");
+  const handlerName = getEnvValue("DATADOG_USER_HANDLER", getEnvValue("_HANDLER", "handler"));
+
   const traceListener = new TraceListener(finalConfig, handlerName);
   const listeners = [metricsListener, traceListener];
 
@@ -219,4 +220,12 @@ export function getEnvValue(key: string, defaultValue: string): string {
 function getRuntimeTag(): string {
   const version = process.version;
   return `dd_lambda_layer:datadog-node${version}`;
+}
+
+export async function handler() {
+  console.log("This was handled.");
+  return {
+    statusCode: 200,
+    body: "hello, dog!",
+  };
 }
