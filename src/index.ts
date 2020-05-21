@@ -9,18 +9,18 @@ import {
 } from "./metrics";
 import { TraceConfig, TraceHeaders, TraceListener } from "./trace";
 import { logError, LogLevel, Logger, setColdStart, setLogLevel, setLogger, wrap } from "./utils";
-
 export { TraceHeaders } from "./trace";
 
-const apiKeyEnvVar = "DD_API_KEY";
-const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
-const siteURLEnvVar = "DD_SITE";
-const logLevelEnvVar = "DD_LOG_LEVEL";
-const logForwardingEnvVar = "DD_FLUSH_TO_LOG";
-const logInjectionEnvVar = "DD_LOGS_INJECTION";
-const enhancedMetricsEnvVar = "DD_ENHANCED_METRICS";
-
-const defaultSiteURL = "datadoghq.com";
+export const apiKeyEnvVar = "DD_API_KEY";
+export const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
+export const siteURLEnvVar = "DD_SITE";
+export const logLevelEnvVar = "DD_LOG_LEVEL";
+export const logForwardingEnvVar = "DD_FLUSH_TO_LOG";
+export const logInjectionEnvVar = "DD_LOGS_INJECTION";
+export const enhancedMetricsEnvVar = "DD_ENHANCED_METRICS";
+export const datadogHandlerEnvVar = "DATADOG_USER_HANDLER";
+export const lambdaTaskRootEnvVar = "LAMBDA_TASK_ROOT";
+export const defaultSiteURL = "datadoghq.com";
 
 interface GlobalConfig {
   /**
@@ -79,7 +79,7 @@ export function datadog<TEvent, TResult>(
 ): Handler<TEvent, TResult> {
   const finalConfig = getConfig(config);
   const metricsListener = new MetricsListener(new KMSService(), finalConfig);
-  const handlerName = getEnvValue("DATADOG_USER_HANDLER", getEnvValue("_HANDLER", "handler"));
+  const handlerName = getEnvValue(datadogHandlerEnvVar, getEnvValue("_HANDLER", "handler"));
 
   const traceListener = new TraceListener(finalConfig, handlerName);
   const listeners = [metricsListener, traceListener];
@@ -220,12 +220,4 @@ export function getEnvValue(key: string, defaultValue: string): string {
 function getRuntimeTag(): string {
   const version = process.version;
   return `dd_lambda_layer:datadog-node${version}`;
-}
-
-export async function handler() {
-  console.log("This was handled.");
-  return {
-    statusCode: 200,
-    body: "hello, dog!",
-  };
 }

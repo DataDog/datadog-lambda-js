@@ -1,7 +1,7 @@
 import { Context, Handler } from "aws-lambda";
 
 import { didFunctionColdStart } from "./cold-start";
-import { wrap } from "./wrapper";
+import { wrap } from "./handler";
 import { LogLevel, setLogLevel } from "./log";
 
 const mockContext = ({
