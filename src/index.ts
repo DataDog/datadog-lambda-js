@@ -20,6 +20,7 @@ export const logInjectionEnvVar = "DD_LOGS_INJECTION";
 export const enhancedMetricsEnvVar = "DD_ENHANCED_METRICS";
 export const datadogHandlerEnvVar = "DATADOG_USER_HANDLER";
 export const lambdaTaskRootEnvVar = "LAMBDA_TASK_ROOT";
+export const mergeXrayTracesEnvVar = "DD_MERGE_XRAY_TRACES";
 export const defaultSiteURL = "datadoghq.com";
 
 interface GlobalConfig {
@@ -207,6 +208,10 @@ function getConfig(userConfig?: Partial<Config>): Config {
   if (userConfig === undefined || userConfig.enhancedMetrics === undefined) {
     const result = getEnvValue(enhancedMetricsEnvVar, "true").toLowerCase();
     config.enhancedMetrics = result === "true";
+  }
+  if (userConfig === undefined || userConfig.mergeDatadogXrayTraces === undefined) {
+    const result = getEnvValue(mergeXrayTracesEnvVar, "false").toLowerCase();
+    config.mergeDatadogXrayTraces = result === "true";
   }
 
   return config;
