@@ -196,7 +196,11 @@ describe("wrap", () => {
 
     let calledOriginalHandler = false;
 
-    const wrappedHandler = wrap(handler, () => {}, async () => {});
+    const wrappedHandler = wrap(
+      handler,
+      () => {},
+      async () => {},
+    );
 
     const result = await wrappedHandler({}, mockContext, () => {
       calledOriginalHandler = true;
@@ -216,7 +220,11 @@ describe("wrap", () => {
 
     let calledOriginalHandler = false;
 
-    const wrappedHandler = wrap(handler, () => {}, async () => {});
+    const wrappedHandler = wrap(
+      handler,
+      () => {},
+      async () => {},
+    );
 
     const result = await wrappedHandler({}, mockContext, () => {
       calledOriginalHandler = true;

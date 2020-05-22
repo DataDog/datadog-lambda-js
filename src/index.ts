@@ -9,18 +9,19 @@ import {
 } from "./metrics";
 import { TraceConfig, TraceHeaders, TraceListener } from "./trace";
 import { logError, LogLevel, Logger, setColdStart, setLogLevel, setLogger, wrap } from "./utils";
-
 export { TraceHeaders } from "./trace";
 
-const apiKeyEnvVar = "DD_API_KEY";
-const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
-const siteURLEnvVar = "DD_SITE";
-const logLevelEnvVar = "DD_LOG_LEVEL";
-const logForwardingEnvVar = "DD_FLUSH_TO_LOG";
-const logInjectionEnvVar = "DD_LOGS_INJECTION";
-const enhancedMetricsEnvVar = "DD_ENHANCED_METRICS";
-
-const defaultSiteURL = "datadoghq.com";
+export const apiKeyEnvVar = "DD_API_KEY";
+export const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
+export const siteURLEnvVar = "DD_SITE";
+export const logLevelEnvVar = "DD_LOG_LEVEL";
+export const logForwardingEnvVar = "DD_FLUSH_TO_LOG";
+export const logInjectionEnvVar = "DD_LOGS_INJECTION";
+export const enhancedMetricsEnvVar = "DD_ENHANCED_METRICS";
+export const datadogHandlerEnvVar = "DD_LAMBDA_HANDLER";
+export const lambdaTaskRootEnvVar = "LAMBDA_TASK_ROOT";
+export const mergeXrayTracesEnvVar = "DD_MERGE_XRAY_TRACES";
+export const defaultSiteURL = "datadoghq.com";
 
 interface GlobalConfig {
   /**
@@ -79,7 +80,8 @@ export function datadog<TEvent, TResult>(
 ): Handler<TEvent, TResult> {
   const finalConfig = getConfig(config);
   const metricsListener = new MetricsListener(new KMSService(), finalConfig);
-  const handlerName = getEnvValue("_HANDLER", "handler");
+  const handlerName = getEnvValue(datadogHandlerEnvVar, getEnvValue("_HANDLER", "handler"));
+
   const traceListener = new TraceListener(finalConfig, handlerName);
   const listeners = [metricsListener, traceListener];
 
@@ -206,6 +208,10 @@ function getConfig(userConfig?: Partial<Config>): Config {
   if (userConfig === undefined || userConfig.enhancedMetrics === undefined) {
     const result = getEnvValue(enhancedMetricsEnvVar, "true").toLowerCase();
     config.enhancedMetrics = result === "true";
+  }
+  if (userConfig === undefined || userConfig.mergeDatadogXrayTraces === undefined) {
+    const result = getEnvValue(mergeXrayTracesEnvVar, "false").toLowerCase();
+    config.mergeDatadogXrayTraces = result === "true";
   }
 
   return config;
