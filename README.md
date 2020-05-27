@@ -112,7 +112,7 @@ We provide a swap in replacement handler, with zero required code changes.
 
 ### Manual Wrap
 
-You might find it more convinent to wrap your handlers manually.
+You might find it more convenient to wrap your handlers manually.
 
 ```typescript
 const { datadog } = require("datadog-lambda-js");
