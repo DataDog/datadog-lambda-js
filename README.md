@@ -107,7 +107,7 @@ Datadog needs to be able to read headers from the incoming Lambda event. To do t
 
 We provide a swap in replacement handler, with zero required code changes.
 
-1. Set the environment variable `DD_LAMBDA_HANDLER` to the your handler location.
+1. Set the environment variable `DD_LAMBDA_HANDLER` to your regular handler location, eg. `myfunc.handler`.
 2. If using the layer, set your handler to `/opt/nodejs/node_modules/datadog-lambda-js/handler.handler`. If using installing your code as a library, use `node_modules/datadog-lambda-js/handler.handler`
 
 ### Manual Wrap
