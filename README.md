@@ -91,6 +91,14 @@ If you set the value of this variable to "true" then the Lambda layer will incre
 Controlls whether or not the Datadog Trace ID is injected into log lines. See [DD_LOGS_INJECTION](#DD_LOGS_INJECTION-environment-variable) under
 the Trace & Log Correlation section below.
 
+### DD_LAMBDA_HANDLER
+
+For use with the [redirected handler](#Redirected-Handler) method. Location of your original lambda handler.
+
+### DD_TRACE_ENABLED
+
+When used with the [redirected handler](#Redirected-Handler) method, will auto initialize the tracer when set to true.
+
 ## Usage
 
 Datadog needs to be able to read headers from the incoming Lambda event. To do this, you must wrap your handler function with our library. We provide some easy ways of wrapping your handlers.
