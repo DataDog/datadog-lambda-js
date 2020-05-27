@@ -10,8 +10,7 @@ Datadog's Lambda node client library enables distributed tracing between serverf
 
 ## Installation
 
-This library is provided both as an AWS Lambda Layer, and a NPM package. If you want to get off the ground quickly and don't need to
-bundle your dependencies locally, the Lambda Layer method is the recommended approach.
+This library is provided both as an AWS Lambda Layer, and a NPM package. If you want to get off the ground quickly and don't need to bundle your dependencies locally, the Lambda Layer method is the recommended approach.
 
 ### NPM method
 
@@ -61,6 +60,8 @@ functions:
       DD_API_KEY: xxx
 ```
 
+Alternatively, consider using [serverless-plugin-datadog](https://github.com/DataDog/serverless-plugin-datadog). The plugin can take care of adding lambda layers to your functions, and wrapping your handlers.
+
 ## Environment Variables
 
 You can set the following environment variables via the AWS CLI or Serverless Framework
@@ -90,9 +91,28 @@ If you set the value of this variable to "true" then the Lambda layer will incre
 Controlls whether or not the Datadog Trace ID is injected into log lines. See [DD_LOGS_INJECTION](#DD_LOGS_INJECTION-environment-variable) under
 the Trace & Log Correlation section below.
 
+### DD_LAMBDA_HANDLER
+
+For use with the [redirected handler](#Redirected-Handler) method. Location of your original lambda handler.
+
+### DD_TRACE_ENABLED
+
+When used with the [redirected handler](#Redirected-Handler) method, will auto initialize the tracer when set to true.
+
 ## Usage
 
-Datadog needs to be able to read headers from the incoming Lambda event.
+Datadog needs to be able to read headers from the incoming Lambda event. To do this, you must wrap your handler function with our library. We provide some easy ways of wrapping your handlers.
+
+### Redirected Handler
+
+We provide a swap in replacement handler, with zero required code changes.
+
+1. Set the environment variable `DD_LAMBDA_HANDLER` to your regular handler location, eg. `myfunc.handler`.
+2. If using the layer, set your handler to `/opt/nodejs/node_modules/datadog-lambda-js/handler.handler`. If using installing your code as a library, use `node_modules/datadog-lambda-js/handler.handler`
+
+### Manual Wrap
+
+You might find it more convenient to wrap your handlers manually.
 
 ```typescript
 const { datadog } = require("datadog-lambda-js");
