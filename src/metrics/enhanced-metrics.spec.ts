@@ -53,6 +53,7 @@ describe("getEnhancedMetricTags", () => {
       "region:us-east-1",
       "account_id:123497598159",
       "functionname:my-test-lambda",
+      "resource:my-test-lambda",
       "cold_start:true",
       "memorysize:128",
       "runtime:nodejs8.10",
@@ -75,6 +76,7 @@ describe("getEnhancedMetricTags", () => {
       "region:us-east-1",
       "account_id:123497598159",
       "functionname:my-test-lambda",
+      "resource:my-test-lambda",
       "cold_start:true",
       "memorysize:128",
     ]);
