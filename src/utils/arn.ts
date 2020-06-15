@@ -1,29 +1,31 @@
 import { stringify } from "querystring";
 
 /** Parse properties of the ARN into an object */
+
 interface Tags {
+  // Disabling variable name because accountId is the key we need to use for the tag
+  // tslint:disable-next-line: variable-name
+  account_id: string;
   region: string;
-  accountId: string;
-  functionName: string;
+  functionname: string;
   executedversion?: string;
   resource?: string;
 }
 
 export function parseLambdaARN(arn: string, version?: string) {
-  // Disabling variable name because accountId is the key we need to use for the tag
-  // tslint:disable-next-line: variable-name
   let region: string | null = null;
-  let accountId: string | null = null;
-  let functionName: string | null = null;
+  // tslint:disable-next-line: variable-name
+  let account_id: string | null = null;
+  let functionname: string | null = null;
   let alias: string | null = null;
 
   const splitArn = arn.split(":");
   // If we have a version or alias let's declare it
   splitArn.length === 8
-    ? ([, , , region, accountId, , functionName, alias] = splitArn)
-    : ([, , , region, accountId, , functionName] = splitArn);
+    ? ([, , , region, account_id, , functionname, alias] = splitArn)
+    : ([, , , region, account_id, , functionname] = splitArn);
   // Set the standard tags
-  const tags: Tags = { region, accountId, functionName };
+  const tags: Tags = { region, account_id, functionname };
   // If we have an alias...
   if (alias !== null) {
     // Check if $Latest and remove $ for datadog tag convention.
@@ -33,9 +35,9 @@ export function parseLambdaARN(arn: string, version?: string) {
     } else if (!Number(alias)) {
       tags.executedversion = version;
     }
-    tags.resource = functionName + ":" + alias;
+    tags.resource = functionname + ":" + alias;
   } else {
-    tags.resource = functionName;
+    tags.resource = functionname;
   }
 
   return tags;
