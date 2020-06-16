@@ -13,21 +13,19 @@ interface Tags {
 }
 
 export function parseLambdaARN(arn: string, version?: string) {
-  let region: string | null = null;
+  let region: string | undefined = undefined;
   // tslint:disable-next-line: variable-name
-  let account_id: string | null = null;
-  let functionname: string | null = null;
-  let alias: string | null = null;
+  let account_id: string | undefined = undefined;
+  let functionname: string | undefined = undefined;
+  let alias: string | undefined = undefined;
 
   const splitArn = arn.split(":");
   // If we have a version or alias let's declare it
-  splitArn.length === 8
-    ? ([, , , region, account_id, , functionname, alias] = splitArn)
-    : ([, , , region, account_id, , functionname] = splitArn);
+  [, , , region, account_id, , functionname, alias] = splitArn;
   // Set the standard tags
   const tags: Tags = { region, account_id, functionname };
   // If we have an alias...
-  if (alias !== null) {
+  if (alias !== undefined) {
     // Check if $Latest and remove $ for datadog tag convention.
     if (alias.startsWith("$")) {
       alias = alias.substring(1);
