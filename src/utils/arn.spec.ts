@@ -6,14 +6,28 @@ describe("arn utils", () => {
       account_id: "123497598159",
       functionname: "my-test-lambda",
       region: "us-east-1",
+      resource: "my-test-lambda",
     });
   });
 
   it("parses arn properties with version alias", () => {
-    expect(parseLambdaARN("arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda:my-version-alias")).toEqual({
+    expect(
+      parseLambdaARN("arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda:my-version-alias", "1"),
+    ).toEqual({
       account_id: "123497598159",
       functionname: "my-test-lambda",
       region: "us-east-1",
+      executedversion: "1",
+      resource: "my-test-lambda:my-version-alias",
+    });
+  });
+
+  it("parses arn properties with $latest version", () => {
+    expect(parseLambdaARN("arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda:$Latest")).toEqual({
+      account_id: "123497598159",
+      functionname: "my-test-lambda",
+      region: "us-east-1",
+      resource: "my-test-lambda:Latest",
     });
   });
 
@@ -25,10 +39,13 @@ describe("arn utils", () => {
   });
 
   it("parses arn tags with version", () => {
-    const parsedTags = parseTagsFromARN(
-      "arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda:my-version-alias",
-    );
-    for (const tag of ["account_id:123497598159", "functionname:my-test-lambda", "region:us-east-1"]) {
+    const parsedTags = parseTagsFromARN("arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda:1");
+    for (const tag of [
+      "account_id:123497598159",
+      "functionname:my-test-lambda",
+      "region:us-east-1",
+      "resource:my-test-lambda:1",
+    ]) {
       expect(parsedTags).toContain(tag);
     }
   });

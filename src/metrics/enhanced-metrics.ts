@@ -45,7 +45,9 @@ export function getRuntimeTag(): string | null {
 
 export function getEnhancedMetricTags(context: Context): string[] {
   let arnTags = [`functionname:${context.functionName}`];
-  if (context.invokedFunctionArn) {
+  if (context.functionVersion) {
+    arnTags = parseTagsFromARN(context.invokedFunctionArn, context.functionVersion);
+  } else if (context.invokedFunctionArn) {
     arnTags = parseTagsFromARN(context.invokedFunctionArn);
   }
   const tags = [...arnTags, getColdStartTag(), `memorysize:${context.memoryLimitInMB}`];
@@ -65,7 +67,12 @@ export function getEnhancedMetricTags(context: Context): string[] {
  */
 function incrementEnhancedMetric(metricName: string, context: Context) {
   // Always write enhanced metrics to standard out
-  writeMetricToStdout(`${ENHANCED_LAMBDA_METRICS_NAMESPACE}.${metricName}`, 1, new Date(), getEnhancedMetricTags(context));
+  writeMetricToStdout(
+    `${ENHANCED_LAMBDA_METRICS_NAMESPACE}.${metricName}`,
+    1,
+    new Date(),
+    getEnhancedMetricTags(context),
+  );
 }
 
 export function incrementInvocationsMetric(context: Context): void {
