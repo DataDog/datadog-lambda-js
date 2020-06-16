@@ -13,11 +13,11 @@ interface Tags {
 }
 
 export function parseLambdaARN(arn: string, version?: string) {
-  let region: string | undefined = undefined;
+  let region: string | undefined;
   // tslint:disable-next-line: variable-name
-  let account_id: string | undefined = undefined;
-  let functionname: string | undefined = undefined;
-  let alias: string | undefined = undefined;
+  let account_id: string | undefined;
+  let functionname: string | undefined;
+  let alias: string | undefined;
 
   const splitArn = arn.split(":");
   // If we have a version or alias let's declare it
