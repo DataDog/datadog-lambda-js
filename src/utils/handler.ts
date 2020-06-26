@@ -1,6 +1,7 @@
 import { Callback, Context, Handler } from "aws-lambda";
 
-import { logError, logDebug } from "./log";
+import { logError } from "./log";
+import { serializeError } from "serialize-error";
 
 export type OnWrapFunc<T = (...args: any[]) => any> = (fn: T) => T;
 
@@ -20,7 +21,8 @@ export function wrap<TEvent, TResult>(
       await onStart(event, context);
     } catch (error) {
       // Swallow the error and continue processing.
-      logError("Pre-lambda hook threw error", { innerError: error });
+      const innerError = serializeError(error);
+      logError("Pre-lambda hook threw error", { innerError });
     }
     let result: TResult;
 
@@ -31,7 +33,8 @@ export function wrap<TEvent, TResult>(
     try {
       wrappedHandler = onWrap !== undefined ? onWrap(promHandler) : promHandler;
     } catch (error) {
-      logError(`Failed to apply wrap to handler functio ${error}`);
+      const innerError = serializeError(error);
+      logError(`Failed to apply wrap to handler function ${innerError}`);
     }
 
     try {
@@ -48,7 +51,8 @@ export function wrap<TEvent, TResult>(
         }
       } catch (error) {
         // Swallow the error and continue processing.
-        logError("Post-lambda hook threw error", { innerError: error });
+        const innerError = serializeError(error);
+        logError("Post-lambda hook threw error", { innerError });
       }
     }
 
