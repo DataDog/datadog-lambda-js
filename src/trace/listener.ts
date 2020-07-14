@@ -96,10 +96,10 @@ export class TraceListener {
         request_id: this.context.awsRequestId,
         resource_names: this.context.functionName,
       };
-      let tokens = functionArn.split(":")
+      const tokens = functionArn.split(":")
       if (tokens.length > 7) {
-        options.tags['function_arn'] = tokens.slice(0, 7).join(":")
-        options.tags['function_version'] = tokens[7]
+        options.tags[`function_arn`] = tokens.slice(0, 7).join(":")
+        options.tags[`function_version`] = tokens[7]
       }
     }
     if (this.stepFunctionContext) {
