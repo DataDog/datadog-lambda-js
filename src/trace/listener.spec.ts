@@ -80,6 +80,7 @@ describe("TraceListener", () => {
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
+          function_version: "$Latest",
           request_id: "1234",
           resource_names: "my-lambda",
         },
@@ -110,6 +111,7 @@ describe("TraceListener", () => {
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
+          function_version: "$Latest",
           request_id: "1234",
           resource_names: "my-lambda",
         },
@@ -142,6 +144,7 @@ describe("TraceListener", () => {
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
+          function_version: "$Latest",
           request_id: "1234",
           resource_names: "my-lambda",
         },
@@ -173,6 +176,7 @@ describe("TraceListener", () => {
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
+          function_version: "$Latest",
           request_id: "1234",
           resource_names: "my-lambda",
         },
