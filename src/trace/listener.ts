@@ -94,7 +94,7 @@ export class TraceListener {
       options.tags = {
         cold_start: didFunctionColdStart(),
         function_arn: tk.length > 7 ? tk.slice(0, 7).join(":") : functionArn,
-        function_version: tk.length > 7 ? tk[7] : "$Latest",
+        function_version: tk.length > 7 ? tk[7] : "$LATEST",
         request_id: this.context.awsRequestId,
         resource_names: this.context.functionName,
       };
