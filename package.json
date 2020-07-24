@@ -34,7 +34,7 @@
     "aws-xray-sdk-core": "^3.0.0",
     "bignumber.js": "^9.0.0",
     "promise-retry": "^1.1.1",
-    "serialize-error": "true7.0.1",
+    "serialize-error": "^7.0.1",
     "shimmer": "^1.2.1"
   },
   "jest": {
