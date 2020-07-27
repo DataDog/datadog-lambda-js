@@ -66,16 +66,6 @@ publish_layer() {
     echo "Published layer for region $region, node version $aws_version_key, layer_name $layer_name, layer_version $version_nbr"
 }
 
-BATCH_SIZE=60
-PIDS=()
-
-wait_for_processes() {
-    for pid in "${PIDS[@]}"; do
-        wait $pid
-    done
-    PIDS=()
-}
-
 for region in "${REGIONS[@]}"
 do
     echo "Starting publishing layer for region $region..."
@@ -86,15 +76,10 @@ do
         aws_version_key="${NODE_VERSIONS_FOR_AWS_CLI[$i]}"
         layer_path="${LAYER_PATHS[$i]}"
 
-        publish_layer $region $layer_name $aws_version_key $layer_path &
-        PIDS+=($!)
-        if [ ${#PIDS[@]} -eq $BATCH_SIZE ]; then
-            wait_for_processes
-        fi
+        publish_layer $region $layer_name $aws_version_key $layer_path
 
         i=$(expr $i + 1)
     done
 done
-wait_for_processes
 
 echo "Done !"
