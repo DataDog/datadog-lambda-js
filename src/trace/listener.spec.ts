@@ -50,6 +50,14 @@ describe("TraceListener", () => {
     awsRequestId: "1234",
     functionName: "my-lambda",
   };
+  const contextWithFunctionAlias = {
+    ...context,
+    invokedFunctionArn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda:alias",
+  };
+  const contextWithFunctionVersion = {
+    ...context,
+    invokedFunctionArn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda:1",
+  };
   beforeEach(() => {
     mockWrap.mockClear();
     mockExtract.mockClear();
@@ -73,6 +81,7 @@ describe("TraceListener", () => {
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
+          function_version: "$LATEST",
           request_id: "1234",
           resource_names: "my-lambda",
         },
@@ -104,6 +113,7 @@ describe("TraceListener", () => {
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
+          function_version: "$LATEST",
           request_id: "1234",
           resource_names: "my-lambda",
           "_dd.parent_source": "event",
@@ -138,6 +148,7 @@ describe("TraceListener", () => {
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
+          function_version: "$LATEST",
           request_id: "1234",
           resource_names: "my-lambda",
           "_dd.parent_source": "xray",
@@ -171,12 +182,63 @@ describe("TraceListener", () => {
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
+          function_version: "$LATEST",
           request_id: "1234",
           resource_names: "my-lambda",
           "_dd.parent_source": "xray",
         },
         type: "serverless",
         childOf: mockTraceHeaders,
+      },
+      unwrappedFunc,
+    );
+  });
+
+  it("wraps dd-trace span around invocation, with function alias", async () => {
+    const listener = new TraceListener(defaultConfig, "handler.my-handler");
+    listener.onStartInvocation({}, contextWithFunctionAlias as any);
+    const unwrappedFunc = () => {};
+    const wrappedFunc = listener.onWrap(unwrappedFunc);
+    wrappedFunc();
+    await listener.onCompleteInvocation();
+
+    expect(mockWrap).toHaveBeenCalledWith(
+      "aws.lambda",
+      {
+        resource: "handler.my-handler",
+        tags: {
+          cold_start: true,
+          function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
+          function_version: "alias",
+          request_id: "1234",
+          resource_names: "my-lambda",
+        },
+        type: "serverless",
+      },
+      unwrappedFunc,
+    );
+  });
+
+  it("wraps dd-trace span around invocation, with function version", async () => {
+    const listener = new TraceListener(defaultConfig, "handler.my-handler");
+    listener.onStartInvocation({}, contextWithFunctionVersion as any);
+    const unwrappedFunc = () => {};
+    const wrappedFunc = listener.onWrap(unwrappedFunc);
+    wrappedFunc();
+    await listener.onCompleteInvocation();
+
+    expect(mockWrap).toHaveBeenCalledWith(
+      "aws.lambda",
+      {
+        resource: "handler.my-handler",
+        tags: {
+          cold_start: true,
+          function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
+          function_version: "1",
+          request_id: "1234",
+          resource_names: "my-lambda",
+        },
+        type: "serverless",
       },
       unwrappedFunc,
     );
