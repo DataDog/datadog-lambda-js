@@ -5,7 +5,11 @@ const { load } = require("/var/runtime/UserFunction") as any;
 
 if (getEnvValue("DD_TRACE_ENABLED", "true").toLowerCase() === "true") {
   // tslint:disable-next-line:no-var-requires
-  require("dd-trace").init();
+  require("dd-trace").init({
+    tags: {
+      "_dd.origin": "lambda",
+    },
+  });
 }
 
 const taskRootEnv = getEnvValue(lambdaTaskRootEnvVar, "");

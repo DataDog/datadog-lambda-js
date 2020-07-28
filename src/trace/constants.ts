@@ -7,6 +7,7 @@ export enum SampleMode {
 export enum Source {
   Xray = "xray",
   Event = "event",
+  DDTrace = "ddtrace",
 }
 
 export const traceIDHeader = "x-datadog-trace-id";

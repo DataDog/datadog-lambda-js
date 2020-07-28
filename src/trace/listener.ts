@@ -96,6 +96,9 @@ export class TraceListener {
         request_id: this.context.awsRequestId,
         resource_names: this.context.functionName,
       };
+      if (this.contextService.traceSource !== Source.DDTrace) {
+        options.tags['_dd.parent_source'] = this.contextService.traceSource;
+      }
     }
     if (this.stepFunctionContext) {
       logDebug("Applying step function context to datadog traces");
@@ -109,7 +112,9 @@ export class TraceListener {
       options.childOf = spanContext;
     }
     options.type = "serverless";
-    options.resource = this.handlerName;
+    options.service = "aws.lambda";
+    options.resource = this.context && this.context.functionName;
+
     return this.tracerWrapper.wrap("aws.lambda", options, func);
   }
 }
