@@ -226,6 +226,10 @@ describe("readTraceFromEvent", () => {
     const result = readTraceFromEvent({});
     expect(result).toBeUndefined();
   });
+  it("returns undefined when headers is null", () => {
+    const result = readTraceFromEvent("some-value");
+    expect(result).toBeUndefined();
+  });
   it("returns undefined when event isn't object", () => {
     const result = readTraceFromEvent("some-value");
     expect(result).toBeUndefined();
