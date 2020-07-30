@@ -14,6 +14,7 @@ const mockContext = ({
 } as any) as Context;
 const mockContextLocal = ({
   functionName: "my-test-lambda",
+  functionVersion: "1.0.0",
   memoryLimitInMB: "128",
 } as any) as Context;
 
@@ -64,6 +65,7 @@ describe("getEnhancedMetricTags", () => {
     mockedGetProcessVersion.mockReturnValue("v8.10.0");
     expect(getEnhancedMetricTags(mockContextLocal)).toStrictEqual([
       "functionname:my-test-lambda",
+
       "cold_start:true",
       "memorysize:128",
       "runtime:nodejs8.10",
