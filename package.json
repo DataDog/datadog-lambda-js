@@ -4,7 +4,7 @@
   "description": "Lambda client library that supports hybrid tracing in node js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "repository": "github.com/DataDog/datadog-lambda-layer-js",
+  "repository": "github.com/DataDog/datadog-lambda-js",
   "author": "Datadog",
   "license": "Apache-2.0",
   "scripts": {

@@ -6,7 +6,7 @@ import subprocess
 
 REPO_EXCEPTIONS = {"eyes": "https://github.com/cloudhead/eyes.js"}
 
-COPYRIGHT_EXCEPTIONS = ["aws-sdk", "datadog-lambda-layer-js"]
+COPYRIGHT_EXCEPTIONS = ["aws-sdk", "datadog-lambda-js"]
 
 """
 Exceptions to this scripts assumptions about the formatting of LICENSE files:
