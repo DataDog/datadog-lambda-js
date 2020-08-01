@@ -10,63 +10,25 @@ Datadog Lambda Library for Node.js enables enhanced Lambda metrics, distributed 
 
 ## Installation
 
-Check out our [installation instructions for Node.js](https://docs.datadoghq.com/serverless/installation/nodejs/).
-
-## Environment Variables
-
-### DD_FLUSH_TO_LOG
-
-Set to `true` (recommended) to send custom metrics asynchronously (with no added latency to your Lambda function executions) through CloudWatch Logs with the help of [Datadog Forwarder](https://github.com/DataDog/datadog-serverless-functions/tree/master/aws/logs_monitoring). Defaults to `false`. If set to `false`, you also need to set `DD_API_KEY` and `DD_SITE`.
-
-### DD_API_KEY
-
-If `DD_FLUSH_TO_LOG` is set to `false` (not recommended), the Datadog API Key must be defined by setting one of the following environment variables:
-
-- DD_API_KEY - the Datadog API Key in plain-text, NOT recommended
-- DD_KMS_API_KEY - the KMS-encrypted API Key, requires the `kms:Decrypt` permission
-
-### DD_SITE
-
-If `DD_FLUSH_TO_LOG` is set to `false` (not recommended), and your data need to be sent to the Datadog EU site, you must set `DD_SITE` to `datadoghq.eu`. Defaults to `datadoghq.com`.
-
-### DD_LOG_LEVEL
-
-Set to `debug` enable debug los from the Datadog Lambda Library. Defaults to `info`.
-
-### DD_ENHANCED_METRICS
-
-Generate enhanced Datadog Lambda integration metrics, such as, `aws.lambda.enhanced.invocations` and `aws.lambda.enhanced.errors`. Defaults to `true`.
-
-### DD_LAMBDA_HANDLER
-
-For use with the [redirected handler](#Redirected-Handler) method. Location of your original lambda handler.
-
-### DD_TRACE_ENABLED
-
-When used with the [redirected handler](#Redirected-Handler) method, will auto initialize the Datadog tracer when set to true.
-
-### DD_LOGS_INJECTION
-
-Controlls whether or not the Datadog Trace ID is injected into log lines. See [DD_LOGS_INJECTION](#DD_LOGS_INJECTION-environment-variable) under
-the Trace & Log Correlation section below.
-
-### DD_MERGE_XRAY_TRACES
-
-Set to `true` to merge the X-Ray trace and the Datadog trace, when using both the X-Ray and Datadog tracing. Defaults to `false`.
+Follow the [installation instructions](https://docs.datadoghq.com/serverless/installation/nodejs/), and view your function's enhanced metrics, traces and logs in Datadog.
 
 ## Custom Metrics
+
+Once [installed](#installation), you should be able to submit custom metrics from your Lambda function.
 
 Check out the instructions for [submitting custom metrics from AWS Lambda functions](https://docs.datadoghq.com/integrations/amazon_lambda/?tab=nodejs#custom-metrics).
 
 ## Tracing
 
-Check out the instructions for [collecting traces from AWS Lambda functions](https://docs.datadoghq.com/integrations/amazon_lambda/?tab=nodejs#trace-collection), and the [official documentation for Datadog trace client](https://datadoghq.dev/dd-trace-js/).
+Once [installed](#installation), you should be able to view your function's traces in Datadog.
+
+For additional details on trace collection, take a look at [collecting traces from AWS Lambda functions](https://docs.datadoghq.com/integrations/amazon_lambda/?tab=nodejs#trace-collection).
+
+For additional details on trace and log connection, check out the [official documentation for Datadog trace client](https://datadoghq.dev/dd-trace-js/).
 
 ### Trace & Log Correlation
 
-By default, the Datadog trace id gets automatically injected into the logs for correlation, if using `console` or a logging library supported for [automatic](https://docs.datadoghq.com/tracing/connect_logs_and_traces/?tab=nodejs#automatic-trace-id-injection) trace id injection.
-
-See instructions for [manual](https://docs.datadoghq.com/tracing/connect_logs_and_traces/?tab=nodejs#manual-trace-id-injection) trace id injection, if using other logging libraries.
+By default, the Datadog trace id gets automatically injected into the logs for correlation, if using `console` or a logging library supported for automatic trace id injection. You have to manually inject the trace id, if using other logging libraries. See additional details on [connecting logs and traces](https://docs.datadoghq.com/tracing/connect_logs_and_traces/nodejs/).
 
 Set the environment variable `DD_LOGS_INJECTION` to `false` to disable this feature.
 
@@ -100,6 +62,47 @@ module.exports.myHandler = datadog(myHandler, {
   },
 });
 ```
+
+## Environment Variables
+
+### DD_FLUSH_TO_LOG
+
+Set to `true` (recommended) to send custom metrics asynchronously (with no added latency to your Lambda function executions) through CloudWatch Logs with the help of [Datadog Forwarder](https://github.com/DataDog/datadog-serverless-functions/tree/master/aws/logs_monitoring). Defaults to `false`. If set to `false`, you also need to set `DD_API_KEY` and `DD_SITE`.
+
+### DD_API_KEY
+
+If `DD_FLUSH_TO_LOG` is set to `false` (not recommended), the Datadog API Key must be defined by setting one of the following environment variables:
+
+- DD_API_KEY - the Datadog API Key in plain-text, NOT recommended
+- DD_KMS_API_KEY - the KMS-encrypted API Key, requires the `kms:Decrypt` permission
+
+### DD_SITE
+
+If `DD_FLUSH_TO_LOG` is set to `false` (not recommended), and your data need to be sent to the Datadog EU site, you must set `DD_SITE` to `datadoghq.eu`. Defaults to `datadoghq.com`.
+
+### DD_LOG_LEVEL
+
+Set to `debug` enable debug los from the Datadog Lambda Library. Defaults to `info`.
+
+### DD_ENHANCED_METRICS
+
+Generate enhanced Datadog Lambda integration metrics, such as, `aws.lambda.enhanced.invocations` and `aws.lambda.enhanced.errors`. Defaults to `true`.
+
+### DD_LAMBDA_HANDLER
+
+Location of your original Lambda handler.
+
+### DD_TRACE_ENABLED
+
+Initialize the Datadog tracer when set to `true`. Defaults to `false`.
+
+### DD_LOGS_INJECTION
+
+Inject Datadog trace id into logs for correlation. Defaults to `true`.
+
+### DD_MERGE_XRAY_TRACES
+
+Set to `true` to merge the X-Ray trace and the Datadog trace, when using both the X-Ray and Datadog tracing. Defaults to `false`.
 
 ## Opening Issues
 
