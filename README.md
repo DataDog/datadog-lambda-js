@@ -82,7 +82,7 @@ If `DD_FLUSH_TO_LOG` is set to `false` (not recommended), and your data need to 
 
 ### DD_LOG_LEVEL
 
-Set to `debug` enable debug los from the Datadog Lambda Library. Defaults to `info`.
+Set to `debug` enable debug logs from the Datadog Lambda Library. Defaults to `info`.
 
 ### DD_ENHANCED_METRICS
 
