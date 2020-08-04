@@ -10,7 +10,7 @@ buffer,github.com/feross/buffer,MIT,"Copyright (c) Feross Aboukhadijeh, and othe
 colors,github.com/Marak/colors.js,MIT,Copyright (c) Marak Squires Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)
 continuation-local-storage,github.com/othiym23/node-continuation-local-storage,BSD-2-Clause,"Copyright (c) 2013-2016, Forrest L Norvell <ogd@aoaioxxysz.net> All rights reserved."
 cycle,github.com/dscape/cycle,PublicDomain,
-datadog-lambda-js,github.com/DataDog/datadog-lambda-layer-js,Apache-2.0,"Copyright 2019 Datadog, Inc."
+datadog-lambda-js,github.com/DataDog/datadog-lambda-js,Apache-2.0,"Copyright 2019 Datadog, Inc."
 date-fns,github.com/date-fns/date-fns,MIT,
 emitter-listener,github.com/othiym23/emitter-listener,BSD-2-Clause,
 err-code,github.com/IndigoUnited/js-err-code,MIT,
