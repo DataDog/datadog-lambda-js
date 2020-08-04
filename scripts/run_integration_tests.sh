@@ -20,7 +20,7 @@ scripts_dir=$(dirname $script_path)
 repo_dir=$(dirname $scripts_dir)
 integration_tests_dir="$repo_dir/integration_tests"
 
-script_start_time=$(date --iso-8601=seconds)
+script_start_time=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 mismatch_found=false
 
