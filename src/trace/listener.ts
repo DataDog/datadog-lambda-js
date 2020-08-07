@@ -115,7 +115,9 @@ export class TraceListener {
     }
     options.type = "serverless";
     options.service = "aws.lambda";
-    options.resource = this.context && this.context.functionName;
+    if (this.context) {
+      options.resource = this.context.functionName;
+    }
 
     return this.tracerWrapper.wrap("aws.lambda", options, func);
   }
