@@ -76,7 +76,8 @@ describe("TraceListener", () => {
     expect(mockWrap).toHaveBeenCalledWith(
       "aws.lambda",
       {
-        resource: "handler.my-handler",
+        resource: "my-lambda",
+        service: "aws.lambda",
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
@@ -107,13 +108,15 @@ describe("TraceListener", () => {
     expect(mockWrap).toHaveBeenCalledWith(
       "aws.lambda",
       {
-        resource: "handler.my-handler",
+        resource: "my-lambda",
+        service: "aws.lambda",
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
           function_version: "$LATEST",
           request_id: "1234",
           resource_names: "my-lambda",
+          "_dd.parent_source": "event",
         },
         type: "serverless",
         childOf: mockTraceHeaders,
@@ -140,13 +143,15 @@ describe("TraceListener", () => {
     expect(mockWrap).toHaveBeenCalledWith(
       "aws.lambda",
       {
-        resource: "handler.my-handler",
+        resource: "my-lambda",
+        service: "aws.lambda",
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
           function_version: "$LATEST",
           request_id: "1234",
           resource_names: "my-lambda",
+          "_dd.parent_source": "xray",
         },
         type: "serverless",
       },
@@ -172,13 +177,15 @@ describe("TraceListener", () => {
     expect(mockWrap).toHaveBeenCalledWith(
       "aws.lambda",
       {
-        resource: "handler.my-handler",
+        resource: "my-lambda",
+        service: "aws.lambda",
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
           function_version: "$LATEST",
           request_id: "1234",
           resource_names: "my-lambda",
+          "_dd.parent_source": "xray",
         },
         type: "serverless",
         childOf: mockTraceHeaders,
@@ -198,7 +205,8 @@ describe("TraceListener", () => {
     expect(mockWrap).toHaveBeenCalledWith(
       "aws.lambda",
       {
-        resource: "handler.my-handler",
+        resource: "my-lambda",
+        service: "aws.lambda",
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
@@ -223,7 +231,8 @@ describe("TraceListener", () => {
     expect(mockWrap).toHaveBeenCalledWith(
       "aws.lambda",
       {
-        resource: "handler.my-handler",
+        resource: "my-lambda",
+        service: "aws.lambda",
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
