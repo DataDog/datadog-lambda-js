@@ -2,8 +2,7 @@ name: update-deps
 
 on:
   schedule:
-    - cron: "0/10 * * * *" # Every ten minutes, for testing
-    #- cron: "0 10 * * 1" # Run every Monday, 10 am
+    - cron: "0 10 * * *" # Run at 10 am every day
 
 jobs:
   check:
