@@ -51,6 +51,7 @@ export const defaultConfig: Config = {
   autoPatchHTTP: true,
   debugLogging: false,
   enhancedMetrics: true,
+  extensionForwarding: false,
   forceWrap: false,
   injectLogContext: true,
   logForwarding: false,
@@ -106,12 +107,12 @@ export function datadog<TEvent, TResult>(
         listener.onStartInvocation(event, context);
       }
       if (finalConfig.enhancedMetrics) {
-        incrementInvocationsMetric(context);
+        incrementInvocationsMetric(metricsListener, context);
       }
     },
     async (event, context, error?) => {
       if (finalConfig.enhancedMetrics && error) {
-        incrementErrorsMetric(context);
+        incrementErrorsMetric(metricsListener, context);
       }
       // Completion hook, (called once per handler invocation)
       for (const listener of listeners) {
@@ -137,7 +138,7 @@ export function sendDistributionMetricWithDate(name: string, value: number, metr
   tags = [...tags, getRuntimeTag()];
 
   if (currentMetricsListener !== undefined) {
-    currentMetricsListener.sendDistributionMetricWithDate(name, value, metricTime, ...tags);
+    currentMetricsListener.sendDistributionMetricWithDate(name, value, metricTime, false, ...tags);
   } else {
     logError("handler not initialized");
   }
@@ -153,7 +154,7 @@ export function sendDistributionMetric(name: string, value: number, ...tags: str
   tags = [...tags, getRuntimeTag()];
 
   if (currentMetricsListener !== undefined) {
-    currentMetricsListener.sendDistributionMetric(name, value, ...tags);
+    currentMetricsListener.sendDistributionMetric(name, value, false, ...tags);
   } else {
     logError("handler not initialized");
   }

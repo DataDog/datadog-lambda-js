@@ -6,6 +6,7 @@ import { KMSService } from "./kms-service";
 import { writeMetricToStdout } from "./metric-log";
 import { Distribution } from "./model";
 import { Processor } from "./processor";
+import { StatsD } from "hot-shots";
 
 const metricsBatchSendIntervalMS = 10000; // 10 seconds
 
@@ -41,6 +42,11 @@ export interface MetricsConfig {
   logForwarding: boolean;
 
   /**
+   * Whether to send metric to the DataDog extension
+   */
+  extensionForwarding: boolean;
+
+  /**
    * Whether to increment invocations and errors Lambda integration metrics from this layer.
    * @default false
    */
@@ -50,12 +56,17 @@ export interface MetricsConfig {
 export class MetricsListener {
   private currentProcessor?: Promise<Processor>;
   private apiKey: Promise<string>;
+  private statsDClient?: StatsD;
 
   constructor(private kmsClient: KMSService, private config: MetricsConfig) {
     this.apiKey = this.getAPIKey(config);
   }
 
   public onStartInvocation(_: any) {
+    if (this.config.extensionForwarding) {
+      this.statsDClient = new StatsD();
+      return;
+    }
     if (this.config.logForwarding) {
       return;
     }
@@ -75,6 +86,11 @@ export class MetricsListener {
 
         await processor.flush();
       }
+      if (this.statsDClient !== undefined) {
+        // Make sure all stats are flushed to extension
+        await promisify(this.statsDClient.close)();
+        this.statsDClient = undefined;
+      }
     } catch (error) {
       // This can fail for a variety of reasons, from the API not being reachable,
       // to KMS key decryption failing.
@@ -83,8 +99,17 @@ export class MetricsListener {
     this.currentProcessor = undefined;
   }
 
-  public sendDistributionMetricWithDate(name: string, value: number, metricTime: Date, ...tags: string[]) {
-    if (this.config.logForwarding) {
+  public sendDistributionMetricWithDate(
+    name: string,
+    value: number,
+    metricTime: Date,
+    forceAsync: boolean,
+    ...tags: string[]
+  ) {
+    if (this.config.extensionForwarding) {
+      this.statsDClient?.distribution(name, value, undefined, tags);
+    }
+    if (this.config.logForwarding || forceAsync) {
       writeMetricToStdout(name, value, metricTime, tags);
       return;
     }
@@ -99,8 +124,8 @@ export class MetricsListener {
     }
   }
 
-  public sendDistributionMetric(name: string, value: number, ...tags: string[]) {
-    this.sendDistributionMetricWithDate(name, value, new Date(Date.now()), ...tags);
+  public sendDistributionMetric(name: string, value: number, forceAsync: boolean, ...tags: string[]) {
+    this.sendDistributionMetricWithDate(name, value, new Date(Date.now()), forceAsync, ...tags);
   }
 
   private async createProcessor(config: MetricsConfig, apiKey: Promise<string>) {

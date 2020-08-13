@@ -10,7 +10,6 @@ import {
   sendDistributionMetricWithDate,
 } from "./index";
 import { incrementErrorsMetric, incrementInvocationsMetric } from "./metrics/enhanced-metrics";
-import { MetricsListener } from "./metrics/listener";
 import { LogLevel, setLogLevel } from "./utils";
 
 jest.mock("./metrics/enhanced-metrics");
@@ -268,7 +267,7 @@ describe("datadog", () => {
     await wrapped({}, mockContext, () => {});
 
     expect(mockedIncrementInvocations).toBeCalledTimes(1);
-    expect(mockedIncrementInvocations).toBeCalledWith(mockContext);
+    expect(mockedIncrementInvocations).toBeCalledWith(expect.anything(), mockContext);
 
     await wrapped({}, mockContext, () => {});
     await wrapped({}, mockContext, () => {});
@@ -290,8 +289,8 @@ describe("datadog", () => {
     expect(mockedIncrementInvocations).toBeCalledTimes(1);
     expect(mockedIncrementErrors).toBeCalledTimes(1);
 
-    expect(mockedIncrementInvocations).toBeCalledWith(mockContext);
-    expect(mockedIncrementErrors).toBeCalledWith(mockContext);
+    expect(mockedIncrementInvocations).toBeCalledWith(expect.anything(), mockContext);
+    expect(mockedIncrementErrors).toBeCalledWith(expect.anything(), mockContext);
   });
 
   it("doesn't increment errors or invocations with config false setting", async () => {
@@ -335,7 +334,7 @@ describe("datadog", () => {
     await wrapped({}, mockContext, () => {});
 
     expect(mockedIncrementInvocations).toBeCalledTimes(1);
-    expect(mockedIncrementInvocations).toBeCalledWith(mockContext);
+    expect(mockedIncrementInvocations).toBeCalledWith(expect.anything(), mockContext);
     expect(logger.debug).toHaveBeenCalledTimes(5);
     expect(logger.debug).toHaveBeenLastCalledWith('{"status":"debug","message":"datadog:Unpatching HTTP libraries"}');
   });

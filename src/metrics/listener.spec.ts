@@ -32,13 +32,14 @@ describe("MetricsListener", () => {
       apiKey: "api-key",
       apiKeyKMS: "kms-api-key-encrypted",
       enhancedMetrics: false,
+      extensionForwarding: false,
       logForwarding: false,
       shouldRetryMetrics: false,
       siteURL,
     });
 
     listener.onStartInvocation({});
-    listener.sendDistributionMetric("my-metric", 10, "tag:a", "tag:b");
+    listener.sendDistributionMetric("my-metric", 10, false, "tag:a", "tag:b");
     await listener.onCompleteInvocation();
 
     expect(nock.isDone()).toBeTruthy();
@@ -53,13 +54,14 @@ describe("MetricsListener", () => {
       apiKey: "",
       apiKeyKMS: "kms-api-key-encrypted",
       enhancedMetrics: false,
+      extensionForwarding: false,
       logForwarding: false,
       shouldRetryMetrics: false,
       siteURL,
     });
 
     listener.onStartInvocation({});
-    listener.sendDistributionMetric("my-metric", 10, "tag:a", "tag:b");
+    listener.sendDistributionMetric("my-metric", 10, false, "tag:a", "tag:b");
     await listener.onCompleteInvocation();
 
     expect(nock.isDone()).toBeTruthy();
@@ -70,13 +72,14 @@ describe("MetricsListener", () => {
       apiKey: "",
       apiKeyKMS: "kms-api-key-encrypted",
       enhancedMetrics: false,
+      extensionForwarding: false,
       logForwarding: false,
       shouldRetryMetrics: false,
       siteURL,
     });
 
     listener.onStartInvocation({});
-    listener.sendDistributionMetric("my-metric", 10, "tag:a", "tag:b");
+    listener.sendDistributionMetric("my-metric", 10, false, "tag:a", "tag:b");
     await expect(listener.onCompleteInvocation()).resolves.toEqual(undefined);
   });
 
@@ -88,6 +91,7 @@ describe("MetricsListener", () => {
       apiKey: "api-key",
       apiKeyKMS: "kms-api-key-encrypted",
       enhancedMetrics: false,
+      extensionForwarding: false,
       logForwarding: true,
       shouldRetryMetrics: false,
       siteURL,
@@ -95,7 +99,7 @@ describe("MetricsListener", () => {
     jest.useFakeTimers();
 
     listener.onStartInvocation({});
-    listener.sendDistributionMetric("my-metric", 10, "tag:a", "tag:b");
+    listener.sendDistributionMetric("my-metric", 10, false, "tag:a", "tag:b");
     await listener.onCompleteInvocation();
 
     expect(spy).toHaveBeenCalledWith(`{"e":1487076708,"m":"my-metric","t":["tag:a","tag:b"],"v":10}\n`);
@@ -109,6 +113,7 @@ describe("MetricsListener", () => {
       apiKey: "api-key",
       apiKeyKMS: "kms-api-key-encrypted",
       enhancedMetrics: false,
+      extensionForwarding: false,
       logForwarding: true,
       shouldRetryMetrics: false,
       siteURL,
@@ -116,7 +121,7 @@ describe("MetricsListener", () => {
     // jest.useFakeTimers();
 
     listener.onStartInvocation({});
-    listener.sendDistributionMetricWithDate("my-metric", 10, new Date(1584983836 * 1000), "tag:a", "tag:b");
+    listener.sendDistributionMetricWithDate("my-metric", 10, new Date(1584983836 * 1000), false, "tag:a", "tag:b");
     await listener.onCompleteInvocation();
 
     expect(spy).toHaveBeenCalledWith(`{"e":1584983836,"m":"my-metric","t":["tag:a","tag:b"],"v":10}\n`);
