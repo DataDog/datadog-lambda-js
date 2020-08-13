@@ -47,4 +47,8 @@ async function handle(event, context) {
   return responsePayload;
 }
 
-module.exports.handle = datadog(handle);
+if (process.env.WITH_PLUGIN) {
+  module.exports.handle = handle;
+} else {
+  module.exports.handle = datadog(handle);
+}

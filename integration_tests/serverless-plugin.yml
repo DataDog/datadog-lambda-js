@@ -1,0 +1,100 @@
+service: integration-tester-plugin
+
+provider:
+  name: aws
+  tracing:
+    lambda: true
+    apiGateway: true
+  environment:
+    DD_INTEGRATION_TEST: true
+    DD_API_KEY: ${env:DD_API_KEY}
+
+layers:
+  node10:
+    package:
+      artifact: ../.layers/datadog_lambda_node10.15.zip
+  node12:
+    package:
+      artifact: ../.layers/datadog_lambda_node12.13.zip
+
+functions:
+  # async-metrics
+  async-metrics_node10:
+    handler: send-metrics.handle
+    runtime: nodejs10.x
+    layers:
+      - { Ref: Node10LambdaLayer }
+    environment:
+      DD_FLUSH_TO_LOG: true
+      WITH_PLUGIN: true
+
+  async-metrics_node12:
+    handler: send-metrics.handle
+    runtime: nodejs12.x
+    layers:
+      - { Ref: Node12LambdaLayer }
+    environment:
+      DD_FLUSH_TO_LOG: true
+      WITH_PLUGIN: true
+
+  # sync-metrics
+  sync-metrics_node10:
+    handler: send-metrics.handle
+    runtime: nodejs10.x
+    layers:
+      - { Ref: Node10LambdaLayer }
+    environment:
+      WITH_PLUGIN: true
+
+  sync-metrics_node12:
+    handler: send-metrics.handle
+    runtime: nodejs12.x
+    layers:
+      - { Ref: Node12LambdaLayer }
+    environment:
+      WITH_PLUGIN: true
+
+  # http-requests
+  http-requests_node10:
+    handler: http-requests.handle
+    runtime: nodejs10.x
+    layers:
+      - { Ref: Node10LambdaLayer }
+    environment:
+      WITH_PLUGIN: true
+
+  http-requests_node12:
+    handler: http-requests.handle
+    runtime: nodejs12.x
+    layers:
+      - { Ref: Node12LambdaLayer }
+    environment:
+      WITH_PLUGIN: true
+
+  # process-input-traced
+  process-input-traced_node10:
+    handler: process-input-traced.handle
+    runtime: nodejs10.x
+    layers:
+      - { Ref: Node10LambdaLayer }
+    environment:
+      DD_FLUSH_TO_LOG: true
+      WITH_PLUGIN: true
+
+  process-input-traced_node12:
+    handler: process-input-traced.handle
+    runtime: nodejs12.x
+    layers:
+      - { Ref: Node12LambdaLayer }
+    environment:
+      DD_FLUSH_TO_LOG: true
+      WITH_PLUGIN: true
+
+plugins:
+  - serverless-plugin-datadog
+
+custom:
+  datadog:
+    flushMetricsToLogs: true
+    enableXrayTracing: true
+    forwarder: # The Datadog Forwarder ARN goes here.
