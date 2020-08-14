@@ -7,6 +7,7 @@ import { writeMetricToStdout } from "./metric-log";
 import { Distribution } from "./model";
 import { Processor } from "./processor";
 import { StatsD } from "hot-shots";
+import { isAgentRunning, flushAgent } from "./extension";
 
 const metricsBatchSendIntervalMS = 10000; // 10 seconds
 
@@ -42,11 +43,6 @@ export interface MetricsConfig {
   logForwarding: boolean;
 
   /**
-   * Whether to send metric to the DataDog extension
-   */
-  extensionForwarding: boolean;
-
-  /**
    * Whether to increment invocations and errors Lambda integration metrics from this layer.
    * @default false
    */
@@ -57,17 +53,22 @@ export class MetricsListener {
   private currentProcessor?: Promise<Processor>;
   private apiKey: Promise<string>;
   private statsDClient?: StatsD;
+  private isAgentRunning?: boolean = false;
 
   constructor(private kmsClient: KMSService, private config: MetricsConfig) {
     this.apiKey = this.getAPIKey(config);
   }
 
-  public onStartInvocation(_: any) {
-    if (this.config.extensionForwarding) {
-      this.statsDClient = new StatsD();
+  public async onStartInvocation(_: any) {
+    if (this.isAgentRunning === undefined) {
+      this.isAgentRunning = await isAgentRunning();
+    }
+
+    if (this.config.logForwarding) {
       return;
     }
-    if (this.config.logForwarding) {
+    if (this.isAgentRunning) {
+      this.statsDClient = new StatsD();
       return;
     }
     this.currentProcessor = this.createProcessor(this.config, this.apiKey);
@@ -90,6 +91,7 @@ export class MetricsListener {
         // Make sure all stats are flushed to extension
         await promisify(this.statsDClient.close)();
         this.statsDClient = undefined;
+        await flushAgent();
       }
     } catch (error) {
       // This can fail for a variety of reasons, from the API not being reachable,
@@ -106,13 +108,15 @@ export class MetricsListener {
     forceAsync: boolean,
     ...tags: string[]
   ) {
-    if (this.config.extensionForwarding) {
+    if (this.isAgentRunning) {
       this.statsDClient?.distribution(name, value, undefined, tags);
+      return;
     }
     if (this.config.logForwarding || forceAsync) {
       writeMetricToStdout(name, value, metricTime, tags);
       return;
     }
+
     const dist = new Distribution(name, [{ timestamp: metricTime, value }], ...tags);
 
     if (this.currentProcessor !== undefined) {

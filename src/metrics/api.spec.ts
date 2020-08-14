@@ -10,13 +10,21 @@ describe("APIClient", () => {
     const input: APIMetric[] = [
       {
         metric: "a-metric",
-        points: [[1, [2]], [3, [4]], [5, [6]]],
+        points: [
+          [1, [2]],
+          [3, [4]],
+          [5, [6]],
+        ],
         tags: ["a", "b", "c"],
         type: "distribution",
       },
       {
         metric: "b-metric",
-        points: [[1, [2]], [3, [4]], [5, [6]]],
+        points: [
+          [1, [2]],
+          [3, [4]],
+          [5, [6]],
+        ],
         tags: ["a", "b", "c"],
         type: "distribution",
       },
@@ -45,9 +53,7 @@ describe("APIClient", () => {
       .post("/api/v1/distribution_points?api_key=api_key", JSON.stringify({ series: [] }))
       .replyWithError("Connection closed");
     const client = new APIClient("api_key", baseAPIURL);
-    await expect(client.sendMetrics([])).rejects.toMatchInlineSnapshot(
-      `"Failed to send metrics: Error: Connection closed"`,
-    );
+    await expect(client.sendMetrics([])).rejects.toMatchInlineSnapshot(`"Failed to send metrics: Connection closed"`);
     expect(scope.isDone()).toBeTruthy();
   });
 });

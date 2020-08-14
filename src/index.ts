@@ -51,7 +51,6 @@ export const defaultConfig: Config = {
   autoPatchHTTP: true,
   debugLogging: false,
   enhancedMetrics: true,
-  extensionForwarding: false,
   forceWrap: false,
   injectLogContext: true,
   logForwarding: false,
@@ -94,7 +93,7 @@ export function datadog<TEvent, TResult>(
 
   const wrappedFunc = wrap(
     handler,
-    (event, context) => {
+    async (event, context) => {
       setColdStart();
       setLogLevel(finalConfig.debugLogging ? LogLevel.DEBUG : LogLevel.ERROR);
       if (finalConfig.logger) {
@@ -104,7 +103,7 @@ export function datadog<TEvent, TResult>(
       currentTraceListener = traceListener;
       // Setup hook, (called once per handler invocation)
       for (const listener of listeners) {
-        listener.onStartInvocation(event, context);
+        await listener.onStartInvocation(event, context);
       }
       if (finalConfig.enhancedMetrics) {
         incrementInvocationsMetric(metricsListener, context);
