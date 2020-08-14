@@ -50,6 +50,8 @@ serverless deploy -c "./serverless-plugin.yml"
 echo "Deploying functions without plugin"
 serverless deploy
 
+sleep $LOGS_WAIT_SECONDS
+
 echo "Invoking functions"
 set +e # Don't exit this script if an invocation fails or there's a diff
 for _sls_type in "with-plugin" "without-plugin"; do
