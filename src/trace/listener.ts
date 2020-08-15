@@ -98,7 +98,7 @@ export class TraceListener {
         request_id: this.context.awsRequestId,
         resource_names: this.context.functionName,
       };
-      if (this.contextService.traceSource !== Source.DDTrace) {
+      if (this.contextService.traceSource === Source.Xray && this.config.mergeDatadogXrayTraces) {
         options.tags['_dd.parent_source'] = this.contextService.traceSource;
       }
     }
