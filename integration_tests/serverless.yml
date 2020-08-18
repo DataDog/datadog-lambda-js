@@ -1,4 +1,4 @@
-service: integration-tester
+service: integration
 
 provider:
   name: aws
@@ -77,3 +77,17 @@ functions:
       - { Ref: Node12LambdaLayer }
     environment:
       DD_FLUSH_TO_LOG: true
+
+# http-errors
+  http-errors_node10:
+    handler: http-errors.handle
+    runtime: nodejs10.x
+    layers:
+      - { Ref: Node10LambdaLayer }
+
+  http-errors_node12:
+    handler: http-errors.handle
+    runtime: nodejs12.x
+    layers:
+      - { Ref: Node12LambdaLayer }
+

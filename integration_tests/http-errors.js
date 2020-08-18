@@ -1,7 +1,7 @@
 const { datadog, sendDistributionMetric } = require("datadog-lambda-js");
 const https = require("https");
 
-const urls = ["ip-ranges.datadoghq.com", "ip-ranges.datadoghq.eu"];
+const urls = ["httpstat.us/400", "httpstat.us/500"];
 
 async function handle(event, context) {
   const responsePayload = { message: "hello, dog!" };

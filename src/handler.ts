@@ -14,4 +14,5 @@ if (getEnvValue("DD_TRACE_ENABLED", "true").toLowerCase() === "true") {
 
 const taskRootEnv = getEnvValue(lambdaTaskRootEnvVar, "");
 const handlerEnv = getEnvValue(datadogHandlerEnvVar, "");
+console.log(taskRootEnv, handlerEnv);
 export const handler = datadog(load(taskRootEnv, handlerEnv) as any);

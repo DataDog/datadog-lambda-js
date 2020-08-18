@@ -10,10 +10,11 @@ set -e
 
 # These values need to be in sync with serverless.yml, where there needs to be a function
 # defined for every handler_runtime combination
-LAMBDA_HANDLERS=("async-metrics" "sync-metrics" "http-requests" "process-input-traced")
+LAMBDA_HANDLERS=("async-metrics" "sync-metrics" "http-requests" "process-input-traced" "http-errors")
 RUNTIMES=("node10" "node12")
+CONFIGS=("with-plugin" "without-plugin")
 
-LOGS_WAIT_SECONDS=20
+LOGS_WAIT_SECONDS=40
 
 script_path=${BASH_SOURCE[0]}
 scripts_dir=$(dirname $script_path)
@@ -21,6 +22,7 @@ repo_dir=$(dirname $scripts_dir)
 integration_tests_dir="$repo_dir/integration_tests"
 
 script_start_time=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+echo "$script_start_time"
 
 mismatch_found=false
 
@@ -40,7 +42,17 @@ else
     echo "Not building layers, ensure they've already been built or re-run with 'BUILD_LAYERS=true DD_API_KEY=XXXX ./scripts/run_integration_tests.sh'"
 fi
 
+# Add local build to node_modules so `serverless-plugin.yml` also has access to local build.
+yarn build
+rm -rf "$integration_tests/node_modules"
+mkdir -p "$integration_tests_dir/node_modules/datadog-lambda-js"
+cp -r dist "$integration_tests_dir/node_modules/datadog-lambda-js"
+
+# yarn link
+# cd ..
 cd $integration_tests_dir
+# yarn link datadog-lambda-js
+
 input_event_files=$(ls ./input_events)
 # Sort event files by name so that snapshots stay consistent
 input_event_files=($(for file_name in ${input_event_files[@]}; do echo $file_name; done | sort))
@@ -54,20 +66,26 @@ sleep $LOGS_WAIT_SECONDS
 
 echo "Invoking functions"
 set +e # Don't exit this script if an invocation fails or there's a diff
-for _sls_type in "with-plugin" "without-plugin"; do
+for _sls_type in "${CONFIGS[@]}"; do
     for input_event_file in "${input_event_files[@]}"; do
         for handler_name in "${LAMBDA_HANDLERS[@]}"; do
             for runtime in "${RUNTIMES[@]}"; do
-                function_name="${handler_name}_${runtime}"
+                if [ "$_sls_type" = "with-plugin" ]; then
+                    function_name="${handler_name}_${runtime}_with_plugin"
+                else
+                    function_name="${handler_name}_${runtime}"
+                fi
+
+                echo "$function_name"
                 # Get event name without trailing ".json" so we can build the snapshot file name
                 input_event_name=$(echo "$input_event_file" | sed "s/.json//")
                 # Return value snapshot file format is snapshots/return_values/{handler}_{runtime}_{input-event}
-                snapshot_path="./snapshots/return_values/${function_name}_${input_event_name}_${_sls_type}.json"
+                snapshot_path="./snapshots/return_values/${function_name}_${input_event_name}.json"
 
-                if [ _sls_type = "with-plugin" ]; then
-                    return_value=$(serverless invoke -f $function_name --path "./input_events/$input_event_file" -c "./serverless-plugin.yml")
+                if [ "$_sls_type" = "with-plugin" ]; then
+                    return_value=$(serverless invoke -f "$function_name" --path "./input_events/$input_event_file" -c "./serverless-plugin.yml")
                 else
-                    return_value=$(serverless invoke -f $function_name --path "./input_events/$input_event_file")
+                    return_value=$(serverless invoke -f "$function_name" --path "./input_events/$input_event_file")
                 fi
 
                 if [ ! -f $snapshot_path ]; then
@@ -99,17 +117,23 @@ echo "Sleeping $LOGS_WAIT_SECONDS seconds to wait for logs to appear in CloudWat
 sleep $LOGS_WAIT_SECONDS
 
 echo "Fetching logs for invocations and comparing to snapshots"
-for _sls_type in "with-plugin" "without-plugin"; do
+for _sls_type in "${CONFIGS[@]}"; do
     for handler_name in "${LAMBDA_HANDLERS[@]}"; do
         for runtime in "${RUNTIMES[@]}"; do
-            function_name="${handler_name}_${runtime}"
-            function_snapshot_path="./snapshots/logs/${function_name}_${_sls_type}.log"
+            if [ "$_sls_type" = "with-plugin" ]; then
+                function_name="${handler_name}_${runtime}_with_plugin"
+            else
+                function_name="${handler_name}_${runtime}"
+            fi
+
+            function_snapshot_path="./snapshots/logs/${function_name}.log"
 
             # Fetch logs with serverless cli
-            if [ _sls_type = "with-plugin" ]; then
-                raw_logs=$(serverless logs -f $function_name --startTime $script_start_time -c "./serverless-plugin.yml")
+            if [ "$_sls_type" = "with-plugin" ]; then
+                raw_logs=$(serverless logs -f "$function_name" --startTime $script_start_time -c "./serverless-plugin.yml")
+                # serverless logs -f "http-requests_node10_with_plugin" --startTime 2020-08-17T17:30:51Z -c "./serverless-plugin.yml"
             else
-                raw_logs=$(serverless logs -f $function_name --startTime $script_start_time)
+                raw_logs=$(serverless logs -f "$function_name" --startTime $script_start_time)
             fi
 
             # Replace invocation-specific data like timestamps and IDs with XXXX to normalize logs across executions
@@ -132,7 +156,8 @@ for _sls_type in "with-plugin" "without-plugin"; do
                     # Normalize minor package version tag so that these snapshots aren't broken on version bumps
                     sed -E "s/(dd_lambda_layer:datadog-nodev[0-9]+\.)[0-9]+\.[0-9]+/\1XX\.X/g" |
                     # Normalize data in logged traces
-                    sed -E 's/"(span_id|parent_id|trace_id|start|duration|tcp\.local\.address|tcp\.local\.port|dns\.address|request_id|function_arn)":("?)[a-zA-Z0-9\.:\-]+("?)/"\1":\2XXXX\3/g'
+                    sed -E 's/"(span_id|parent_id|trace_id|start|duration|tcp\.local\.address|tcp\.local\.port|dns\.address|request_id|function_arn)":("?)[a-zA-Z0-9\.:\-]+("?)/"\1":\2XXXX\3/g' |
+                    sort
             )
 
             if [ ! -f $function_snapshot_path ]; then
@@ -146,13 +171,17 @@ for _sls_type in "with-plugin" "without-plugin"; do
             else
                 # Compare new logs to snapshots
                 set +e # Don't exit this script if there is a diff
-                diff_output=$(echo "$logs" | diff - $function_snapshot_path)
+
+                diff_output=$(echo "$logs" | diff -w - <(sort $function_snapshot_path))
                 if [ $? -eq 1 ]; then
-                    echo "Failed: Mismatch found between new $function_name ${_sls_type} logs (first) and snapshot (second):"
+                    echo "Failed: Mismatch found between new $function_name logs (first) and snapshot (second):"
                     echo "$diff_output"
+                    echo ""
+                    echo "$logs"
+                    echo ""
                     mismatch_found=true
                 else
-                    echo "Ok: New logs for $function_name ${_sls_type}match snapshot"
+                    echo "Ok: New logs for $function_name match snapshot"
                 fi
                 set -e
             fi
