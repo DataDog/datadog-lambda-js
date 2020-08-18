@@ -29,10 +29,10 @@ async function httpsGet(url) {
     const request = https.request(requestOptions);
 
     request.on("response", (response) => {
-      resolve(response);
+      return resolve(response);
     });
     request.on("error", (error) => {
-      reject(error);
+      return reject(error);
     });
 
     request.end();
