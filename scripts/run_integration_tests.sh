@@ -48,10 +48,7 @@ rm -rf "$integration_tests/node_modules"
 mkdir -p "$integration_tests_dir/node_modules/datadog-lambda-js"
 cp -r dist "$integration_tests_dir/node_modules/datadog-lambda-js"
 
-# yarn link
-# cd ..
 cd $integration_tests_dir
-# yarn link datadog-lambda-js
 
 input_event_files=$(ls ./input_events)
 # Sort event files by name so that snapshots stay consistent
@@ -61,8 +58,6 @@ echo "Deploying functions with plugin"
 serverless deploy -c "./serverless-plugin.yml"
 echo "Deploying functions without plugin"
 serverless deploy
-
-sleep $LOGS_WAIT_SECONDS
 
 echo "Invoking functions"
 set +e # Don't exit this script if an invocation fails or there's a diff
