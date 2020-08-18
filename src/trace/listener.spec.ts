@@ -150,8 +150,7 @@ describe("TraceListener", () => {
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
           function_version: "$LATEST",
           request_id: "1234",
-          resource_names: "my-lambda",
-          "_dd.parent_source": "xray",
+          resource_names: "my-lambda"
         },
         type: "serverless",
       },
