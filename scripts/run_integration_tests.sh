@@ -75,7 +75,7 @@ for _sls_type in "${CONFIGS[@]}"; do
                 # Get event name without trailing ".json" so we can build the snapshot file name
                 input_event_name=$(echo "$input_event_file" | sed "s/.json//")
                 # Return value snapshot file format is snapshots/return_values/{handler}_{runtime}_{input-event}
-                snapshot_path="./snapshots/return_values/${function_name}_${input_event_name}.json"
+                snapshot_path="./snapshots/return_values/${handler_name}_${runtime}_${input_event_name}.json"
 
                 if [ "$_sls_type" = "with-plugin" ]; then
                     return_value=$(serverless invoke -f "$function_name" --path "./input_events/$input_event_file" -c "./serverless-plugin.yml")

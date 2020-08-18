@@ -1,7 +1,8 @@
 const { datadog, sendDistributionMetric } = require("datadog-lambda-js");
 const https = require("https");
 
-const urls = ["httpstat.us/400", "httpstat.us/500"];
+const paths = ["/400", "/500"];
+const urls = ["httpstat.us", "httpstat.us"];
 
 async function handle(event, context) {
   const responsePayload = { message: "hello, dog!" };
@@ -9,7 +10,7 @@ async function handle(event, context) {
   sendDistributionMetric("serverless.integration_test.execution", 1, "function:http-request");
 
   for (let index = 0; index < urls.length; index++) {
-    await httpsGet(urls[index]);
+    await httpsGet(urls[index], paths[index]);
   }
 
   console.log(`Snapshot test http requests successfully made to URLs: ${urls}`);
@@ -17,12 +18,12 @@ async function handle(event, context) {
   return responsePayload;
 }
 
-async function httpsGet(url) {
+async function httpsGet(url, path) {
   const requestOptions = {
     host: url,
     method: "GET",
     protocol: "https:",
-    path: "/",
+    path,
   };
 
   return new Promise(function(resolve, reject) {
