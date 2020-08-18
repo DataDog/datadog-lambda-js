@@ -170,9 +170,6 @@ for _sls_type in "${CONFIGS[@]}"; do
                 if [ $? -eq 1 ]; then
                     echo "Failed: Mismatch found between new $function_name logs (first) and snapshot (second):"
                     echo "$diff_output"
-                    echo ""
-                    echo "$logs"
-                    echo ""
                     mismatch_found=true
                 else
                     echo "Ok: New logs for $function_name match snapshot"
