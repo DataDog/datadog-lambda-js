@@ -45,10 +45,8 @@ export function getRuntimeTag(): string | null {
 
 export function getEnhancedMetricTags(context: Context): string[] {
   let arnTags = [`functionname:${context.functionName}`];
-  if (context.functionVersion) {
+  if (context.invokedFunctionArn) {
     arnTags = parseTagsFromARN(context.invokedFunctionArn, context.functionVersion);
-  } else if (context.invokedFunctionArn) {
-    arnTags = parseTagsFromARN(context.invokedFunctionArn);
   }
   const tags = [...arnTags, getColdStartTag(), `memorysize:${context.memoryLimitInMB}`];
 
