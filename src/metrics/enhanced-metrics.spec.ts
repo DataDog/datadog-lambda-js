@@ -65,7 +65,6 @@ describe("getEnhancedMetricTags", () => {
     mockedGetProcessVersion.mockReturnValue("v8.10.0");
     expect(getEnhancedMetricTags(mockContextLocal)).toStrictEqual([
       "functionname:my-test-lambda",
-
       "cold_start:true",
       "memorysize:128",
       "runtime:nodejs8.10",
