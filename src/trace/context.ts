@@ -147,7 +147,8 @@ export function readTraceFromEvent(event: any): TraceContext | undefined {
   }
   const headers = event.headers;
 
-  if (typeof headers !== "object") {
+  // e.g. When lambda is invoked synchronously, headers can be set to null by the caller
+  if (!headers || typeof headers !== "object") {
     return;
   }
 
