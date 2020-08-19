@@ -37,3 +37,6 @@ git push origin "refs/tags/v$PACKAGE_VERSION"
 echo 'Publishing Lambda Layer'
 ./scripts/build_layers.sh
 ./scripts/publish_layers.sh
+
+echo 'Checking Regions'
+./scripts/check_regions.sh
