@@ -13,6 +13,6 @@
     "datadog-lambda-js": "^3.27.0"
   },
   "devDependencies": {
-    "serverless-plugin-datadog": "^2.2.0"
+    "serverless-plugin-datadog": "^2.2.1"
   }
 }
