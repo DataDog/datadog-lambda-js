@@ -7,7 +7,10 @@ describe("Batcher", () => {
     const timestamp = new Date(1559928315000);
     const distribution1 = new Distribution(
       "my-dist",
-      [{ timestamp, value: 1 }, { timestamp, value: 2 }],
+      [
+        { timestamp, value: 1 },
+        { timestamp, value: 2 },
+      ],
       "tag:a",
       "tag:b",
       "tag:c",
@@ -20,7 +23,11 @@ describe("Batcher", () => {
     expect(metrics).toEqual([
       {
         metric: "my-dist",
-        points: [[1559928315, [1]], [1559928315, [2]], [1559928315, [3]]],
+        points: [
+          [1559928315, [1]],
+          [1559928315, [2]],
+          [1559928315, [3]],
+        ],
         tags: ["tag:a", "tag:b", "tag:c"],
         type: "distribution",
       },
@@ -32,7 +39,10 @@ describe("Batcher", () => {
     const timestamp = new Date(1559928315000);
     const distribution1 = new Distribution(
       "my-dist",
-      [{ timestamp, value: 1 }, { timestamp, value: 2 }],
+      [
+        { timestamp, value: 1 },
+        { timestamp, value: 2 },
+      ],
       "tag:a",
       "tag:b",
       "tag:c",
@@ -45,7 +55,10 @@ describe("Batcher", () => {
     expect(metrics).toEqual([
       {
         metric: "my-dist",
-        points: [[1559928315, [1]], [1559928315, [2]]],
+        points: [
+          [1559928315, [1]],
+          [1559928315, [2]],
+        ],
         tags: ["tag:a", "tag:b", "tag:c"],
         type: "distribution",
       },
