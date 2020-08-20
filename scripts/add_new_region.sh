@@ -44,6 +44,14 @@ j=0
 for layer_name in "${LAYER_NAMES[@]}"; do
     # get latest version
     last_layer_version=$(get_max_version $layer_name $OLD_REGION)
+    starting_version=$(get_max_version $layer_name $NEW_REGION)
+    starting_version=$(expr $starting_version + 1)
+
+    # exit if region is already all caught up
+    if [ $starting_version -gt $last_layer_version ]; then
+        echo "INFO: $NEW_REGION is already up to date for $layer_name"
+        continue
+    fi
 
     # run for each version of layer
     for i in $(seq 1 $last_layer_version); do 
@@ -56,6 +64,7 @@ for layer_name in "${LAYER_NAMES[@]}"; do
 
         # publish layer to new region
         publish_layer $NEW_REGION $layer_name $aws_version_key $layer_path
+        rm $layer_path
     done
 
     j=$(expr $j + 1)
