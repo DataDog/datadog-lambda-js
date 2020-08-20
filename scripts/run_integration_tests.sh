@@ -15,7 +15,7 @@ LAMBDA_HANDLERS=("async-metrics" "sync-metrics" "http-requests" "process-input-t
 RUNTIMES=("node10" "node12")
 # RUNTIMES=("node12")
 CONFIGS=("with-plugin" "without-plugin")
-# CONFIGS=("with-plugin")
+# CONFIGS=("without-plugin")
 
 LOGS_WAIT_SECONDS=20
 
