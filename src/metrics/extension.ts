@@ -16,7 +16,7 @@ export async function isAgentRunning() {
   return true;
 }
 
-export async function flushAgent() {
+export async function flushExtension() {
   const url = new URL(FLUSH_PATH, AGENT_URL);
   try {
     await post(url, {}, { timeout: AGENT_TIMEOUT_MS });

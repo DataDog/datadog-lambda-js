@@ -7,7 +7,7 @@ import { writeMetricToStdout } from "./metric-log";
 import { Distribution } from "./model";
 import { Processor } from "./processor";
 import { StatsD } from "hot-shots";
-import { isAgentRunning, flushAgent } from "./extension";
+import { isAgentRunning, flushExtension } from "./extension";
 
 const metricsBatchSendIntervalMS = 10000; // 10 seconds
 
@@ -60,8 +60,6 @@ export class MetricsListener {
   }
 
   public async onStartInvocation(_: any) {
-    logDebug(`Metrics onStartInvocation called`);
-
     if (this.isAgentRunning === undefined) {
       this.isAgentRunning = await isAgentRunning();
       logDebug(`Extension present: ${this.isAgentRunning}`);
@@ -73,17 +71,15 @@ export class MetricsListener {
       return;
     }
     if (this.isAgentRunning) {
-      logDebug(`Starting StatsD client`);
+      logDebug(`Using StatsD client`);
 
-      this.statsDClient = new StatsD();
+      this.statsDClient = new StatsD({ host: "127.0.0.1" });
       return;
     }
     this.currentProcessor = this.createProcessor(this.config, this.apiKey);
   }
 
   public async onCompleteInvocation() {
-    logDebug(`Metrics onCompleteInvocation called`);
-
     // Flush any metrics
     try {
       if (this.currentProcessor !== undefined) {
@@ -109,9 +105,9 @@ export class MetricsListener {
           });
         });
         this.statsDClient = undefined;
-        logDebug(`Flushing Agent`);
+        logDebug(`Flushing Extension`);
 
-        await flushAgent();
+        await flushExtension();
       }
     } catch (error) {
       // This can fail for a variety of reasons, from the API not being reachable,
