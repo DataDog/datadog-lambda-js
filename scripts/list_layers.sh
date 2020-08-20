@@ -51,8 +51,10 @@ do
     do
         last_layer_arn=$(aws lambda list-layer-versions --layer-name $layer_name --region $region | jq -r ".LayerVersions | .[0] |  .LayerVersionArn")
         if [ "$last_layer_arn" == "null" ]; then
-             >&2 echo "No layer found for $region, $layer_name"
-             LAYERS_MISSING_REGIONS+=( $region )
+            >&2 echo "No layer found for $region, $layer_name"
+            if [[ ! " ${LAYERS_MISSING_REGIONS[@]} " =~ " ${region} " ]]; then
+                LAYERS_MISSING_REGIONS+=( $region )
+            fi
         else
             echo $last_layer_arn
         fi
