@@ -58,9 +58,7 @@ describe("datadog", () => {
   });
 
   it("patches http request when autoPatch enabled", async () => {
-    nock("http://www.example.com")
-      .get("/")
-      .reply(200, {});
+    nock("http://www.example.com").get("/").reply(200, {});
     const wrapped = datadog(handler, { forceWrap: true });
     await wrapped(
       {
@@ -81,9 +79,7 @@ describe("datadog", () => {
     expect(sampled).toEqual("2");
   });
   it("doesn't patch http requests when autoPatch is disabled", async () => {
-    nock("http://www.example.com")
-      .get("/")
-      .reply(200, {});
+    nock("http://www.example.com").get("/").reply(200, {});
     const wrapped = datadog(handler, { autoPatchHTTP: false, forceWrap: true });
     await wrapped(
       {

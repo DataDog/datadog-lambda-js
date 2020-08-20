@@ -10,13 +10,21 @@ describe("APIClient", () => {
     const input: APIMetric[] = [
       {
         metric: "a-metric",
-        points: [[1, [2]], [3, [4]], [5, [6]]],
+        points: [
+          [1, [2]],
+          [3, [4]],
+          [5, [6]],
+        ],
         tags: ["a", "b", "c"],
         type: "distribution",
       },
       {
         metric: "b-metric",
-        points: [[1, [2]], [3, [4]], [5, [6]]],
+        points: [
+          [1, [2]],
+          [3, [4]],
+          [5, [6]],
+        ],
         tags: ["a", "b", "c"],
         type: "distribution",
       },
