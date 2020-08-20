@@ -23,9 +23,7 @@ describe("MetricsListener", () => {
   });
 
   it("uses unencrypted api key by default", async () => {
-    nock("https://api.example.com")
-      .post("/api/v1/distribution_points?api_key=api-key")
-      .reply(200, {});
+    nock("https://api.example.com").post("/api/v1/distribution_points?api_key=api-key").reply(200, {});
 
     const kms = new MockKMS("kms-api-key-decrypted");
     const listener = new MetricsListener(kms as any, {
@@ -44,9 +42,7 @@ describe("MetricsListener", () => {
     expect(nock.isDone()).toBeTruthy();
   });
   it("uses encrypted kms key if it's the only value available", async () => {
-    nock("https://api.example.com")
-      .post("/api/v1/distribution_points?api_key=kms-api-key-decrypted")
-      .reply(200, {});
+    nock("https://api.example.com").post("/api/v1/distribution_points?api_key=kms-api-key-decrypted").reply(200, {});
 
     const kms = new MockKMS("kms-api-key-decrypted");
     const listener = new MetricsListener(kms as any, {
