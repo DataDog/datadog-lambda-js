@@ -53,21 +53,28 @@ export class MetricsListener {
   private currentProcessor?: Promise<Processor>;
   private apiKey: Promise<string>;
   private statsDClient?: StatsD;
-  private isAgentRunning?: boolean = false;
+  private isAgentRunning?: boolean = undefined;
 
   constructor(private kmsClient: KMSService, private config: MetricsConfig) {
     this.apiKey = this.getAPIKey(config);
   }
 
   public async onStartInvocation(_: any) {
+    logDebug(`Metrics onStartInvocation called`);
+
     if (this.isAgentRunning === undefined) {
       this.isAgentRunning = await isAgentRunning();
+      logDebug(`Extension present: ${this.isAgentRunning}`);
     }
 
     if (this.config.logForwarding) {
+      logDebug(`logForwarding configured`);
+
       return;
     }
     if (this.isAgentRunning) {
+      logDebug(`Starting StatsD client`);
+
       this.statsDClient = new StatsD();
       return;
     }
@@ -75,6 +82,8 @@ export class MetricsListener {
   }
 
   public async onCompleteInvocation() {
+    logDebug(`Metrics onCompleteInvocation called`);
+
     // Flush any metrics
     try {
       if (this.currentProcessor !== undefined) {
@@ -88,14 +97,26 @@ export class MetricsListener {
         await processor.flush();
       }
       if (this.statsDClient !== undefined) {
+        logDebug(`Flushing statsD`);
+
         // Make sure all stats are flushed to extension
-        await promisify(this.statsDClient.close)();
+        await new Promise((resolve, reject) => {
+          this.statsDClient?.close((error) => {
+            if (error !== undefined) {
+              reject(error);
+            }
+            resolve();
+          });
+        });
         this.statsDClient = undefined;
+        logDebug(`Flushing Agent`);
+
         await flushAgent();
       }
     } catch (error) {
       // This can fail for a variety of reasons, from the API not being reachable,
       // to KMS key decryption failing.
+      console.log(error);
       logError(`failed to flush metrics`, { innerError: error });
     }
     this.currentProcessor = undefined;

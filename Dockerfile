@@ -5,6 +5,7 @@ FROM $image
 RUN apk update
 RUN apk add jq
 RUN mkdir -p /nodejs/node_modules/
+RUN mkdir -p /extensions
 
 # Install dev dependencies
 COPY . datadog-lambda-js
@@ -24,6 +25,7 @@ RUN jq '. +{"dependencies": (.dependencies + {"dd-trace": .devDependencies."dd-t
 # Copy the production dependencies to the modules folder
 RUN yarn install --production=true
 RUN cp -rf node_modules/* /nodejs/node_modules
+RUN cp extension/datadog-agent /extensions/datadog-agent
 # Remove the AWS SDK, which is installed in the lambda by default
 RUN rm -rf /nodejs/node_modules/aws-sdk
 RUN rm -rf /nodejs/node_modules/aws-xray-sdk-core/node_modules/aws-sdk

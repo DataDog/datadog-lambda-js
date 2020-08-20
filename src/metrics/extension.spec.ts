@@ -12,7 +12,7 @@ describe("isAgentRunning", () => {
     expect(ran).toBeTruthy();
   });
   it("returns false when agent doesn't respond", async () => {
-    const scope = nock("http://localhost:8124")
+    const scope = nock(AGENT_URL)
       .post("/lambda/hello", JSON.stringify({}))
       .replyWithError("Unreachable");
     const ran = await isAgentRunning();
@@ -22,14 +22,14 @@ describe("isAgentRunning", () => {
 });
 describe("flushAgent", () => {
   it("calls flush on the agent", async () => {
-    const scope = nock("http://localhost:8124")
+    const scope = nock(AGENT_URL)
       .post("/lambda/flush", JSON.stringify({}))
       .reply(200);
     await flushAgent();
     expect(scope.isDone()).toBeTruthy();
   });
   it("catches error when flush doesn't respond", async () => {
-    const scope = nock("http://localhost:8124")
+    const scope = nock(AGENT_URL)
       .post("/lambda/flush", JSON.stringify({}))
       .replyWithError("Unavailable");
     await flushAgent();
