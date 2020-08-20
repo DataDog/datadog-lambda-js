@@ -22,6 +22,9 @@ if [ -z "$AWS_SESSION_TOKEN" ]; then
     exit 1
 fi
 
+echo 'Checking Regions'
+./scripts/list_layers.sh
+
 yarn login
 
 PACKAGE_VERSION=$(node -pe "require('./package.json').version")
@@ -37,6 +40,3 @@ git push origin "refs/tags/v$PACKAGE_VERSION"
 echo 'Publishing Lambda Layer'
 ./scripts/build_layers.sh
 ./scripts/publish_layers.sh
-
-echo 'Checking Regions'
-./scripts/check_regions.sh
