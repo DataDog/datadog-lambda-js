@@ -11,17 +11,20 @@ set -e
 # These values need to be in sync with serverless.yml, where there needs to be a function
 # defined for every handler_runtime combination
 LAMBDA_HANDLERS=("async-metrics" "sync-metrics" "http-requests" "process-input-traced" "http-errors")
+# LAMBDA_HANDLERS=("http-requests")
 RUNTIMES=("node10" "node12")
+# RUNTIMES=("node12")
 CONFIGS=("with-plugin" "without-plugin")
+# CONFIGS=("with-plugin")
 
-LOGS_WAIT_SECONDS=40
+LOGS_WAIT_SECONDS=20
 
 script_path=${BASH_SOURCE[0]}
 scripts_dir=$(dirname $script_path)
 repo_dir=$(dirname $scripts_dir)
 integration_tests_dir="$repo_dir/integration_tests"
 
-script_start_time=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+script_start_time=$(date --iso-8601=seconds)
 echo "$script_start_time"
 
 mismatch_found=false
@@ -55,9 +58,9 @@ input_event_files=$(ls ./input_events)
 input_event_files=($(for file_name in ${input_event_files[@]}; do echo $file_name; done | sort))
 
 echo "Deploying functions with plugin"
-serverless deploy -c "./serverless-plugin.yml"
+serverless deploy -c "./serverless-plugin.yml" --force
 echo "Deploying functions without plugin"
-serverless deploy
+serverless deploy --force
 
 echo "Invoking functions"
 set +e # Don't exit this script if an invocation fails or there's a diff

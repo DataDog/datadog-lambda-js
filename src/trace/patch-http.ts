@@ -106,7 +106,7 @@ function isIntegrationTest() {
  * HTTP GET https://ip-ranges.datadoghq.com/ Headers: ["x-datadog-parent-id:abc"] Data: {}
  * @param options The options for the HTTP request
  */
-function _logHttpRequest(options: http.RequestOptions) {
+function _logHttpRequest(options: any) {
   let headerMessage = "Headers: []";
 
   if (options.headers) {
@@ -115,7 +115,7 @@ function _logHttpRequest(options: http.RequestOptions) {
     headerMessage = `Headers: ${JSON.stringify(headerStrings)}`;
   }
 
-  const url = `${options.protocol}//${options.host}${options.path}`;
+  const url = options.url || `${options.protocol}//${options.host}${options.path}`;
 
   const requestMessage = `HTTP ${options.method} ${url} ${headerMessage}\n`;
   process.stdout.write(requestMessage);

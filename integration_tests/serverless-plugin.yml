@@ -112,5 +112,4 @@ custom:
     flushMetricsToLogs: true
     enableXrayTracing: true
     addLayers: false
-    enableDDTracing: false
-    forwarder: # The Datadog Forwarder ARN goes here.
+    enableDDTracing: true
