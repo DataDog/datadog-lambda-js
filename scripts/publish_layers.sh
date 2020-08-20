@@ -66,7 +66,7 @@ publish_layer() {
     echo "Published layer for region $region, node version $aws_version_key, layer_name $layer_name, layer_version $version_nbr"
 }
 
-BATCH_SIZE=60
+BATCH_SIZE=1
 PIDS=()
 
 wait_for_processes() {
