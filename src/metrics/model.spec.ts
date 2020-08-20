@@ -6,7 +6,11 @@ describe("Distribution", () => {
 
     const distribution = new Distribution(
       "my-dist",
-      [{ timestamp, value: 1 }, { timestamp, value: 2 }, { timestamp, value: 3 }],
+      [
+        { timestamp, value: 1 },
+        { timestamp, value: 2 },
+        { timestamp, value: 3 },
+      ],
       "tag:a",
       "tag:b",
       "tag:c",
@@ -16,7 +20,11 @@ describe("Distribution", () => {
     expect(result).toEqual([
       {
         metric: "my-dist",
-        points: [[1559928315, [1]], [1559928315, [2]], [1559928315, [3]]],
+        points: [
+          [1559928315, [1]],
+          [1559928315, [2]],
+          [1559928315, [3]],
+        ],
         tags: ["tag:a", "tag:b", "tag:c"],
         type: "distribution",
       },
@@ -27,7 +35,10 @@ describe("Distribution", () => {
 
     const distribution1 = new Distribution(
       "my-dist",
-      [{ timestamp, value: 1 }, { timestamp, value: 2 }],
+      [
+        { timestamp, value: 1 },
+        { timestamp, value: 2 },
+      ],
       "tag:a",
       "tag:b",
       "tag:c",
@@ -35,6 +46,10 @@ describe("Distribution", () => {
     const distribution2 = new Distribution("my-dist", [{ timestamp, value: 3 }], "tag:a", "tag:b", "tag:c");
     const distribution3 = distribution1.union(distribution2);
 
-    expect(distribution3.points).toEqual([{ timestamp, value: 1 }, { timestamp, value: 2 }, { timestamp, value: 3 }]);
+    expect(distribution3.points).toEqual([
+      { timestamp, value: 1 },
+      { timestamp, value: 2 },
+      { timestamp, value: 3 },
+    ]);
   });
 });

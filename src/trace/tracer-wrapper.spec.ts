@@ -17,8 +17,8 @@ jest.mock("dd-trace", () => {
       extract: () => mockSpanContext,
       wrap: (name: any, options: any, fn: any) => fn,
       scope: () => ({
-        active: () => mockSpan 
-      })
+        active: () => mockSpan,
+      }),
     };
   }
 });
@@ -66,8 +66,8 @@ describe("TracerWrapper", () => {
     mockSpan = {
       context: () => ({
         toSpanId: () => spanID,
-        toTraceId: () => traceID
-      })
+        toTraceId: () => traceID,
+      }),
     };
     const wrapper = new TracerWrapper();
     const traceContext = wrapper.traceContext();
@@ -75,7 +75,7 @@ describe("TracerWrapper", () => {
       parentID: spanID,
       traceID: traceID,
       source: Source.Event,
-      sampleMode: SampleMode.AUTO_KEEP
+      sampleMode: SampleMode.AUTO_KEEP,
     });
   });
   it("should return undefined when no span is available", () => {
