@@ -43,6 +43,7 @@ else
 fi
 
 # Add local build to node_modules so `serverless-plugin.yml` also has access to local build.
+yarn
 yarn build
 rm -rf "$integration_tests/node_modules"
 mkdir -p "$integration_tests_dir/node_modules/datadog-lambda-js"
