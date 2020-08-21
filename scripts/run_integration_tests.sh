@@ -19,6 +19,8 @@ LOGS_WAIT_SECONDS=20
 script_path=${BASH_SOURCE[0]}
 scripts_dir=$(dirname $script_path)
 repo_dir=$(dirname $scripts_dir)
+cwd=$(pwd)
+
 integration_tests_dir="$repo_dir/integration_tests"
 
 script_start_time=$(date --iso-8601=seconds)
@@ -42,7 +44,11 @@ else
     echo "Not building layers, ensure they've already been built or re-run with 'BUILD_LAYERS=true DD_API_KEY=XXXX ./scripts/run_integration_tests.sh'"
 fi
 
+cd $integration_tests_dir
+yarn
+
 # Add local build to node_modules so `serverless-plugin.yml` also has access to local build.
+cd $cwd
 yarn
 yarn build
 rm -rf "$integration_tests/node_modules"
@@ -50,6 +56,7 @@ mkdir -p "$integration_tests_dir/node_modules/datadog-lambda-js"
 cp -r dist "$integration_tests_dir/node_modules/datadog-lambda-js"
 
 cd $integration_tests_dir
+
 
 input_event_files=$(ls ./input_events)
 # Sort event files by name so that snapshots stay consistent
