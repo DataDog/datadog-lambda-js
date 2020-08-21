@@ -1,10 +1,7 @@
-service: integration
+service: integration-plugin
 
 provider:
   name: aws
-  tracing:
-    lambda: true
-    apiGateway: true
   environment:
     DD_INTEGRATION_TEST: true
     DD_API_KEY: ${env:DD_API_KEY}
@@ -19,75 +16,100 @@ layers:
 
 functions:
   # async-metrics
-  async-metrics_node10:
+  async-metrics_node10_with_plugin:
     handler: send-metrics.handle
     runtime: nodejs10.x
     layers:
       - { Ref: Node10LambdaLayer }
     environment:
       DD_FLUSH_TO_LOG: true
+      WITH_PLUGIN: true
 
-  async-metrics_node12:
+  async-metrics_node12_with_plugin:
     handler: send-metrics.handle
     runtime: nodejs12.x
     layers:
       - { Ref: Node12LambdaLayer }
     environment:
       DD_FLUSH_TO_LOG: true
+      WITH_PLUGIN: true
 
   # sync-metrics
-  sync-metrics_node10:
+  sync-metrics_node10_with_plugin:
     handler: send-metrics.handle
     runtime: nodejs10.x
     layers:
       - { Ref: Node10LambdaLayer }
+    environment:
+      WITH_PLUGIN: true
 
-  sync-metrics_node12:
+  sync-metrics_node12_with_plugin:
     handler: send-metrics.handle
     runtime: nodejs12.x
     layers:
       - { Ref: Node12LambdaLayer }
+    environment:
+      WITH_PLUGIN: true
 
   # http-requests
-  http-requests_node10:
+  http-requests_node10_with_plugin:
     handler: http-requests.handle
     runtime: nodejs10.x
     layers:
       - { Ref: Node10LambdaLayer }
+    environment:
+      WITH_PLUGIN: true
 
-  http-requests_node12:
+  http-requests_node12_with_plugin:
     handler: http-requests.handle
     runtime: nodejs12.x
     layers:
       - { Ref: Node12LambdaLayer }
+    environment:
+      WITH_PLUGIN: true
 
   # process-input-traced
-  process-input-traced_node10:
+  process-input-traced_node10_with_plugin:
     handler: process-input-traced.handle
     runtime: nodejs10.x
     layers:
       - { Ref: Node10LambdaLayer }
     environment:
+      WITH_PLUGIN: true
       DD_FLUSH_TO_LOG: true
 
-  process-input-traced_node12:
+  process-input-traced_node12_with_plugin:
     handler: process-input-traced.handle
     runtime: nodejs12.x
     layers:
       - { Ref: Node12LambdaLayer }
     environment:
+      WITH_PLUGIN: true
       DD_FLUSH_TO_LOG: true
 
-# http-errors
-  http-errors_node10:
+  # http-errors
+  http-errors_node10_with_plugin:
     handler: http-errors.handle
     runtime: nodejs10.x
     layers:
       - { Ref: Node10LambdaLayer }
+    environment:
+      WITH_PLUGIN: true
 
-  http-errors_node12:
+  http-errors_node12_with_plugin:
     handler: http-errors.handle
     runtime: nodejs12.x
     layers:
       - { Ref: Node12LambdaLayer }
+    environment:
+      WITH_PLUGIN: true
 
+plugins:
+  - serverless-plugin-datadog
+
+custom:
+  datadog:
+    flushMetricsToLogs: true
+    enableXrayTracing: true
+    addLayers: false
+    enableDDTracing: true
