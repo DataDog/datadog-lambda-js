@@ -24,11 +24,15 @@ async function handle(event, context) {
     if (requestId) {
       responsePayload.eventType = "APIGateway";
 
-      span.setTag("api_gateway_request_id", requestId);
+      if (span) {
+        span.setTag("api_gateway_request_id", requestId);
+      }
     }
   }
 
-  span.setTag("event_type", responsePayload.eventType);
+  if (span) {
+    span.setTag("event_type", responsePayload.eventType);
+  }
 
   return responsePayload;
 }
@@ -52,8 +56,10 @@ const getRecordIds = tracer.wrap("getRecordIds", (event) => {
   if (eventType) {
     const span = tracer.scope().active();
 
-    span.setTag("record_event_type", eventType);
-    span.setTag("record_ids", recordIds.join());
+    if (span) {
+      span.setTag("record_event_type", eventType);
+      span.setTag("record_ids", recordIds.join());
+    }
   }
 
   return { recordIds, eventType };
@@ -67,11 +73,13 @@ const getAPIGatewayRequestId = tracer.wrap("getAPIGatewayRequestId", (event) => 
 
     const span = tracer.scope().active();
 
-    span.setTag("api_gateway_request_id", requestId);
-    span.setTag("event_type", "APIGateway");
+    if (span) {
+      span.setTag("api_gateway_request_id", requestId);
+      span.setTag("event_type", "APIGateway");
+    }
   }
 
   return requestId;
 });
 
-module.exports.handle = datadog(handle);
+module.exports.handle = process.env.WITH_PLUGIN ? handle : datadog(handle);
