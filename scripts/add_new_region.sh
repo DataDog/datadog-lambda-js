@@ -32,7 +32,11 @@ get_max_version() {
     layer_name=$1
     region=$2
     last_layer_version=$(aws lambda list-layer-versions --layer-name $layer_name --region $region | jq -r ".LayerVersions | .[0] |  .Version")
-    echo $last_layer_version
+    if [ "$last_layer_version" == "null" ]; then
+        echo 0
+    else
+        echo $last_layer_version
+    fi
 }
 
 if [ -z "$1" ]; then
