@@ -7,7 +7,7 @@ if (getEnvValue("DD_FS_INTEGRATION_ENABLED", "false").toLowerCase() === "false")
   if (process.env.DD_TRACE_DISABLED_PLUGINS) {
     process.env.DD_TRACE_DISABLED_PLUGINS = `${process.env.DD_TRACE_DISABLED_PLUGINS},fs`;
   } else {
-    process.env.DD_TRACE_DISABLED_PLUGINS = 'fs';
+    process.env.DD_TRACE_DISABLED_PLUGINS = "fs";
   }
 }
 
