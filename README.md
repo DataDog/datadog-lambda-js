@@ -26,6 +26,8 @@ For additional details on trace collection, take a look at [collecting traces fr
 
 For additional details on trace and log connection, check out the [official documentation for Datadog trace client](https://datadoghq.dev/dd-trace-js/).
 
+The `fs` module is disabled by default. If you want to enable it you have to set the environmental variable `DD_TRACE_DISABLED_PLUGINS` to `''` to the plugins you want to disable. See the full list of supported plugins [here](https://docs.datadoghq.com/tracing/compatibility_requirements/nodejs/).
+
 ### Trace & Log Correlation
 
 By default, the Datadog trace id gets automatically injected into the logs for correlation, if using `console` or a logging library supported for automatic trace id injection. You have to manually inject the trace id, if using other logging libraries. See additional details on [connecting logs and traces](https://docs.datadoghq.com/tracing/connect_logs_and_traces/nodejs/).
@@ -103,10 +105,6 @@ Inject Datadog trace id into logs for correlation. Defaults to `true`.
 ### DD_MERGE_XRAY_TRACES
 
 Set to `true` to merge the X-Ray trace and the Datadog trace, when using both the X-Ray and Datadog tracing. Defaults to `false`.
-
-### DD_TRACE_DISABLED_PLUGINS
-
-A comma-separated string of integration names automatically disabled when tracer is initialized. Environment variable only e.g. DD_TRACE_DISABLED_PLUGINS=express,dns. Defaults to `fs`. See the full list of supported plugins [here](https://docs.datadoghq.com/tracing/compatibility_requirements/nodejs/)
 
 ## Opening Issues
 
