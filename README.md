@@ -104,9 +104,9 @@ Inject Datadog trace id into logs for correlation. Defaults to `true`.
 
 Set to `true` to merge the X-Ray trace and the Datadog trace, when using both the X-Ray and Datadog tracing. Defaults to `false`.
 
-### DD_FS_INTEGRATION_ENABLED
+### DD_TRACE_DISABLED_PLUGINS
 
-Set to `true` to enable `fs` plugin integration in the tracer. Defaults to `false`.
+A comma-separated string of integration names automatically disabled when tracer is initialized. Environment variable only e.g. DD_TRACE_DISABLED_PLUGINS=express,dns. Defaults to `fs`. See the full list of supported plugins [here](https://docs.datadoghq.com/tracing/compatibility_requirements/nodejs/)
 
 ## Opening Issues
 
