@@ -26,7 +26,7 @@ For additional details on trace collection, take a look at [collecting traces fr
 
 For additional details on trace and log connection, check out the [official documentation for Datadog trace client](https://datadoghq.dev/dd-trace-js/).
 
-The `fs` module is disabled by default. If you want to enable it you have to set the environmental variable `DD_TRACE_DISABLED_PLUGINS` to `''` to the plugins you want to disable. See the full list of supported plugins [here](https://docs.datadoghq.com/tracing/compatibility_requirements/nodejs/).
+The `fs` module is disabled by default. If you want to enable it you have to set the environmental variable `DD_TRACE_DISABLED_PLUGINS` to `''` or to a comma separated list of the plugins you want to disable. See the full list of supported plugins [here](https://docs.datadoghq.com/tracing/compatibility_requirements/nodejs/).
 
 ### Trace & Log Correlation
 
