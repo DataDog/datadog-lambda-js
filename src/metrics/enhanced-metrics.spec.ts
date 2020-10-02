@@ -6,7 +6,7 @@ import { getEnhancedMetricTags, getRuntimeTag } from "./enhanced-metrics";
 jest.mock("../utils/process-version");
 
 const mockedGetProcessVersion = getProcessVersion as jest.Mock<string>;
-import * as packageJson from '../../package.json'
+import * as packageJson from "../../package.json";
 const ddtraceVersion = packageJson.devDependencies["dd-trace"];
 
 const mockARN = "arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda";
@@ -61,7 +61,7 @@ describe("getEnhancedMetricTags", () => {
       "memorysize:128",
       `datadog_lamda:${packageJson.version}`,
       `dd_trace:${ddtraceVersion}`,
-      "runtime:nodejs8.10"
+      "runtime:nodejs8.10",
     ]);
   });
 
@@ -73,7 +73,7 @@ describe("getEnhancedMetricTags", () => {
       "memorysize:128",
       `datadog_lamda:${packageJson.version}`,
       `dd_trace:${ddtraceVersion}`,
-      "runtime:nodejs8.10"
+      "runtime:nodejs8.10",
     ]);
   });
 
@@ -87,7 +87,7 @@ describe("getEnhancedMetricTags", () => {
       "cold_start:true",
       "memorysize:128",
       `datadog_lamda:${packageJson.version}`,
-      `dd_trace:${ddtraceVersion}`
+      `dd_trace:${ddtraceVersion}`,
     ]);
   });
 });
