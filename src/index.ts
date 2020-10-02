@@ -1,4 +1,4 @@
-import { Handler } from "aws-lambda";
+import { Handler, Context } from "aws-lambda";
 
 import {
   incrementErrorsMetric,
@@ -8,7 +8,7 @@ import {
   MetricsListener,
 } from "./metrics";
 import { TraceConfig, TraceHeaders, TraceListener } from "./trace";
-import { logError, LogLevel, Logger, setColdStart, setLogLevel, setLogger, wrap } from "./utils";
+import { logError, LogLevel, Logger, setColdStart, setLogLevel, setLogger, promisifiedHandler } from "./utils";
 export { TraceHeaders } from "./trace";
 
 export const apiKeyEnvVar = "DD_API_KEY";
@@ -83,7 +83,6 @@ export function datadog<TEvent, TResult>(
   const handlerName = getEnvValue(datadogHandlerEnvVar, getEnvValue("_HANDLER", "handler"));
 
   const traceListener = new TraceListener(finalConfig, handlerName);
-  const listeners = [metricsListener, traceListener];
 
   // Only wrap the handler once unless forced
   const _ddWrappedKey = "_ddWrapped";
@@ -91,37 +90,49 @@ export function datadog<TEvent, TResult>(
     return handler;
   }
 
-  const wrappedFunc = wrap(
-    handler,
-    async (event, context) => {
-      setColdStart();
-      setLogLevel(finalConfig.debugLogging ? LogLevel.DEBUG : LogLevel.ERROR);
-      if (finalConfig.logger) {
-        setLogger(finalConfig.logger);
-      }
-      currentMetricsListener = metricsListener;
-      currentTraceListener = traceListener;
-      // Setup hook, (called once per handler invocation)
-      for (const listener of listeners) {
-        await listener.onStartInvocation(event, context);
-      }
+  setLogLevel(finalConfig.debugLogging ? LogLevel.DEBUG : LogLevel.ERROR);
+  if (finalConfig.logger) {
+    setLogger(finalConfig.logger);
+  }
+
+  const promHandler = promisifiedHandler(handler);
+  const wrappedFunc = async (event: TEvent, context: Context) => {
+    setColdStart();
+
+    currentMetricsListener = metricsListener;
+    currentTraceListener = traceListener;
+
+    await traceListener.onStartInvocation(event, context);
+
+    const { result, error, didError } = await traceListener.onWrap(async (event: TEvent, context: Context) => {
+      await metricsListener.onStartInvocation(event);
       if (finalConfig.enhancedMetrics) {
         incrementInvocationsMetric(metricsListener, context);
       }
-    },
-    async (event, context, error?) => {
-      if (finalConfig.enhancedMetrics && error) {
-        incrementErrorsMetric(metricsListener, context);
+      let result: TResult | undefined;
+      let error: any;
+      let didError = false;
+      try {
+        result = (await promHandler(event, context)) as TResult | undefined;
+      } catch (err) {
+        if (finalConfig.enhancedMetrics) {
+          incrementErrorsMetric(metricsListener, context);
+        }
+        err = error;
+        didError = true;
       }
-      // Completion hook, (called once per handler invocation)
-      for (const listener of listeners) {
-        await listener.onCompleteInvocation();
-      }
-      currentMetricsListener = undefined;
-      currentTraceListener = undefined;
-    },
-    (func) => traceListener.onWrap(func),
-  );
+      await metricsListener.onCompleteInvocation();
+      return { result, error, didError };
+    })(event, context);
+    await traceListener.onCompleteInvocation();
+    currentMetricsListener = undefined;
+    currentTraceListener = undefined;
+    if (didError) {
+      throw error;
+    }
+    return result as TResult;
+  };
+
   (wrappedFunc as any)[_ddWrappedKey] = true;
   return wrappedFunc;
 }
