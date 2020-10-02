@@ -6,7 +6,7 @@ import { getColdStartTag } from "../utils/cold-start";
 import { getProcessVersion } from "../utils/process-version";
 import { writeMetricToStdout } from "./metric-log";
 
-const packageJson = require('../../package.json');
+import * as packageJson from '../../package.json'
 const ENHANCED_LAMBDA_METRICS_NAMESPACE = "aws.lambda.enhanced";
 
 // Same tag strings added to normal Lambda integration metrics

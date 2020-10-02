@@ -6,7 +6,7 @@ import { getEnhancedMetricTags, getRuntimeTag } from "./enhanced-metrics";
 jest.mock("../utils/process-version");
 
 const mockedGetProcessVersion = getProcessVersion as jest.Mock<string>;
-const packageJson = require('../../package.json');
+import * as packageJson from '../../package.json'
 const ddtraceVersion = packageJson.devDependencies["dd-trace"];
 
 const mockARN = "arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda";
