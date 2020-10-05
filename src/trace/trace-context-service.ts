@@ -41,7 +41,7 @@ export class TraceContextService {
 
     const xraySegment = this.getXraySegment();
     if (xraySegment === undefined) {
-      logError("couldn't retrieve segment from xray");
+      logDebug("couldn't retrieve segment from xray");
     } else {
       const value = convertToAPMParentID(xraySegment.id);
       if (value !== undefined) {
