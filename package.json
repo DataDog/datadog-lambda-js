@@ -12,7 +12,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "tslint --project tsconfig.json",
-    "check-formatting": "prettier --check src/**"
+    "check-formatting": "prettier --check src/**",
+    "format": "prettier --write src/**"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.61",

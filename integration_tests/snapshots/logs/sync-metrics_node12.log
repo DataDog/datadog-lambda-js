@@ -7,8 +7,8 @@ REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1
 XRAY TraceId: XXXX	SegmentId: XXXX	Sampled: true	
 
 START RequestId: XXXX Version: $LATEST
-XXXX-XX-XX XX:XX:XX.XXX	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SNS request
 {"e":XXXX,"m":"aws.lambda.enhanced.invocations","t":["region:us-east-1","account_id:XXXX","functionname:integration-dev-sync-metrics_node12","resource:integration-dev-sync-metrics_node12","cold_start:false","memorysize:1024","runtime:nodejs12.x"],"v":1}
+XXXX-XX-XX XX:XX:XX.XXX	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SNS request
 HTTP POST https://api.datadoghq.com/api/v1/distribution_points?api_key=XXXX Headers: ["content-type:application/json","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:2","x-datadog-trace-id:XXXX"]
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	

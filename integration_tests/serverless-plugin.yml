@@ -87,23 +87,6 @@ functions:
       WITH_PLUGIN: true
       DD_FLUSH_TO_LOG: true
 
-  # http-errors
-  http-errors_node10_with_plugin:
-    handler: http-errors.handle
-    runtime: nodejs10.x
-    layers:
-      - { Ref: Node10LambdaLayer }
-    environment:
-      WITH_PLUGIN: true
-
-  http-errors_node12_with_plugin:
-    handler: http-errors.handle
-    runtime: nodejs12.x
-    layers:
-      - { Ref: Node12LambdaLayer }
-    environment:
-      WITH_PLUGIN: true
-
 plugins:
   - serverless-plugin-datadog
 
