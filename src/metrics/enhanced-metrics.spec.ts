@@ -59,7 +59,7 @@ describe("getEnhancedMetricTags", () => {
       "resource:my-test-lambda",
       "cold_start:true",
       "memorysize:128",
-      `datadog_lamda:${packageJson.version}`,
+      `datadog_lambda:${packageJson.version}`,
       `dd_trace:${ddtraceVersion}`,
       "runtime:nodejs8.10",
     ]);
@@ -71,7 +71,7 @@ describe("getEnhancedMetricTags", () => {
       "functionname:my-test-lambda",
       "cold_start:true",
       "memorysize:128",
-      `datadog_lamda:${packageJson.version}`,
+      `datadog_lambda:${packageJson.version}`,
       `dd_trace:${ddtraceVersion}`,
       "runtime:nodejs8.10",
     ]);
@@ -86,7 +86,7 @@ describe("getEnhancedMetricTags", () => {
       "resource:my-test-lambda",
       "cold_start:true",
       "memorysize:128",
-      `datadog_lamda:${packageJson.version}`,
+      `datadog_lambda:${packageJson.version}`,
       `dd_trace:${ddtraceVersion}`,
     ]);
   });

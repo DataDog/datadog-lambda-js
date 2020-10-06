@@ -54,7 +54,7 @@ export function getEnhancedMetricTags(context: Context): string[] {
     ...arnTags,
     getColdStartTag(),
     `memorysize:${context.memoryLimitInMB}`,
-    `datadog_lamda:${packageJson.version}`,
+    `datadog_lambda:${packageJson.version}`,
     `dd_trace:${ddtraceVersion}`,
   ];
 
