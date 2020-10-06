@@ -16,7 +16,7 @@ trap "pkill -P $$; exit 1;" INT
 NODE_VERSIONS_FOR_AWS_CLI=("nodejs10.x" "nodejs12.x")
 LAYER_PATHS=(".layers/datadog_lambda_node10.15.zip" ".layers/datadog_lambda_node12.13.zip")
 LAYER_NAMES=("Datadog-Node10-x" "Datadog-Node12-x")
-AVAILABLE_REGIONS=(us-east-2 us-east-1 us-west-1 us-west-2 ap-east-1 ap-south-1 ap-northeast-2 ap-southeast-1 ap-southeast-2 ap-northeast-1 ca-central-1 eu-north-1 eu-central-1 eu-west-1 eu-west-2 eu-west-3 sa-east-1)
+AVAILABLE_REGIONS=$(aws ec2 describe-regions | jq -r '.[] | .[] | .RegionName')
 
 # Check that the layer files exist
 for layer_file in "${LAYER_PATHS[@]}"
@@ -30,11 +30,11 @@ done
 # Check region arg
 if [ -z "$1" ]; then
     echo "Region parameter not specified, running for all available regions."
-    REGIONS=("${AVAILABLE_REGIONS[@]}")
+    REGIONS=$AVAILABLE_REGIONS
 else
     echo "Region parameter specified: $1"
-    if [[ ! " ${AVAILABLE_REGIONS[@]} " =~ " ${1} " ]]; then
-        echo "Could not find $1 in available regions: ${AVAILABLE_REGIONS[@]}"
+    if [[ ! "$AVAILABLE_REGIONS" == *"$1"* ]]; then
+        echo "Could not find $1 in available regions: $AVAILABLE_REGIONS"
         echo ""
         echo "EXITING SCRIPT."
         exit 1
@@ -42,7 +42,7 @@ else
     REGIONS=($1)
 fi
 
-echo "Starting publishing layers for regions: ${REGIONS[*]}"
+echo "Starting publishing layers for regions: $REGIONS"
 
 publish_layer() {
     region=$1
@@ -66,7 +66,7 @@ publish_layer() {
     echo "Published layer for region $region, node version $aws_version_key, layer_name $layer_name, layer_version $version_nbr"
 }
 
-BATCH_SIZE=60
+BATCH_SIZE=1
 PIDS=()
 
 wait_for_processes() {
@@ -76,7 +76,7 @@ wait_for_processes() {
     PIDS=()
 }
 
-for region in "${REGIONS[@]}"
+for region in $REGIONS
 do
     echo "Starting publishing layer for region $region..."
 

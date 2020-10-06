@@ -115,7 +115,7 @@ function _logHttpRequest(options: http.RequestOptions) {
     headerMessage = `Headers: ${JSON.stringify(headerStrings)}`;
   }
 
-  const url = `${options.protocol}//${options.host}${options.path}`;
+  const url = `${options.protocol}//${options.host || options.hostname}${options.path}`;
 
   const requestMessage = `HTTP ${options.method} ${url} ${headerMessage}\n`;
   process.stdout.write(requestMessage);

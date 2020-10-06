@@ -90,7 +90,7 @@ export class TraceListener {
     if (this.context) {
       logDebug("Applying lambda context to datadog traces");
       const functionArn = (this.context.invokedFunctionArn ?? "").toLowerCase();
-      const tk = functionArn.split(":")
+      const tk = functionArn.split(":");
       options.tags = {
         cold_start: didFunctionColdStart(),
         function_arn: tk.length > 7 ? tk.slice(0, 7).join(":") : functionArn,
@@ -98,8 +98,11 @@ export class TraceListener {
         request_id: this.context.awsRequestId,
         resource_names: this.context.functionName,
       };
-      if (this.contextService.traceSource !== Source.DDTrace) {
-        options.tags['_dd.parent_source'] = this.contextService.traceSource;
+      if (
+        (this.contextService.traceSource === Source.Xray && this.config.mergeDatadogXrayTraces) ||
+        this.contextService.traceSource === Source.Event
+      ) {
+        options.tags["_dd.parent_source"] = this.contextService.traceSource;
       }
     }
     if (this.stepFunctionContext) {

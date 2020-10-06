@@ -11,19 +11,21 @@
 set -e
 
 LAYER_NAMES=("Datadog-Node10-x" "Datadog-Node12-x")
-AVAILABLE_REGIONS=(us-east-2 us-east-1 us-west-1 us-west-2 ap-east-1 ap-south-1 ap-northeast-2 ap-southeast-1 ap-southeast-2 ap-northeast-1 ca-central-1 eu-north-1 eu-central-1 eu-west-1 eu-west-2 eu-west-3 sa-east-1)
+AVAILABLE_REGIONS=$(aws ec2 describe-regions | jq -r '.[] | .[] | .RegionName')
+LAYERS_MISSING_REGIONS=()
 
 # Check region arg
 if [ -z "$2" ]; then
     >&2 echo "Region parameter not specified, running for all available regions."
-    REGIONS=("${AVAILABLE_REGIONS[@]}")
+    REGIONS=$AVAILABLE_REGIONS
 else
+
     >&2 echo "Region parameter specified: $2"
-    if [[ ! " ${AVAILABLE_REGIONS[@]} " =~ " ${2} " ]]; then
-        >&2 echo "Could not find $2 in available regions: ${AVAILABLE_REGIONS[@]}"
+    if [[ ! "$AVAILABLE_REGIONS" == *"$2"* ]]; then
+        >&2 echo "Could not find $2 in available regions:" $AVAILABLE_REGIONS
         >&2 echo ""
         >&2 echo "EXITING SCRIPT."
-        return 1
+        exit 1
     fi
     REGIONS=($2)
 fi
@@ -43,15 +45,24 @@ else
     LAYERS=($1)
 fi
 
-for region in "${REGIONS[@]}"
+for region in $REGIONS
 do
     for layer_name in "${LAYERS[@]}"
     do
         last_layer_arn=$(aws lambda list-layer-versions --layer-name $layer_name --region $region | jq -r ".LayerVersions | .[0] |  .LayerVersionArn")
-        if [ -z $last_layer_arn ]; then
-             >&2 echo "No layer found for $region, $layer_name"
+        if [ "$last_layer_arn" == "null" ]; then
+            >&2 echo "No layer found for $region, $layer_name"
+            if [[ ! " ${LAYERS_MISSING_REGIONS[@]} " =~ " ${region} " ]]; then
+                LAYERS_MISSING_REGIONS+=( $region )
+            fi
         else
             echo $last_layer_arn
         fi
     done
 done
+
+if [ ${#LAYERS_MISSING_REGIONS[@]} -gt 0 ]; then
+    echo "WARNING: Following regions missing layers: ${LAYERS_MISSING_REGIONS[@]}"
+    echo "Please run ./add_new_region.sh <new_region> to add layers to the missing regions" 
+    exit 1
+fi

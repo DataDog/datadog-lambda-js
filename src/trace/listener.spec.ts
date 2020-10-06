@@ -151,7 +151,6 @@ describe("TraceListener", () => {
           function_version: "$LATEST",
           request_id: "1234",
           resource_names: "my-lambda",
-          "_dd.parent_source": "xray",
         },
         type: "serverless",
       },

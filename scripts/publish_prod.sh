@@ -22,6 +22,9 @@ if [ -z "$AWS_SESSION_TOKEN" ]; then
     exit 1
 fi
 
+echo 'Checking Regions'
+./scripts/list_layers.sh
+
 yarn login
 
 PACKAGE_VERSION=$(node -pe "require('./package.json').version")
