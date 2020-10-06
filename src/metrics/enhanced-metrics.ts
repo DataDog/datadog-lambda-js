@@ -6,7 +6,6 @@ import { getColdStartTag } from "../utils/cold-start";
 import { getProcessVersion } from "../utils/process-version";
 import { writeMetricToStdout } from "./metric-log";
 
-import * as packageJson from "../../package.json";
 const ENHANCED_LAMBDA_METRICS_NAMESPACE = "aws.lambda.enhanced";
 
 // Same tag strings added to normal Lambda integration metrics
@@ -49,14 +48,7 @@ export function getEnhancedMetricTags(context: Context): string[] {
   if (context.invokedFunctionArn) {
     arnTags = parseTagsFromARN(context.invokedFunctionArn, context.functionVersion);
   }
-  const ddtraceVersion = packageJson.devDependencies["dd-trace"];
-  const tags = [
-    ...arnTags,
-    getColdStartTag(),
-    `memorysize:${context.memoryLimitInMB}`,
-    `datadog_lambda:${packageJson.version}`,
-    `dd_trace:${ddtraceVersion}`,
-  ];
+  const tags = [...arnTags, getColdStartTag(), `memorysize:${context.memoryLimitInMB}`];
 
   const runtimeTag = getRuntimeTag();
   if (runtimeTag) {

@@ -1,7 +1,5 @@
 import { TraceListener } from "./listener";
 import { Source } from "./constants";
-import * as packageJson from "../../package.json";
-const ddtraceVersion = packageJson.devDependencies["dd-trace"];
 
 let mockWrap: jest.Mock<any, any>;
 let mockExtract: jest.Mock<any, any>;
@@ -86,8 +84,6 @@ describe("TraceListener", () => {
           function_version: "$LATEST",
           request_id: "1234",
           resource_names: "my-lambda",
-          datadog_lambda: packageJson.version,
-          dd_trace: ddtraceVersion,
         },
         type: "serverless",
       },
@@ -121,8 +117,6 @@ describe("TraceListener", () => {
           request_id: "1234",
           resource_names: "my-lambda",
           "_dd.parent_source": "event",
-          datadog_lambda: packageJson.version,
-          dd_trace: ddtraceVersion,
         },
         type: "serverless",
         childOf: mockTraceHeaders,
@@ -157,8 +151,6 @@ describe("TraceListener", () => {
           function_version: "$LATEST",
           request_id: "1234",
           resource_names: "my-lambda",
-          datadog_lambda: packageJson.version,
-          dd_trace: ddtraceVersion,
         },
         type: "serverless",
       },
@@ -193,8 +185,6 @@ describe("TraceListener", () => {
           request_id: "1234",
           resource_names: "my-lambda",
           "_dd.parent_source": "xray",
-          datadog_lambda: packageJson.version,
-          dd_trace: ddtraceVersion,
         },
         type: "serverless",
         childOf: mockTraceHeaders,
@@ -222,8 +212,6 @@ describe("TraceListener", () => {
           function_version: "alias",
           request_id: "1234",
           resource_names: "my-lambda",
-          datadog_lambda: packageJson.version,
-          dd_trace: ddtraceVersion,
         },
         type: "serverless",
       },
@@ -250,8 +238,6 @@ describe("TraceListener", () => {
           function_version: "1",
           request_id: "1234",
           resource_names: "my-lambda",
-          datadog_lambda: packageJson.version,
-          dd_trace: ddtraceVersion,
         },
         type: "serverless",
       },

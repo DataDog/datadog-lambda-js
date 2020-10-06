@@ -9,7 +9,6 @@ import { didFunctionColdStart } from "../utils/cold-start";
 import { Source } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
-import * as packageJson from "../../package.json";
 
 export interface TraceConfig {
   /**
@@ -92,16 +91,12 @@ export class TraceListener {
       logDebug("Applying lambda context to datadog traces");
       const functionArn = (this.context.invokedFunctionArn ?? "").toLowerCase();
       const tk = functionArn.split(":");
-      const ddtraceVersion = packageJson.devDependencies["dd-trace"];
-
       options.tags = {
         cold_start: didFunctionColdStart(),
         function_arn: tk.length > 7 ? tk.slice(0, 7).join(":") : functionArn,
         function_version: tk.length > 7 ? tk[7] : "$LATEST",
         request_id: this.context.awsRequestId,
         resource_names: this.context.functionName,
-        datadog_lambda: packageJson.version,
-        dd_trace: ddtraceVersion,
       };
       if (
         (this.contextService.traceSource === Source.Xray && this.config.mergeDatadogXrayTraces) ||
