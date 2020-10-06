@@ -11,7 +11,6 @@ import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 import * as packageJson from "../../package.json";
 
-
 export interface TraceConfig {
   /**
    * Whether to automatically patch all outgoing http requests with Datadog's hybrid tracing headers.

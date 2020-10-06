@@ -8,7 +8,6 @@ let mockExtract: jest.Mock<any, any>;
 let mockTraceHeaders: Record<string, string> | undefined = undefined;
 let mockTraceSource: Source | undefined = undefined;
 
-
 jest.mock("./tracer-wrapper", () => {
   mockWrap = jest.fn().mockImplementation((name, options, func) => func);
   mockExtract = jest.fn().mockImplementation((val) => val);
@@ -124,7 +123,6 @@ describe("TraceListener", () => {
           "_dd.parent_source": "event",
           datadog_lambda: packageJson.version,
           dd_trace: ddtraceVersion,
-          
         },
         type: "serverless",
         childOf: mockTraceHeaders,
