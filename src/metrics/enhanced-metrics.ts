@@ -68,7 +68,7 @@ export function getEnhancedMetricTags(context: Context): string[] {
  */
 function incrementEnhancedMetric(listener: MetricsListener, metricName: string, context: Context) {
   // Always write enhanced metrics to standard out
-  listener.sendDistributionMetric(metricName, 1, true, ...getEnhancedMetricTags(context));
+  listener.sendDistributionMetric(`aws.lambda.enhanced.${metricName}`, 1, true, ...getEnhancedMetricTags(context));
 }
 
 export function incrementInvocationsMetric(listener: MetricsListener, context: Context): void {

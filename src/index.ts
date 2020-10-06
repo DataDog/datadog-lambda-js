@@ -8,7 +8,16 @@ import {
   MetricsListener,
 } from "./metrics";
 import { TraceConfig, TraceHeaders, TraceListener } from "./trace";
-import { logError, LogLevel, Logger, setColdStart, setLogLevel, setLogger, promisifiedHandler } from "./utils";
+import {
+  logError,
+  LogLevel,
+  Logger,
+  setColdStart,
+  setLogLevel,
+  setLogger,
+  promisifiedHandler,
+  logDebug,
+} from "./utils";
 export { TraceHeaders } from "./trace";
 
 export const apiKeyEnvVar = "DD_API_KEY";
