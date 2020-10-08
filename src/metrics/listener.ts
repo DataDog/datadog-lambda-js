@@ -112,7 +112,6 @@ export class MetricsListener {
     } catch (error) {
       // This can fail for a variety of reasons, from the API not being reachable,
       // to KMS key decryption failing.
-      console.log(error);
       logError(`failed to flush metrics`, { innerError: error });
     }
     this.currentProcessor = undefined;

@@ -4,13 +4,13 @@ import { isAgentRunning, flushExtension, AGENT_URL } from "./extension";
 
 describe("isAgentRunning", () => {
   it("returns true when agent responds", async () => {
-    const scope = nock(AGENT_URL).post("/lambda/hello", JSON.stringify({})).reply(200);
+    const scope = nock(AGENT_URL).get("/lambda/hello").reply(200);
     const ran = await isAgentRunning();
     expect(scope.isDone()).toBeTruthy();
     expect(ran).toBeTruthy();
   });
   it("returns false when agent doesn't respond", async () => {
-    const scope = nock(AGENT_URL).post("/lambda/hello", JSON.stringify({})).replyWithError("Unreachable");
+    const scope = nock(AGENT_URL).get("/lambda/hello").replyWithError("Unreachable");
     const ran = await isAgentRunning();
     expect(scope.isDone()).toBeTruthy();
     expect(ran).toBeFalsy();

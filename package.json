@@ -49,7 +49,7 @@
     "transform": {
       ".(ts|tsx)": "ts-jest"
     },
-    "collectCoverage": true,
+    "collectCoverage": false,
     "coverageReporters": [
       "lcovonly",
       "text-summary"

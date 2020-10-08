@@ -35,7 +35,7 @@ describe("MetricsListener", () => {
       siteURL,
     });
 
-    listener.onStartInvocation({});
+    await listener.onStartInvocation({});
     listener.sendDistributionMetric("my-metric", 10, false, "tag:a", "tag:b");
     await listener.onCompleteInvocation();
 
@@ -54,7 +54,7 @@ describe("MetricsListener", () => {
       siteURL,
     });
 
-    listener.onStartInvocation({});
+    await listener.onStartInvocation({});
     listener.sendDistributionMetric("my-metric", 10, false, "tag:a", "tag:b");
     await listener.onCompleteInvocation();
 

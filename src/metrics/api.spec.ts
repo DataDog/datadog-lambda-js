@@ -53,7 +53,9 @@ describe("APIClient", () => {
       .post("/api/v1/distribution_points?api_key=api_key", JSON.stringify({ series: [] }))
       .replyWithError("Connection closed");
     const client = new APIClient("api_key", baseAPIURL);
-    await expect(client.sendMetrics([])).rejects.toMatchInlineSnapshot(`"Failed to send metrics: Connection closed"`);
+    await expect(client.sendMetrics([])).rejects.toMatchInlineSnapshot(
+      `[Error: Failed to send metrics: Connection closed]`,
+    );
     expect(scope.isDone()).toBeTruthy();
   });
 });
