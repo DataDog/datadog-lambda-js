@@ -5,6 +5,7 @@ import { parseTagsFromARN } from "../utils/arn";
 import { getColdStartTag } from "../utils/cold-start";
 import { getProcessVersion } from "../utils/process-version";
 import { writeMetricToStdout } from "./metric-log";
+import { MetricsListener } from "./listener";
 
 const ENHANCED_LAMBDA_METRICS_NAMESPACE = "aws.lambda.enhanced";
 
@@ -63,20 +64,15 @@ export function getEnhancedMetricTags(context: Context): string[] {
  * @param context object passed to invocation by AWS
  * @param metricName name of the enhanced metric without namespace prefix, i.e. "invocations" or "errors"
  */
-function incrementEnhancedMetric(metricName: string, context: Context) {
+function incrementEnhancedMetric(listener: MetricsListener, metricName: string, context: Context) {
   // Always write enhanced metrics to standard out
-  writeMetricToStdout(
-    `${ENHANCED_LAMBDA_METRICS_NAMESPACE}.${metricName}`,
-    1,
-    new Date(),
-    getEnhancedMetricTags(context),
-  );
+  listener.sendDistributionMetric(`aws.lambda.enhanced.${metricName}`, 1, true, ...getEnhancedMetricTags(context));
 }
 
-export function incrementInvocationsMetric(context: Context): void {
-  incrementEnhancedMetric("invocations", context);
+export function incrementInvocationsMetric(listener: MetricsListener, context: Context): void {
+  incrementEnhancedMetric(listener, "invocations", context);
 }
 
-export function incrementErrorsMetric(context: Context): void {
-  incrementEnhancedMetric("errors", context);
+export function incrementErrorsMetric(listener: MetricsListener, context: Context): void {
+  incrementEnhancedMetric(listener, "errors", context);
 }

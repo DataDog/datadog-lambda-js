@@ -1,8 +1,7 @@
-import https, { RequestOptions } from "https";
 import querystring from "querystring";
 import { URL } from "url";
 
-import { logDebug } from "../utils";
+import { logDebug, post, isHTTPError, HTTPErrorType } from "../utils";
 import { APIMetric } from "./model";
 
 const apiKeyQueryParam = "api_key";
@@ -17,40 +16,23 @@ export interface Client {
 export class APIClient implements Client {
   constructor(private apiKey: string, private baseAPIURL: string) {}
 
-  public sendMetrics(metrics: APIMetric[]): Promise<void> {
-    return this.post(this.getUrl("api/v1/distribution_points"), { series: metrics });
-  }
-
-  private post<T>(url: URL, body: T): Promise<void> {
-    const bodyJSON = JSON.stringify(body);
-    const buffer = Buffer.from(bodyJSON);
-    logDebug(`sending payload with body ${bodyJSON}`);
-
-    return new Promise((resolve, reject) => {
-      const options: RequestOptions = {
-        headers: { "content-type": "application/json" },
-        host: url.host,
-        method: "POST",
-        path: `${url.pathname}${url.search}`,
-        protocol: url.protocol,
-      };
-
-      const request = https.request(options, (response) => {
-        if (response.statusCode === undefined || response.statusCode < 200 || response.statusCode > 299) {
-          if (response.statusCode === 403) {
-            logDebug(`authorization failed with api key of length ${this.apiKey.length} characters`);
-          }
-          reject(`Invalid status code ${response.statusCode}`);
-        } else {
-          resolve();
-        }
-      });
-      request.on("error", (error) => {
-        reject(`Failed to send metrics: ${error}`);
-      });
-      request.write(buffer);
-      request.end();
-    });
+  public async sendMetrics(metrics: APIMetric[]): Promise<void> {
+    try {
+      await post(this.getUrl("api/v1/distribution_points"), { series: metrics });
+    } catch (e) {
+      if (!isHTTPError(e)) {
+        logDebug(`Failed to send metrics ${e}`);
+        throw e;
+      }
+      if (e.type === HTTPErrorType.BadAuth) {
+        logDebug(`authorization failed with api key of length ${this.apiKey.length} characters`);
+      }
+      if (e.type === HTTPErrorType.FailedSend) {
+        logDebug(`Failed to send metrics ${e.message}`);
+        throw Error(`Failed to send metrics: ${e.message}`);
+      }
+      throw e.message;
+    }
   }
 
   private getUrl(path: string) {

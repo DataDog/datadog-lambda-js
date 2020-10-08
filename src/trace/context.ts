@@ -183,7 +183,7 @@ export function readTraceFromEvent(event: any): TraceContext | undefined {
 export function readTraceContextFromXray(): TraceContext | undefined {
   const header = process.env[xrayTraceEnvVar];
   if (header === undefined) {
-    logError("couldn't read xray trace header from env");
+    logDebug("couldn't read xray trace header from env");
     return;
   }
   const context = parseXrayTraceContextHeader(header);

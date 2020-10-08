@@ -1,4 +1,4 @@
-import { Handler } from "aws-lambda";
+import { Handler, Context } from "aws-lambda";
 
 import {
   incrementErrorsMetric,
@@ -8,7 +8,16 @@ import {
   MetricsListener,
 } from "./metrics";
 import { TraceConfig, TraceHeaders, TraceListener } from "./trace";
-import { logError, LogLevel, Logger, setColdStart, setLogLevel, setLogger, wrap } from "./utils";
+import {
+  logError,
+  LogLevel,
+  Logger,
+  setColdStart,
+  setLogLevel,
+  setLogger,
+  promisifiedHandler,
+  logDebug,
+} from "./utils";
 export { TraceHeaders } from "./trace";
 
 export const apiKeyEnvVar = "DD_API_KEY";
@@ -83,7 +92,6 @@ export function datadog<TEvent, TResult>(
   const handlerName = getEnvValue(datadogHandlerEnvVar, getEnvValue("_HANDLER", "handler"));
 
   const traceListener = new TraceListener(finalConfig, handlerName);
-  const listeners = [metricsListener, traceListener];
 
   // Only wrap the handler once unless forced
   const _ddWrappedKey = "_ddWrapped";
@@ -91,37 +99,51 @@ export function datadog<TEvent, TResult>(
     return handler;
   }
 
-  const wrappedFunc = wrap(
-    handler,
-    (event, context) => {
-      setColdStart();
-      setLogLevel(finalConfig.debugLogging ? LogLevel.DEBUG : LogLevel.ERROR);
-      if (finalConfig.logger) {
-        setLogger(finalConfig.logger);
-      }
-      currentMetricsListener = metricsListener;
-      currentTraceListener = traceListener;
-      // Setup hook, (called once per handler invocation)
-      for (const listener of listeners) {
-        listener.onStartInvocation(event, context);
-      }
-      if (finalConfig.enhancedMetrics) {
-        incrementInvocationsMetric(context);
-      }
-    },
-    async (event, context, error?) => {
-      if (finalConfig.enhancedMetrics && error) {
-        incrementErrorsMetric(context);
-      }
-      // Completion hook, (called once per handler invocation)
-      for (const listener of listeners) {
-        await listener.onCompleteInvocation();
-      }
-      currentMetricsListener = undefined;
-      currentTraceListener = undefined;
-    },
-    (func) => traceListener.onWrap(func),
-  );
+  setLogLevel(finalConfig.debugLogging ? LogLevel.DEBUG : LogLevel.ERROR);
+  if (finalConfig.logger) {
+    setLogger(finalConfig.logger);
+  }
+
+  const promHandler = promisifiedHandler(handler);
+  const wrappedFunc = async (event: TEvent, context: Context) => {
+    setColdStart();
+
+    currentMetricsListener = metricsListener;
+    currentTraceListener = traceListener;
+
+    await traceListener.onStartInvocation(event, context);
+
+    const { result, error, didError } = await traceListener.onWrap(
+      async (localEvent: TEvent, localContext: Context) => {
+        await metricsListener.onStartInvocation(localEvent);
+        if (finalConfig.enhancedMetrics) {
+          incrementInvocationsMetric(metricsListener, localContext);
+        }
+        let localResult: TResult | undefined;
+        let localError: any;
+        let localDidError = false;
+        try {
+          localResult = (await promHandler(localEvent, localContext)) as TResult | undefined;
+        } catch (err) {
+          if (finalConfig.enhancedMetrics) {
+            incrementErrorsMetric(metricsListener, localContext);
+          }
+          localError = err;
+          localDidError = true;
+        }
+        await metricsListener.onCompleteInvocation();
+        return { result: localResult, error: localError, didError: localDidError };
+      },
+    )(event, context);
+    await traceListener.onCompleteInvocation();
+    currentMetricsListener = undefined;
+    currentTraceListener = undefined;
+    if (didError) {
+      throw error;
+    }
+    return result as TResult;
+  };
+
   (wrappedFunc as any)[_ddWrappedKey] = true;
   return wrappedFunc;
 }
@@ -137,7 +159,7 @@ export function sendDistributionMetricWithDate(name: string, value: number, metr
   tags = [...tags, getRuntimeTag()];
 
   if (currentMetricsListener !== undefined) {
-    currentMetricsListener.sendDistributionMetricWithDate(name, value, metricTime, ...tags);
+    currentMetricsListener.sendDistributionMetricWithDate(name, value, metricTime, false, ...tags);
   } else {
     logError("handler not initialized");
   }
@@ -153,7 +175,7 @@ export function sendDistributionMetric(name: string, value: number, ...tags: str
   tags = [...tags, getRuntimeTag()];
 
   if (currentMetricsListener !== undefined) {
-    currentMetricsListener.sendDistributionMetric(name, value, ...tags);
+    currentMetricsListener.sendDistributionMetric(name, value, false, ...tags);
   } else {
     logError("handler not initialized");
   }
