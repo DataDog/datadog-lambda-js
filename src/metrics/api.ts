@@ -29,7 +29,7 @@ export class APIClient implements Client {
       }
       if (e.type === HTTPErrorType.FailedSend) {
         logDebug(`Failed to send metrics ${e.message}`);
-        throw `Failed to send metrics: ${e.message}`
+        throw Error(`Failed to send metrics: ${e.message}`);
       }
       throw e.message;
     }

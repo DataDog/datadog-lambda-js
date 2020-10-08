@@ -113,26 +113,28 @@ export function datadog<TEvent, TResult>(
 
     await traceListener.onStartInvocation(event, context);
 
-    const { result, error, didError } = await traceListener.onWrap(async (event: TEvent, context: Context) => {
-      await metricsListener.onStartInvocation(event);
-      if (finalConfig.enhancedMetrics) {
-        incrementInvocationsMetric(metricsListener, context);
-      }
-      let result: TResult | undefined;
-      let error: any;
-      let didError = false;
-      try {
-        result = (await promHandler(event, context)) as TResult | undefined;
-      } catch (err) {
+    const { result, error, didError } = await traceListener.onWrap(
+      async (localEvent: TEvent, localContext: Context) => {
+        await metricsListener.onStartInvocation(localEvent);
         if (finalConfig.enhancedMetrics) {
-          incrementErrorsMetric(metricsListener, context);
+          incrementInvocationsMetric(metricsListener, localContext);
         }
-        err = error;
-        didError = true;
-      }
-      await metricsListener.onCompleteInvocation();
-      return { result, error, didError };
-    })(event, context);
+        let localResult: TResult | undefined;
+        let localError: any;
+        let localDidError = false;
+        try {
+          localResult = (await promHandler(localEvent, localContext)) as TResult | undefined;
+        } catch (err) {
+          if (finalConfig.enhancedMetrics) {
+            incrementErrorsMetric(metricsListener, localContext);
+          }
+          localError = err;
+          localDidError = true;
+        }
+        await metricsListener.onCompleteInvocation();
+        return { result: localResult, error: localError, didError: localDidError };
+      },
+    )(event, context);
     await traceListener.onCompleteInvocation();
     currentMetricsListener = undefined;
     currentTraceListener = undefined;
