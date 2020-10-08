@@ -54,7 +54,7 @@ describe("APIClient", () => {
       .replyWithError("Connection closed");
     const client = new APIClient("api_key", baseAPIURL);
     await expect(client.sendMetrics([])).rejects.toMatchInlineSnapshot(
-      `"Failed to send metrics: Error: Connection closed"`,
+      `[Error: Failed to send metrics: Connection closed]`,
     );
     expect(scope.isDone()).toBeTruthy();
   });

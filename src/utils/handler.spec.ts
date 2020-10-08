@@ -24,7 +24,7 @@ describe("wrap", () => {
 
     const wrappedHandler = wrap(
       handler,
-      () => {
+      async () => {
         calledStart = true;
       },
       async () => {
@@ -81,7 +81,7 @@ describe("wrap", () => {
 
     const wrappedHandler = wrap(
       handler,
-      () => {
+      async () => {
         calledStart = true;
       },
       async () => {
@@ -110,7 +110,7 @@ describe("wrap", () => {
 
     const wrappedHandler = wrap(
       handler,
-      () => {
+      async () => {
         calledStart = true;
       },
       async () => {
@@ -139,7 +139,7 @@ describe("wrap", () => {
 
     const wrappedHandler = wrap(
       handler,
-      () => {
+      async () => {
         calledStart = true;
       },
       async () => {
@@ -170,7 +170,7 @@ describe("wrap", () => {
 
     const wrappedHandler = wrap(
       handler,
-      () => {
+      async () => {
         calledStart = true;
       },
       async () => {
@@ -198,7 +198,7 @@ describe("wrap", () => {
 
     const wrappedHandler = wrap(
       handler,
-      () => {},
+      async () => {},
       async () => {},
     );
 
@@ -222,7 +222,7 @@ describe("wrap", () => {
 
     const wrappedHandler = wrap(
       handler,
-      () => {},
+      async () => {},
       async () => {},
     );
 

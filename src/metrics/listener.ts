@@ -6,6 +6,8 @@ import { KMSService } from "./kms-service";
 import { writeMetricToStdout } from "./metric-log";
 import { Distribution } from "./model";
 import { Processor } from "./processor";
+import { StatsD } from "hot-shots";
+import { isAgentRunning, flushExtension } from "./extension";
 
 const metricsBatchSendIntervalMS = 10000; // 10 seconds
 
@@ -50,13 +52,28 @@ export interface MetricsConfig {
 export class MetricsListener {
   private currentProcessor?: Promise<Processor>;
   private apiKey: Promise<string>;
+  private statsDClient?: StatsD;
+  private isAgentRunning?: boolean = undefined;
 
   constructor(private kmsClient: KMSService, private config: MetricsConfig) {
     this.apiKey = this.getAPIKey(config);
   }
 
-  public onStartInvocation(_: any) {
+  public async onStartInvocation(_: any) {
+    if (this.isAgentRunning === undefined) {
+      this.isAgentRunning = await isAgentRunning();
+      logDebug(`Extension present: ${this.isAgentRunning}`);
+    }
+
     if (this.config.logForwarding) {
+      logDebug(`logForwarding configured`);
+
+      return;
+    }
+    if (this.isAgentRunning) {
+      logDebug(`Using StatsD client`);
+
+      this.statsDClient = new StatsD({ host: "127.0.0.1" });
       return;
     }
     this.currentProcessor = this.createProcessor(this.config, this.apiKey);
@@ -75,6 +92,23 @@ export class MetricsListener {
 
         await processor.flush();
       }
+      if (this.statsDClient !== undefined) {
+        logDebug(`Flushing statsD`);
+
+        // Make sure all stats are flushed to extension
+        await new Promise((resolve, reject) => {
+          this.statsDClient?.close((error) => {
+            if (error !== undefined) {
+              reject(error);
+            }
+            resolve();
+          });
+        });
+        this.statsDClient = undefined;
+        logDebug(`Flushing Extension`);
+
+        await flushExtension();
+      }
     } catch (error) {
       // This can fail for a variety of reasons, from the API not being reachable,
       // to KMS key decryption failing.
@@ -83,11 +117,22 @@ export class MetricsListener {
     this.currentProcessor = undefined;
   }
 
-  public sendDistributionMetricWithDate(name: string, value: number, metricTime: Date, ...tags: string[]) {
-    if (this.config.logForwarding) {
+  public sendDistributionMetricWithDate(
+    name: string,
+    value: number,
+    metricTime: Date,
+    forceAsync: boolean,
+    ...tags: string[]
+  ) {
+    if (this.isAgentRunning) {
+      this.statsDClient?.distribution(name, value, undefined, tags);
+      return;
+    }
+    if (this.config.logForwarding || forceAsync) {
       writeMetricToStdout(name, value, metricTime, tags);
       return;
     }
+
     const dist = new Distribution(name, [{ timestamp: metricTime, value }], ...tags);
 
     if (this.currentProcessor !== undefined) {
@@ -99,8 +144,8 @@ export class MetricsListener {
     }
   }
 
-  public sendDistributionMetric(name: string, value: number, ...tags: string[]) {
-    this.sendDistributionMetricWithDate(name, value, new Date(Date.now()), ...tags);
+  public sendDistributionMetric(name: string, value: number, forceAsync: boolean, ...tags: string[]) {
+    this.sendDistributionMetricWithDate(name, value, new Date(Date.now()), forceAsync, ...tags);
   }
 
   private async createProcessor(config: MetricsConfig, apiKey: Promise<string>) {
