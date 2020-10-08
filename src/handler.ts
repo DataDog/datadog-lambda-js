@@ -3,6 +3,10 @@ import { datadog, datadogHandlerEnvVar, lambdaTaskRootEnvVar, getEnvValue } from
 // tslint:disable-next-line:no-var-requires
 const { load } = require("/var/runtime/UserFunction") as any;
 
+if (process.env.DD_TRACE_DISABLED_PLUGINS === undefined) {
+  process.env.DD_TRACE_DISABLED_PLUGINS = "fs";
+}
+
 if (getEnvValue("DD_TRACE_ENABLED", "true").toLowerCase() === "true") {
   // tslint:disable-next-line:no-var-requires
   require("dd-trace").init({
