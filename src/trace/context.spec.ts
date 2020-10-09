@@ -1,3 +1,4 @@
+import { Context } from "aws-lambda";
 import { LogLevel, setLogLevel } from "../utils";
 import {
   SampleMode,
@@ -15,6 +16,7 @@ import {
   extractTraceContext,
   readTraceContextFromXray,
   readTraceFromEvent,
+  readTraceFromContext,
   readStepFunctionContextFromEvent,
 } from "./context";
 
@@ -374,13 +376,43 @@ describe("extractTraceContext", () => {
   it("returns trace read from header as highest priority", () => {
     process.env["_X_AMZN_TRACE_ID"] = "Root=1-5ce31dc2-2c779014b90ce44db5e03875;Parent=0b11cc4230d3e09e;Sampled=1";
 
-    const result = extractTraceContext({
-      headers: {
-        "x-datadog-parent-id": "797643193680388251",
-        "x-datadog-sampling-priority": "2",
-        "x-datadog-trace-id": "4110911582297405551",
+    const result = extractTraceContext(
+      {
+        headers: {
+          "x-datadog-parent-id": "797643193680388251",
+          "x-datadog-sampling-priority": "2",
+          "x-datadog-trace-id": "4110911582297405551",
+        },
       },
+      {
+        clientContext: {
+          Custom: {
+            "x-datadog-parent-id": "666",
+            "x-datadog-sampling-priority": "666",
+            "x-datadog-trace-id": "666",
+          },
+        },
+      } as Context,
+    );
+    expect(result).toEqual({
+      parentID: "797643193680388251",
+      sampleMode: SampleMode.USER_KEEP,
+      traceID: "4110911582297405551",
+      source: Source.Event,
     });
+  });
+  it("returns trace read from clientContext as second highest priority", () => {
+    process.env["_X_AMZN_TRACE_ID"] = "Root=1-5ce31dc2-2c779014b90ce44db5e03875;Parent=0b11cc4230d3e09e;Sampled=1";
+
+    const result = extractTraceContext({ headers: {} }, {
+      clientContext: {
+        Custom: {
+          "x-datadog-parent-id": "797643193680388251",
+          "x-datadog-sampling-priority": "2",
+          "x-datadog-trace-id": "4110911582297405551",
+        },
+      },
+    } as Context);
     expect(result).toEqual({
       parentID: "797643193680388251",
       sampleMode: SampleMode.USER_KEEP,

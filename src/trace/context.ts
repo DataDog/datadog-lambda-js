@@ -43,7 +43,7 @@ export interface StepFunctionContext {
  * Reads the trace context from either an incoming lambda event, or the current xray segment.
  * @param event An incoming lambda event. This must have incoming trace headers in order to be read.
  */
-export function extractTraceContext(event: any, context: Context) {
+export function extractTraceContext(event: any, context?: Context) {
   const trace = readTraceFromEvent(event) || readTraceFromContext(context);
   const stepFuncContext = readStepFunctionContextFromEvent(event);
   if (stepFuncContext) {
@@ -142,18 +142,18 @@ export function sendXraySubsegment(segment: string) {
   }
 }
 
-export function readTraceFromContext(context: Context): TraceContext | undefined {
-  if (typeof context !== "object") {
+export function readTraceFromContext(context: Context | undefined): TraceContext | undefined {
+  if (!context || typeof context !== "object") {
     return;
   }
 
-  const clientContext = context.clientContext;
+  const customClientContext = context.clientContext?.Custom;
 
-  if (!clientContext || typeof clientContext !== "object") {
+  if (!customClientContext || typeof customClientContext !== "object") {
     return;
   }
 
-  return readTraceFromObj(clientContext);
+  return readTraceFromObj(customClientContext);
 }
 
 export function readTraceFromEvent(event: any): TraceContext | undefined {
