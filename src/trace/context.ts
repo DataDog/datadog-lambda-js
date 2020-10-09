@@ -1,3 +1,4 @@
+import { Context } from "aws-lambda";
 import { BigNumber } from "bignumber.js";
 import { randomBytes } from "crypto";
 import { createSocket } from "dgram";
@@ -42,8 +43,8 @@ export interface StepFunctionContext {
  * Reads the trace context from either an incoming lambda event, or the current xray segment.
  * @param event An incoming lambda event. This must have incoming trace headers in order to be read.
  */
-export function extractTraceContext(event: any) {
-  const trace = readTraceFromEvent(event);
+export function extractTraceContext(event: any, context: Context) {
+  const trace = readTraceFromEvent(event) || readTraceFromContext(context);
   const stepFuncContext = readStepFunctionContextFromEvent(event);
   if (stepFuncContext) {
     try {
@@ -141,6 +142,14 @@ export function sendXraySubsegment(segment: string) {
   }
 }
 
+export function readTraceFromContext(context: Context): TraceContext | undefined {
+  if (typeof context !== "object") {
+    return;
+  }
+
+  return readTraceFromObj(context);
+}
+
 export function readTraceFromEvent(event: any): TraceContext | undefined {
   if (typeof event !== "object") {
     return;
@@ -152,10 +161,18 @@ export function readTraceFromEvent(event: any): TraceContext | undefined {
     return;
   }
 
+  return readTraceFromObj(headers);
+}
+
+export function readTraceFromObj(obj: any): TraceContext | undefined {
+  if (typeof obj !== "object") {
+    return;
+  }
+
   const lowerCaseHeaders: { [key: string]: string } = {};
 
-  for (const key of Object.keys(headers)) {
-    lowerCaseHeaders[key.toLocaleLowerCase()] = headers[key];
+  for (const key of Object.keys(obj)) {
+    lowerCaseHeaders[key.toLocaleLowerCase()] = obj[key];
   }
 
   const traceID = lowerCaseHeaders[traceIDHeader];

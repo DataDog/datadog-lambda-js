@@ -59,7 +59,7 @@ export class TraceListener {
     }
 
     this.context = context;
-    this.contextService.rootTraceContext = extractTraceContext(event);
+    this.contextService.rootTraceContext = extractTraceContext(event, this.context);
     this.stepFunctionContext = readStepFunctionContextFromEvent(event);
   }
 
