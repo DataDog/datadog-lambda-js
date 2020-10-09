@@ -147,7 +147,13 @@ export function readTraceFromContext(context: Context): TraceContext | undefined
     return;
   }
 
-  return readTraceFromObj(context);
+  const clientContext = context.clientContext;
+
+  if (!clientContext || typeof clientContext !== "object") {
+    return;
+  }
+
+  return readTraceFromObj(clientContext);
 }
 
 export function readTraceFromEvent(event: any): TraceContext | undefined {
