@@ -10,6 +10,7 @@ if (process.env.DD_TRACE_DISABLED_PLUGINS === undefined) {
 if (getEnvValue("DD_TRACE_ENABLED", "true").toLowerCase() === "true") {
   // tslint:disable-next-line:no-var-requires
   require("dd-trace").init({
+    analytics: true,
     tags: {
       "_dd.origin": "lambda",
     },

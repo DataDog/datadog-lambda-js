@@ -9,8 +9,8 @@ import { didFunctionColdStart } from "../utils/cold-start";
 import { Source } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
-import * as packageJson from "../../package.json";
-const ddtraceVersion = packageJson.devDependencies["dd-trace"];
+const datadogLambdaVersion = "3.32.0";
+const ddtraceVersion = "0.25.1";
 
 export interface TraceConfig {
   /**
@@ -99,7 +99,7 @@ export class TraceListener {
         function_version: tk.length > 7 ? tk[7] : "$LATEST",
         request_id: this.context.awsRequestId,
         resource_names: this.context.functionName,
-        datadog_lambda: packageJson.version,
+        datadog_lambda: datadogLambdaVersion,
         dd_trace: ddtraceVersion,
       };
       if (
