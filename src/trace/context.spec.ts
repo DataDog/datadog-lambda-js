@@ -30,7 +30,7 @@ jest.mock("dgram", () => {
         },
         close: () => {
           closedSocket = true;
-        }
+        },
       };
     },
   };

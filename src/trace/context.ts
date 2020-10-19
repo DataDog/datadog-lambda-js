@@ -139,8 +139,7 @@ export function sendXraySubsegment(segment: string) {
     });
   } catch (error) {
     logDebug("Error occurred submitting to xray daemon", { error });
-  }
-  finally {
+  } finally {
     // Cleanup socket
     client?.close();
   }
