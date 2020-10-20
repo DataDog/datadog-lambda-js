@@ -21,6 +21,7 @@ import {
 } from "./context";
 
 let sentSegment: any;
+let closedSocket = false;
 
 jest.mock("dgram", () => {
   return {
@@ -28,6 +29,9 @@ jest.mock("dgram", () => {
       return {
         send: (message: string) => {
           sentSegment = message;
+        },
+        close: () => {
+          closedSocket = true;
         },
       };
     },
@@ -41,6 +45,7 @@ jest.mock("crypto", () => {
 
 beforeEach(() => {
   sentSegment = undefined;
+  closedSocket = false;
   setLogLevel(LogLevel.NONE);
 });
 
@@ -456,6 +461,7 @@ describe("extractTraceContext", () => {
     });
 
     expect(sentSegment instanceof Buffer).toBeTruthy();
+    expect(closedSocket).toBeTruthy();
     const sentMessage = sentSegment.toString();
     expect(sentMessage).toMatchInlineSnapshot(`
       "{\\"format\\": \\"json\\", \\"version\\": 1}
@@ -501,6 +507,8 @@ describe("extractTraceContext", () => {
     extractTraceContext(stepFunctionEvent);
 
     expect(sentSegment instanceof Buffer).toBeTruthy();
+    expect(closedSocket).toBeTruthy();
+
     const sentMessage = sentSegment.toString();
     expect(sentMessage).toMatchInlineSnapshot(`
       "{\\"format\\": \\"json\\", \\"version\\": 1}

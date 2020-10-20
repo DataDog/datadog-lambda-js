@@ -11,13 +11,16 @@ jobs:
       - uses: actions/checkout@v2
         with:
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
       - uses: actions/setup-node@v1
         with:
           node-version: "12.x"
+
       - name: Update Dependencies
         run: |
           yarn install
           yarn upgrade --latest
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
