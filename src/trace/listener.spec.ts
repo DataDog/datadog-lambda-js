@@ -1,12 +1,10 @@
 import { TraceListener } from "./listener";
-import { Source } from "./constants";
+import { Source, datadogLambdaVersion, ddtraceVersion } from "./constants";
 
 let mockWrap: jest.Mock<any, any>;
 let mockExtract: jest.Mock<any, any>;
 let mockTraceHeaders: Record<string, string> | undefined = undefined;
 let mockTraceSource: Source | undefined = undefined;
-const datadogLambdaVersion = "3.32.0";
-const ddtraceVersion = "0.25.1";
 
 jest.mock("./tracer-wrapper", () => {
   mockWrap = jest.fn().mockImplementation((name, options, func) => func);

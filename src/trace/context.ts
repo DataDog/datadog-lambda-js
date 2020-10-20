@@ -1,6 +1,6 @@
 import { BigNumber } from "bignumber.js";
 import { randomBytes } from "crypto";
-import { createSocket } from "dgram";
+import { createSocket, Socket } from "dgram";
 
 import { logDebug, logError } from "../utils";
 import {
@@ -130,14 +130,18 @@ export function sendXraySubsegment(segment: string) {
   const address = parts[0];
 
   const message = new Buffer(`{\"format\": \"json\", \"version\": 1}\n${segment}`);
+  let client: Socket | undefined;
   try {
-    const client = createSocket("udp4");
+    client = createSocket("udp4");
     // Send segment asynchronously to xray daemon
     client.send(message, 0, message.length, port, address, (error, bytes) => {
       logDebug(`Xray daemon received metadata payload`, { error, bytes });
     });
   } catch (error) {
     logDebug("Error occurred submitting to xray daemon", { error });
+  } finally {
+    // Cleanup socket
+    client?.close();
   }
 }
 

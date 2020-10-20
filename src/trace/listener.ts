@@ -6,11 +6,9 @@ import { TraceContextService } from "./trace-context-service";
 
 import { logDebug } from "../utils";
 import { didFunctionColdStart } from "../utils/cold-start";
-import { Source } from "./constants";
+import { Source, datadogLambdaVersion, ddtraceVersion } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
-const datadogLambdaVersion = "3.32.0";
-const ddtraceVersion = "0.25.1";
 
 export interface TraceConfig {
   /**

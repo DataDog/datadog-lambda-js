@@ -19,3 +19,5 @@ export const xrayBaggageSubsegmentKey = "root_span_metadata";
 export const xraySubsegmentNamespace = "datadog";
 export const xrayTraceEnvVar = "_X_AMZN_TRACE_ID";
 export const awsXrayDaemonAddressEnvVar = "AWS_XRAY_DAEMON_ADDRESS";
+export const datadogLambdaVersion = "X.X.X";
+export const ddtraceVersion = "X.X.X";

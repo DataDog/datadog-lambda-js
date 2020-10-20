@@ -11,13 +11,6 @@ set -e
 LAYER_DIR=".layers"
 LAYER_FILES_PREFIX="datadog_lambda_node"
 NODE_VERSIONS=("10.15" "12.13")
-DATADOG_LAMBDA_VERSION=$(cat package.json | jq -r ".version")
-DD_TRACE_VERSION=$(cat package.json | jq -r ."devDependencies"'."dd-trace"')
-
-sed -i "" -E "s/(datadogLambdaVersion = )\"([0-9]*\.[0-9]*\.[0-9]*)\"/\1\""$DATADOG_LAMBDA_VERSION"\"/" ./src/trace/listener.ts
-sed -i "" -E "s/(datadogLambdaVersion = )\"([0-9]*\.[0-9]*\.[0-9]*)\"/\1\""$DATADOG_LAMBDA_VERSION"\"/" ./src/trace/listener.spec.ts
-sed -i "" -E "s/(ddtraceVersion = )\"([0-9]*\.[0-9]*\.[0-9]*)\"/\1\""$DD_TRACE_VERSION"\"/" ./src/trace/listener.ts
-sed -i "" -E "s/(ddtraceVersion = )\"([0-9]*\.[0-9]*\.[0-9]*)\"/\1\""$DD_TRACE_VERSION"\"/" ./src/trace/listener.spec.ts
 
 function make_path_absolute {
     echo "$(cd "$(dirname "$1")"; pwd)/$(basename "$1")"
