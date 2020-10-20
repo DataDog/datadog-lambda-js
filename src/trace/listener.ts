@@ -6,7 +6,7 @@ import { TraceContextService } from "./trace-context-service";
 
 import { logDebug } from "../utils";
 import { didFunctionColdStart } from "../utils/cold-start";
-import { Source } from "./constants";
+import { Source, datadogLambdaVersion, ddtraceVersion } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 
@@ -97,6 +97,8 @@ export class TraceListener {
         function_version: tk.length > 7 ? tk[7] : "$LATEST",
         request_id: this.context.awsRequestId,
         resource_names: this.context.functionName,
+        datadog_lambda: datadogLambdaVersion,
+        dd_trace: ddtraceVersion,
       };
       if (
         (this.contextService.traceSource === Source.Xray && this.config.mergeDatadogXrayTraces) ||
