@@ -233,4 +233,67 @@ describe("wrap", () => {
     expect(result).toEqual({ statusCode: 204, body: "The callback response" });
     expect(calledOriginalHandler).toBeFalsy();
   });
+
+  it("completes when calling context.done", async () => {
+    const handler: Handler = async (event, context, callback) => {
+      context.done(undefined, { statusCode: 204, body: "The callback response" });
+    };
+
+    let calledOriginalHandler = false;
+
+    const wrappedHandler = wrap(
+      handler,
+      async () => {},
+      async () => {},
+    );
+
+    const result = await wrappedHandler({}, mockContext, () => {
+      calledOriginalHandler = true;
+    });
+
+    expect(result).toEqual({ statusCode: 204, body: "The callback response" });
+    expect(calledOriginalHandler).toBeFalsy();
+  });
+  it("completes when calling context.succeed", async () => {
+    const handler: Handler = async (event, context, callback) => {
+      context.succeed({ statusCode: 204, body: "The callback response" });
+    };
+
+    let calledOriginalHandler = false;
+
+    const wrappedHandler = wrap(
+      handler,
+      async () => {},
+      async () => {},
+    );
+
+    const result = await wrappedHandler({}, mockContext, () => {
+      calledOriginalHandler = true;
+    });
+
+    expect(result).toEqual({ statusCode: 204, body: "The callback response" });
+    expect(calledOriginalHandler).toBeFalsy();
+  });
+
+  it("throws error when calling context.fail", async () => {
+    const handler: Handler = async (event, context, callback) => {
+      context.fail(new Error("Some error"));
+    };
+
+    let calledOriginalHandler = false;
+
+    const wrappedHandler = wrap(
+      handler,
+      async () => {},
+      async () => {},
+    );
+
+    const result = wrappedHandler({}, mockContext, () => {
+      calledOriginalHandler = true;
+    });
+
+    await expect(result).rejects.toEqual(new Error("Some error"));
+
+    expect(calledOriginalHandler).toBeFalsy();
+  });
 });
