@@ -26,7 +26,8 @@ export class KMSService {
     }
     const buffer = Buffer.from(value, "base64");
 
-    const result = await this.kms.decrypt({ CiphertextBlob: buffer }).promise();
+    const encryptionContext = { LambdaFunctionName: process.env.AWS_LAMBDA_FUNCTION_NAME ?? "" };
+    const result = await this.kms.decrypt({ CiphertextBlob: buffer, EncryptionContext: encryptionContext }).promise();
     if (result.Plaintext === undefined) {
       throw Error("Couldn't decrypt value");
     }
