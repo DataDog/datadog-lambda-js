@@ -6,7 +6,8 @@ import { TraceContextService } from "./trace-context-service";
 
 import { logDebug } from "../utils";
 import { didFunctionColdStart } from "../utils/cold-start";
-import { Source, datadogLambdaVersion, ddtraceVersion } from "./constants";
+import { datadogLambdaVersion } from "../constants";
+import { Source, ddtraceVersion } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 

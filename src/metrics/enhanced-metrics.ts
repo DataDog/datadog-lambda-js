@@ -1,4 +1,4 @@
-import { datadogLambdaVersion } from "../trace/constants";
+import { datadogLambdaVersion } from "../constants";
 import { sendDistributionMetric } from "../index";
 
 import { Context } from "aws-lambda";

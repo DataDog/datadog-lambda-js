@@ -7,5 +7,7 @@ echo "Lambda Version ${DATADOG_LAMBDA_VERSION}"
 echo "Trace Version ${DD_TRACE_VERSION}"
 
 cat ./dist/trace/constants.js |
-    sed -E "s/(datadogLambdaVersion = )\"(X.X.X)\"/\1\""$DATADOG_LAMBDA_VERSION"\"/" |
     sed -E "s/(ddtraceVersion = )\"(X.X.X)\"/\1\""$DD_TRACE_VERSION"\"/" >> ./dist/trace/constants.js
+
+cat ./dist/constants.js |
+    sed -E "s/(datadogLambdaVersion = )\"(X.X.X)\"/\1\""$DATADOG_LAMBDA_VERSION"\"/" >> ./dist/trace/constants.js
