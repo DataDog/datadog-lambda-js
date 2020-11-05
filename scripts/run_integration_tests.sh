@@ -158,8 +158,7 @@ for _sls_type in "${CONFIGS[@]}"; do
                     sed -E $'s/[0-9a-z]+\-[0-9a-z]+\-[0-9a-z]+\-[0-9a-z]+\-[0-9a-z]+\t/XXXX-XXXX-XXXX-XXXX-XXXX\t/' |
                     # Normalize minor package version tag so that these snapshots aren't broken on version bumps
                     sed -E "s/(dd_lambda_layer:datadog-nodev[0-9]+\.)[0-9]+\.[0-9]+/\1XX\.X/g" |
-                    # Normalize data in logged traces
-                    sed -E 's/"(span_id|parent_id|trace_id|start|duration|tcp\.local\.address|tcp\.local\.port|dns\.address|request_id|function_arn|x-datadog-trace-id|x-datadog-parent-id)":("?)[a-zA-Z0-9\.:\-]+("?)/"\1":\2XXXX\3/g'
+                    sed -E 's/"(span_id|parent_id|trace_id|start|duration|tcp\.local\.address|tcp\.local\.port|dns\.address|request_id|function_arn|x-datadog-trace-id|x-datadog-parent-id|datadog_lambda|dd_trace)":("?)[a-zA-Z0-9\.:\-]+("?)/"\1":\2XXXX\3/g'
             )
 
             if [ ! -f $function_snapshot_path ]; then
