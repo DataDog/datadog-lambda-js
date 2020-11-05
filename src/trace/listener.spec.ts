@@ -1,5 +1,6 @@
 import { TraceListener } from "./listener";
-import { Source, datadogLambdaVersion, ddtraceVersion } from "./constants";
+import { Source, ddtraceVersion } from "./constants";
+import { datadogLambdaVersion } from "../constants";
 
 let mockWrap: jest.Mock<any, any>;
 let mockExtract: jest.Mock<any, any>;
