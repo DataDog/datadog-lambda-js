@@ -25,8 +25,16 @@ jest.mock("dgram", () => {
   return {
     createSocket: () => {
       return {
-        send: (message: string) => {
+        send: (
+          message: string,
+          start: number,
+          length: number,
+          port: number,
+          address: string,
+          callback: (error: string | undefined, bytes: number) => void,
+        ) => {
           sentSegment = message;
+          callback(undefined, 1);
         },
         close: () => {
           closedSocket = true;
@@ -475,6 +483,7 @@ describe("extractTraceContext", () => {
     extractTraceContext(stepFunctionEvent);
 
     expect(sentSegment instanceof Buffer).toBeTruthy();
+
     expect(closedSocket).toBeTruthy();
 
     const sentMessage = sentSegment.toString();

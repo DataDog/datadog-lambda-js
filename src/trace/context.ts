@@ -139,6 +139,7 @@ export function sendXraySubsegment(segment: string) {
       logDebug(`Xray daemon received metadata payload`, { error, bytes });
     });
   } catch (error) {
+    client?.close();
     logDebug("Error occurred submitting to xray daemon", { error });
   }
 }
