@@ -135,13 +135,12 @@ export function sendXraySubsegment(segment: string) {
     client = createSocket("udp4");
     // Send segment asynchronously to xray daemon
     client.send(message, 0, message.length, port, address, (error, bytes) => {
+      client?.close();
       logDebug(`Xray daemon received metadata payload`, { error, bytes });
     });
   } catch (error) {
-    logDebug("Error occurred submitting to xray daemon", { error });
-  } finally {
-    // Cleanup socket
     client?.close();
+    logDebug("Error occurred submitting to xray daemon", { error });
   }
 }
 
