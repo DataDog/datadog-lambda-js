@@ -86,6 +86,24 @@ functions:
     environment:
       WITH_PLUGIN: true
       DD_FLUSH_TO_LOG: true
+  # throw-error-traced
+  throw-error-traced_node10_with_plugin:
+    handler: throw-error-traced.handle
+    runtime: nodejs10.x
+    layers:
+      - { Ref: Node10LambdaLayer }
+    environment:
+      WITH_PLUGIN: true
+      DD_FLUSH_TO_LOG: true
+
+  throw-error-traced_node12_with_plugin:
+    handler: throw-error-traced.handle
+    runtime: nodejs12.x
+    layers:
+      - { Ref: Node12LambdaLayer }
+    environment:
+      WITH_PLUGIN: true
+      DD_FLUSH_TO_LOG: true
 
 plugins:
   - serverless-plugin-datadog
