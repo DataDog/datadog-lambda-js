@@ -112,34 +112,30 @@ export function datadog<TEvent, TResult>(
     currentTraceListener = traceListener;
 
     await traceListener.onStartInvocation(event, context);
-
-    const { result, error, didError } = await traceListener.onWrap(
-      async (localEvent: TEvent, localContext: Context) => {
+    let result: TResult | undefined;
+    try {
+      result = await traceListener.onWrap(async (localEvent: TEvent, localContext: Context) => {
         await metricsListener.onStartInvocation(localEvent);
         if (finalConfig.enhancedMetrics) {
           incrementInvocationsMetric(metricsListener, localContext);
         }
         let localResult: TResult | undefined;
-        let localError: any;
-        let localDidError = false;
         try {
           localResult = (await promHandler(localEvent, localContext)) as TResult | undefined;
         } catch (err) {
           if (finalConfig.enhancedMetrics) {
             incrementErrorsMetric(metricsListener, localContext);
           }
-          localError = err;
-          localDidError = true;
+          throw err;
+        } finally {
+          await metricsListener.onCompleteInvocation();
         }
-        await metricsListener.onCompleteInvocation();
-        return { result: localResult, error: localError, didError: localDidError };
-      },
-    )(event, context);
-    await traceListener.onCompleteInvocation();
-    currentMetricsListener = undefined;
-    currentTraceListener = undefined;
-    if (didError) {
-      throw error;
+        return localResult;
+      })(event, context);
+    } finally {
+      await traceListener.onCompleteInvocation();
+      currentMetricsListener = undefined;
+      currentTraceListener = undefined;
     }
     return result as TResult;
   };
