@@ -77,3 +77,19 @@ functions:
       - { Ref: Node12LambdaLayer }
     environment:
       DD_FLUSH_TO_LOG: true
+  # throw-error-traced
+  throw-error-traced_node10:
+    handler: throw-error-traced.handle
+    runtime: nodejs10.x
+    layers:
+      - { Ref: Node10LambdaLayer }
+    environment:
+      DD_FLUSH_TO_LOG: true
+
+  throw-error-traced_node12:
+    handler: throw-error-traced.handle
+    runtime: nodejs12.x
+    layers:
+      - { Ref: Node12LambdaLayer }
+    environment:
+      DD_FLUSH_TO_LOG: true

@@ -10,7 +10,7 @@ set -e
 
 # These values need to be in sync with serverless.yml, where there needs to be a function
 # defined for every handler_runtime combination
-LAMBDA_HANDLERS=("async-metrics" "sync-metrics" "http-requests" "process-input-traced")
+LAMBDA_HANDLERS=("async-metrics" "sync-metrics" "http-requests" "process-input-traced" "throw-error-traced")
 RUNTIMES=("node10" "node12")
 CONFIGS=("with-plugin" "without-plugin")
 
@@ -84,11 +84,17 @@ for _sls_type in "${CONFIGS[@]}"; do
                 input_event_name=$(echo "$input_event_file" | sed "s/.json//")
                 # Return value snapshot file format is snapshots/return_values/{handler}_{runtime}_{input-event}
                 snapshot_path="./snapshots/return_values/${handler_name}_${runtime}_${input_event_name}.json"
+                function_failed=FALSE
 
                 if [ "$_sls_type" = "with-plugin" ]; then
                     return_value=$(serverless invoke -f "$function_name" --path "./input_events/$input_event_file" -c "./serverless-plugin.yml")
+                    invoke_success=$?
                 else
                     return_value=$(serverless invoke -f "$function_name" --path "./input_events/$input_event_file")
+                    invoke_success=$?
+                fi
+                if [ $invoke_success -ne 0 ]; then
+                    return_value="Invocation failed"
                 fi
 
                 if [ ! -f $snapshot_path ]; then
