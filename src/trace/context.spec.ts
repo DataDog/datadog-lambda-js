@@ -351,7 +351,7 @@ describe("readTraceFromSQSEvent", () => {
       source: Source.Event,
     });
   });
-  it("can handle badformed JSON", () => {
+  it("can handle malformed JSON", () => {
     const result = readTraceFromSQSEvent({
       Records: [
         {
