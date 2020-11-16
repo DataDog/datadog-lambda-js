@@ -144,6 +144,49 @@ export function sendXraySubsegment(segment: string) {
   }
 }
 
+export function readTraceFromSQSEvent(event: any): TraceContext | undefined {
+  if (
+    event &&
+    event.Records &&
+    event.Records[0] &&
+    event.Records[0].eventSource === "aws:sqs" &&
+    event.Records[0].messageAttributes &&
+    event.Records[0].messageAttributes._datadog &&
+    event.Records[0].messageAttributes._datadog.stringValue
+  ) {
+    const traceHeaders = event.Records[0].messageAttributes._datadog.stringValue;
+
+    try {
+      const traceData = JSON.parse(traceHeaders);
+      const traceID = traceData[traceIDHeader];
+      if (typeof traceID !== "string") {
+        return;
+      }
+      const parentID = traceData[parentIDHeader];
+      if (typeof parentID !== "string") {
+        return;
+      }
+      const sampledHeader = traceData[samplingPriorityHeader];
+      if (typeof sampledHeader !== "string") {
+        return;
+      }
+      const sampleMode = parseInt(sampledHeader, 10);
+
+      return {
+        parentID,
+        sampleMode,
+        source: Source.Event,
+        traceID,
+      };
+    } catch (err) {
+      logError("Error parsing SQS message trace data", err);
+      return;
+    }
+  }
+
+  return;
+}
+
 export function readTraceFromEvent(event: any): TraceContext | undefined {
   if (typeof event !== "object") {
     return;
@@ -152,7 +195,7 @@ export function readTraceFromEvent(event: any): TraceContext | undefined {
 
   // e.g. When lambda is invoked synchronously, headers can be set to null by the caller
   if (!headers || typeof headers !== "object") {
-    return;
+    return readTraceFromSQSEvent(event);
   }
 
   const lowerCaseHeaders: { [key: string]: string } = {};
