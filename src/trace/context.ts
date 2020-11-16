@@ -146,10 +146,6 @@ export function sendXraySubsegment(segment: string) {
 
 export function readTraceFromSQSEvent(event: any): TraceContext | undefined {
   if (
-    event &&
-    event.Records &&
-    event.Records[0] &&
-    event.Records[0].eventSource === "aws:sqs" &&
     event.Records[0].messageAttributes &&
     event.Records[0].messageAttributes._datadog &&
     event.Records[0].messageAttributes._datadog.stringValue
@@ -187,21 +183,12 @@ export function readTraceFromSQSEvent(event: any): TraceContext | undefined {
   return;
 }
 
-export function readTraceFromEvent(event: any): TraceContext | undefined {
-  if (typeof event !== "object") {
-    return;
-  }
+export function readTraceFromHTTPEvent(event: any): TraceContext | undefined {
   const headers = event.headers;
-
-  // e.g. When lambda is invoked synchronously, headers can be set to null by the caller
-  if (!headers || typeof headers !== "object") {
-    return readTraceFromSQSEvent(event);
-  }
-
   const lowerCaseHeaders: { [key: string]: string } = {};
 
   for (const key of Object.keys(headers)) {
-    lowerCaseHeaders[key.toLocaleLowerCase()] = headers[key];
+    lowerCaseHeaders[key.toLowerCase()] = headers[key];
   }
 
   const traceID = lowerCaseHeaders[traceIDHeader];
@@ -224,6 +211,22 @@ export function readTraceFromEvent(event: any): TraceContext | undefined {
     source: Source.Event,
     traceID,
   };
+}
+
+export function readTraceFromEvent(event: any): TraceContext | undefined {
+  if (typeof event !== "object") {
+    return;
+  }
+
+  if (event.headers && typeof event.headers === "object") {
+    return readTraceFromHTTPEvent(event);
+  }
+
+  if (event.Records && event.Records[0] && event.Records[0].eventSource === "aws:sqs") {
+    return readTraceFromSQSEvent(event);
+  }
+
+  return;
 }
 
 export function readTraceContextFromXray(): TraceContext | undefined {
