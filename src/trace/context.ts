@@ -1,6 +1,7 @@
 import { BigNumber } from "bignumber.js";
 import { randomBytes } from "crypto";
 import { createSocket, Socket } from "dgram";
+import { SQSEvent } from "aws-lambda";
 
 import { logDebug, logError } from "../utils";
 import {
@@ -36,6 +37,10 @@ export interface StepFunctionContext {
   "step_function.state_machine_name": string;
   "step_function.state_machine_arn": string;
   "step_function.step_name": string;
+}
+
+function isSQSEvent(event: any): event is SQSEvent {
+  return Array.isArray(event.Records) && event.Records.length > 0 && event.Records[0].eventSource === "aws:sqs";
 }
 
 /**
@@ -144,7 +149,7 @@ export function sendXraySubsegment(segment: string) {
   }
 }
 
-export function readTraceFromSQSEvent(event: any): TraceContext | undefined {
+export function readTraceFromSQSEvent(event: SQSEvent): TraceContext | undefined {
   if (
     event.Records[0].messageAttributes &&
     event.Records[0].messageAttributes._datadog &&
@@ -218,11 +223,11 @@ export function readTraceFromEvent(event: any): TraceContext | undefined {
     return;
   }
 
-  if (event.headers && typeof event.headers === "object") {
+  if (typeof event.headers === "object") {
     return readTraceFromHTTPEvent(event);
   }
 
-  if (event.Records && event.Records[0] && event.Records[0].eventSource === "aws:sqs") {
+  if (isSQSEvent(event)) {
     return readTraceFromSQSEvent(event);
   }
 
