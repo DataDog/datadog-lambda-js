@@ -2,4 +2,4 @@
 set -e
 
 ./scripts/build_layers.sh
-./scripts/publish_layers.sh us-east-1
+./scripts/publish_layers.sh sa-east-1
