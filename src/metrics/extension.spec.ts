@@ -9,7 +9,7 @@ describe("isAgentRunning", () => {
   });
   it("returns true when agent exists and responds", async () => {
     mock({
-      "/extensions/datadog-agent": Buffer.from([0]),
+      "/opt/extensions/datadog-agent": Buffer.from([0]),
     });
     const scope = nock(AGENT_URL).get("/lambda/hello").reply(200);
     const ran = await isAgentRunning();
@@ -18,7 +18,7 @@ describe("isAgentRunning", () => {
   });
   it("returns false when agent doesn't respond", async () => {
     mock({
-      "/extensions/datadog-agent": Buffer.from([0]),
+      "/opt/extensions/datadog-agent": Buffer.from([0]),
     });
     const scope = nock(AGENT_URL).get("/lambda/hello").replyWithError("Unreachable");
     const ran = await isAgentRunning();
