@@ -1,4 +1,4 @@
-import { Handler, Context, SQSEvent } from "aws-lambda";
+import { Handler, Context } from "aws-lambda";
 
 import {
   incrementErrorsMetric,
