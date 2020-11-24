@@ -126,8 +126,8 @@ export function datadog<TEvent, TResult>(
     let didThrow = false;
 
     try {
-      result = await traceListener.onWrap((event: TEvent, context: Context) => {
-        return promHandler(event, context);
+      result = await traceListener.onWrap((localEvent: TEvent, localContext: Context) => {
+        return promHandler(localEvent, localContext);
       })(event, context);
     } catch (err) {
       didThrow = true;
