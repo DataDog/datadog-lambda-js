@@ -1,5 +1,4 @@
 START RequestId: XXXX Version: $LATEST
-HTTP GET http://127.0.0.1:8124/lambda/hello Headers: ["content-type:application/json","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:2","x-datadog-trace-id:XXXX"]
 {"e":XXXX,"m":"aws.lambda.enhanced.invocations","t":["region:us-east-1","account_id:XXXX","functionname:integration-dev-http-requests_node10","resource:integration-dev-http-requests_node10","cold_start:true","memorysize:1024","datadog_lambda:vX.X.X","runtime:nodejs10.x"],"v":1}
 HTTP GET https://ip-ranges.datadoghq.com/ Headers: ["Accept:application/json, text/plain, */*","User-Agent:axios/0.19.2","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:2","x-datadog-trace-id:XXXX"]
 HTTP GET https://ip-ranges.datadoghq.eu/ Headers: ["Accept:application/json, text/plain, */*","User-Agent:axios/0.19.2","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:2","x-datadog-trace-id:XXXX"]
