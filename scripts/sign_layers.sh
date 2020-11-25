@@ -12,6 +12,7 @@ LAYER_FILES=("datadog_lambda_node10.15.zip" "datadog_lambda_node12.13.zip")
 S3_BUCKET_NAME="lambda-signing-bucket"
 SIGNING_PROFILE_NAME="DatadogLambdaSigningProfile"
  
+echo
 echo "Signing layers..."
 
 # Check region arg
@@ -35,6 +36,7 @@ do
 
     LAYER_LOCAL_PATH="${LAYER_DIR}/${LAYER_FILE}"
 
+    # Upload the layer to S3 for signing
     echo "Uploading layer to S3 for signing..."
     UUID=$(uuidgen)
     S3_UNSIGNED_ZIP_KEY="${UUID}.zip"
@@ -92,9 +94,9 @@ do
     aws s3 cp $S3_SIGNED_ZIP_URI $LAYER_LOCAL_PATH
 
     # Delete the signed and unsigned ZIPs in S3
-    echo "Cleaning up S3 bucket..."
-    aws s3api delete-object --bucket $S3_BUCKET_NAME --key "${S3_UNSIGNED_ZIP_KEY}"
-    aws s3api delete-object --bucket $S3_BUCKET_NAME --key "${S3_SIGNED_ZIP_KEY}"
+    echo "Cleaning up the S3 bucket..."
+    aws s3api delete-object --bucket $S3_BUCKET_NAME --key $S3_UNSIGNED_ZIP_KEY
+    aws s3api delete-object --bucket $S3_BUCKET_NAME --key $S3_SIGNED_ZIP_KEY
 done
 
 echo
