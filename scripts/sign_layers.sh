@@ -9,7 +9,7 @@ set -e
 
 LAYER_DIR=".layers"
 LAYER_FILES=("datadog_lambda_node10.15.zip" "datadog_lambda_node12.13.zip")
-S3_BUCKET_NAME="lambda-signing-bucket"
+S3_BUCKET_NAME="dd-lambda-signing-bucket"
 SIGNING_PROFILE_NAME="DatadogLambdaSigningProfile"
  
 echo
