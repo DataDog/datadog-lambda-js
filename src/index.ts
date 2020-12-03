@@ -111,32 +111,43 @@ export function datadog<TEvent, TResult>(
     currentMetricsListener = metricsListener;
     currentTraceListener = traceListener;
 
-    await traceListener.onStartInvocation(event, context);
-    let result: TResult | undefined;
     try {
-      result = await traceListener.onWrap(async (localEvent: TEvent, localContext: Context) => {
-        await metricsListener.onStartInvocation(localEvent);
-        if (finalConfig.enhancedMetrics) {
-          incrementInvocationsMetric(metricsListener, localContext);
-        }
-        let localResult: TResult | undefined;
-        try {
-          localResult = (await promHandler(localEvent, localContext)) as TResult | undefined;
-        } catch (err) {
-          if (finalConfig.enhancedMetrics) {
-            incrementErrorsMetric(metricsListener, localContext);
-          }
-          throw err;
-        } finally {
-          await metricsListener.onCompleteInvocation();
-        }
-        return localResult;
-      })(event, context);
-    } finally {
-      await traceListener.onCompleteInvocation();
-      currentMetricsListener = undefined;
-      currentTraceListener = undefined;
+      await traceListener.onStartInvocation(event, context);
+      await metricsListener.onStartInvocation(event);
+      if (finalConfig.enhancedMetrics) {
+        incrementInvocationsMetric(metricsListener, context);
+      }
+    } catch (err) {
+      logDebug(`Failed to start listeners with error ${err}`);
     }
+
+    let result: TResult | undefined;
+    let error: any;
+    let didThrow = false;
+
+    try {
+      result = await traceListener.onWrap((localEvent: TEvent, localContext: Context) => {
+        return promHandler(localEvent, localContext);
+      })(event, context);
+    } catch (err) {
+      didThrow = true;
+      error = err;
+    }
+    try {
+      await metricsListener.onCompleteInvocation();
+      await traceListener.onCompleteInvocation();
+      if (didThrow && finalConfig.enhancedMetrics) {
+        incrementErrorsMetric(metricsListener, context);
+      }
+    } catch (err) {
+      logDebug(`Failed to complete listeners with error ${err}`);
+    }
+    currentMetricsListener = undefined;
+    currentTraceListener = undefined;
+    if (didThrow) {
+      throw error;
+    }
+
     return result as TResult;
   };
 
