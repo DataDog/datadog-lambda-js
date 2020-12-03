@@ -43,7 +43,7 @@ echo 'Building layers...'
 
 echo
 echo "Signing layers..."
-./scripts/sign_layers.sh us-east-1
+./scripts/sign_layers.sh prod
 
 echo
 echo "Publishing layers..."

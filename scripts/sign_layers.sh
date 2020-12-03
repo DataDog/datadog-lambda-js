@@ -9,21 +9,25 @@ set -e
 
 LAYER_DIR=".layers"
 LAYER_FILES=("datadog_lambda_node10.15.zip" "datadog_lambda_node12.13.zip")
-S3_BUCKET_NAME="dd-lambda-signing-bucket"
 SIGNING_PROFILE_NAME="DatadogLambdaSigningProfile"
 
-
-# Check region arg
-VALID_REGIONS=("us-east-1" "sa-east-1")
+# Check account parameter
+VALID_ACCOUNTS=("sandbox" "prod")
 if [ -z "$1" ]; then
-    echo "ERROR: You must pass a region parameter to sign the layers"
+    echo "ERROR: You must pass an account parameter to sign the layers"
     exit 1
-else
-    if [[ ! "${VALID_REGIONS[@]}" =~ $1 ]]; then
-        echo "ERROR: The region parameter was invalid. Please choose us-east-1 or sa-east-1."
-        exit 1
-    fi
-    REGION=$1
+fi
+if [[ ! "${VALID_ACCOUNTS[@]}" =~ $1 ]]; then
+    echo "ERROR: The account parameter was invalid. Please choose sandbox or prod."
+    exit 1
+fi
+if [ "$1" = "sandbox" ]; then
+    REGION="sa-east-1"
+    S3_BUCKET_NAME="dd-lambda-signing-bucket-sandbox"
+fi
+if [ "$1" = "prod" ]; then
+    REGION="us-east-1"
+    S3_BUCKET_NAME="dd-lambda-signing-bucket"
 fi
 
 for LAYER_FILE in "${LAYER_FILES[@]}"
