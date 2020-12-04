@@ -96,7 +96,7 @@ export class MetricsListener {
         logDebug(`Flushing statsD`);
 
         // Make sure all stats are flushed to extension
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
           this.statsDClient?.close((error) => {
             if (error !== undefined) {
               reject(error);
