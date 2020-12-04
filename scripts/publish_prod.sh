@@ -37,6 +37,14 @@ echo 'Tagging Release'
 git tag "v$PACKAGE_VERSION"
 git push origin "refs/tags/v$PACKAGE_VERSION"
 
-echo 'Publishing Lambda Layer'
+echo
+echo 'Building layers...'
 ./scripts/build_layers.sh
+
+echo
+echo "Signing layers..."
+./scripts/sign_layers.sh prod
+
+echo
+echo "Publishing layers..."
 ./scripts/publish_layers.sh
