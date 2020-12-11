@@ -17,9 +17,9 @@
     "postbuild": "scripts/update_dist_version.sh"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.65",
+    "@types/aws-lambda": "^8.10.66",
     "@types/aws-sdk": "^2.7.0",
-    "@types/jest": "^26.0.18",
+    "@types/jest": "^26.0.19",
     "@types/mock-fs": "4.13.0",
     "@types/nock": "^11.1.0",
     "@types/node": "^14.14.12",
