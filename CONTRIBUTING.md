@@ -16,6 +16,6 @@ npm test
 
 Push to your fork and [submit a pull request][pr].
 
-[pr]: https://github.com/your-username/datadog-lambda-js/compare/DataDog:master...master
+[pr]: https://github.com/your-username/datadog-lambda-js/compare/DataDog:main..main.
 
 At this point you're waiting on us. We may suggest some changes or improvements or alternatives.
