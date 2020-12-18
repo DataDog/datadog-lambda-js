@@ -1,13 +1,14 @@
 import { Context } from "aws-lambda";
 
-import { extractTraceContext, readStepFunctionContextFromEvent, StepFunctionContext } from "./context";
+import { addXrayMetadata, extractTraceContext, readStepFunctionContextFromEvent, StepFunctionContext } from "./context";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
+import { extractTriggerTags } from "./trigger";
 
 import { logDebug } from "../utils";
 import { didFunctionColdStart } from "../utils/cold-start";
 import { datadogLambdaVersion } from "../constants";
-import { Source, ddtraceVersion } from "./constants";
+import { Source, ddtraceVersion, xrayBaggageSubsegmentKey } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 
@@ -31,11 +32,20 @@ export interface TraceConfig {
 export class TraceListener {
   private contextService: TraceContextService;
   private context?: Context;
+  private triggerTags?: { [key: string]: any };
   private stepFunctionContext?: StepFunctionContext;
   private tracerWrapper: TracerWrapper;
 
   public get currentTraceHeaders() {
     return this.contextService.currentTraceHeaders;
+  }
+  public get currentSpan() {
+    return this.tracerWrapper.currentSpan;
+  }
+  public get hasHTTPTriggerSource() {
+    return this.triggerTags && this.triggerTags["trigger.event_source"] === (
+      "api-gateway" || "application-load-balancer"
+    );
   }
   constructor(private config: TraceConfig, private handlerName: string) {
     this.tracerWrapper = new TracerWrapper();
@@ -60,6 +70,7 @@ export class TraceListener {
     }
 
     this.context = context;
+    this.triggerTags = extractTriggerTags(event, context);
     this.contextService.rootTraceContext = extractTraceContext(event);
     this.stepFunctionContext = readStepFunctionContextFromEvent(event);
   }
@@ -106,6 +117,13 @@ export class TraceListener {
         this.contextService.traceSource === Source.Event
       ) {
         options.tags["_dd.parent_source"] = this.contextService.traceSource;
+      }
+      if (this.triggerTags) {
+        options.tags = { ...options.tags, ...this.triggerTags };
+        // # Add trigger tags under the dd subsegment's root_span_metadata field
+        if (this.contextService.traceSource === Source.Event) {
+          addXrayMetadata(xrayBaggageSubsegmentKey, this.triggerTags)
+        }
       }
     }
     if (this.stepFunctionContext) {

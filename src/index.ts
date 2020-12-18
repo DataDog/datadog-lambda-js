@@ -19,6 +19,7 @@ import {
   logDebug,
 } from "./utils";
 export { TraceHeaders } from "./trace";
+import { setHTTPStatusCodeTag } from "./trace/trigger";
 
 export const apiKeyEnvVar = "DD_API_KEY";
 export const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
@@ -126,8 +127,12 @@ export function datadog<TEvent, TResult>(
     let didThrow = false;
 
     try {
-      result = await traceListener.onWrap((localEvent: TEvent, localContext: Context) => {
-        return promHandler(localEvent, localContext);
+      result = await traceListener.onWrap(async (localEvent: TEvent, localContext: Context) => {
+        const localResult = await promHandler(localEvent, localContext);
+        if (localResult && traceListener.hasHTTPTriggerSource) {
+          setHTTPStatusCodeTag(traceListener.currentSpan, localResult)
+        }
+        return localResult;
       })(event, context);
     } catch (err) {
       didThrow = true;
