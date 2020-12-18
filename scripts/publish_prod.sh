@@ -2,8 +2,8 @@
 set -e
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
-if [ $BRANCH != "master" ]; then
-    echo "Not on master, aborting"
+if [ $BRANCH != "main" ]; then
+    echo "Not on main, aborting"
     exit 1
 fi
 
