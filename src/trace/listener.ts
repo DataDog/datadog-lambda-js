@@ -43,8 +43,8 @@ export class TraceListener {
     return this.tracerWrapper.currentSpan;
   }
   public get hasHTTPTriggerSource() {
-    return this.triggerTags && this.triggerTags["trigger.event_source"] === (
-      "api-gateway" || "application-load-balancer"
+    return (
+      this.triggerTags && this.triggerTags["trigger.event_source"] === ("api-gateway" || "application-load-balancer")
     );
   }
   constructor(private config: TraceConfig, private handlerName: string) {
@@ -122,7 +122,7 @@ export class TraceListener {
         options.tags = { ...options.tags, ...this.triggerTags };
         // # Add trigger tags under the dd subsegment's root_span_metadata field
         if (this.contextService.traceSource === Source.Event) {
-          addXrayMetadata(xrayBaggageSubsegmentKey, this.triggerTags)
+          addXrayMetadata(xrayBaggageSubsegmentKey, this.triggerTags);
         }
       }
     }
