@@ -1,6 +1,18 @@
 import { gunzipSync } from "zlib";
 
-const eventSources = ["aws:dynamodb", "aws:kinesis", "aws:s3", "aws:sns", "aws:sqs"] as const;
+const eventSources = ["aws:dynamodb", "aws:kinesis", "aws:s3", "aws:sns", "aws:sqs"] as string[];
+const govCloudRegions = ["us-gov-east-1", "us-gov-west-1"] as string[];
+const chinaRegions = ["cn-north-1", "cn-northwest-1"] as string[];
+
+function getARNRegionIdentifier(region: string) {
+  if (govCloudRegions.includes(region)) {
+    return "aws-us-gov";
+  } else if (chinaRegions.includes(region)) {
+    return "aws-cn";
+  } else {
+    return "aws";
+  }
+}
 
 function getFirstRecord(event: any) {
   const records = event.Records;
@@ -55,6 +67,7 @@ function parseEventSourceARN(source: string, event: any, context: any) {
   const splitFunctionArn = context.invokedFunctionArn.split(":");
   const region = splitFunctionArn[3];
   const accountId = splitFunctionArn[4];
+  const awsARN = getARNRegionIdentifier(region);
 
   const eventRecord = getFirstRecord(event);
   // e.g. arn:aws:s3:::lambda-xyz123-abc890
@@ -70,13 +83,13 @@ function parseEventSourceARN(source: string, event: any, context: any) {
   // e.g. arn:aws:cloudfront::123456789012:distribution/ABC123XYZ
   if (source === "cloudfront") {
     const distributionId = eventRecord.cf.config.distributionId;
-    return `arn:aws:cloudfront::${accountId}:distribution/${distributionId}`;
+    return `arn:${awsARN}:cloudfront::${accountId}:distribution/${distributionId}`;
   }
 
   // e.g. arn:aws:apigateway:us-east-1::/restapis/xyz123/stages/default
   if (source === "api-gateway") {
     const requestContext = event.requestContext;
-    return `arn:aws:apigateway:${region}::/restapis/${requestContext.apiId}/stages/${requestContext.stage}`;
+    return `arn:${awsARN}:apigateway:${region}::/restapis/${requestContext.apiId}/stages/${requestContext.stage}`;
   }
 
   // e.g. arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/lambda-xyz/123
@@ -90,7 +103,7 @@ function parseEventSourceARN(source: string, event: any, context: any) {
     const buffer = Buffer.from(event.awslogs.data, "base64");
     const decompressed = gunzipSync(buffer).toString();
     const logs = JSON.parse(decompressed);
-    return `arn:aws:logs:${region}:${accountId}:log-group:${logs.logGroup}`;
+    return `arn:${awsARN}:logs:${region}:${accountId}:log-group:${logs.logGroup}`;
   }
 
   // e.g. arn:aws:events:us-east-1:123456789012:rule/my-schedule
