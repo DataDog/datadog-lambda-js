@@ -1,13 +1,11 @@
 import { gunzipSync } from "zlib";
 
 const eventSources = ["aws:dynamodb", "aws:kinesis", "aws:s3", "aws:sns", "aws:sqs"] as string[];
-const govCloudRegions = ["us-gov-east-1", "us-gov-west-1"] as string[];
-const chinaRegions = ["cn-north-1", "cn-northwest-1"] as string[];
 
-function getARNRegionIdentifier(region: string) {
-  if (govCloudRegions.includes(region)) {
+function getAWSPartitionByRegion(region: string) {
+  if (region.startsWith("us-gov-")) {
     return "aws-us-gov";
-  } else if (chinaRegions.includes(region)) {
+  } else if (region.startsWith("cn-")) {
     return "aws-cn";
   } else {
     return "aws";
@@ -22,12 +20,12 @@ function getFirstRecord(event: any) {
 }
 
 /**
- * getEventSource determines the source of the trigger event
+ * parseEventSource determines the source of the trigger event
  * Possible Returns:
  * api-gateway | application-load-balancer | cloudwatch-logs |
  * cloudwatch-events | cloudfront | dynamodb | kinesis | s3 | sns | sqs
  */
-export function getEventSource(event: any) {
+export function parseEventSource(event: any) {
   let eventSource = event.eventSource ?? event.EventSource;
   const requestContext = event.requestContext;
 
@@ -67,7 +65,7 @@ function parseEventSourceARN(source: string, event: any, context: any) {
   const splitFunctionArn = context.invokedFunctionArn.split(":");
   const region = splitFunctionArn[3];
   const accountId = splitFunctionArn[4];
-  const awsARN = getARNRegionIdentifier(region);
+  const awsARN = getAWSPartitionByRegion(region);
 
   const eventRecord = getFirstRecord(event);
   // e.g. arn:aws:s3:::lambda-xyz123-abc890
@@ -127,9 +125,9 @@ export function getEventSourceARN(source: string, event: any, context: any) {
 }
 
 /**
- * getHTTPTags extracts HTTP facet tags from the triggering event
+ * extractHTTPTags extracts HTTP facet tags from the triggering event
  */
-function getHTTPTags(event: any) {
+function extractHTTPTags(event: any) {
   const httpTags: any = {};
   const requestContext = event.requestContext;
   let path = event.path;
@@ -167,7 +165,7 @@ function getHTTPTags(event: any) {
  */
 export function extractTriggerTags(event: any, context: any) {
   let triggerTags: any = {};
-  const eventSource = getEventSource(event);
+  const eventSource = parseEventSource(event);
   if (eventSource) {
     triggerTags["trigger.event_source"] = eventSource;
 
@@ -178,7 +176,7 @@ export function extractTriggerTags(event: any, context: any) {
   }
 
   if (eventSource === "api-gateway" || eventSource === "application-load-balancer") {
-    triggerTags = { ...triggerTags, ...getHTTPTags(event) };
+    triggerTags = { ...triggerTags, ...extractHTTPTags(event) };
   }
   return triggerTags;
 }
