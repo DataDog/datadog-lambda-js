@@ -186,7 +186,18 @@ export function extractTriggerTags(event: any, context: any) {
  * by API Gateway or ALB
  */
 export function setHTTPStatusCodeTag(span: any, result: any) {
-  if (span && result.statusCode) {
-    span.setTag("http.status_code", result.statusCode);
+  if (span === null) {
+    return;
   }
+  let statusCode = "200";
+  // Use the statusCode if available
+  if (span && result.statusCode) {
+    statusCode = result.statusCode;
+  }
+  // Lambda errors return a 200 OK by default which may be misleading
+  // so we set the status code to 502 if an errorMessage is found
+  if (span && result.errorMessage) {
+    statusCode = "502";
+  }
+  span.setTag("http.status_code", statusCode);
 }
