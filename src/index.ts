@@ -123,14 +123,18 @@ export function datadog<TEvent, TResult>(
     }
 
     let result: TResult | undefined;
+    let localResult: any | undefined;
     let error: any;
     let didThrow = false;
 
     try {
       result = await traceListener.onWrap(async (localEvent: TEvent, localContext: Context) => {
-        const localResult = await promHandler(localEvent, localContext);
-        if (localResult && traceListener.hasHTTPTriggerSource) {
-          setHTTPStatusCodeTag(traceListener.currentSpan, localResult);
+        try {
+          localResult = await promHandler(localEvent, localContext);
+        } finally {
+          if (traceListener.hasHTTPTriggerSource) {
+            setHTTPStatusCodeTag(traceListener.currentSpan, localResult);
+          }
         }
         return localResult;
       })(event, context);

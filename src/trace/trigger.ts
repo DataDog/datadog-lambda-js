@@ -1,4 +1,5 @@
 import { gunzipSync } from "zlib";
+import { logDebug } from "../utils";
 
 const eventSources = ["aws:dynamodb", "aws:kinesis", "aws:s3", "aws:sns", "aws:sqs"] as string[];
 
@@ -190,14 +191,12 @@ export function setHTTPStatusCodeTag(span: any, result: any) {
     return;
   }
   let statusCode = "200";
-  // Use the statusCode if available
-  if (span && result.statusCode) {
-    statusCode = result.statusCode;
-  }
-  // Lambda errors return a 200 OK by default which may be misleading
-  // so we set the status code to 502 if an errorMessage is found
-  if (span && result.errorMessage) {
+  // Return a 502 status if no response is found
+  if (result === undefined) {
     statusCode = "502";
+  } else if (result.statusCode) {
+    // Use the statusCode if available
+    statusCode = result.statusCode;
   }
   span.setTag("http.status_code", statusCode);
 }
