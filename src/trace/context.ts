@@ -1,3 +1,4 @@
+import { Context } from "aws-lambda";
 import { BigNumber } from "bignumber.js";
 import { randomBytes } from "crypto";
 import { createSocket, Socket } from "dgram";
@@ -47,8 +48,13 @@ function isSQSEvent(event: any): event is SQSEvent {
  * Reads the trace context from either an incoming lambda event, or the current xray segment.
  * @param event An incoming lambda event. This must have incoming trace headers in order to be read.
  */
-export function extractTraceContext(event: any) {
-  const trace = readTraceFromEvent(event);
+export function extractTraceContext(event: any, context: any) {
+  let trace = readTraceFromEvent(event);
+
+  if (trace === undefined) {
+    trace = readTraceFromLambdaContext(context)
+  }
+
   const stepFuncContext = readStepFunctionContextFromEvent(event);
   if (stepFuncContext) {
     try {
@@ -186,6 +192,39 @@ export function readTraceFromSQSEvent(event: SQSEvent): TraceContext | undefined
   }
 
   return;
+}
+
+export function readTraceFromLambdaContext(context: any): TraceContext | undefined {
+  if (!context || typeof context !== "object") {
+    return;
+  }
+
+  const traceData = context.clientContext?.custom?._datadog;
+
+  if (!traceData || typeof traceData !== "object") {
+    return;
+  }
+
+  const traceID = traceData[traceIDHeader];
+  if (typeof traceID !== "string") {
+    return;
+  }
+  const parentID = traceData[parentIDHeader];
+  if (typeof parentID !== "string") {
+    return;
+  }
+  const sampledHeader = traceData[samplingPriorityHeader];
+  if (typeof sampledHeader !== "string") {
+    return;
+  }
+  const sampleMode = parseInt(sampledHeader, 10);
+
+  return {
+    parentID,
+    sampleMode,
+    source: Source.Event,
+    traceID,
+  };
 }
 
 export function readTraceFromHTTPEvent(event: any): TraceContext | undefined {
