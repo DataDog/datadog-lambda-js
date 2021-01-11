@@ -38,7 +38,7 @@ function patchMethod(mod: typeof http | typeof https, method: "get" | "request",
       [arg1, arg2, arg3] = addTraceContextToArgs(contextService, arg1, arg2, arg3);
 
       if (arg3 === undefined || arg3 === null) {
-        return original(arg1, arg2)
+        return original(arg1, arg2);
       } else {
         return original(arg1, arg2, arg3);
       }
@@ -61,18 +61,17 @@ function addTraceContextToArgs(
   arg2?: RequestCallback | http.RequestOptions,
   arg3?: RequestCallback,
 ) {
-
   let requestOpts: http.RequestOptions | undefined;
   if (typeof arg1 === "string" || arg1 instanceof URL) {
     if (arg2 === undefined || arg2 === null) {
       requestOpts = {
-        method: 'GET'
+        method: "GET",
       };
       requestOpts = getRequestOptionsWithTraceContext(requestOpts, contextService);
       return [arg1, requestOpts, arg3];
-    } else if (typeof arg2 === "function"){
+    } else if (typeof arg2 === "function") {
       requestOpts = {
-        method: 'GET'
+        method: "GET",
       };
       requestOpts = getRequestOptionsWithTraceContext(requestOpts, contextService);
       return [arg1, requestOpts, arg2];

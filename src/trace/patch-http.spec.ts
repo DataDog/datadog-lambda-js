@@ -7,7 +7,7 @@ import { LogLevel, setLogLevel } from "../utils";
 import { parentIDHeader, SampleMode, samplingPriorityHeader, traceIDHeader, Source } from "./constants";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
-import {URL} from 'url'
+import { URL } from "url";
 
 describe("patchHttp", () => {
   let traceWrapper = {
