@@ -104,6 +104,8 @@ function getRequestOptionsWithTraceContext(
     ...options,
     headers,
   };
+  // Logging all http requests during integration tests let's
+  // us track traffic in our test snapshots
   if (isIntegrationTest()) {
     _logHttpRequest(requestOpts);
   }
