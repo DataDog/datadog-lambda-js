@@ -52,7 +52,7 @@ export function extractTraceContext(event: any, context: any) {
   let trace = readTraceFromEvent(event);
 
   if (trace === undefined) {
-    trace = readTraceFromLambdaContext(context)
+    trace = readTraceFromLambdaContext(context);
   }
 
   const stepFuncContext = readStepFunctionContextFromEvent(event);

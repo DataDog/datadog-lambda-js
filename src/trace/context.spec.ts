@@ -395,13 +395,13 @@ describe("readTraceFromLambdaContext", () => {
       clientContext: {
         custom: {
           _datadog: {
-            "x-datadog-trace-id":"666",
-            "x-datadog-parent-id":"777",
-            "x-datadog-sampled":"1",
-            "x-datadog-sampling-priority":"1"
-          }
-        }
-      }
+            "x-datadog-trace-id": "666",
+            "x-datadog-parent-id": "777",
+            "x-datadog-sampled": "1",
+            "x-datadog-sampling-priority": "1",
+          },
+        },
+      },
     });
     expect(result).toEqual({
       parentID: "777",
@@ -413,8 +413,8 @@ describe("readTraceFromLambdaContext", () => {
   it("can handle no `custom` key", () => {
     const result = readTraceFromLambdaContext({
       clientContext: {
-        foo: 'bar'
-      }
+        foo: "bar",
+      },
     });
     expect(result).toBeUndefined();
   });
@@ -562,13 +562,16 @@ describe("extractTraceContext", () => {
   it("returns trace read from header as highest priority", () => {
     process.env["_X_AMZN_TRACE_ID"] = "Root=1-5ce31dc2-2c779014b90ce44db5e03875;Parent=0b11cc4230d3e09e;Sampled=1";
 
-    const result = extractTraceContext({
-      headers: {
-        "x-datadog-parent-id": "797643193680388251",
-        "x-datadog-sampling-priority": "2",
-        "x-datadog-trace-id": "4110911582297405551",
+    const result = extractTraceContext(
+      {
+        headers: {
+          "x-datadog-parent-id": "797643193680388251",
+          "x-datadog-sampling-priority": "2",
+          "x-datadog-trace-id": "4110911582297405551",
+        },
       },
-    },  {});
+      {},
+    );
     expect(result).toEqual({
       parentID: "797643193680388251",
       sampleMode: SampleMode.USER_KEEP,
@@ -579,31 +582,34 @@ describe("extractTraceContext", () => {
   it("returns trace read from SQS metadata as second highest priority", () => {
     process.env["_X_AMZN_TRACE_ID"] = "Root=1-5ce31dc2-2c779014b90ce44db5e03875;Parent=0b11cc4230d3e09e;Sampled=1";
 
-    const result = extractTraceContext({
-      Records: [
-        {
-          body: "Hello world",
-          attributes: {
-            ApproximateReceiveCount: "1",
-            SentTimestamp: "1605544528092",
-            SenderId: "AROAYYB64AB3JHSRKO6XR:sqs-trace-dev-producer",
-            ApproximateFirstReceiveTimestamp: "1605544528094",
-          },
-          messageAttributes: {
-            _datadog: {
-              stringValue:
-                '{"x-datadog-trace-id":"4555236104497098341","x-datadog-parent-id":"3369753143434738315","x-datadog-sampled":"1","x-datadog-sampling-priority":"1"}',
-              stringListValues: [],
-              binaryListValues: [],
-              dataType: "String",
+    const result = extractTraceContext(
+      {
+        Records: [
+          {
+            body: "Hello world",
+            attributes: {
+              ApproximateReceiveCount: "1",
+              SentTimestamp: "1605544528092",
+              SenderId: "AROAYYB64AB3JHSRKO6XR:sqs-trace-dev-producer",
+              ApproximateFirstReceiveTimestamp: "1605544528094",
             },
+            messageAttributes: {
+              _datadog: {
+                stringValue:
+                  '{"x-datadog-trace-id":"4555236104497098341","x-datadog-parent-id":"3369753143434738315","x-datadog-sampled":"1","x-datadog-sampling-priority":"1"}',
+                stringListValues: [],
+                binaryListValues: [],
+                dataType: "String",
+              },
+            },
+            eventSource: "aws:sqs",
+            eventSourceARN: "arn:aws:sqs:sa-east-1:601427279990:metal-queue",
+            awsRegion: "sa-east-1",
           },
-          eventSource: "aws:sqs",
-          eventSourceARN: "arn:aws:sqs:sa-east-1:601427279990:metal-queue",
-          awsRegion: "sa-east-1",
-        },
-      ],
-    }, {});
+        ],
+      },
+      {},
+    );
     expect(result).toEqual({
       parentID: "3369753143434738315",
       sampleMode: SampleMode.AUTO_KEEP,
@@ -617,39 +623,41 @@ describe("extractTraceContext", () => {
       clientContext: {
         custom: {
           _datadog: {
-            "x-datadog-trace-id":"4555236104497098341",
-            "x-datadog-parent-id":"3369753143434738315",
-            "x-datadog-sampled":"1",
-            "x-datadog-sampling-priority":"1"
-          }
-        }
-      }
-    };
-    const result = extractTraceContext({
-      Records: [
-        {
-          body: "Hello world",
-          attributes: {
-            ApproximateReceiveCount: "1",
-            SentTimestamp: "1605544528092",
-            SenderId: "AROAYYB64AB3JHSRKO6XR:sqs-trace-dev-producer",
-            ApproximateFirstReceiveTimestamp: "1605544528094",
+            "x-datadog-trace-id": "4555236104497098341",
+            "x-datadog-parent-id": "3369753143434738315",
+            "x-datadog-sampled": "1",
+            "x-datadog-sampling-priority": "1",
           },
-          messageAttributes: {
-            _datadog: {
-              stringValue:
-                '{"x-datadog-parent-id":"666","x-datadog-sampled":"1","x-datadog-sampling-priority":"1"}',
-              stringListValues: [],
-              binaryListValues: [],
-              dataType: "String",
-            },
-          },
-          eventSource: "aws:sqs",
-          eventSourceARN: "arn:aws:sqs:sa-east-1:601427279990:metal-queue",
-          awsRegion: "sa-east-1",
         },
-      ],
-    }, lambdaContext);
+      },
+    };
+    const result = extractTraceContext(
+      {
+        Records: [
+          {
+            body: "Hello world",
+            attributes: {
+              ApproximateReceiveCount: "1",
+              SentTimestamp: "1605544528092",
+              SenderId: "AROAYYB64AB3JHSRKO6XR:sqs-trace-dev-producer",
+              ApproximateFirstReceiveTimestamp: "1605544528094",
+            },
+            messageAttributes: {
+              _datadog: {
+                stringValue: '{"x-datadog-parent-id":"666","x-datadog-sampled":"1","x-datadog-sampling-priority":"1"}',
+                stringListValues: [],
+                binaryListValues: [],
+                dataType: "String",
+              },
+            },
+            eventSource: "aws:sqs",
+            eventSourceARN: "arn:aws:sqs:sa-east-1:601427279990:metal-queue",
+            awsRegion: "sa-east-1",
+          },
+        ],
+      },
+      lambdaContext,
+    );
     expect(result).toEqual({
       parentID: "3369753143434738315",
       sampleMode: SampleMode.AUTO_KEEP,
@@ -684,13 +692,16 @@ describe("extractTraceContext", () => {
     process.env[xrayTraceEnvVar] = "Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1";
     process.env[awsXrayDaemonAddressEnvVar] = "localhost:127.0.0.1:2000";
 
-    const result = extractTraceContext({
-      headers: {
-        "x-datadog-parent-id": "797643193680388251",
-        "x-datadog-sampling-priority": "2",
-        "x-datadog-trace-id": "4110911582297405551",
+    const result = extractTraceContext(
+      {
+        headers: {
+          "x-datadog-parent-id": "797643193680388251",
+          "x-datadog-sampling-priority": "2",
+          "x-datadog-trace-id": "4110911582297405551",
+        },
       },
-    }, {});
+      {},
+    );
 
     expect(sentSegment instanceof Buffer).toBeTruthy();
     expect(closedSocket).toBeTruthy();
@@ -704,13 +715,16 @@ describe("extractTraceContext", () => {
     jest.spyOn(Date, "now").mockImplementation(() => 1487076708000);
     process.env[xrayTraceEnvVar] = "Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1";
 
-    const result = extractTraceContext({
-      headers: {
-        "x-datadog-parent-id": "797643193680388251",
-        "x-datadog-sampling-priority": "2",
-        "x-datadog-trace-id": "4110911582297405551",
+    const result = extractTraceContext(
+      {
+        headers: {
+          "x-datadog-parent-id": "797643193680388251",
+          "x-datadog-sampling-priority": "2",
+          "x-datadog-trace-id": "4110911582297405551",
+        },
       },
-    }, {});
+      {},
+    );
 
     expect(sentSegment).toBeUndefined();
   });
