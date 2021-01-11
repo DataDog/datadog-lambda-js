@@ -37,9 +37,6 @@ function patchMethod(mod: typeof http | typeof https, method: "get" | "request",
     const fn = (arg1: any, arg2: any, arg3: any) => {
       [arg1, arg2, arg3] = addTraceContextToArgs(contextService, arg1, arg2, arg3);
 
-      /*if (isIntegrationTest()) {
-        _logHttpRequest(requestOpts);
-      }*/
       if (arg3 === undefined || arg3 === null) {
         return original(arg1, arg2)
       } else {
@@ -103,10 +100,14 @@ function getRequestOptionsWithTraceContext(
     ...headers,
     ...traceHeaders,
   };
-  return {
+  const requestOpts = {
     ...options,
     headers,
   };
+  if (isIntegrationTest()) {
+    _logHttpRequest(requestOpts);
+  }
+  return requestOpts;
 }
 
 function isIntegrationTest() {
