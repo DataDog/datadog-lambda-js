@@ -35,14 +35,13 @@ export function unpatchHttp() {
 function patchMethod(mod: typeof http | typeof https, method: "get" | "request", contextService: TraceContextService) {
   shimmer.wrap(mod, method, (original) => {
     const fn = (arg1: any, arg2: any, arg3: any) => {
-      const { options, callback } = normalizeArgs(arg1, arg2, arg3);
-      const requestOpts = getRequestOptionsWithTraceContext(options, contextService);
+      [arg1, arg2, arg3] = addTraceContextToArgs(contextService, arg1, arg2, arg3);
 
-      if (isIntegrationTest()) {
-        _logHttpRequest(requestOpts);
+      if (arg3 === undefined || arg3 === null) {
+        return original(arg1, arg2);
+      } else {
+        return original(arg1, arg2, arg3);
       }
-
-      return original(requestOpts, callback);
     };
     return fn as any;
   });
@@ -54,23 +53,37 @@ function unpatchMethod(mod: typeof http | typeof https, method: "get" | "request
 }
 
 /**
- * The input into the http.request function has 6 different overloads. This method normalized the inputs
- * into a consistent format.
+ * Finds the RequestOptions in the args and injects context into headers
  */
-function normalizeArgs(
+function addTraceContextToArgs(
+  contextService: TraceContextService,
   arg1: string | URL | http.RequestOptions,
   arg2?: RequestCallback | http.RequestOptions,
   arg3?: RequestCallback,
 ) {
-  let options: http.RequestOptions = typeof arg1 === "string" ? parse(arg1) : { ...arg1 };
-  options.headers = options.headers || {};
-  let callback = arg3;
-  if (typeof arg2 === "function") {
-    callback = arg2;
-  } else if (typeof arg2 === "object") {
-    options = { ...options, ...arg2 };
+  let requestOpts: http.RequestOptions | undefined;
+  if (typeof arg1 === "string" || arg1 instanceof URL) {
+    if (arg2 === undefined || arg2 === null) {
+      requestOpts = {
+        method: "GET",
+      };
+      requestOpts = getRequestOptionsWithTraceContext(requestOpts, contextService);
+      return [arg1, requestOpts, arg3];
+    } else if (typeof arg2 === "function") {
+      requestOpts = {
+        method: "GET",
+      };
+      requestOpts = getRequestOptionsWithTraceContext(requestOpts, contextService);
+      return [arg1, requestOpts, arg2];
+    } else {
+      requestOpts = arg2 as http.RequestOptions;
+      requestOpts = getRequestOptionsWithTraceContext(requestOpts, contextService);
+      return [arg1, requestOpts, arg3];
+    }
+  } else {
+    requestOpts = getRequestOptionsWithTraceContext(arg1, contextService);
+    return [requestOpts, arg2, arg3];
   }
-  return { options, callback };
 }
 
 function getRequestOptionsWithTraceContext(
@@ -86,10 +99,16 @@ function getRequestOptionsWithTraceContext(
     ...headers,
     ...traceHeaders,
   };
-  return {
+  const requestOpts = {
     ...options,
     headers,
   };
+  // Logging all http requests during integration tests let's
+  // us track traffic in our test snapshots
+  if (isIntegrationTest()) {
+    _logHttpRequest(requestOpts);
+  }
+  return requestOpts;
 }
 
 function isIntegrationTest() {
