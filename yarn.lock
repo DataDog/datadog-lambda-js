@@ -843,9 +843,9 @@ atomic-batcher@^1.0.2:
   integrity sha1-0WkB0QzOxZUWwZe5zNiTBom4E7Q=
 
 aws-sdk@*:
-  version "2.824.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.824.0.tgz#a67747d4d0b53d09c6c121e93f44d8f6e76fc44b"
-  integrity sha512-9KNRQBkIMPn+6DWb4gR+RzqTMNyGLEwOgXbE4dDehOIAflfLnv3IFwLnzrhxJnleB4guYrILIsBroJFBzjiekg==
+  version "2.825.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.825.0.tgz#91dad854827f6f8ada5a305dd32524e2f19cc622"
+  integrity sha512-b49nvaETm7uVRLf0FJ1CMmwCRVlLaxHtptVFuxX+2L4FR9VB0sLdgsxhtL3RVFbQlgVFNRV7fJUVK27mC++H+A==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
@@ -1321,10 +1321,10 @@ data-urls@^2.0.0:
     whatwg-mimetype "^2.3.0"
     whatwg-url "^8.0.0"
 
-dd-trace@0.30.0:
-  version "0.30.0"
-  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-0.30.0.tgz#6ff4874e5ddff982e28242801559d81b4bd77268"
-  integrity sha512-8hAIzCprzIqIlYLOZoSOhVcBY1r6t2M0z4ezS7WvV/inifKtjmrM78nG9HzEhtY+/re7+badhUe0fDgybzNbjg==
+dd-trace@0.30.1:
+  version "0.30.1"
+  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-0.30.1.tgz#1741cf39097bbfcda44045a9e2186769f6d41c31"
+  integrity sha512-E5q0yejfjsATU5O1htNBrGpN0f9ueSxGvF3B408OMeTaS+bNtxxryunW52EmZ1hqRbnI7MuZ2rpH4DT17+gT6A==
   dependencies:
     "@types/node" "^10.12.18"
     axios "^0.21.1"
