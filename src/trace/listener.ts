@@ -11,6 +11,8 @@ import { Source, ddtraceVersion } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 
+export type TraceExtractor = (event: any, context: Context) => TraceContext | undefined;
+
 export interface TraceConfig {
   /**
    * Whether to automatically patch all outgoing http requests with Datadog's hybrid tracing headers.
@@ -29,7 +31,7 @@ export interface TraceConfig {
   /**
    * Custom trace extractor function
    */
-  traceExtractor?(event: any, context: Context): TraceContext | undefined;
+  traceExtractor?: TraceExtractor;
 }
 
 export class TraceListener {

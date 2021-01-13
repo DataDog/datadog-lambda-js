@@ -243,16 +243,6 @@ function getConfig(userConfig?: Partial<Config>): Config {
     const result = getEnvValue(mergeXrayTracesEnvVar, "false").toLowerCase();
     config.mergeDatadogXrayTraces = result === "true";
   }
-  if (userConfig === undefined || userConfig.traceExtractor === undefined) {
-    try {
-      const extractorEnv = getEnvValue(traceExtractorEnvVar, "");
-      const taskRootEnv = getEnvValue(lambdaTaskRootEnvVar, "");
-      // tslint:disable-next-line:no-var-requires
-      config.traceExtractor = require("/var/runtime/UserFunction").load(taskRootEnv, extractorEnv);
-    } catch (err) {
-      logDebug(`Failed to load the custom trace extractor with error ${err}`);
-    }
-  }
 
   return config;
 }
