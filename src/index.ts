@@ -30,6 +30,7 @@ export const enhancedMetricsEnvVar = "DD_ENHANCED_METRICS";
 export const datadogHandlerEnvVar = "DD_LAMBDA_HANDLER";
 export const lambdaTaskRootEnvVar = "LAMBDA_TASK_ROOT";
 export const mergeXrayTracesEnvVar = "DD_MERGE_XRAY_TRACES";
+export const traceExtractorEnvVar = "DD_TRACE_EXTRACTOR";
 export const defaultSiteURL = "datadoghq.com";
 
 interface GlobalConfig {
@@ -241,6 +242,17 @@ function getConfig(userConfig?: Partial<Config>): Config {
   if (userConfig === undefined || userConfig.mergeDatadogXrayTraces === undefined) {
     const result = getEnvValue(mergeXrayTracesEnvVar, "false").toLowerCase();
     config.mergeDatadogXrayTraces = result === "true";
+  }
+  if (userConfig === undefined || userConfig.traceExtractor === undefined) {
+    try {
+      const extractorEnv = getEnvValue(traceExtractorEnvVar, "");
+      const taskRootEnv = getEnvValue(lambdaTaskRootEnvVar, "");
+      // tslint:disable-next-line:no-var-requires
+      config.traceExtractor = require("/var/runtime/UserFunction")
+        .load(taskRootEnv, extractorEnv)
+    } catch (err) {
+      logDebug(`Failed to load the custom trace extractor with error ${err}`);
+    }
   }
 
   return config;

@@ -1,3 +1,4 @@
+import { Context } from "aws-lambda";
 import { BigNumber } from "bignumber.js";
 import { randomBytes } from "crypto";
 import { createSocket, Socket } from "dgram";
@@ -47,8 +48,17 @@ function isSQSEvent(event: any): event is SQSEvent {
  * Reads the trace context from either an incoming lambda event, or the current xray segment.
  * @param event An incoming lambda event. This must have incoming trace headers in order to be read.
  */
-export function extractTraceContext(event: any) {
-  const trace = readTraceFromEvent(event);
+export function extractTraceContext(event: any, extractor?: any): TraceContext | undefined {
+  let trace;
+
+  if (extractor) {
+    trace = extractor(event)
+  }
+
+  if (!trace) {
+    trace = readTraceFromEvent(event);
+  }
+
   const stepFuncContext = readStepFunctionContextFromEvent(event);
   if (stepFuncContext) {
     try {

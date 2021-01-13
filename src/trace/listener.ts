@@ -1,6 +1,11 @@
 import { Context } from "aws-lambda";
 
-import { extractTraceContext, readStepFunctionContextFromEvent, StepFunctionContext } from "./context";
+import {
+  TraceContext,
+  extractTraceContext,
+  readStepFunctionContextFromEvent,
+  StepFunctionContext,
+} from "./context";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
 
@@ -26,6 +31,11 @@ export interface TraceConfig {
    * @default false
    */
   mergeDatadogXrayTraces: boolean;
+  /**
+   * Whether to use an extractor
+   * @default ""
+   */
+  traceExtractor?(event: any, context: Context): TraceContext | undefined;
 }
 
 export class TraceListener {
@@ -60,7 +70,10 @@ export class TraceListener {
     }
 
     this.context = context;
-    this.contextService.rootTraceContext = extractTraceContext(event);
+
+
+    this.contextService.rootTraceContext = extractTraceContext(event, this.config.traceExtractor);
+    
     this.stepFunctionContext = readStepFunctionContextFromEvent(event);
   }
 
