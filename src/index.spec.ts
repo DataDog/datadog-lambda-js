@@ -2,7 +2,6 @@ import http from "http";
 import nock from "nock";
 
 import { Context, Handler } from "aws-lambda";
-
 import {
   datadog,
   getTraceHeaders,
@@ -52,8 +51,6 @@ describe("datadog", () => {
 
     mockedIncrementErrors.mockClear();
     mockedIncrementInvocations.mockClear();
-
-    // jest.resetModules();
   });
   afterEach(() => {
     process.env = oldEnv;
