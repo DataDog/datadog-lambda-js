@@ -18,7 +18,7 @@ import {
   xrayTraceEnvVar,
   awsXrayDaemonAddressEnvVar,
 } from "./constants";
-import { TraceExtractor } from './listener'
+import { TraceExtractor } from "./listener";
 
 export interface XRayTraceHeader {
   traceID: string;
@@ -49,7 +49,11 @@ function isSQSEvent(event: any): event is SQSEvent {
  * Reads the trace context from either an incoming lambda event, or the current xray segment.
  * @param event An incoming lambda event. This must have incoming trace headers in order to be read.
  */
-export function extractTraceContext(event: any, context: Context, extractor?: TraceExtractor): TraceContext | undefined {
+export function extractTraceContext(
+  event: any,
+  context: Context,
+  extractor?: TraceExtractor,
+): TraceContext | undefined {
   let trace;
 
   if (extractor) {
