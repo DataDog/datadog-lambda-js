@@ -52,7 +52,7 @@ export function extractTraceContext(event: any, extractor?: any): TraceContext |
   let trace;
 
   if (extractor) {
-    trace = extractor(event)
+    trace = extractor(event);
   }
 
   if (!trace) {

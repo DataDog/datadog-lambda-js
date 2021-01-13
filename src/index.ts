@@ -248,8 +248,7 @@ function getConfig(userConfig?: Partial<Config>): Config {
       const extractorEnv = getEnvValue(traceExtractorEnvVar, "");
       const taskRootEnv = getEnvValue(lambdaTaskRootEnvVar, "");
       // tslint:disable-next-line:no-var-requires
-      config.traceExtractor = require("/var/runtime/UserFunction")
-        .load(taskRootEnv, extractorEnv)
+      config.traceExtractor = require("/var/runtime/UserFunction").load(taskRootEnv, extractorEnv);
     } catch (err) {
       logDebug(`Failed to load the custom trace extractor with error ${err}`);
     }

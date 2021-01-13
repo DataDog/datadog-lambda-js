@@ -560,13 +560,16 @@ describe("extractTraceContext", () => {
       };
     };
 
-    const result = extractTraceContext({
-      foo: {
-        "x-datadog-parent-id": "797643193680388251",
-        "x-datadog-sampling-priority": "2",
-        "x-datadog-trace-id": "4110911582297405551",
+    const result = extractTraceContext(
+      {
+        foo: {
+          "x-datadog-parent-id": "797643193680388251",
+          "x-datadog-sampling-priority": "2",
+          "x-datadog-trace-id": "4110911582297405551",
+        },
       },
-    }, extractor);
+      extractor,
+    );
     expect(result).toEqual({
       parentID: "797643193680388251",
       sampleMode: SampleMode.USER_KEEP,
