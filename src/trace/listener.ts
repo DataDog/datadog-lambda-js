@@ -27,8 +27,7 @@ export interface TraceConfig {
    */
   mergeDatadogXrayTraces: boolean;
   /**
-   * Whether to use an extractor
-   * @default ""
+   * Custom trace extractor function
    */
   traceExtractor?(event: any, context: Context): TraceContext | undefined;
 }
@@ -65,7 +64,7 @@ export class TraceListener {
     }
 
     this.context = context;
-    this.contextService.rootTraceContext = extractTraceContext(event, this.config.traceExtractor);
+    this.contextService.rootTraceContext = extractTraceContext(event, context, this.config.traceExtractor);
 
     this.stepFunctionContext = readStepFunctionContextFromEvent(event);
   }

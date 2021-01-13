@@ -568,6 +568,7 @@ describe("extractTraceContext", () => {
           "x-datadog-trace-id": "4110911582297405551",
         },
       },
+      {},
       extractor,
     );
     expect(result).toEqual({
