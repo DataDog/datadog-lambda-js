@@ -57,7 +57,11 @@ export function extractTraceContext(
   let trace;
 
   if (extractor) {
-    trace = extractor(event, context);
+    try {
+      trace = extractor(event, context);
+    } catch (error) {
+      logError("extractor function failed", { error });
+    }
   }
 
   if (!trace) {
