@@ -11,7 +11,7 @@ import { Source, ddtraceVersion } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 
-export type TraceExtractor = (event: any, context: Context) => TraceContext | undefined;
+export type TraceExtractor = (event: any, context: Context) => TraceContext;
 
 export interface TraceConfig {
   /**
