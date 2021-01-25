@@ -1,4 +1,4 @@
-import { SQSEvent } from "aws-lambda";
+import { Context, SQSEvent } from "aws-lambda";
 import { LogLevel, setLogLevel } from "../utils";
 import {
   SampleMode,
@@ -7,6 +7,9 @@ import {
   Source,
   xrayTraceEnvVar,
   awsXrayDaemonAddressEnvVar,
+  traceIDHeader,
+  parentIDHeader,
+  samplingPriorityHeader,
 } from "./constants";
 import {
   convertToAPMParentID,
@@ -559,7 +562,7 @@ describe("extractTraceContext", () => {
     process.env["_X_AMZN_TRACE_ID"] = undefined;
     process.env[awsXrayDaemonAddressEnvVar] = undefined;
   });
-  it("returns trace read from header as highest priority", () => {
+  it("returns trace read from header as highest priority with no extractor", () => {
     process.env["_X_AMZN_TRACE_ID"] = "Root=1-5ce31dc2-2c779014b90ce44db5e03875;Parent=0b11cc4230d3e09e;Sampled=1";
 
     const result = extractTraceContext(
@@ -570,13 +573,86 @@ describe("extractTraceContext", () => {
           "x-datadog-trace-id": "4110911582297405551",
         },
       },
-      {},
+      {} as Context,
     );
     expect(result).toEqual({
       parentID: "797643193680388251",
       sampleMode: SampleMode.USER_KEEP,
       traceID: "4110911582297405551",
       source: Source.Event,
+    });
+  });
+  it("returns trace read from event with the extractor as the highest priority", () => {
+    process.env["_X_AMZN_TRACE_ID"] = "Root=1-5ce31dc2-2c779014b90ce44db5e03875;Parent=0b11cc4230d3e09e;Sampled=1";
+
+    const extractor = (event: any, context: Context) => {
+      const traceID = event.foo[traceIDHeader];
+      const parentID = event.foo[parentIDHeader];
+      const sampledHeader = event.foo[samplingPriorityHeader];
+      const sampleMode = parseInt(sampledHeader, 10);
+
+      return {
+        parentID,
+        sampleMode,
+        source: Source.Event,
+        traceID,
+      };
+    };
+
+    const result = extractTraceContext(
+      {
+        foo: {
+          "x-datadog-parent-id": "797643193680388251",
+          "x-datadog-sampling-priority": "2",
+          "x-datadog-trace-id": "4110911582297405551",
+        },
+      },
+      {} as Context,
+      extractor,
+    );
+    expect(result).toEqual({
+      parentID: "797643193680388251",
+      sampleMode: SampleMode.USER_KEEP,
+      traceID: "4110911582297405551",
+      source: Source.Event,
+    });
+  });
+
+  it("handles gracefully errors in extractors", () => {
+    process.env["_X_AMZN_TRACE_ID"] = "Root=1-5ce31dc2-2c779014b90ce44db5e03875;Parent=0b11cc4230d3e09e;Sampled=1";
+
+    const extractor = (event: any, context: Context) => {
+      throw new Error("test");
+
+      const traceID = event.foo[traceIDHeader];
+      const parentID = event.foo[parentIDHeader];
+      const sampledHeader = event.foo[samplingPriorityHeader];
+      const sampleMode = parseInt(sampledHeader, 10);
+
+      return {
+        parentID,
+        sampleMode,
+        source: Source.Event,
+        traceID,
+      };
+    };
+
+    const result = extractTraceContext(
+      {
+        foo: {
+          "x-datadog-parent-id": "797643193680388251",
+          "x-datadog-sampling-priority": "2",
+          "x-datadog-trace-id": "4110911582297405551",
+        },
+      },
+      {} as Context,
+      extractor,
+    );
+    expect(result).toEqual({
+      parentID: "797643193680388254",
+      sampleMode: SampleMode.USER_KEEP,
+      traceID: "4110911582297405557",
+      source: "xray",
     });
   });
   it("returns trace read from SQS metadata as second highest priority", () => {
@@ -608,7 +684,7 @@ describe("extractTraceContext", () => {
           },
         ],
       },
-      {},
+      {} as Context,
     );
     expect(result).toEqual({
       parentID: "3369753143434738315",
@@ -630,7 +706,7 @@ describe("extractTraceContext", () => {
           },
         },
       },
-    };
+    } as Context;
     const result = extractTraceContext(
       {
         Records: [
@@ -657,6 +733,7 @@ describe("extractTraceContext", () => {
         ],
       },
       lambdaContext,
+      {} as Context,
     );
     expect(result).toEqual({
       parentID: "3369753143434738315",
@@ -668,7 +745,7 @@ describe("extractTraceContext", () => {
   it("returns trace read from env if no headers present", () => {
     process.env["_X_AMZN_TRACE_ID"] = "Root=1-5ce31dc2-2c779014b90ce44db5e03875;Parent=0b11cc4230d3e09e;Sampled=1";
 
-    const result = extractTraceContext({}, {});
+    const result = extractTraceContext({}, {} as Context);
     expect(result).toEqual({
       parentID: "797643193680388254",
       sampleMode: SampleMode.USER_KEEP,
@@ -679,7 +756,7 @@ describe("extractTraceContext", () => {
   it("returns trace read from env if no headers present", () => {
     process.env["_X_AMZN_TRACE_ID"] = "Root=1-5ce31dc2-2c779014b90ce44db5e03875;Parent=0b11cc4230d3e09e;Sampled=1";
 
-    const result = extractTraceContext({}, {});
+    const result = extractTraceContext({}, {} as Context);
     expect(result).toEqual({
       parentID: "797643193680388254",
       sampleMode: SampleMode.USER_KEEP,
@@ -700,7 +777,7 @@ describe("extractTraceContext", () => {
           "x-datadog-trace-id": "4110911582297405551",
         },
       },
-      {},
+      {} as Context,
     );
 
     expect(sentSegment instanceof Buffer).toBeTruthy();
@@ -723,7 +800,7 @@ describe("extractTraceContext", () => {
           "x-datadog-trace-id": "4110911582297405551",
         },
       },
-      {},
+      {} as Context,
     );
 
     expect(sentSegment).toBeUndefined();
@@ -750,8 +827,7 @@ describe("extractTraceContext", () => {
     process.env[xrayTraceEnvVar] = "Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1";
     process.env[awsXrayDaemonAddressEnvVar] = "localhost:127.0.0.1:2000";
 
-    extractTraceContext(stepFunctionEvent, {});
-
+    extractTraceContext(stepFunctionEvent, {} as Context);
     expect(sentSegment instanceof Buffer).toBeTruthy();
 
     expect(closedSocket).toBeTruthy();
