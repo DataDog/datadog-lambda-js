@@ -1,6 +1,6 @@
 import { Context } from "aws-lambda";
 
-import { extractTraceContext, readStepFunctionContextFromEvent, StepFunctionContext } from "./context";
+import { TraceContext, extractTraceContext, readStepFunctionContextFromEvent, StepFunctionContext } from "./context";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
 
@@ -10,6 +10,8 @@ import { datadogLambdaVersion } from "../constants";
 import { Source, ddtraceVersion } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
+
+export type TraceExtractor = (event: any, context: Context) => TraceContext;
 
 export interface TraceConfig {
   /**
@@ -26,6 +28,10 @@ export interface TraceConfig {
    * @default false
    */
   mergeDatadogXrayTraces: boolean;
+  /**
+   * Custom trace extractor function
+   */
+  traceExtractor?: TraceExtractor;
 }
 
 export class TraceListener {
@@ -60,7 +66,8 @@ export class TraceListener {
     }
 
     this.context = context;
-    this.contextService.rootTraceContext = extractTraceContext(event);
+    this.contextService.rootTraceContext = extractTraceContext(event, context, this.config.traceExtractor);
+
     this.stepFunctionContext = readStepFunctionContextFromEvent(event);
   }
 
