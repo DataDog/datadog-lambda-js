@@ -1,2 +1,2 @@
-export { TraceConfig, TraceListener } from "./listener";
+export { TraceConfig, TraceListener, TraceExtractor } from "./listener";
 export { TraceHeaders } from "./trace-context-service";

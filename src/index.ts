@@ -30,6 +30,7 @@ export const enhancedMetricsEnvVar = "DD_ENHANCED_METRICS";
 export const datadogHandlerEnvVar = "DD_LAMBDA_HANDLER";
 export const lambdaTaskRootEnvVar = "LAMBDA_TASK_ROOT";
 export const mergeXrayTracesEnvVar = "DD_MERGE_XRAY_TRACES";
+export const traceExtractorEnvVar = "DD_TRACE_EXTRACTOR";
 export const defaultSiteURL = "datadoghq.com";
 
 interface GlobalConfig {
