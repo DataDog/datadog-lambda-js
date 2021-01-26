@@ -68,6 +68,10 @@ export function extractTraceContext(
     trace = readTraceFromEvent(event);
   }
 
+  if (!trace) {
+    trace = readTraceFromLambdaContext(context);
+  }
+
   const stepFuncContext = readStepFunctionContextFromEvent(event);
   if (stepFuncContext) {
     try {
