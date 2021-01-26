@@ -1,3 +1,4 @@
+import { Context } from "aws-lambda";
 import { BigNumber } from "bignumber.js";
 import { randomBytes } from "crypto";
 import { createSocket, Socket } from "dgram";
@@ -18,6 +19,7 @@ import {
   xrayTraceEnvVar,
   awsXrayDaemonAddressEnvVar,
 } from "./constants";
+import { TraceExtractor } from "./listener";
 
 export interface XRayTraceHeader {
   traceID: string;
@@ -44,8 +46,29 @@ export interface StepFunctionContext {
  * Reads the trace context from either an incoming lambda event, or the current xray segment.
  * @param event An incoming lambda event. This must have incoming trace headers in order to be read.
  */
-export function extractTraceContext(event: any) {
-  const trace = readTraceFromEvent(event);
+export function extractTraceContext(
+  event: any,
+  context: Context,
+  extractor?: TraceExtractor,
+): TraceContext | undefined {
+  let trace;
+
+  if (extractor) {
+    try {
+      trace = extractor(event, context);
+    } catch (error) {
+      logError("extractor function failed", { error });
+    }
+  }
+
+  if (!trace) {
+    trace = readTraceFromEvent(event);
+  }
+
+  if (!trace) {
+    trace = readTraceFromLambdaContext(context);
+  }
+
   const stepFuncContext = readStepFunctionContextFromEvent(event);
   if (stepFuncContext) {
     try {
@@ -183,6 +206,39 @@ export function readTraceFromSQSEvent(event: SQSEvent): TraceContext | undefined
   }
 
   return;
+}
+
+export function readTraceFromLambdaContext(context: any): TraceContext | undefined {
+  if (!context || typeof context !== "object") {
+    return;
+  }
+
+  const traceData = context.clientContext?.custom?._datadog;
+
+  if (!traceData || typeof traceData !== "object") {
+    return;
+  }
+
+  const traceID = traceData[traceIDHeader];
+  if (typeof traceID !== "string") {
+    return;
+  }
+  const parentID = traceData[parentIDHeader];
+  if (typeof parentID !== "string") {
+    return;
+  }
+  const sampledHeader = traceData[samplingPriorityHeader];
+  if (typeof sampledHeader !== "string") {
+    return;
+  }
+  const sampleMode = parseInt(sampledHeader, 10);
+
+  return {
+    parentID,
+    sampleMode,
+    source: Source.Event,
+    traceID,
+  };
 }
 
 export function readTraceFromHTTPEvent(event: any): TraceContext | undefined {

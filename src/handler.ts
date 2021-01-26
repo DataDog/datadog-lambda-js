@@ -1,4 +1,6 @@
-import { datadog, datadogHandlerEnvVar, lambdaTaskRootEnvVar, getEnvValue } from "./index";
+import { datadog, datadogHandlerEnvVar, lambdaTaskRootEnvVar, traceExtractorEnvVar, getEnvValue } from "./index";
+import { TraceExtractor } from "./trace";
+import { logError } from "./utils";
 // We reuse the function loading logic already inside the lambda runtime.
 // tslint:disable-next-line:no-var-requires
 const { load } = require("/var/runtime/UserFunction") as any;
@@ -18,4 +20,15 @@ if (getEnvValue("DD_TRACE_ENABLED", "true").toLowerCase() === "true") {
 
 const taskRootEnv = getEnvValue(lambdaTaskRootEnvVar, "");
 const handlerEnv = getEnvValue(datadogHandlerEnvVar, "");
-export const handler = datadog(load(taskRootEnv, handlerEnv) as any);
+const extractorEnv = getEnvValue(traceExtractorEnvVar, "");
+let traceExtractor;
+
+if (extractorEnv) {
+  try {
+    traceExtractor = load(taskRootEnv, extractorEnv) as TraceExtractor;
+  } catch (error) {
+    logError("an error occured while loading the extractor", error);
+  }
+}
+
+export const handler = datadog(load(taskRootEnv, handlerEnv) as any, { traceExtractor });

@@ -8,6 +8,7 @@ provider:
   environment:
     DD_INTEGRATION_TEST: true
     DD_API_KEY: ${env:DD_API_KEY}
+  lambdaHashingVersion: 20201221
 
 layers:
   node10:
