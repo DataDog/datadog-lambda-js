@@ -191,32 +191,32 @@ function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEv
   let httpTags: { [key: string]: string } = {};
 
   if (eventType.isAPIGatewayEvent(event)) {
-    const requestContext = event.requestContext
+    const requestContext = event.requestContext;
     if (requestContext.domainName) {
       httpTags["http.url"] = requestContext.domainName;
     }
-    httpTags["http.url_details.path"] = requestContext.path
-    httpTags["http.method"] = requestContext.httpMethod
+    httpTags["http.url_details.path"] = requestContext.path;
+    httpTags["http.method"] = requestContext.httpMethod;
     if (event.headers.Referer) {
-      httpTags["http.referer"] = event.headers.Referer
+      httpTags["http.referer"] = event.headers.Referer;
     }
   }
 
   if (eventType.isAPIGatewayEventV2(event)) {
-    const requestContext = event.requestContext
+    const requestContext = event.requestContext;
     httpTags["http.url"] = requestContext.domainName;
     httpTags["http.url_details.path"] = requestContext.http.path;
-    httpTags["http.method"] = requestContext.http.method
+    httpTags["http.method"] = requestContext.http.method;
     if (event.headers.Referer) {
-      httpTags["http.referer"] = event.headers.Referer
+      httpTags["http.referer"] = event.headers.Referer;
     }
   }
 
   if (eventType.isALBEvent(event)) {
-    httpTags["http.url_details.path"] = event.path
-    httpTags["http.method"] = event.httpMethod
+    httpTags["http.url_details.path"] = event.path;
+    httpTags["http.method"] = event.httpMethod;
     if (event.headers && event.headers.Referer) {
-      httpTags["http.referer"] = event.headers.Referer
+      httpTags["http.referer"] = event.headers.Referer;
     }
   }
   return httpTags;
@@ -226,14 +226,14 @@ function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEv
  * extractTriggerTags extracts span tags from the event object that triggered the Lambda
  */
 export function extractTriggerTags(event: any, context: Context) {
-  let triggerTags: { [key: string]: string } = {}
+  let triggerTags: { [key: string]: string } = {};
   const eventSource = parseEventSource(event);
   if (eventSource) {
-    triggerTags["trigger.event_source"] = eventSource;
+    triggerTags["function_trigger.event_source"] = eventSource;
 
     const eventSourceARN = parseEventSourceARN(eventSource, event, context);
     if (eventSourceARN) {
-      triggerTags["trigger.event_source_arn"] = eventSourceARN;
+      triggerTags["function_trigger.event_source_arn"] = eventSourceARN;
     }
   }
 
