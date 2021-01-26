@@ -68,6 +68,10 @@ export function extractTraceContext(
     trace = readTraceFromEvent(event);
   }
 
+  if (!trace) {
+    trace = readTraceFromLambdaContext(context);
+  }
+
   const stepFuncContext = readStepFunctionContextFromEvent(event);
   if (stepFuncContext) {
     try {
@@ -205,6 +209,39 @@ export function readTraceFromSQSEvent(event: SQSEvent): TraceContext | undefined
   }
 
   return;
+}
+
+export function readTraceFromLambdaContext(context: any): TraceContext | undefined {
+  if (!context || typeof context !== "object") {
+    return;
+  }
+
+  const traceData = context.clientContext?.custom?._datadog;
+
+  if (!traceData || typeof traceData !== "object") {
+    return;
+  }
+
+  const traceID = traceData[traceIDHeader];
+  if (typeof traceID !== "string") {
+    return;
+  }
+  const parentID = traceData[parentIDHeader];
+  if (typeof parentID !== "string") {
+    return;
+  }
+  const sampledHeader = traceData[samplingPriorityHeader];
+  if (typeof sampledHeader !== "string") {
+    return;
+  }
+  const sampleMode = parseInt(sampledHeader, 10);
+
+  return {
+    parentID,
+    sampleMode,
+    source: Source.Event,
+    traceID,
+  };
 }
 
 export function readTraceFromHTTPEvent(event: any): TraceContext | undefined {
