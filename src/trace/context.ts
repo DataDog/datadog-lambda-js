@@ -4,6 +4,7 @@ import { createSocket, Socket } from "dgram";
 import { SQSEvent } from "aws-lambda";
 
 import { logDebug, logError } from "../utils";
+import { isSQSEvent } from "../utils/event-type-guards";
 import {
   parentIDHeader,
   SampleMode,
@@ -37,10 +38,6 @@ export interface StepFunctionContext {
   "step_function.state_machine_name": string;
   "step_function.state_machine_arn": string;
   "step_function.step_name": string;
-}
-
-function isSQSEvent(event: any): event is SQSEvent {
-  return Array.isArray(event.Records) && event.Records.length > 0 && event.Records[0].eventSource === "aws:sqs";
 }
 
 /**

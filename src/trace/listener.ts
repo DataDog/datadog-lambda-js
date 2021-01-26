@@ -32,7 +32,7 @@ export interface TraceConfig {
 export class TraceListener {
   private contextService: TraceContextService;
   private context?: Context;
-  private triggerTags?: { [key: string]: any };
+  private triggerTags?: { [key: string]: string };
   private stepFunctionContext?: StepFunctionContext;
   private tracerWrapper: TracerWrapper;
 
@@ -44,7 +44,9 @@ export class TraceListener {
   }
   public get hasHTTPTriggerSource() {
     return (
-      this.triggerTags && this.triggerTags["trigger.event_source"] === ("api-gateway" || "application-load-balancer")
+      this.triggerTags &&
+      (this.triggerTags["trigger.event_source"] === "api-gateway" ||
+        this.triggerTags["trigger.event_source"] === "application-load-balancer")
     );
   }
   constructor(private config: TraceConfig, private handlerName: string) {

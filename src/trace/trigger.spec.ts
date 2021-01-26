@@ -1,4 +1,4 @@
-import { parseEventSource, getEventSourceARN, extractTriggerTags } from "./trigger";
+import { parseEventSource, parseEventSourceARN, extractTriggerTags } from "./trigger";
 import { readFileSync } from "fs";
 
 import { Context } from "aws-lambda";
@@ -92,7 +92,7 @@ describe("parseEventSource", () => {
     for (let event of events) {
       const eventData = JSON.parse(readFileSync(`./event_samples/${event.file}`, "utf8"));
       const eventSource = parseEventSource(eventData);
-      const eventSourceARN = getEventSourceARN(eventSource, eventData, mockContext);
+      const eventSourceARN = parseEventSourceARN(eventSource, eventData, mockContext);
       expect(eventSource).toEqual(event.result["trigger.event_source"]);
       expect(eventSourceARN).toEqual(event.result["trigger.event_source_arn"]);
     }

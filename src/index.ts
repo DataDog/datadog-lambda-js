@@ -123,7 +123,7 @@ export function datadog<TEvent, TResult>(
     }
 
     let result: TResult | undefined;
-    let localResult: any | undefined;
+    let localResult: TResult | undefined;
     let error: any;
     let didThrow = false;
 
