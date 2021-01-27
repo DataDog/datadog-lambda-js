@@ -192,7 +192,7 @@ export function parseEventSourceARN(source: string, event: any, context: Context
  * extractHTTPTags extracts HTTP facet tags from the triggering event
  */
 function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEvent) {
-  let httpTags: { [key: string]: string } = {};
+  const httpTags: { [key: string]: string } = {};
 
   if (eventType.isAPIGatewayEvent(event)) {
     const requestContext = event.requestContext;
@@ -253,7 +253,7 @@ export function extractTriggerTags(event: any, context: Context) {
  */
 export function extractHTTPStatusCodeTag(triggerTags: { [key: string]: string }, result: any) {
   let eventSource: string | undefined;
-  triggerTags ? (eventSource = triggerTags["function_trigger.event_source"]) : null;
+  triggerTags ? (eventSource = triggerTags["function_trigger.event_source"]) : (eventSource = undefined);
   if (!isHTTPTriggerEvent(eventSource)) {
     return;
   }
