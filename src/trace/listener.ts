@@ -1,6 +1,12 @@
 import { Context } from "aws-lambda";
 
-import { addXrayMetadata, TraceContext, extractTraceContext, readStepFunctionContextFromEvent, StepFunctionContext } from "./context";
+import {
+  addLambdaFunctionTagsToXray,
+  TraceContext,
+  extractTraceContext,
+  readStepFunctionContextFromEvent,
+  StepFunctionContext,
+} from "./context";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
 import { extractTriggerTags } from "./trigger";
@@ -8,7 +14,7 @@ import { extractTriggerTags } from "./trigger";
 import { logDebug } from "../utils";
 import { didFunctionColdStart } from "../utils/cold-start";
 import { datadogLambdaVersion } from "../constants";
-import { Source, ddtraceVersion, xrayBaggageSubsegmentKey } from "./constants";
+import { Source, ddtraceVersion } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 
@@ -38,22 +44,15 @@ export interface TraceConfig {
 export class TraceListener {
   private contextService: TraceContextService;
   private context?: Context;
-  private triggerTags?: { [key: string]: string };
   private stepFunctionContext?: StepFunctionContext;
   private tracerWrapper: TracerWrapper;
 
+  public triggerTags?: { [key: string]: string };
   public get currentTraceHeaders() {
     return this.contextService.currentTraceHeaders;
   }
   public get currentSpan() {
     return this.tracerWrapper.currentSpan;
-  }
-  public get hasHTTPTriggerSource() {
-    return (
-      this.triggerTags &&
-      (this.triggerTags["trigger.event_source"] === "api-gateway" ||
-        this.triggerTags["trigger.event_source"] === "application-load-balancer")
-    );
   }
   constructor(private config: TraceConfig, private handlerName: string) {
     this.tracerWrapper = new TracerWrapper();
@@ -84,6 +83,11 @@ export class TraceListener {
   }
 
   public async onCompleteInvocation() {
+    // Create a new dummy Datadog subsegment for function trigger tags so we
+    // can attach them to X-Ray spans when hybrid tracing is used
+    if (this.triggerTags) {
+      addLambdaFunctionTagsToXray(this.triggerTags);
+    }
     // If the DD tracer is initialized it manages patching of the http lib on its own
     const tracerInitialized = this.tracerWrapper.isTracerAvailable;
     if (this.config.autoPatchHTTP && !tracerInitialized) {
@@ -128,8 +132,6 @@ export class TraceListener {
       }
       if (this.triggerTags) {
         options.tags = { ...options.tags, ...this.triggerTags };
-        // # Add trigger tags under the dd subsegment's root_span_metadata field
-        addXrayMetadata(xrayBaggageSubsegmentKey, this.triggerTags);
       }
     }
     if (this.stepFunctionContext) {

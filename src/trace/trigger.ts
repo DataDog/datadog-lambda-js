@@ -15,6 +15,10 @@ import {
 import * as eventType from "../utils/event-type-guards";
 import { gunzipSync } from "zlib";
 
+function isHTTPTriggerEvent(eventSource: string | undefined) {
+  return eventSource === "api-gateway" || eventSource === "application-load-balancer";
+}
+
 function getAWSPartitionByRegion(region: string) {
   if (region.startsWith("us-gov-")) {
     return "aws-us-gov";
@@ -122,7 +126,7 @@ export function parseEventSource(event: any) {
  * parseEventSourceARN parses the triggering event to determine the event source's
  * ARN if available. Otherwise we stitch together the ARN
  */
-export function parseEventSourceARN(source: string | undefined, event: any, context: Context) {
+export function parseEventSourceARN(source: string, event: any, context: Context) {
   const splitFunctionArn = context.invokedFunctionArn.split(":");
   const region = splitFunctionArn[3];
   const accountId = splitFunctionArn[4];
@@ -223,7 +227,7 @@ function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEv
 }
 
 /**
- * extractTriggerTags extracts span tags from the event object that triggered the Lambda
+ * extractTriggerTags parses the trigger event object for tags to be added to the span metadata
  */
 export function extractTriggerTags(event: any, context: Context) {
   let triggerTags: { [key: string]: string } = {};
@@ -237,20 +241,23 @@ export function extractTriggerTags(event: any, context: Context) {
     }
   }
 
-  if (eventSource === "api-gateway" || eventSource === "application-load-balancer") {
+  if (isHTTPTriggerEvent(eventSource)) {
     triggerTags = { ...triggerTags, ...extractHTTPTags(event) };
   }
   return triggerTags;
 }
 
 /**
- * setHTTPStatusCodeTag sets a status code span tag if the Lambda was triggered
+ * extractHTTPStatusCode extracts a status code from the response if the Lambda was triggered
  * by API Gateway or ALB
  */
-export function setHTTPStatusCodeTag(span: any, result: any) {
-  if (span === null) {
+export function extractHTTPStatusCodeTag(triggerTags: { [key: string]: string }, result: any) {
+  let eventSource: string | undefined;
+  triggerTags ? (eventSource = triggerTags["function_trigger.event_source"]) : null;
+  if (!isHTTPTriggerEvent(eventSource)) {
     return;
   }
+
   let statusCode = "200";
   // Return a 502 status if no response is found
   if (result === undefined) {
@@ -259,5 +266,5 @@ export function setHTTPStatusCodeTag(span: any, result: any) {
     // Use the statusCode if available
     statusCode = result.statusCode;
   }
-  span.setTag("http.status_code", statusCode);
+  return statusCode;
 }

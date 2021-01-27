@@ -13,6 +13,7 @@ import {
   Source,
   traceIDHeader,
   xrayBaggageSubsegmentKey,
+  xrayLambdaFunctionTagsKey,
   xraySubsegmentKey,
   xraySubsegmentName,
   xraySubsegmentNamespace,
@@ -101,6 +102,10 @@ export function addTraceContextToXray(traceContext: TraceContext) {
 
 export function addStepFunctionContextToXray(context: StepFunctionContext) {
   addXrayMetadata(xrayBaggageSubsegmentKey, context);
+}
+
+export function addLambdaFunctionTagsToXray(triggerTags: { [key: string]: string }) {
+  addXrayMetadata(xrayLambdaFunctionTagsKey, triggerTags);
 }
 
 export function addXrayMetadata(key: string, metadata: Record<string, any>) {

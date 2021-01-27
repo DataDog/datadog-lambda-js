@@ -16,6 +16,7 @@ export const samplingPriorityHeader = "x-datadog-sampling-priority";
 export const xraySubsegmentName = "datadog-metadata";
 export const xraySubsegmentKey = "trace";
 export const xrayBaggageSubsegmentKey = "root_span_metadata";
+export const xrayLambdaFunctionTagsKey = "lambda_function_tags";
 export const xraySubsegmentNamespace = "datadog";
 export const xrayTraceEnvVar = "_X_AMZN_TRACE_ID";
 export const awsXrayDaemonAddressEnvVar = "AWS_XRAY_DAEMON_ADDRESS";

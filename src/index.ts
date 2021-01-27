@@ -19,7 +19,7 @@ import {
   logDebug,
 } from "./utils";
 export { TraceHeaders } from "./trace";
-import { setHTTPStatusCodeTag } from "./trace/trigger";
+import { extractHTTPStatusCodeTag } from "./trace/trigger";
 
 export const apiKeyEnvVar = "DD_API_KEY";
 export const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
@@ -133,8 +133,15 @@ export function datadog<TEvent, TResult>(
         try {
           localResult = await promHandler(localEvent, localContext);
         } finally {
-          if (traceListener.hasHTTPTriggerSource) {
-            setHTTPStatusCodeTag(traceListener.currentSpan, localResult);
+          if (traceListener.triggerTags) {
+            const statusCode = extractHTTPStatusCodeTag(traceListener.triggerTags, localResult);
+            if (statusCode) {
+              // Store the status tag in the listener to send to Xray on invocation completion
+              traceListener.triggerTags["http.status_code"] = statusCode;
+              if (traceListener.currentSpan) {
+                traceListener.currentSpan.setTag("http.status_code", statusCode);
+              }
+            }
           }
         }
         return localResult;
