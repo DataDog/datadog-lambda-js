@@ -126,7 +126,7 @@ export function parseEventSource(event: any) {
  * parseEventSourceARN parses the triggering event to determine the event source's
  * ARN if available. Otherwise we stitch together the ARN
  */
-export function parseEventSourceARN(source: string, event: any, context: Context) {
+export function parseEventSourceARN(source: string | undefined, event: any, context: Context) {
   const splitFunctionArn = context.invokedFunctionArn.split(":");
   const region = splitFunctionArn[3];
   const accountId = splitFunctionArn[4];
