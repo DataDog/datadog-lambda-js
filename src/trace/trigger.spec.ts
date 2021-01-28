@@ -1,4 +1,4 @@
-import { parseEventSource, parseEventSourceARN, extractTriggerTags } from "./trigger";
+import { parseEventSource, parseEventSourceARN, extractTriggerTags, extractHTTPStatusCodeTag } from "./trigger";
 import { readFileSync } from "fs";
 
 import { Context } from "aws-lambda";
@@ -89,6 +89,36 @@ describe("parseEventSource", () => {
       file: "sqs.json",
     },
   ];
+
+  const responses = [
+    {
+      response: {
+        "statusCode": 200,
+        "body": "\"Hello from Lambda!\""
+      },
+      statusCode: 200,
+    },
+    {
+      response: {
+        "statusCode": 404,
+        "body": "\"Not Found\""
+      },
+      statusCode: 404,
+    },
+    {
+      response: {
+        "errorType": "ReferenceError",
+        "errorMessage": "x is not defined",
+        "trace": [
+          "ReferenceError: x is not defined",
+          "    at exports.handler (/var/task/index.js:50:7)",
+          "    at processTicksAndRejections (internal/process/task_queues.js:97:5)"
+        ]
+      },
+      statusCode: 502,
+    },
+  ];
+
   it("returns the correct event source and ARN", () => {
     for (let event of events) {
       const eventData = JSON.parse(readFileSync(`./event_samples/${event.file}`, "utf8"));
@@ -104,6 +134,21 @@ describe("parseEventSource", () => {
       const eventData = JSON.parse(readFileSync(`./event_samples/${event.file}`, "utf8"));
       const triggerTags = extractTriggerTags(eventData, mockContext);
       expect(triggerTags).toEqual(event.result);
+    }
+  });
+
+  it("extracts the status code if API Gateway or ALB, otherwise do nothing", () => {
+    for (let event of events) {
+      const eventData = JSON.parse(readFileSync(`./event_samples/${event.file}`, "utf8"));
+      const triggerTags = extractTriggerTags(eventData, mockContext);
+      for (let response of responses) {
+        const statusCode = extractHTTPStatusCodeTag(triggerTags, response);
+        if (["api-gateway.json", "application-load-balancer.json"].includes(event.file)) {
+          expect(statusCode).toEqual(response.statusCode);
+        } else {
+          expect(statusCode).toBeUndefined();
+        }
+      }
     }
   });
 });
