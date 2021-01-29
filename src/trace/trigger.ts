@@ -13,6 +13,7 @@ import {
   SQSEvent,
 } from "aws-lambda";
 import * as eventType from "../utils/event-type-guards";
+import { logError } from "../utils";
 import { gunzipSync } from "zlib";
 
 function isHTTPTriggerEvent(eventSource: string | undefined) {
@@ -135,7 +136,11 @@ export function parseEventSourceARN(source: string | undefined, event: any, cont
 
   // e.g. arn:aws:s3:::lambda-xyz123-abc890
   if (source === "s3") {
-    eventSourceARN = extractS3EventARN(event);
+    try {
+      eventSourceARN = extractS3EventARN(event);
+    } catch (error) {
+      logError(`failed to extract ${source} arn from the event`, { error });
+    }
   }
 
   // e.g. arn:aws:sns:us-east-1:123456789012:sns-lambda
@@ -258,13 +263,16 @@ export function extractHTTPStatusCodeTag(triggerTags: { [key: string]: string },
     return;
   }
 
-  let statusCode = "200";
+  const resultStatusCode = result?.statusCode;
   // Return a 502 status if no response is found
   if (result === undefined) {
-    statusCode = "502";
-  } else if (result.statusCode) {
-    // Use the statusCode if available
-    statusCode = result.statusCode;
+    return "502";
+  } else if (resultStatusCode) {
+    // Type check the statusCode if available
+    if (typeof resultStatusCode === "number") {
+      return resultStatusCode.toString();
+    }
+  } else {
+    return "200";
   }
-  return statusCode;
 }

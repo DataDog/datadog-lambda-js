@@ -93,27 +93,27 @@ describe("parseEventSource", () => {
   const responses = [
     {
       response: {
-        "statusCode": 200,
-        "body": "\"Hello from Lambda!\""
+        statusCode: 200,
+        body: '"Hello from Lambda!"',
       },
       statusCode: 200,
     },
     {
       response: {
-        "statusCode": 404,
-        "body": "\"Not Found\""
+        statusCode: 404,
+        body: '"Not Found"',
       },
       statusCode: 404,
     },
     {
       response: {
-        "errorType": "ReferenceError",
-        "errorMessage": "x is not defined",
-        "trace": [
+        errorType: "ReferenceError",
+        errorMessage: "x is not defined",
+        trace: [
           "ReferenceError: x is not defined",
           "    at exports.handler (/var/task/index.js:50:7)",
-          "    at processTicksAndRejections (internal/process/task_queues.js:97:5)"
-        ]
+          "    at processTicksAndRejections (internal/process/task_queues.js:97:5)",
+        ],
       },
       statusCode: 502,
     },
