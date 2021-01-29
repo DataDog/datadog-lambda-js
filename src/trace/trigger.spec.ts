@@ -92,30 +92,22 @@ describe("parseEventSource", () => {
 
   const responses = [
     {
-      response: {
+      responseBody: {
         statusCode: 200,
         body: '"Hello from Lambda!"',
       },
-      statusCode: 200,
+      expectedStatusCode: "200",
     },
     {
-      response: {
+      responseBody: {
         statusCode: 404,
-        body: '"Not Found"',
+        body: '"NOT FOUND"',
       },
-      statusCode: 404,
+      expectedStatusCode: "404",
     },
     {
-      response: {
-        errorType: "ReferenceError",
-        errorMessage: "x is not defined",
-        trace: [
-          "ReferenceError: x is not defined",
-          "    at exports.handler (/var/task/index.js:50:7)",
-          "    at processTicksAndRejections (internal/process/task_queues.js:97:5)",
-        ],
-      },
-      statusCode: 502,
+      responseBody: undefined,
+      expectedStatusCode: "502",
     },
   ];
 
@@ -142,9 +134,10 @@ describe("parseEventSource", () => {
       const eventData = JSON.parse(readFileSync(`./event_samples/${event.file}`, "utf8"));
       const triggerTags = extractTriggerTags(eventData, mockContext);
       for (let response of responses) {
-        const statusCode = extractHTTPStatusCodeTag(triggerTags, response);
+        const statusCode = extractHTTPStatusCodeTag(triggerTags, response.responseBody);
+        // We should always return a status code for API Gateway and ALB
         if (["api-gateway.json", "application-load-balancer.json"].includes(event.file)) {
-          expect(statusCode).toEqual(response.statusCode);
+          expect(statusCode).toEqual(response.expectedStatusCode);
         } else {
           expect(statusCode).toBeUndefined();
         }
