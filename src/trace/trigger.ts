@@ -136,11 +136,7 @@ export function parseEventSourceARN(source: string | undefined, event: any, cont
 
   // e.g. arn:aws:s3:::lambda-xyz123-abc890
   if (source === "s3") {
-    try {
-      eventSourceARN = extractS3EventARN(event);
-    } catch (error) {
-      logError(`failed to extract ${source} arn from the event`, { error });
-    }
+    eventSourceARN = extractS3EventARN(event);
   }
 
   // e.g. arn:aws:sns:us-east-1:123456789012:sns-lambda
@@ -240,7 +236,12 @@ export function extractTriggerTags(event: any, context: Context) {
   if (eventSource) {
     triggerTags["function_trigger.event_source"] = eventSource;
 
-    const eventSourceARN = parseEventSourceARN(eventSource, event, context);
+    let eventSourceARN: string | undefined;
+    try {
+      eventSourceARN = parseEventSourceARN(eventSource, event, context);
+    } catch (error) {
+      logError(`failed to extract ${eventSource} arn from the event`, { error });
+    }
     if (eventSourceARN) {
       triggerTags["function_trigger.event_source_arn"] = eventSourceARN;
     }
