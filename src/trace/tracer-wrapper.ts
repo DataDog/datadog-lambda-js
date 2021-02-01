@@ -38,6 +38,13 @@ export class TracerWrapper {
     return this.tracer !== undefined && this.tracer._tracer !== undefined && "_service" in this.tracer._tracer;
   }
 
+  public get currentSpan(): any | null {
+    if (!this.isTracerAvailable) {
+      return null;
+    }
+    return this.tracer.scope().active();
+  }
+
   public extract(event: Partial<TraceHeaders>): SpanContext | null {
     if (!this.isTracerAvailable) {
       return null;
@@ -56,8 +63,7 @@ export class TracerWrapper {
     if (!this.isTracerAvailable) {
       return;
     }
-    const scope = this.tracer.scope();
-    const span = scope.active();
+    const span = this.currentSpan;
     if (span === null) {
       return;
     }

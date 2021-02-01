@@ -1,8 +1,15 @@
 import { Context } from "aws-lambda";
 
-import { TraceContext, extractTraceContext, readStepFunctionContextFromEvent, StepFunctionContext } from "./context";
+import {
+  addLambdaFunctionTagsToXray,
+  TraceContext,
+  extractTraceContext,
+  readStepFunctionContextFromEvent,
+  StepFunctionContext,
+} from "./context";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
+import { extractTriggerTags } from "./trigger";
 
 import { logDebug } from "../utils";
 import { didFunctionColdStart } from "../utils/cold-start";
@@ -40,8 +47,12 @@ export class TraceListener {
   private stepFunctionContext?: StepFunctionContext;
   private tracerWrapper: TracerWrapper;
 
+  public triggerTags?: { [key: string]: string };
   public get currentTraceHeaders() {
     return this.contextService.currentTraceHeaders;
+  }
+  public get currentSpan() {
+    return this.tracerWrapper.currentSpan;
   }
   constructor(private config: TraceConfig, private handlerName: string) {
     this.tracerWrapper = new TracerWrapper();
@@ -66,11 +77,17 @@ export class TraceListener {
     }
 
     this.context = context;
+    this.triggerTags = extractTriggerTags(event, context);
     this.contextService.rootTraceContext = extractTraceContext(event, context, this.config.traceExtractor);
     this.stepFunctionContext = readStepFunctionContextFromEvent(event);
   }
 
   public async onCompleteInvocation() {
+    // Create a new dummy Datadog subsegment for function trigger tags so we
+    // can attach them to X-Ray spans when hybrid tracing is used
+    if (this.triggerTags) {
+      addLambdaFunctionTagsToXray(this.triggerTags);
+    }
     // If the DD tracer is initialized it manages patching of the http lib on its own
     const tracerInitialized = this.tracerWrapper.isTracerAvailable;
     if (this.config.autoPatchHTTP && !tracerInitialized) {
@@ -112,6 +129,9 @@ export class TraceListener {
         this.contextService.traceSource === Source.Event
       ) {
         options.tags["_dd.parent_source"] = this.contextService.traceSource;
+      }
+      if (this.triggerTags) {
+        options.tags = { ...options.tags, ...this.triggerTags };
       }
     }
     if (this.stepFunctionContext) {
