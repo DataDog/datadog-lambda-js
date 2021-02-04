@@ -18,6 +18,10 @@ layers:
     package:
       artifact: ../.layers/datadog_lambda_node12.13.zip
 
+  node14:
+    package:
+      artifact: ../.layers/datadog_lambda_node14.15.zip
+
 functions:
   # async-metrics
   async-metrics_node10:
@@ -36,6 +40,14 @@ functions:
     environment:
       DD_FLUSH_TO_LOG: true
 
+  async-metrics_node14:
+    handler: send-metrics.handle
+    runtime: nodejs14.x
+    layers:
+      - { Ref: Node14LambdaLayer }
+    environment:
+      DD_FLUSH_TO_LOG: true
+
   # sync-metrics
   sync-metrics_node10:
     handler: send-metrics.handle
@@ -49,6 +61,12 @@ functions:
     layers:
       - { Ref: Node12LambdaLayer }
 
+  sync-metrics_node14:
+    handler: send-metrics.handle
+    runtime: nodejs14.x
+    layers:
+      - { Ref: Node14LambdaLayer }
+
   # http-requests
   http-requests_node10:
     handler: http-requests.handle
@@ -61,6 +79,12 @@ functions:
     runtime: nodejs12.x
     layers:
       - { Ref: Node12LambdaLayer }
+
+  http-requests_node14:
+    handler: http-requests.handle
+    runtime: nodejs14.x
+    layers:
+      - { Ref: Node14LambdaLayer }
 
   # process-input-traced
   process-input-traced_node10:
@@ -78,6 +102,14 @@ functions:
       - { Ref: Node12LambdaLayer }
     environment:
       DD_FLUSH_TO_LOG: true
+
+  process-input-traced_node14:
+    handler: process-input-traced.handle
+    runtime: nodejs14.x
+    layers:
+      - { Ref: Node14LambdaLayer }
+    environment:
+      DD_FLUSH_TO_LOG: true
   # throw-error-traced
   throw-error-traced_node10:
     handler: throw-error-traced.handle
@@ -92,5 +124,13 @@ functions:
     runtime: nodejs12.x
     layers:
       - { Ref: Node12LambdaLayer }
+    environment:
+      DD_FLUSH_TO_LOG: true
+
+  throw-error-traced_node14:
+    handler: throw-error-traced.handle
+    runtime: nodejs14.x
+    layers:
+      - { Ref: Node14LambdaLayer }
     environment:
       DD_FLUSH_TO_LOG: true

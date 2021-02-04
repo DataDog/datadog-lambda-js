@@ -14,6 +14,9 @@ layers:
   node12:
     package:
       artifact: ../.layers/datadog_lambda_node12.13.zip
+  node14:
+    package:
+      artifact: ../.layers/datadog_lambda_node14.15.zip
 
 functions:
   # async-metrics
@@ -35,6 +38,15 @@ functions:
       DD_FLUSH_TO_LOG: true
       WITH_PLUGIN: true
 
+  async-metrics_node14_with_plugin:
+    handler: send-metrics.handle
+    runtime: nodejs14.x
+    layers:
+      - { Ref: Node14LambdaLayer }
+    environment:
+      DD_FLUSH_TO_LOG: true
+      WITH_PLUGIN: true
+
   # sync-metrics
   sync-metrics_node10_with_plugin:
     handler: send-metrics.handle
@@ -52,6 +64,14 @@ functions:
     environment:
       WITH_PLUGIN: true
 
+  sync-metrics_node14_with_plugin:
+    handler: send-metrics.handle
+    runtime: nodejs14.x
+    layers:
+      - { Ref: Node14LambdaLayer }
+    environment:
+      WITH_PLUGIN: true
+
   # http-requests
   http-requests_node10_with_plugin:
     handler: http-requests.handle
@@ -66,6 +86,14 @@ functions:
     runtime: nodejs12.x
     layers:
       - { Ref: Node12LambdaLayer }
+    environment:
+      WITH_PLUGIN: true
+
+  http-requests_node14_with_plugin:
+    handler: http-requests.handle
+    runtime: nodejs14.x
+    layers:
+      - { Ref: Node14LambdaLayer }
     environment:
       WITH_PLUGIN: true
 
@@ -87,6 +115,16 @@ functions:
     environment:
       WITH_PLUGIN: true
       DD_FLUSH_TO_LOG: true
+
+  process-input-traced_node14_with_plugin:
+    handler: process-input-traced.handle
+    runtime: nodejs14.x
+    layers:
+      - { Ref: Node12LambdaLayer }
+    environment:
+      WITH_PLUGIN: true
+      DD_FLUSH_TO_LOG: true
+
   # throw-error-traced
   throw-error-traced_node10_with_plugin:
     handler: throw-error-traced.handle
@@ -102,6 +140,15 @@ functions:
     runtime: nodejs12.x
     layers:
       - { Ref: Node12LambdaLayer }
+    environment:
+      WITH_PLUGIN: true
+      DD_FLUSH_TO_LOG: true
+
+  throw-error-traced_node14_with_plugin:
+    handler: throw-error-traced.handle
+    runtime: nodejs14.x
+    layers:
+      - { Ref: Node14LambdaLayer }
     environment:
       WITH_PLUGIN: true
       DD_FLUSH_TO_LOG: true
