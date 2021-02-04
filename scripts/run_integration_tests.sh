@@ -11,7 +11,7 @@ set -e
 # These values need to be in sync with serverless.yml, where there needs to be a function
 # defined for every handler_runtime combination
 LAMBDA_HANDLERS=("async-metrics" "sync-metrics" "http-requests" "process-input-traced" "throw-error-traced")
-RUNTIMES=("node10" "node12")
+RUNTIMES=("node10" "node12" "node14")
 CONFIGS=("with-plugin" "without-plugin")
 
 LOGS_WAIT_SECONDS=20

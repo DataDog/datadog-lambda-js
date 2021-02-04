@@ -9,16 +9,16 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Node 12.13
+      - name: Set up Node 14.15
         uses: actions/setup-node@v1
         with:
-          node-version: 12.13
+          node-version: 14.15
 
       - name: Cache Node modules
         id: cache-node-modules
         uses: actions/cache@v2
         with:
-          path: '**/node_modules'
+          path: "**/node_modules"
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: Install dependencies
@@ -36,7 +36,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        node-version: [10.15, 12.13]
+        node-version: [10.15, 12.13, 14.15]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -50,7 +50,7 @@ jobs:
         id: cache-node-modules
         uses: actions/cache@v2
         with:
-          path: '**/node_modules'
+          path: "**/node_modules"
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: Install dependencies

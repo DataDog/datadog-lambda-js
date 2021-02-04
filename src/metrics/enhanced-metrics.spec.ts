@@ -38,6 +38,10 @@ describe("getRuntimeTag", () => {
     mockedGetProcessVersion.mockReturnValue("v12.13.0");
     expect(getRuntimeTag()).toBe("runtime:nodejs12.x");
   });
+  it("returns the right tag for v14.15.0", () => {
+    mockedGetProcessVersion.mockReturnValue("v14.15.0");
+    expect(getRuntimeTag()).toBe("runtime:nodejs14.x");
+  });
 });
 
 describe("getEnhancedMetricTags", () => {
