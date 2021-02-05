@@ -205,6 +205,7 @@ function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEv
     if (event.headers.Referer) {
       httpTags["http.referer"] = event.headers.Referer;
     }
+    return httpTags;
   }
 
   if (eventType.isAPIGatewayEventV2(event)) {
@@ -215,6 +216,7 @@ function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEv
     if (event.headers.Referer) {
       httpTags["http.referer"] = event.headers.Referer;
     }
+    return httpTags;
   }
 
   if (eventType.isALBEvent(event)) {
@@ -223,8 +225,8 @@ function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEv
     if (event.headers && event.headers.Referer) {
       httpTags["http.referer"] = event.headers.Referer;
     }
+    return httpTags;
   }
-  return httpTags;
 }
 
 /**
@@ -248,7 +250,11 @@ export function extractTriggerTags(event: any, context: Context) {
   }
 
   if (isHTTPTriggerEvent(eventSource)) {
-    triggerTags = { ...triggerTags, ...extractHTTPTags(event) };
+    try {
+      triggerTags = { ...triggerTags, ...extractHTTPTags(event) };
+    } catch (error) {
+      logError(`failed to extract http tags from ${eventSource} event`);
+    }
   }
   return triggerTags;
 }

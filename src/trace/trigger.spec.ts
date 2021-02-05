@@ -13,6 +13,16 @@ describe("parseEventSource", () => {
     {
       result: {
         "function_trigger.event_source": "api-gateway",
+        "function_trigger.event_source_arn": "arn:aws:apigateway:us-east-1::/restapis/id/stages/$default",
+        "http.url": "id.execute-api.us-east-1.amazonaws.com",
+        "http.url_details.path": "/my/path",
+        "http.method": "GET",
+      },
+      file: "api-gateway-v1.json",
+    },
+    {
+      result: {
+        "function_trigger.event_source": "api-gateway",
         "function_trigger.event_source_arn": "arn:aws:apigateway:us-east-1::/restapis/1234567890/stages/prod",
         "http.url": "70ixmpl4fl.execute-api.us-east-2.amazonaws.com",
         "http.url_details.path": "/prod/path/to/resource",
@@ -136,7 +146,7 @@ describe("parseEventSource", () => {
       for (let response of responses) {
         const statusCode = extractHTTPStatusCodeTag(triggerTags, response.responseBody);
         // We should always return a status code for API Gateway and ALB
-        if (["api-gateway.json", "application-load-balancer.json"].includes(event.file)) {
+        if (["api-gateway-v1.json", "api-gateway.json", "application-load-balancer.json"].includes(event.file)) {
           expect(statusCode).toEqual(response.expectedStatusCode);
         } else {
           expect(statusCode).toBeUndefined();
