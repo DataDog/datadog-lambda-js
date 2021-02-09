@@ -10,8 +10,8 @@ set -e
 
 # These values need to be in sync with serverless.yml, where there needs to be a function
 # defined for every handler_runtime combination
-LAMBDA_HANDLERS=("async-metrics" "sync-metrics" "http-requests" "process-input-traced")
-RUNTIMES=("node10" "node12")
+LAMBDA_HANDLERS=("async-metrics" "sync-metrics" "http-requests" "process-input-traced" "throw-error-traced")
+RUNTIMES=("node10" "node12" "node14")
 CONFIGS=("with-plugin" "without-plugin")
 
 LOGS_WAIT_SECONDS=20
@@ -84,11 +84,17 @@ for _sls_type in "${CONFIGS[@]}"; do
                 input_event_name=$(echo "$input_event_file" | sed "s/.json//")
                 # Return value snapshot file format is snapshots/return_values/{handler}_{runtime}_{input-event}
                 snapshot_path="./snapshots/return_values/${handler_name}_${runtime}_${input_event_name}.json"
+                function_failed=FALSE
 
                 if [ "$_sls_type" = "with-plugin" ]; then
                     return_value=$(serverless invoke -f "$function_name" --path "./input_events/$input_event_file" -c "./serverless-plugin.yml")
+                    invoke_success=$?
                 else
                     return_value=$(serverless invoke -f "$function_name" --path "./input_events/$input_event_file")
+                    invoke_success=$?
+                fi
+                if [ $invoke_success -ne 0 ]; then
+                    return_value="Invocation failed"
                 fi
 
                 if [ ! -f $snapshot_path ]; then
@@ -158,8 +164,9 @@ for _sls_type in "${CONFIGS[@]}"; do
                     sed -E $'s/[0-9a-z]+\-[0-9a-z]+\-[0-9a-z]+\-[0-9a-z]+\-[0-9a-z]+\t/XXXX-XXXX-XXXX-XXXX-XXXX\t/' |
                     # Normalize minor package version tag so that these snapshots aren't broken on version bumps
                     sed -E "s/(dd_lambda_layer:datadog-nodev[0-9]+\.)[0-9]+\.[0-9]+/\1XX\.X/g" |
-                    # Normalize data in logged traces
-                    sed -E 's/"(span_id|parent_id|trace_id|start|duration|tcp\.local\.address|tcp\.local\.port|dns\.address|request_id|function_arn|x-datadog-trace-id|x-datadog-parent-id)":("?)[a-zA-Z0-9\.:\-]+("?)/"\1":\2XXXX\3/g'
+                    sed -E 's/"(span_id|parent_id|trace_id|start|duration|tcp\.local\.address|tcp\.local\.port|dns\.address|request_id|function_arn|x-datadog-trace-id|x-datadog-parent-id|datadog_lambda|dd_trace)":("?)[a-zA-Z0-9\.:\-]+("?)/"\1":\2XXXX\3/g' |
+                    # Normalize enhanced metric datadog_lambda tag
+                    sed -E "s/(datadog_lambda:v)[0-9\.]+/\1X.X.X/g"
             )
 
             if [ ! -f $function_snapshot_path ]; then

@@ -19,6 +19,7 @@ import {
   logDebug,
 } from "./utils";
 export { TraceHeaders } from "./trace";
+import { extractHTTPStatusCodeTag } from "./trace/trigger";
 
 export const apiKeyEnvVar = "DD_API_KEY";
 export const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
@@ -30,6 +31,7 @@ export const enhancedMetricsEnvVar = "DD_ENHANCED_METRICS";
 export const datadogHandlerEnvVar = "DD_LAMBDA_HANDLER";
 export const lambdaTaskRootEnvVar = "LAMBDA_TASK_ROOT";
 export const mergeXrayTracesEnvVar = "DD_MERGE_XRAY_TRACES";
+export const traceExtractorEnvVar = "DD_TRACE_EXTRACTOR";
 export const defaultSiteURL = "datadoghq.com";
 
 interface GlobalConfig {
@@ -111,36 +113,58 @@ export function datadog<TEvent, TResult>(
     currentMetricsListener = metricsListener;
     currentTraceListener = traceListener;
 
-    await traceListener.onStartInvocation(event, context);
+    try {
+      await traceListener.onStartInvocation(event, context);
+      await metricsListener.onStartInvocation(event);
+      if (finalConfig.enhancedMetrics) {
+        incrementInvocationsMetric(metricsListener, context);
+      }
+    } catch (err) {
+      logDebug(`Failed to start listeners with error ${err}`);
+    }
 
-    const { result, error, didError } = await traceListener.onWrap(
-      async (localEvent: TEvent, localContext: Context) => {
-        await metricsListener.onStartInvocation(localEvent);
-        if (finalConfig.enhancedMetrics) {
-          incrementInvocationsMetric(metricsListener, localContext);
-        }
-        let localResult: TResult | undefined;
-        let localError: any;
-        let localDidError = false;
+    let result: TResult | undefined;
+    let localResult: TResult | undefined;
+    let error: any;
+    let didThrow = false;
+
+    try {
+      result = await traceListener.onWrap(async (localEvent: TEvent, localContext: Context) => {
         try {
-          localResult = (await promHandler(localEvent, localContext)) as TResult | undefined;
-        } catch (err) {
-          if (finalConfig.enhancedMetrics) {
-            incrementErrorsMetric(metricsListener, localContext);
+          localResult = await promHandler(localEvent, localContext);
+        } finally {
+          if (traceListener.triggerTags) {
+            const statusCode = extractHTTPStatusCodeTag(traceListener.triggerTags, localResult);
+            if (statusCode) {
+              // Store the status tag in the listener to send to Xray on invocation completion
+              traceListener.triggerTags["http.status_code"] = statusCode;
+              if (traceListener.currentSpan) {
+                traceListener.currentSpan.setTag("http.status_code", statusCode);
+              }
+            }
           }
-          localError = err;
-          localDidError = true;
         }
-        await metricsListener.onCompleteInvocation();
-        return { result: localResult, error: localError, didError: localDidError };
-      },
-    )(event, context);
-    await traceListener.onCompleteInvocation();
+        return localResult;
+      })(event, context);
+    } catch (err) {
+      didThrow = true;
+      error = err;
+    }
+    try {
+      await metricsListener.onCompleteInvocation();
+      await traceListener.onCompleteInvocation();
+      if (didThrow && finalConfig.enhancedMetrics) {
+        incrementErrorsMetric(metricsListener, context);
+      }
+    } catch (err) {
+      logDebug(`Failed to complete listeners with error ${err}`);
+    }
     currentMetricsListener = undefined;
     currentTraceListener = undefined;
-    if (didError) {
+    if (didThrow) {
       throw error;
     }
+
     return result as TResult;
   };
 

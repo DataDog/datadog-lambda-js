@@ -13,7 +13,7 @@ export function wrap<TEvent, TResult>(
   onStart: (event: TEvent, context: Context) => Promise<void>,
   onComplete: (event: TEvent, context: Context, error?: Error) => Promise<void>,
   onWrap?: OnWrapFunc,
-): Handler<TEvent, TResult> {
+): Handler<TEvent, TResult | undefined> {
   const promHandler = promisifiedHandler(handler);
 
   return async (event: TEvent, context: Context) => {
@@ -24,7 +24,7 @@ export function wrap<TEvent, TResult>(
       const innerError = serializeError(error);
       logError("Pre-lambda hook threw error", { innerError });
     }
-    let result: TResult;
+    let result: TResult | undefined;
 
     let handlerError: Error | undefined;
     let wrappedHandler = promHandler;
@@ -71,7 +71,7 @@ export function promisifiedHandler<TEvent, TResult>(handler: Handler<TEvent, TRe
     let modifiedLegacySucceedCallback: (res: any) => void = () => {};
     let modifiedLegacyFailCallback: (err: any) => void = () => {};
 
-    const callbackProm = new Promise<TResult>((resolve, reject) => {
+    const callbackProm = new Promise<TResult | undefined>((resolve, reject) => {
       modifiedCallback = (err, result) => {
         if (err !== undefined && err !== null) {
           reject(err);
@@ -103,7 +103,7 @@ export function promisifiedHandler<TEvent, TResult>(handler: Handler<TEvent, TRe
     context.fail = modifiedLegacyFailCallback;
 
     const asyncProm = handler(event, context, modifiedCallback) as Promise<TResult> | undefined;
-    let promise: Promise<TResult> = callbackProm;
+    let promise: Promise<TResult | undefined> = callbackProm;
     if (asyncProm !== undefined && typeof asyncProm.then === "function") {
       // Mimics behaviour of lambda runtime, the first method of returning a result always wins.
       promise = Promise.race([callbackProm, asyncProm]);

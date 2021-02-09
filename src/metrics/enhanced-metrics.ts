@@ -1,3 +1,4 @@
+import { datadogLambdaVersion } from "../constants";
 import { sendDistributionMetric } from "../index";
 
 import { Context } from "aws-lambda";
@@ -14,6 +15,11 @@ enum RuntimeTagValues {
   Node8 = "nodejs8.10",
   Node10 = "nodejs10.x",
   Node12 = "nodejs12.x",
+  Node14 = "nodejs14.x",
+}
+
+export function getVersionTag(): string {
+  return `datadog_lambda:v${datadogLambdaVersion}`;
 }
 
 /**
@@ -37,6 +43,10 @@ export function getRuntimeTag(): string | null {
     processVersionTagString = RuntimeTagValues.Node12;
   }
 
+  if (processVersion.startsWith("v14")) {
+    processVersionTagString = RuntimeTagValues.Node14;
+  }
+
   if (!processVersionTagString) {
     return null;
   }
@@ -49,7 +59,7 @@ export function getEnhancedMetricTags(context: Context): string[] {
   if (context.invokedFunctionArn) {
     arnTags = parseTagsFromARN(context.invokedFunctionArn, context.functionVersion);
   }
-  const tags = [...arnTags, getColdStartTag(), `memorysize:${context.memoryLimitInMB}`];
+  const tags = [...arnTags, getColdStartTag(), `memorysize:${context.memoryLimitInMB}`, getVersionTag()];
 
   const runtimeTag = getRuntimeTag();
   if (runtimeTag) {

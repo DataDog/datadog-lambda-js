@@ -7,6 +7,7 @@ import { LogLevel, setLogLevel } from "../utils";
 import { parentIDHeader, SampleMode, samplingPriorityHeader, traceIDHeader, Source } from "./constants";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
+import { URL } from "url";
 
 describe("patchHttp", () => {
   let traceWrapper = {
@@ -130,5 +131,23 @@ describe("patchHttp", () => {
     expect(headers[traceIDHeader]).toBeUndefined();
     expect(headers[parentIDHeader]).toBeUndefined();
     expect(headers[samplingPriorityHeader]).toBeUndefined();
+  });
+  it("injects tracing headers when using the new WHATWG URL object", () => {
+    nock("http://www.example.com").get("/").reply(200, {});
+    patchHttp(contextService);
+    const url = new URL("http://www.example.com");
+    const req = http.request(url);
+    expectHeaders(req);
+  });
+  it("injects tracing headers when using the new WHATWG URL object and callback", (done) => {
+    nock("http://www.example.com").get("/").reply(200, {});
+    patchHttp(contextService);
+    const url = new URL("http://www.example.com");
+    const req = http.request(url, {}, () => {
+      done();
+    });
+    req.end();
+
+    expectHeaders(req);
   });
 });
