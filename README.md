@@ -31,7 +31,7 @@ The `fs` module is disabled by default. If you want to enable it you have to set
 
 ### Tracer Initialization
 
-By default, the Datadog Lambda library automatically initialize the tracer. However, you can follow the steps below to initialize the tracer with [custom settings](https://datadoghq.dev/dd-trace-js/#tracer-settings) in your own function code.
+By default, the Datadog Lambda library automatically initializes the tracer. However, you can follow the steps below to initialize the tracer with [custom settings](https://datadoghq.dev/dd-trace-js/#tracer-settings) in your own function code.
 
 1. Set enviornment variable `DD_TRACE_ENABLED` to `false`, so the Datadog Lambda library does not initialize the tracer.
 1. Add the following snippet to the function code to manually initialize the tracer with your desired settings.
