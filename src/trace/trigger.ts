@@ -202,7 +202,7 @@ function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEv
     }
     httpTags["http.url_details.path"] = requestContext.path;
     httpTags["http.method"] = requestContext.httpMethod;
-    if (event.headers.Referer) {
+    if (event.headers?.Referer) {
       httpTags["http.referer"] = event.headers.Referer;
     }
     return httpTags;
@@ -213,7 +213,7 @@ function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEv
     httpTags["http.url"] = requestContext.domainName;
     httpTags["http.url_details.path"] = requestContext.http.path;
     httpTags["http.method"] = requestContext.http.method;
-    if (event.headers.Referer) {
+    if (event.headers?.Referer) {
       httpTags["http.referer"] = event.headers.Referer;
     }
     return httpTags;
