@@ -11,13 +11,14 @@ import {
   SNSEvent,
   SQSEvent,
 } from "aws-lambda";
+import { APIGatewayEventV2 } from "../trace/constants";
 
 export function isAPIGatewayEvent(event: any): event is APIGatewayEvent {
   return event.requestContext?.stage !== undefined && event.httpMethod !== undefined && event.resource !== undefined;
 }
 
 export function isAPIGatewayEventV2(event: any): event is APIGatewayProxyEventV2 {
-  return event.requestContext !== undefined && event.version === "2.0" && event.rawQueryString !== undefined;
+  return event.requestContext !== undefined && event.version === APIGatewayEventV2 && event.rawQueryString !== undefined;
 }
 
 export function isALBEvent(event: any): event is ALBEvent {
