@@ -1,4 +1,3 @@
-XXXX-XX-XX XX:XX:XX.XXX	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	Snapshot test http requests successfully made to URLs: https://ip-ranges.datadoghq.com,https://ip-ranges.datadoghq.eu
 START RequestId: XXXX Version: $LATEST
 XXXX-XX-XX XX:XX:XX.XXX	XXXX-XXXX-XXXX-XXXX-XXXX	ERROR	{"status":"error","message":"datadog:handler not initialized"}
 XXXX-XX-XX XX:XX:XX.XXX	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	Snapshot test http requests successfully made to URLs: https://ip-ranges.datadoghq.com,https://ip-ranges.datadoghq.eu
