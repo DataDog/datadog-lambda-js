@@ -35,7 +35,7 @@ jest.mock("./trace-context-service", () => {
     get traceSource() {
       return mockTraceSource;
     }
-    get currentTraceHeaders() {
+    get rootTraceHeaders() {
       return mockTraceHeaders;
     }
   }

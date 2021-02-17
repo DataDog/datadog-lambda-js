@@ -57,8 +57,9 @@ export function extractTraceContext(
   if (extractor) {
     try {
       trace = extractor(event, context);
+      logDebug(`extracted trace context from the custom extractor`, { trace });
     } catch (error) {
-      logError("extractor function failed", { error });
+      logError("custom extractor function failed", { error });
     }
   }
 
@@ -78,12 +79,14 @@ export function extractTraceContext(
       logError("couldn't add step function metadata to xray", { innerError: error });
     }
   }
+
   if (trace !== undefined) {
     try {
       addTraceContextToXray(trace);
+      logDebug(`added trace context to xray metadata`, { trace });
     } catch (error) {
       // This might fail if running in an environment where xray isn't set up, (like for local development).
-      logError("couldn't add metadata to xray", { innerError: error });
+      logError("couldn't add trace context to xray metadata", { innerError: error });
     }
     return trace;
   }
@@ -198,12 +201,14 @@ export function readTraceFromSQSEvent(event: SQSEvent): TraceContext | undefined
       }
       const sampleMode = parseInt(sampledHeader, 10);
 
-      return {
+      const trace = {
         parentID,
         sampleMode,
         source: Source.Event,
         traceID,
       };
+      logDebug(`extracted trace context from sqs event`, { trace, event });
+      return trace;
     } catch (err) {
       logError("Error parsing SQS message trace data", err);
       return;
@@ -238,12 +243,14 @@ export function readTraceFromLambdaContext(context: any): TraceContext | undefin
   }
   const sampleMode = parseInt(sampledHeader, 10);
 
-  return {
+  const trace = {
     parentID,
     sampleMode,
     source: Source.Event,
     traceID,
   };
+  logDebug(`extracted trace context from lambda context`, { trace, context });
+  return trace;
 }
 
 export function readTraceFromHTTPEvent(event: any): TraceContext | undefined {
@@ -268,12 +275,15 @@ export function readTraceFromHTTPEvent(event: any): TraceContext | undefined {
   }
   const sampleMode = parseInt(sampledHeader, 10);
 
-  return {
+  const trace = {
     parentID,
     sampleMode,
     source: Source.Event,
     traceID,
   };
+
+  logDebug(`extracted trace context from http event`, { trace, event });
+  return trace;
 }
 
 export function readTraceFromEvent(event: any): TraceContext | undefined {
@@ -316,12 +326,14 @@ export function readTraceContextFromXray(): TraceContext | undefined {
   }
   const sampleMode = convertToSampleMode(parseInt(context.xraySampled, 10));
 
-  return {
+  const trace = {
     parentID,
     sampleMode,
     source: Source.Xray,
     traceID,
   };
+  logDebug(`extracted trace context from xray context`, { trace, header });
+  return trace;
 }
 
 export function parseXrayTraceContextHeader(header: string) {

@@ -1,12 +1,13 @@
 import { datadog, datadogHandlerEnvVar, lambdaTaskRootEnvVar, traceExtractorEnvVar, getEnvValue } from "./index";
 import { TraceExtractor } from "./trace";
-import { logError } from "./utils";
+import { logDebug, logError } from "./utils";
 // We reuse the function loading logic already inside the lambda runtime.
 // tslint:disable-next-line:no-var-requires
 const { load } = require("/var/runtime/UserFunction") as any;
 
 if (process.env.DD_TRACE_DISABLED_PLUGINS === undefined) {
   process.env.DD_TRACE_DISABLED_PLUGINS = "fs";
+  logDebug("disabled the dd-trace plugin 'fs'");
 }
 
 if (getEnvValue("DD_TRACE_ENABLED", "true").toLowerCase() === "true") {
@@ -16,6 +17,7 @@ if (getEnvValue("DD_TRACE_ENABLED", "true").toLowerCase() === "true") {
       "_dd.origin": "lambda",
     },
   });
+  logDebug("automatically initialized dd-trace");
 }
 
 const taskRootEnv = getEnvValue(lambdaTaskRootEnvVar, "");
@@ -26,8 +28,9 @@ let traceExtractor;
 if (extractorEnv) {
   try {
     traceExtractor = load(taskRootEnv, extractorEnv) as TraceExtractor;
+    logDebug("loaded custom trace context extractor", { extractorEnv });
   } catch (error) {
-    logError("an error occured while loading the extractor", error);
+    logError("an error occurred while loading the custom trace context extractor", { error, extractorEnv });
   }
 }
 

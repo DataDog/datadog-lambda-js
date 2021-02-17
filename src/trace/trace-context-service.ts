@@ -33,19 +33,22 @@ export class TraceContextService {
       return;
     }
     const traceContext = { ...this.rootTraceContext };
+
+    // Update the parent id to the active datadog span if available
     const datadogContext = this.tracerWrapper.traceContext();
     if (datadogContext) {
       logDebug(`set trace context from dd-trace with parent ${datadogContext.parentID}`);
       return datadogContext;
     }
 
+    // Update the parent id to the active X-Ray subsegment if available
     const xraySegment = this.getXraySegment();
     if (xraySegment === undefined) {
       logDebug("couldn't retrieve segment from xray");
     } else {
       const value = convertToAPMParentID(xraySegment.id);
       if (value !== undefined) {
-        logDebug(`set trace context from xray with parent ${value} from segment`);
+        logDebug(`set trace context from xray with parent ${value} from segment`, { xraySegment });
         traceContext.parentID = value;
       }
     }
@@ -53,14 +56,30 @@ export class TraceContextService {
     return traceContext;
   }
 
+  // Get the current trace headers to be propagated to the downstream calls,
+  // The parent id always points to the current active span.
   get currentTraceHeaders(): Partial<TraceHeaders> {
-    if (this.currentTraceContext === undefined) {
+    const traceContext = this.currentTraceContext;
+    if (traceContext === undefined) {
       return {};
     }
     return {
-      [traceIDHeader]: this.currentTraceContext.traceID,
-      [parentIDHeader]: this.currentTraceContext.parentID,
-      [samplingPriorityHeader]: this.currentTraceContext.sampleMode.toString(10),
+      [traceIDHeader]: traceContext.traceID,
+      [parentIDHeader]: traceContext.parentID,
+      [samplingPriorityHeader]: traceContext.sampleMode.toString(10),
+    };
+  }
+
+  // Get the trace headers from the root trace context.
+  get rootTraceHeaders(): Partial<TraceHeaders> {
+    const rootTraceContext = this.rootTraceContext;
+    if (rootTraceContext === undefined) {
+      return {};
+    }
+    return {
+      [traceIDHeader]: rootTraceContext.traceID,
+      [parentIDHeader]: rootTraceContext.parentID,
+      [samplingPriorityHeader]: rootTraceContext.sampleMode.toString(10),
     };
   }
 
@@ -68,6 +87,8 @@ export class TraceContextService {
     return this.rootTraceContext !== undefined ? this.rootTraceContext.source : undefined;
   }
 
+  // Get the current X-Ray (sub)segment. Note, this always return a
+  // (sub)segment even if when X-Ray active tracing is not enabled.
   private getXraySegment(): Segment | undefined {
     // Newer versions of X-Ray core sdk will either throw
     // an exception or log a noisy output message when segment is empty.
