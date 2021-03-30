@@ -29,9 +29,4 @@ jobs:
         run: ./scripts/build_layers.sh
 
       - name: Check Size
-        uses: chrysanthos/simple-asset-size-reporter@1.0.0
-        with:
-          repo-token: "${{ secrets.GITHUB_TOKEN }}"
-          files: '[".layers/*"]'
-          with-same: "false"
-          build-assets: "false"
+        run: ./scripts/check_size.sh
