@@ -9,7 +9,7 @@
 
 # 5 mb size limit
 MAX_LAYER_COMPRESSED_SIZE_KB=$(expr 5 \* 1024) 
-MAX_LAYER_UNCOMPRESSED_SIZE=$(expr 15 \* 1024) 
+MAX_LAYER_UNCOMPRESSED_SIZE_KB=$(expr 15 \* 1024) 
 
 
 LAYER_FILES_PREFIX="datadog_lambda_node"
@@ -32,8 +32,8 @@ do
     UNZIPPED_FILE_SIZE_KB="$(( ${UNZIPPED_FILE_SIZE%% *} / 1024))"
     rm -rf tmp
     echo "Layer file ${FILE} has unzipped size ${UNZIPPED_FILE_SIZE_KB} kb"
-    if [ "$UNZIPPED_FILE_SIZE_KB" -gt "$MAX_LAYER_UNCOMPRESSED_SIZE" ]; then
-        echo "Unzipped size exceeded limit for $MAX_LAYER_UNCOMPRESSED_SIZE kb"
+    if [ "$UNZIPPED_FILE_SIZE_KB" -gt "$MAX_LAYER_UNCOMPRESSED_SIZE_KB" ]; then
+        echo "Unzipped size exceeded limit $MAX_LAYER_UNCOMPRESSED_SIZE_KB kb"
         exit 1
     fi
 done
