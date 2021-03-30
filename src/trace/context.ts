@@ -162,7 +162,7 @@ export function sendXraySubsegment(segment: string) {
   const port = parseInt(parts[1], 10);
   const address = parts[0];
 
-  const message = new Buffer(`{\"format\": \"json\", \"version\": 1}\n${segment}`);
+  const message = Buffer.from(`{\"format\": \"json\", \"version\": 1}\n${segment}`);
   let client: Socket | undefined;
   try {
     client = createSocket("udp4");
