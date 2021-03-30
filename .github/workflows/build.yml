@@ -65,3 +65,41 @@ jobs:
 
       - name: Upload code coverage report
         run: bash <(curl -s https://codecov.io/bash)
+
+  check-size:
+    test:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        node-version: 14.15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Cache Node modules
+        id: cache-node-modules
+        uses: actions/cache@v2
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: yarn install
+
+      - name: Build Layer
+        run: ./scripts/build_layer.sh
+
+      - name: Check Size
+        uses: chrysanthos/simple-asset-size-reporter@1.0.0
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          files: '[".layers/datadog_lambda_node14.15.zip"]'
+          with-same: "false"
+          build-assets: "false"
