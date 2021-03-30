@@ -69,18 +69,14 @@ jobs:
   check-size:
     test:
     runs-on: ubuntu-latest
-    strategy:
-      max-parallel: 4
-      matrix:
-        node-version: 14.15
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Set up Node ${{ matrix.node-version }}
+      - name: Set up Node 14.15
         uses: actions/setup-node@v1
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 14.15
 
       - name: Cache Node modules
         id: cache-node-modules
@@ -100,6 +96,6 @@ jobs:
         uses: chrysanthos/simple-asset-size-reporter@1.0.0
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
-          files: '[".layers/datadog_lambda_node14.15.zip"]'
+          files: '[".layers/*"]'
           with-same: "false"
           build-assets: "false"
