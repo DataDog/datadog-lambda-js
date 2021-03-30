@@ -88,8 +88,8 @@ jobs:
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: yarn install
 
-      - name: Build Layer
-        run: ./scripts/build_layer.sh
+      - name: Build Layers
+        run: ./scripts/build_layers.sh
 
       - name: Check Size
         uses: chrysanthos/simple-asset-size-reporter@1.0.0
