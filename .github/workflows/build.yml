@@ -67,7 +67,6 @@ jobs:
         run: bash <(curl -s https://codecov.io/bash)
 
   check-size:
-    test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
