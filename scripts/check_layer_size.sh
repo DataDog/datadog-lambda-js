@@ -21,9 +21,9 @@ do
     FILE=$LAYER_DIR/${LAYER_FILES_PREFIX}${node_version}.zip
     FILE_SIZE=$(stat --printf="%s" $FILE)
     FILE_SIZE_KB="$(( ${FILE_SIZE%% *} / 1024))"
-    echo "Layer file ${FILE} has size ${FILE_SIZE_KB} kb"
+    echo "Layer file ${FILE} has zipped size ${FILE_SIZE_KB} kb"
     if [ "$FILE_SIZE_KB" -gt "$MAX_LAYER_COMPRESSED_SIZE_KB" ]; then
-        echo "Size exceeded limit $MAX_LAYER_COMPRESSED_SIZE_KB kb"
+        echo "Zipped size exceeded limit $MAX_LAYER_COMPRESSED_SIZE_KB kb"
         exit 1
     fi
     mkdir tmp
@@ -33,7 +33,7 @@ do
     rm -rf tmp
     echo "Layer file ${FILE} has unzipped size ${UNZIPPED_FILE_SIZE_KB} kb"
     if [ "$UNZIPPED_FILE_SIZE_KB" -gt "$MAX_LAYER_UNCOMPRESSED_SIZE" ]; then
-        echo "Size exceeded limit $MAX_LAYER_UNCOMPRESSED_SIZE kb"
+        echo "Unzipped size exceeded limit for $MAX_LAYER_UNCOMPRESSED_SIZE kb"
         exit 1
     fi
 done
