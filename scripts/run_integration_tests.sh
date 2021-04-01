@@ -177,7 +177,7 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
                 # Strip API key from logged requests
                 sed -E "s/(api_key=|'api_key': ')[a-z0-9\.\-]+/\1XXXX/g" |
                 # Normalize log timestamps
-                sed -E "s/[0-9]{4}\-[0-9]{2}\-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]+( \(\-?[0-9:]+\))?/XXXX-XX-XX XX:XX:XX.XXX/" |
+                sed -E "s/[0-9]{4}\-[0-9]{2}\-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]+( \(\-?\+?[0-9:]+\))?/XXXX-XX-XX XX:XX:XX.XXX/" |
                 # Normalize DD trace ID injection
                 sed -E "s/(dd\.trace_id=)[0-9]+ (dd\.span_id=)[0-9]+/\1XXXX \2XXXX/" |
                 # Normalize execution ID in logs prefix
