@@ -25,7 +25,7 @@ function docker_build_zip {
     # between different node runtimes.
     temp_dir=$(mktemp -d)
     docker build -t datadog-lambda-layer-node:$1 . --no-cache \
-        --build-arg image=node:$1-alpine
+        --build-arg image=node:$1-alpine --network host
 
     # Run the image by runtime tag, tar its generatd `node` directory to sdout,
     # then extract it to a temp directory.

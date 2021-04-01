@@ -110,6 +110,7 @@ functions:
       - { Ref: Node14LambdaLayer }
     environment:
       DD_FLUSH_TO_LOG: true
+
   # throw-error-traced
   throw-error-traced_node10:
     handler: throw-error-traced.handle
