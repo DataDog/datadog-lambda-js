@@ -1,4 +1,5 @@
-service: integration
+# IAM permissions require service name to begin with 'integration-tests'
+service: integration-tests-js
 
 provider:
   name: aws
@@ -9,6 +10,10 @@ provider:
     DD_INTEGRATION_TEST: true
     DD_API_KEY: ${env:DD_API_KEY}
   lambdaHashingVersion: 20201221
+  timeout: 15
+  iam:
+    # IAM permissions require that all functions are deployed with this role
+    role: "arn:aws:iam::601427279990:role/serverless-integration-test-lambda-role"
 
 layers:
   node10:
@@ -17,7 +22,6 @@ layers:
   node12:
     package:
       artifact: ../.layers/datadog_lambda_node12.13.zip
-
   node14:
     package:
       artifact: ../.layers/datadog_lambda_node14.15.zip

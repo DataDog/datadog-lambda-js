@@ -66,8 +66,18 @@ input_event_files=$(ls ./input_events)
 # Sort event files by name so that snapshots stay consistent
 input_event_files=($(for file_name in ${input_event_files[@]}; do echo $file_name; done | sort))
 
+# Generate a random 8-character ID to avoid collisions with other runs
+run_id=$(xxd -l 4 -c 4 -p < /dev/random)
+
+# Always remove the stack before exiting, no matter what
+function remove_stack() {
+    echo "Removing functions"
+    serverless remove --stage $run_id
+}
+trap remove_stack EXIT
+
 echo "Deploying functions"
-serverless deploy --force
+serverless deploy --stage $run_id
 
 echo "Invoking functions"
 set +e # Don't exit this script if an invocation fails or there's a diff
@@ -87,7 +97,7 @@ for input_event_file in "${input_event_files[@]}"; do
             snapshot_path="./snapshots/return_values/${handler_name}_${runtime}_${input_event_name}.json"
             function_failed=FALSE
 
-            return_value=$(serverless invoke -f "$function_name" --path "./input_events/$input_event_file")
+            return_value=$(serverless invoke --stage $run_id -f "$function_name" --path "./input_events/$input_event_file")
             invoke_success=$?
             if [ $invoke_success -ne 0 ]; then
                 return_value="Invocation failed"
@@ -120,6 +130,7 @@ set -e
 echo "Sleeping $LOGS_WAIT_SECONDS seconds to wait for logs to appear in CloudWatch..."
 sleep $LOGS_WAIT_SECONDS
 
+set +e # Don't exit this script if there is a diff or the logs endpoint fails
 echo "Fetching logs for invocations and comparing to snapshots"
 for handler_name in "${LAMBDA_HANDLERS[@]}"; do
     for runtime in "${RUNTIMES[@]}"; do
@@ -134,7 +145,7 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
         # Fetch logs with serverless cli, retrying to avoid AWS account-wide rate limit error
         retry_counter=0
         while [ $retry_counter -lt 10 ]; do
-            raw_logs=$(serverless logs -f $function_name --startTime $script_utc_start_time)
+            raw_logs=$(serverless logs --stage $run_id -f $function_name --startTime $script_utc_start_time)
             fetch_logs_exit_code=$?
             if [ $fetch_logs_exit_code -eq 1 ]; then
                 echo "Retrying fetch logs for $function_name..."
@@ -149,9 +160,6 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
             echo "FAILURE: Could not retrieve logs for $function_name"
             echo "Error from final attempt to retrieve logs:"
             echo $raw_logs
-
-            echo "Removing functions"
-            serverless remove
 
             exit 1
         fi
@@ -177,6 +185,8 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
                 # Normalize minor package version tag so that these snapshots aren't broken on version bumps
                 sed -E "s/(dd_lambda_layer:datadog-nodev[0-9]+\.)[0-9]+\.[0-9]+/\1XX\.X/g" |
                 sed -E 's/"(span_id|parent_id|trace_id|start|duration|tcp\.local\.address|tcp\.local\.port|dns\.address|request_id|function_arn|x-datadog-trace-id|x-datadog-parent-id|datadog_lambda|dd_trace)":("?)[a-zA-Z0-9\.:\-]+("?)/"\1":\2XXXX\3/g' |
+                # Strip out run ID (from function name, resource, etc.)
+                sed -E "s/$run_id/XXXX/g" |
                 # Normalize enhanced metric datadog_lambda tag
                 sed -E "s/(datadog_lambda:v)[0-9\.]+/\1X.X.X/g"
         )
@@ -191,8 +201,6 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
             echo "$logs" >$function_snapshot_path
         else
             # Compare new logs to snapshots
-            set +e # Don't exit this script if there is a diff
-
             diff_output=$(echo "$logs" | sort | diff -w - <(sort $function_snapshot_path))
             if [ $? -eq 1 ]; then
                 echo "Failed: Mismatch found between new $function_name logs (first) and snapshot (second):"
@@ -201,10 +209,10 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
             else
                 echo "Ok: New logs for $function_name match snapshot"
             fi
-            set -e
         fi
     done
 done
+set -e
 
 if [ "$mismatch_found" = true ]; then
     echo "FAILURE: A mismatch between new data and a snapshot was found and printed above."
