@@ -97,14 +97,15 @@ export class TraceListener {
   }
 
   public onWrap<T = (...args: any[]) => any>(func: T): T {
-    const rootTraceContext = this.currentTraceHeaders;
-    let spanContext: SpanContext | null = null;
-
+    // The aws.lambda span needs to have a parented to the Datadog trace context from the
+    // incoming event if available or the X-Ray trace context if hybrid tracing is enabled
+    let parentSpanContext: SpanContext | null = null;
     if (this.contextService.traceSource === Source.Event || this.config.mergeDatadogXrayTraces) {
-      spanContext = this.tracerWrapper.extract(rootTraceContext);
-      logDebug("Attempting to find parent for datadog trace trace");
+      const rootTraceHeaders = this.contextService.rootTraceHeaders;
+      parentSpanContext = this.tracerWrapper.extract(rootTraceHeaders);
+      logDebug("Attempting to find parent for the aws.lambda span");
     } else {
-      logDebug("Didn't attempt to find parent for datadog trace", {
+      logDebug("Didn't attempt to find parent for aws.lambda span", {
         mergeDatadogXrayTraces: this.config.mergeDatadogXrayTraces,
         traceSource: this.contextService.traceSource,
       });
@@ -112,7 +113,7 @@ export class TraceListener {
 
     const options: TraceOptions = {};
     if (this.context) {
-      logDebug("Applying lambda context to datadog traces");
+      logDebug("Creating the aws.lambda span");
       const functionArn = (this.context.invokedFunctionArn ?? "").toLowerCase();
       const tk = functionArn.split(":");
       options.tags = {
@@ -135,15 +136,15 @@ export class TraceListener {
       }
     }
     if (this.stepFunctionContext) {
-      logDebug("Applying step function context to datadog traces");
+      logDebug("Applying step function context to the aws.lambda span");
       options.tags = {
         ...options.tags,
         ...this.stepFunctionContext,
       };
     }
 
-    if (spanContext !== null) {
-      options.childOf = spanContext;
+    if (parentSpanContext !== null) {
+      options.childOf = parentSpanContext;
     }
     options.type = "serverless";
     options.service = "aws.lambda";
