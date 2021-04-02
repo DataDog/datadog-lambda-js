@@ -1,5 +1,3 @@
-Serverless: Recoverable error occurred (Rate exceeded), sleeping for ~5 seconds. Try 1 of 4
-Serverless: Recoverable error occurred (Rate exceeded), sleeping for ~6 seconds. Try 2 of 4
 START RequestId: XXXX Version: $LATEST
 {"e":XXXX,"m":"aws.lambda.enhanced.invocations","t":["region:sa-east-1","account_id:XXXX","functionname:integration-tests-js-XXXX-http-requests_node14","resource:integration-tests-js-XXXX-http-requests_node14","cold_start:true","memorysize:1024","datadog_lambda:vX.X.X","runtime:nodejs14.x"],"v":1}
 HTTP GET https://ip-ranges.datadoghq.com/ Headers: ["Accept:application/json, text/plain, */*","User-Agent:axios/0.21.1","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:2","x-datadog-trace-id:XXXX"]
