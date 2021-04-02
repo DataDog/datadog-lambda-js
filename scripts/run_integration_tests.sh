@@ -51,14 +51,6 @@ fi
 cd $integration_tests_dir
 yarn
 
-# Add local build to node_modules so `serverless-plugin.yml` also has access to local build.
-cd $cwd
-yarn
-yarn build
-rm -rf "$integration_tests/node_modules"
-mkdir -p "$integration_tests_dir/node_modules/datadog-lambda-js"
-cp -r dist "$integration_tests_dir/node_modules/datadog-lambda-js"
-
 cd $integration_tests_dir
 
 
@@ -76,6 +68,8 @@ function remove_stack() {
 }
 trap remove_stack EXIT
 
+serverless --version
+
 echo "Deploying functions"
 serverless deploy --stage $run_id
 
@@ -84,11 +78,7 @@ set +e # Don't exit this script if an invocation fails or there's a diff
 for input_event_file in "${input_event_files[@]}"; do
     for handler_name in "${LAMBDA_HANDLERS[@]}"; do
         for runtime in "${RUNTIMES[@]}"; do
-            if [ "$_sls_type" = "with-plugin" ]; then
-                function_name="${handler_name}_${runtime}_with_plugin"
-            else
-                function_name="${handler_name}_${runtime}"
-            fi
+            function_name="${handler_name}_${runtime}"
 
             echo "$function_name"
             # Get event name without trailing ".json" so we can build the snapshot file name
@@ -134,15 +124,9 @@ set +e # Don't exit this script if there is a diff or the logs endpoint fails
 echo "Fetching logs for invocations and comparing to snapshots"
 for handler_name in "${LAMBDA_HANDLERS[@]}"; do
     for runtime in "${RUNTIMES[@]}"; do
-        if [ "$_sls_type" = "with-plugin" ]; then
-            function_name="${handler_name}_${runtime}_with_plugin"
-        else
-            function_name="${handler_name}_${runtime}"
-        fi
-
+        function_name="${handler_name}_${runtime}"
         function_snapshot_path="./snapshots/logs/${function_name}.log"
 
-        serverless --version
         # Fetch logs with serverless cli, retrying to avoid AWS account-wide rate limit error
         retry_counter=0
         while [ $retry_counter -lt 10 ]; do
