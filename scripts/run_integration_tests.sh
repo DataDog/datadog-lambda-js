@@ -51,9 +51,6 @@ fi
 cd $integration_tests_dir
 yarn
 
-cd $integration_tests_dir
-
-
 input_event_files=$(ls ./input_events)
 # Sort event files by name so that snapshots stay consistent
 input_event_files=($(for file_name in ${input_event_files[@]}; do echo $file_name; done | sort))
