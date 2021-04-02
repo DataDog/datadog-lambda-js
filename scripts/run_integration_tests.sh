@@ -142,6 +142,7 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
 
         function_snapshot_path="./snapshots/logs/${function_name}.log"
 
+        serverless --version
         # Fetch logs with serverless cli, retrying to avoid AWS account-wide rate limit error
         retry_counter=0
         while [ $retry_counter -lt 10 ]; do
