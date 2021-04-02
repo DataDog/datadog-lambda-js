@@ -287,11 +287,11 @@ export function readTraceFromHTTPEvent(event: any): TraceContext | undefined {
 }
 
 export function readTraceFromEvent(event: any): TraceContext | undefined {
-  if (typeof event !== "object") {
+  if (!event || typeof event !== "object") {
     return;
   }
 
-  if (typeof event.headers === "object") {
+  if (event.headers !== null && typeof event.headers === "object") {
     return readTraceFromHTTPEvent(event);
   }
 

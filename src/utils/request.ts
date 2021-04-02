@@ -14,7 +14,7 @@ export interface HTTPError {
   statusCode?: number;
 }
 export function isHTTPError(error: any): error is HTTPError {
-  return typeof error === "object" && Object.values(HTTPErrorType).includes(error.type);
+  return typeof error === "object" && error !== null && Object.values(HTTPErrorType).includes(error.type);
 }
 
 export function post<T>(url: URL, body: T, options?: Partial<RequestOptions>): Promise<void> {
