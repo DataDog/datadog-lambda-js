@@ -167,6 +167,8 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
                 perl -p -e 's/"(span_id|parent_id|trace_id|start|duration|tcp\.local\.address|tcp\.local\.port|dns\.address|request_id|function_arn|x-datadog-trace-id|x-datadog-parent-id|datadog_lambda|dd_trace)":("?)[a-zA-Z0-9\.:\-]+("?)/"\1":\2XXXX\3/g' |
                 # Strip out run ID (from function name, resource, etc.)
                 perl -p -e "s/$run_id/XXXX/g" |
+                # Normalize line numbers in stack traces
+                perl -p -e 's/(.js:)[0-9]*:[0-9]*/\1XXX:XXX/g' |
                 # Remove metrics and metas in logged traces (their order is inconsistent)
                 perl -p -e 's/"(meta|metrics)":{(.*?)}/"\1":{"XXXX": "XXXX"}/g' |
                 # Normalize enhanced metric datadog_lambda tag
