@@ -31,7 +31,7 @@ jobs:
       - name: Lint
         run: yarn lint
 
-  test:
+  unit-test:
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
@@ -65,3 +65,38 @@ jobs:
 
       - name: Upload code coverage report
         run: bash <(curl -s https://codecov.io/bash)
+
+  integration-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Node 14
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14
+
+      - name: Cache Node modules
+        id: cache-node-modules
+        uses: actions/cache@v2
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install Serverless Framework
+        run: sudo yarn global add serverless --prefix /usr/local
+
+      - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        working-directory: integration_tests
+        run: yarn install
+
+      - name: Run tests
+        env:
+          BUILD_LAYERS: true
+          DD_API_KEY: ${{ secrets.DD_API_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: ./scripts/run_integration_tests.sh

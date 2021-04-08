@@ -1,7 +1,9 @@
-service: integration
+# IAM permissions require service name to begin with 'integration-tests'
+service: integration-tests-js
 
 provider:
   name: aws
+  region: sa-east-1
   tracing:
     lambda: true
     apiGateway: true
@@ -9,6 +11,12 @@ provider:
     DD_INTEGRATION_TEST: true
     DD_API_KEY: ${env:DD_API_KEY}
   lambdaHashingVersion: 20201221
+  timeout: 15
+  deploymentBucket:
+    name: integration-tests-deployment-bucket
+  iam:
+    # IAM permissions require that all functions are deployed with this role
+    role: "arn:aws:iam::601427279990:role/serverless-integration-test-lambda-role"
 
 layers:
   node10:
@@ -17,7 +25,6 @@ layers:
   node12:
     package:
       artifact: ../.layers/datadog_lambda_node12.13.zip
-
   node14:
     package:
       artifact: ../.layers/datadog_lambda_node14.15.zip
@@ -110,6 +117,7 @@ functions:
       - { Ref: Node14LambdaLayer }
     environment:
       DD_FLUSH_TO_LOG: true
+
   # throw-error-traced
   throw-error-traced_node10:
     handler: throw-error-traced.handle

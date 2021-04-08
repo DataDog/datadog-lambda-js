@@ -82,4 +82,4 @@ const getAPIGatewayRequestId = tracer.wrap("getAPIGatewayRequestId", (event) => 
   return requestId;
 });
 
-module.exports.handle = process.env.WITH_PLUGIN ? handle : datadog(handle);
+module.exports.handle = datadog(handle);
