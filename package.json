@@ -17,7 +17,7 @@
     "postbuild": "scripts/update_dist_version.sh"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.73",
+    "@types/aws-lambda": "^8.10.75",
     "@types/aws-sdk": "^2.7.0",
     "@types/jest": "^26.0.22",
     "@types/mock-fs": "4.13.0",
@@ -25,19 +25,19 @@
     "@types/node": "^14.14.37",
     "@types/promise-retry": "^1.1.3",
     "@types/shimmer": "^1.0.1",
-    "dd-trace": "0.31.4",
+    "dd-trace": "0.32.0",
     "jest": "^26.6.3",
     "mock-fs": "4.13.0",
     "nock": "13.0.11",
     "prettier": "^2.2.1",
     "ts-jest": "^26.5.4",
     "tslint": "^6.1.3",
-    "typescript": "^4.2.3"
+    "typescript": "^4.2.4"
   },
   "dependencies": {
-    "aws-xray-sdk-core": "^3.2.0",
+    "aws-xray-sdk-core": "^3.3.1",
     "bignumber.js": "^9.0.1",
-    "hot-shots": "8.3.0",
+    "hot-shots": "8.3.1",
     "promise-retry": "^2.0.1",
     "serialize-error": "^8.0.1",
     "shimmer": "^1.2.1"
