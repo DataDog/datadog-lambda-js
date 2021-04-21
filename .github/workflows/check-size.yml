@@ -5,6 +5,9 @@ on: pull_request
 jobs:
   check-size:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [10.15, 12.13, 14.15]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -26,7 +29,11 @@ jobs:
         run: yarn install
 
       - name: Build Layers
+        env:
+          NODE_VERSION: ${{ matrix.node-version }}
         run: ./scripts/build_layers.sh
 
       - name: Check Size
+        env:
+          NODE_VERSION: ${{ matrix.node-version }}
         run: ./scripts/check_layer_size.sh
