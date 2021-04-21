@@ -72,7 +72,7 @@ set +e # Don't exit this script if an invocation fails or there's a diff
 for input_event_file in "${input_event_files[@]}"; do
     for handler_name in "${LAMBDA_HANDLERS[@]}"; do
 
-        function_name="${handler_name}_${RUNTIME}"
+        function_name="${handler_name}_node"
 
         echo "$function_name"
         # Get event name without trailing ".json" so we can build the snapshot file name
@@ -117,8 +117,8 @@ set +e # Don't exit this script if there is a diff or the logs endpoint fails
 echo "Fetching logs for invocations and comparing to snapshots"
 for handler_name in "${LAMBDA_HANDLERS[@]}"; do
 
-    function_name="${handler_name}_${RUNTIME}"
-    function_snapshot_path="./snapshots/logs/${function_name}.log"
+    function_name="${handler_name}_node"
+    function_snapshot_path="./snapshots/logs/${handler_name}_${RUNTIME}.log"
 
     # Fetch logs with serverless cli, retrying to avoid AWS account-wide rate limit error
     retry_counter=0

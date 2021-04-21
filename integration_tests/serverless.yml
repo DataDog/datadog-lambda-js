@@ -26,7 +26,7 @@ layers:
 functions:
   # async-metrics
   async-metrics_node:
-    name: async-metrics_${env:RUNTIME}
+    name: integration-tests-js-${sls:stage}-async-metrics_${env:RUNTIME}
     handler: send-metrics.handle
     runtime: ${env:SERVERLESS_RUNTIME}
     layers:
@@ -36,7 +36,7 @@ functions:
 
   # sync-metrics
   sync-metrics_node:
-    name: sync-metrics_${env:RUNTIME}
+    name: integration-tests-js-${sls:stage}-sync-metrics_${env:RUNTIME}
     handler: send-metrics.handle
     runtime: ${env:SERVERLESS_RUNTIME}
     layers:
@@ -44,7 +44,7 @@ functions:
 
   # http-requests
   http-requests_node:
-    name: http-requests_${env:RUNTIME}
+    name: integration-tests-js-${sls:stage}-http-requests_${env:RUNTIME}
     handler: http-requests.handle
     runtime: ${env:SERVERLESS_RUNTIME}
     layers:
@@ -52,7 +52,7 @@ functions:
 
   # process-input-traced
   process-input-traced_node:
-    name: process-input-traced_${env:RUNTIME}
+    name: integration-tests-js-${sls:stage}-process-input-traced_${env:RUNTIME}
     handler: process-input-traced.handle
     runtime: ${env:SERVERLESS_RUNTIME}
     layers:
@@ -62,7 +62,7 @@ functions:
 
   # throw-error-traced
   throw-error-traced_node:
-    name: throw-error-traced_${env:RUNTIME}
+    name: integration-tests-js-${sls:stage}-throw-error-traced_${env:RUNTIME}
     handler: throw-error-traced.handle
     runtime: ${env:SERVERLESS_RUNTIME}
     layers:
