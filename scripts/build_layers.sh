@@ -10,7 +10,6 @@ set -e
 
 LAYER_DIR=".layers"
 LAYER_FILES_PREFIX="datadog_lambda_node"
-NODE_VERSIONS=("10.15" "12.13" "14.15")
 
 function make_path_absolute {
     echo "$(cd "$(dirname "$1")"; pwd)/$(basename "$1")"
@@ -41,12 +40,9 @@ function docker_build_zip {
 rm -rf $LAYER_DIR
 mkdir $LAYER_DIR
 
-for node_version in "${NODE_VERSIONS[@]}"
-do
-    echo "Building layer for node${node_version}"
-    docker_build_zip ${node_version} $LAYER_DIR/${LAYER_FILES_PREFIX}${node_version}.zip
-done
 
+echo "Building layer for node${NODE_VERSION}"
+docker_build_zip ${NODE_VERSION} $LAYER_DIR/${LAYER_FILES_PREFIX}${NODE_VERSION}.zip
 
 echo "Done creating layers:"
 ls $LAYER_DIR | xargs -I _ echo "$LAYER_DIR/_"

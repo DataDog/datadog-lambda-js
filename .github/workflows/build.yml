@@ -68,7 +68,19 @@ jobs:
 
   integration-test:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        include:
+          - node-runtime: node10
+            node-version: 10.15
+            serverless-runtime: nodejs10.x
+          - node-runtime: node12
+            node-version: 12.13
+            serverless-runtime: nodejs12.x
+          - node-runtime: node14
+            node-version: 14.15
+            serverless-runtime: nodejs14.x
+       
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -99,4 +111,7 @@ jobs:
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          RUNTIME: ${{ matrix.node-runtime }}
+          NODE_VERSION: ${{ matrix.node-version }}
+          SERVERLESS_RUNTIME: ${{ matrix.serverless-runtime }}
         run: ./scripts/run_integration_tests.sh
