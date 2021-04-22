@@ -111,8 +111,8 @@ for runtime in "${RUNTIMES[@]}"; do
             echo "$function_name"
             # Get event name without trailing ".json" so we can build the snapshot file name
             input_event_name=$(echo "$input_event_file" | sed "s/.json//")
-            # Return value snapshot file format is snapshots/return_values/{handler}_{RUNTIME}_{input-event}
-            snapshot_path="./snapshots/return_values/${handler_name}_${RUNTIME}_${input_event_name}.json"
+            # Return value snapshot file format is snapshots/return_values/{handler}_{runtime}_{input-event}
+            snapshot_path="./snapshots/return_values/${handler_name}_${runtime}_${input_event_name}.json"
             function_failed=FALSE
 
             return_value=$(serverless invoke --stage ${!run_id} -f "$function_name" --path "./input_events/$input_event_file")
