@@ -29,17 +29,18 @@ mismatch_found=false
 # [0]: serverless runtime name
 # [1]: nodeje version
 # [2]: random 8-character ID to avoid collisions with other runs
-node10=("nodejs10.x" "10.15", $(xxd -l 4 -c 4 -p < /dev/random))
-node12=("nodejs12.x" "12.13", $(xxd -l 4 -c 4 -p < /dev/random))
-node14=("nodejs14.x" "14.15", $(xxd -l 4 -c 4 -p < /dev/random))
+node10=("nodejs10.x" "10.15" $(xxd -l 4 -c 4 -p < /dev/random))
+node12=("nodejs12.x" "12.13" $(xxd -l 4 -c 4 -p < /dev/random))
+node14=("nodejs14.x" "14.15" $(xxd -l 4 -c 4 -p < /dev/random))
 
 RUNTIMES=("node10" "node12" "node14")
 
-if [ -z "$NODE_VERSION" ]; then
+if [ -z "$RUNTIME_PARAM" ]; then
     echo "Node version not specified, running for all node versions."
 else
-    echo "Node version is specified: $NODE_VERSION"
-    RUNTIMES=($NODE_VERSION)
+    echo "Node version is specified: $RUNTIME_PARAM"
+    RUNTIMES=($RUNTIME_PARAM)
+    BUILD_LAYER_VERSION=$RUNTIME_PARAM[1]
 fi
 
 if [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
@@ -59,7 +60,7 @@ fi
 
 if [ -n "$BUILD_LAYERS" ]; then
     echo "Building layers that will be deployed with our test functions"
-    source $scripts_dir/build_layers.sh
+    NODE_VERSION=${!BUILD_LAYER_VERSION} source $scripts_dir/build_layers.sh
 else
     echo "Not building layers, ensure they've already been built or re-run with 'BUILD_LAYERS=true DD_API_KEY=XXXX ./scripts/run_integration_tests.sh'"
 fi
@@ -76,8 +77,11 @@ input_event_files=($(for file_name in ${input_event_files[@]}; do echo $file_nam
 # Always remove the stacks before exiting, no matter what
 function remove_stack() {
     for runtime in "${RUNTIMES[@]}"; do
+        serverless_runtime=$runtime[0]
+        nodejs_version=$runtime[1]
         run_id=$runtime[2]
         echo "Removing stack for stage : ${!run_id}"
+        NODE_VERSION=${!nodejs_version} RUNTIME=$runtime SERVERLESS_RUNTIME=${!serverless_runtime} \
         serverless remove --stage ${!run_id}
     done
 }

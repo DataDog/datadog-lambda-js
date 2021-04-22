@@ -70,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [node10, node12, node14]
+        runtime-param: [node10, node12, node14]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -101,5 +101,5 @@ jobs:
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          NODE_VERSION: ${{ matrix.node-version }}
+          RUNTIME_PARAM: ${{ matrix.runtime-param }}
         run: ./scripts/run_integration_tests.sh
