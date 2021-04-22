@@ -68,7 +68,9 @@ jobs:
 
   integration-test:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        runtime-param: [10, 12, 14]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -99,4 +101,5 @@ jobs:
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          RUNTIME_PARAM: ${{ matrix.runtime-param }}
         run: ./scripts/run_integration_tests.sh

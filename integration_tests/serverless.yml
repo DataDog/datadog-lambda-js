@@ -19,126 +19,53 @@ provider:
     role: "arn:aws:iam::601427279990:role/serverless-integration-test-lambda-role"
 
 layers:
-  node10:
+  node:
     package:
-      artifact: ../.layers/datadog_lambda_node10.15.zip
-  node12:
-    package:
-      artifact: ../.layers/datadog_lambda_node12.13.zip
-  node14:
-    package:
-      artifact: ../.layers/datadog_lambda_node14.15.zip
+      artifact: ../.layers/datadog_lambda_node${env:NODE_VERSION}.zip
 
 functions:
   # async-metrics
-  async-metrics_node10:
+  async-metrics_node:
+    name: integration-tests-js-${sls:stage}-async-metrics_${env:RUNTIME}
     handler: send-metrics.handle
-    runtime: nodejs10.x
+    runtime: ${env:SERVERLESS_RUNTIME}
     layers:
-      - { Ref: Node10LambdaLayer }
-    environment:
-      DD_FLUSH_TO_LOG: true
-
-  async-metrics_node12:
-    handler: send-metrics.handle
-    runtime: nodejs12.x
-    layers:
-      - { Ref: Node12LambdaLayer }
-    environment:
-      DD_FLUSH_TO_LOG: true
-
-  async-metrics_node14:
-    handler: send-metrics.handle
-    runtime: nodejs14.x
-    layers:
-      - { Ref: Node14LambdaLayer }
+      - { Ref: NodeLambdaLayer }
     environment:
       DD_FLUSH_TO_LOG: true
 
   # sync-metrics
-  sync-metrics_node10:
+  sync-metrics_node:
+    name: integration-tests-js-${sls:stage}-sync-metrics_${env:RUNTIME}
     handler: send-metrics.handle
-    runtime: nodejs10.x
+    runtime: ${env:SERVERLESS_RUNTIME}
     layers:
-      - { Ref: Node10LambdaLayer }
-
-  sync-metrics_node12:
-    handler: send-metrics.handle
-    runtime: nodejs12.x
-    layers:
-      - { Ref: Node12LambdaLayer }
-
-  sync-metrics_node14:
-    handler: send-metrics.handle
-    runtime: nodejs14.x
-    layers:
-      - { Ref: Node14LambdaLayer }
+      - { Ref: NodeLambdaLayer }
 
   # http-requests
-  http-requests_node10:
+  http-requests_node:
+    name: integration-tests-js-${sls:stage}-http-requests_${env:RUNTIME}
     handler: http-requests.handle
-    runtime: nodejs10.x
+    runtime: ${env:SERVERLESS_RUNTIME}
     layers:
-      - { Ref: Node10LambdaLayer }
-
-  http-requests_node12:
-    handler: http-requests.handle
-    runtime: nodejs12.x
-    layers:
-      - { Ref: Node12LambdaLayer }
-
-  http-requests_node14:
-    handler: http-requests.handle
-    runtime: nodejs14.x
-    layers:
-      - { Ref: Node14LambdaLayer }
+      - { Ref: NodeLambdaLayer }
 
   # process-input-traced
-  process-input-traced_node10:
+  process-input-traced_node:
+    name: integration-tests-js-${sls:stage}-process-input-traced_${env:RUNTIME}
     handler: process-input-traced.handle
-    runtime: nodejs10.x
+    runtime: ${env:SERVERLESS_RUNTIME}
     layers:
-      - { Ref: Node10LambdaLayer }
-    environment:
-      DD_FLUSH_TO_LOG: true
-
-  process-input-traced_node12:
-    handler: process-input-traced.handle
-    runtime: nodejs12.x
-    layers:
-      - { Ref: Node12LambdaLayer }
-    environment:
-      DD_FLUSH_TO_LOG: true
-
-  process-input-traced_node14:
-    handler: process-input-traced.handle
-    runtime: nodejs14.x
-    layers:
-      - { Ref: Node14LambdaLayer }
+      - { Ref: NodeLambdaLayer }
     environment:
       DD_FLUSH_TO_LOG: true
 
   # throw-error-traced
-  throw-error-traced_node10:
+  throw-error-traced_node:
+    name: integration-tests-js-${sls:stage}-throw-error-traced_${env:RUNTIME}
     handler: throw-error-traced.handle
-    runtime: nodejs10.x
+    runtime: ${env:SERVERLESS_RUNTIME}
     layers:
-      - { Ref: Node10LambdaLayer }
-    environment:
-      DD_FLUSH_TO_LOG: true
-
-  throw-error-traced_node12:
-    handler: throw-error-traced.handle
-    runtime: nodejs12.x
-    layers:
-      - { Ref: Node12LambdaLayer }
-    environment:
-      DD_FLUSH_TO_LOG: true
-
-  throw-error-traced_node14:
-    handler: throw-error-traced.handle
-    runtime: nodejs14.x
-    layers:
-      - { Ref: Node14LambdaLayer }
+      - { Ref: NodeLambdaLayer }
     environment:
       DD_FLUSH_TO_LOG: true
