@@ -11,6 +11,14 @@ set -e
 LAYER_DIR=".layers"
 LAYER_FILES_PREFIX="datadog_lambda_node"
 
+if [ -z "$NODE_VERSION" ]; then
+    echo "Node version not specified, running for all node versions."
+    NODE_VERSIONS=("10.15" "12.13" "14.15")
+else
+    echo "Node version is specified: $NODE_VERSION"
+    NODE_VERSIONS=($NODE_VERSION)
+fi
+
 function make_path_absolute {
     echo "$(cd "$(dirname "$1")"; pwd)/$(basename "$1")"
 }
@@ -41,8 +49,11 @@ rm -rf $LAYER_DIR
 mkdir $LAYER_DIR
 
 
-echo "Building layer for node${NODE_VERSION}"
-docker_build_zip ${NODE_VERSION} $LAYER_DIR/${LAYER_FILES_PREFIX}${NODE_VERSION}.zip
+for current_node_version in "${NODE_VERSIONS[@]}"
+do
+    echo "Building layer for node${current_node_version}"
+    docker_build_zip ${current_node_version} $LAYER_DIR/${LAYER_FILES_PREFIX}${current_node_version}.zip
+done
 
 echo "Done creating layers:"
 ls $LAYER_DIR | xargs -I _ echo "$LAYER_DIR/_"
