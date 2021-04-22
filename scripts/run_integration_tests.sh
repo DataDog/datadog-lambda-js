@@ -143,13 +143,10 @@ nodejs version : ${!nodejs_version} and run id : ${!run_id}"
         done
     done
 done
-
-
 set -e
 
 echo "Sleeping $LOGS_WAIT_SECONDS seconds to wait for logs to appear in CloudWatch..."
 sleep $LOGS_WAIT_SECONDS
-
 
 set +e # Don't exit this script if there is a diff or the logs endpoint fails
 echo "Fetching logs for invocations and comparing to snapshots"
