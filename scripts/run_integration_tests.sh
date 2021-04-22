@@ -160,7 +160,7 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
         # Fetch logs with serverless cli, retrying to avoid AWS account-wide rate limit error
         retry_counter=0
         while [ $retry_counter -lt 10 ]; do
-            raw_logs=$(raw_logs=$(NODE_VERSION=${!nodejs_version} RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
+            raw_logs=$(NODE_VERSION=${!nodejs_version} RUNTIME=$runtime SERVERLESS_RUNTIME=${!serverless_runtime} \
             serverless logs --stage ${!run_id} -f $function_name --startTime $script_utc_start_time)
             fetch_logs_exit_code=$?
             if [ $fetch_logs_exit_code -eq 1 ]; then
