@@ -27,19 +27,19 @@ mismatch_found=false
 
 # Format :
 # [0]: serverless runtime name
-# [1]: nodeje version
+# [1]: nodejs version
 # [2]: random 8-character ID to avoid collisions with other runs
 node10=("nodejs10.x" "10.15" $(xxd -l 4 -c 4 -p < /dev/random))
 node12=("nodejs12.x" "12.13" $(xxd -l 4 -c 4 -p < /dev/random))
 node14=("nodejs14.x" "14.15" $(xxd -l 4 -c 4 -p < /dev/random))
 
-RUNTIMES=("node10" "node12" "node14")
+PARAMETERS_SETS=("node10" "node12" "node14")
 
 if [ -z "$RUNTIME_PARAM" ]; then
     echo "Node version not specified, running for all node versions."
 else
     echo "Node version is specified: $RUNTIME_PARAM"
-    RUNTIMES=($RUNTIME_PARAM)
+    PARAMETERS_SETS=(node${RUNTIME_PARAM})
     BUILD_LAYER_VERSION=$RUNTIME_PARAM[1]
 fi
 
@@ -76,31 +76,31 @@ input_event_files=($(for file_name in ${input_event_files[@]}; do echo $file_nam
 
 # Always remove the stacks before exiting, no matter what
 function remove_stack() {
-    for runtime in "${RUNTIMES[@]}"; do
-        serverless_runtime=$runtime[0]
-        nodejs_version=$runtime[1]
-        run_id=$runtime[2]
+    for parameters_set in "${PARAMETERS_SETS[@]}"; do
+        serverless_runtime=$parameters_set[0]
+        nodejs_version=$parameters_set[1]
+        run_id=$parameters_set[2]
         echo "Removing stack for stage : ${!run_id}"
-        NODE_VERSION=${!nodejs_version} RUNTIME=$runtime SERVERLESS_RUNTIME=${!serverless_runtime} \
+        NODE_VERSION=${!nodejs_version} RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
         serverless remove --stage ${!run_id}
     done
 }
 
  trap remove_stack EXIT
 
-for runtime in "${RUNTIMES[@]}"; do
+for parameters_set in "${PARAMETERS_SETS[@]}"; do
     
-    serverless_runtime=$runtime[0]
-    nodejs_version=$runtime[1]
-    run_id=$runtime[2]
+    serverless_runtime=$parameters_set[0]
+    nodejs_version=$parameters_set[1]
+    run_id=$parameters_set[2]
 
-    echo "Deploying functions for runtime : $runtime, serverless runtime : ${!serverless_runtime}, \
+    echo "Deploying functions for runtime : $parameters_set, serverless runtime : ${!serverless_runtime}, \
 nodejs version : ${!nodejs_version} and run id : ${!run_id}"
 
-    NODE_VERSION=${!nodejs_version} RUNTIME=$runtime SERVERLESS_RUNTIME=${!serverless_runtime} \
+    NODE_VERSION=${!nodejs_version} RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
     serverless deploy --stage ${!run_id}
 
-    echo "Invoking functions for runtime $runtime"
+    echo "Invoking functions for runtime $parameters_set"
     set +e # Don't exit this script if an invocation fails or there's a diff
     for input_event_file in "${input_event_files[@]}"; do
         for handler_name in "${LAMBDA_HANDLERS[@]}"; do
@@ -111,10 +111,10 @@ nodejs version : ${!nodejs_version} and run id : ${!run_id}"
             # Get event name without trailing ".json" so we can build the snapshot file name
             input_event_name=$(echo "$input_event_file" | sed "s/.json//")
             # Return value snapshot file format is snapshots/return_values/{handler}_{runtime}_{input-event}
-            snapshot_path="./snapshots/return_values/${handler_name}_${runtime}_${input_event_name}.json"
+            snapshot_path="./snapshots/return_values/${handler_name}_${parameters_set}_${input_event_name}.json"
             function_failed=FALSE
 
-            return_value=$(NODE_VERSION=${!nodejs_version} RUNTIME=$runtime SERVERLESS_RUNTIME=${!serverless_runtime} \
+            return_value=$(NODE_VERSION=${!nodejs_version} RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
             serverless invoke --stage ${!run_id} -f "$function_name" --path "./input_events/$input_event_file")
             invoke_success=$?
             if [ $invoke_success -ne 0 ]; then
@@ -151,17 +151,16 @@ sleep $LOGS_WAIT_SECONDS
 set +e # Don't exit this script if there is a diff or the logs endpoint fails
 echo "Fetching logs for invocations and comparing to snapshots"
 for handler_name in "${LAMBDA_HANDLERS[@]}"; do
-    for runtime in "${RUNTIMES[@]}"; do
+    for parameters_set in "${PARAMETERS_SETS[@]}"; do
         function_name="${handler_name}_node"
-        function_snapshot_path="./snapshots/logs/${handler_name}_${runtime}.log"
-        serverless_runtime=$runtime[0]
-        nodejs_version=$runtime[1]
-        run_id=$runtime[2]
+        function_snapshot_path="./snapshots/logs/${handler_name}_${parameters_set}.log"
+        serverless_runtime=$parameters_set[0]
+        nodejs_version=$parameters_set[1]
+        run_id=$parameters_set[2]
         # Fetch logs with serverless cli, retrying to avoid AWS account-wide rate limit error
         retry_counter=0
         while [ $retry_counter -lt 10 ]; do
-            raw_logs=$(NODE_VERSION=${!nodejs_version} RUNTIME=$runtime SERVERLESS_RUNTIME=${!serverless_runtime} \
-            serverless logs --stage ${!run_id} -f $function_name --startTime $script_utc_start_time)
+            raw_logs=$(serverless logs --stage ${!run_id} -f $function_name --startTime $script_utc_start_time)
             fetch_logs_exit_code=$?
             if [ $fetch_logs_exit_code -eq 1 ]; then
                 echo "Retrying fetch logs for $function_name..."

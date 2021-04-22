@@ -70,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        runtime-param: [node10, node12, node14]
+        runtime-param: [10, 12, 14]
     steps:
       - name: Checkout
         uses: actions/checkout@v2

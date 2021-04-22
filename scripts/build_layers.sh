@@ -11,12 +11,18 @@ set -e
 LAYER_DIR=".layers"
 LAYER_FILES_PREFIX="datadog_lambda_node"
 
+NODE_VERSIONS=("10.15" "12.13" "14.15")
+
 if [ -z "$NODE_VERSION" ]; then
     echo "Node version not specified, running for all node versions."
-    NODE_VERSIONS=("10.15" "12.13" "14.15")
 else
     echo "Node version is specified: $NODE_VERSION"
-    NODE_VERSIONS=($NODE_VERSION)
+    if (printf '%s\n' "${NODE_VERSIONS[@]}" | grep -xq $NODE_VERSION); then
+        NODE_VERSIONS=($NODE_VERSION)
+    else
+        echo "Unsupported version found"
+        exit 1
+    fi
 fi
 
 function make_path_absolute {
