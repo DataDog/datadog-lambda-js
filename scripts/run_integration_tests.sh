@@ -40,7 +40,7 @@ if [ -z "$RUNTIME_PARAM" ]; then
 else
     echo "Node version is specified: $RUNTIME_PARAM"
     PARAMETERS_SETS=(node${RUNTIME_PARAM})
-    BUILD_LAYER_VERSION=$RUNTIME_PARAM[1]
+    BUILD_LAYER_VERSION=node$RUNTIME_PARAM[1]
 fi
 
 if [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
