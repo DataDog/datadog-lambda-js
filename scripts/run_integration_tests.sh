@@ -94,7 +94,8 @@ for runtime in "${RUNTIMES[@]}"; do
     nodejs_version=$runtime[1]
     run_id=$runtime[2]
 
-    echo "Deploying functions for runtime : $runtime, serverless runtime : ${!serverless_runtime}, nodejs version : ${!nodejs_version} and runid : ${!run_id}"
+    echo "Deploying functions for runtime : $runtime, serverless runtime : ${!serverless_runtime}, \
+nodejs version : ${!nodejs_version} and run id : ${!run_id}"
 
     NODE_VERSION=${!nodejs_version} RUNTIME=$runtime SERVERLESS_RUNTIME=${!serverless_runtime} \
     serverless deploy --stage ${!run_id}
@@ -104,8 +105,6 @@ for runtime in "${RUNTIMES[@]}"; do
     for input_event_file in "${input_event_files[@]}"; do
         for handler_name in "${LAMBDA_HANDLERS[@]}"; do
             
-            echo "Current runtime = $runtime";
-
             function_name="${handler_name}_node"
 
             echo "$function_name"
@@ -115,7 +114,8 @@ for runtime in "${RUNTIMES[@]}"; do
             snapshot_path="./snapshots/return_values/${handler_name}_${runtime}_${input_event_name}.json"
             function_failed=FALSE
 
-            return_value=$(serverless invoke --stage ${!run_id} -f "$function_name" --path "./input_events/$input_event_file")
+            return_value=$(NODE_VERSION=${!nodejs_version} RUNTIME=$runtime SERVERLESS_RUNTIME=${!serverless_runtime} \
+            serverless invoke --stage ${!run_id} -f "$function_name" --path "./input_events/$input_event_file")
             invoke_success=$?
             if [ $invoke_success -ne 0 ]; then
                 return_value="Invocation failed"
@@ -157,11 +157,14 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
     for runtime in "${RUNTIMES[@]}"; do
         function_name="${handler_name}_node"
         function_snapshot_path="./snapshots/logs/${handler_name}_${runtime}.log"
+        serverless_runtime=$runtime[0]
+        nodejs_version=$runtime[1]
         run_id=$runtime[2]
         # Fetch logs with serverless cli, retrying to avoid AWS account-wide rate limit error
         retry_counter=0
         while [ $retry_counter -lt 10 ]; do
-            raw_logs=$(serverless logs --stage ${!run_id} -f $function_name --startTime $script_utc_start_time)
+            raw_logs=$(NODE_VERSION=${!nodejs_version} RUNTIME=$runtime SERVERLESS_RUNTIME=${!serverless_runtime} \
+            serverless logs --stage ${!run_id} -f $function_name --startTime $script_utc_start_time)
             fetch_logs_exit_code=$?
             if [ $fetch_logs_exit_code -eq 1 ]; then
                 echo "Retrying fetch logs for $function_name..."
