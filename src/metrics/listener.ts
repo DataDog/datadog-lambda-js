@@ -65,15 +65,15 @@ export class MetricsListener {
       logDebug(`Extension present: ${this.isAgentRunning}`);
     }
 
-    if (this.config.logForwarding) {
-      logDebug(`logForwarding configured`);
-
-      return;
-    }
     if (this.isAgentRunning) {
       logDebug(`Using StatsD client`);
 
       this.statsDClient = new StatsD({ host: "127.0.0.1" });
+      return;
+    }
+    if (this.config.logForwarding) {
+      logDebug(`logForwarding configured`);
+
       return;
     }
     this.currentProcessor = this.createProcessor(this.config, this.apiKey);
@@ -105,14 +105,19 @@ export class MetricsListener {
           });
         });
         this.statsDClient = undefined;
-        logDebug(`Flushing Extension`);
-
-        await flushExtension();
       }
     } catch (error) {
       // This can fail for a variety of reasons, from the API not being reachable,
       // to KMS key decryption failing.
       logError(`failed to flush metrics`, { innerError: error });
+    }
+    try {
+      if (this.isAgentRunning) {
+        logDebug(`Flushing Extension`);
+        await flushExtension();
+      }
+    } catch (error) {
+      logError(`failed to flush extension`, { innerError: error });
     }
     this.currentProcessor = undefined;
   }
