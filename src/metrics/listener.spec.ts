@@ -7,7 +7,7 @@ import { AGENT_URL } from "./extension";
 
 import { MetricsListener } from "./listener";
 import StatsDClient from "hot-shots";
-jest.mock('hot-shots');
+jest.mock("hot-shots");
 
 const siteURL = "example.com";
 
@@ -100,7 +100,7 @@ describe("MetricsListener", () => {
 
     expect(spy).toHaveBeenCalledWith(`{"e":1487076708,"m":"my-metric","t":["tag:a","tag:b"],"v":10}\n`);
   });
-  it("sends metrics to statsD when extension is enabled", async () => {
+  it("always sends metrics to statsD when extension is enabled, ignoring logForwarding=true", async () => {
     const helloScope = nock(AGENT_URL).get("/lambda/hello").reply(200);
     const flushScope = nock(AGENT_URL).post("/lambda/flush", JSON.stringify({})).reply(200);
     mock({

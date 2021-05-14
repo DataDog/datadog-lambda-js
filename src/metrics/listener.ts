@@ -65,7 +65,6 @@ export class MetricsListener {
       logDebug(`Extension present: ${this.isAgentRunning}`);
     }
 
-
     if (this.isAgentRunning) {
       logDebug(`Using StatsD client`);
 
