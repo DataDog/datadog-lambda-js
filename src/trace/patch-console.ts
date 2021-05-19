@@ -1,4 +1,5 @@
 import * as shimmer from "shimmer";
+import { inspect } from "util";
 
 import { getLogLevel, LogLevel, setLogLevel } from "../utils/log";
 import { TraceContextService } from "./trace-context-service";
@@ -58,7 +59,14 @@ function patchMethod(mod: Console, method: LogMethod, contextService: TraceConte
             arguments.length = 1;
             arguments[0] = prefix;
           } else {
-            arguments[0] = `${prefix} ${arguments[0]}`;
+            let logContent = arguments[0];
+
+            // If what's being logged is not a string, use util.inspect to get a str representation
+            if (typeof logContent !== "string") {
+              logContent = inspect(logContent);
+            }
+
+            arguments[0] = `${prefix} ${logContent}`;
           }
         }
       } catch (error) {
