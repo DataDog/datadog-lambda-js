@@ -11,8 +11,11 @@ if (process.env.DD_TRACE_DISABLED_PLUGINS === undefined) {
 }
 
 if (getEnvValue("DD_TRACE_ENABLED", "true").toLowerCase() === "true") {
+  // Looks for the function local version of dd-trace first, before using
+  // the version provided by the layer
+  const path = require.resolve("dd-trace", { paths: ["/var/task/node_modules", ...module.paths] });
   // tslint:disable-next-line:no-var-requires
-  require("dd-trace").init({
+  require(path).init({
     tags: {
       "_dd.origin": "lambda",
     },
