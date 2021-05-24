@@ -82,6 +82,14 @@ describe("patchConsole", () => {
     cnsole.log();
     expect(log).toHaveBeenCalledWith("[dd.trace_id=123456 dd.span_id=78910]");
   });
+  it("injects trace context into logged object message", () => {
+    patchConsole(cnsole as any, contextService);
+
+    cnsole.log({ objectKey: "objectValue", otherObjectKey: "otherObjectValue" });
+    expect(log).toHaveBeenCalledWith(
+      "[dd.trace_id=123456 dd.span_id=78910] { objectKey: 'objectValue', otherObjectKey: 'otherObjectValue' }",
+    );
+  });
   it("leaves empty message unmodified when there is no trace context", () => {
     contextService.rootTraceContext = undefined;
     patchConsole(cnsole as any, contextService);
