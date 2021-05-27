@@ -8,15 +8,15 @@ jest.mock("../utils/process-version");
 const mockedGetProcessVersion = getProcessVersion as jest.Mock<string>;
 
 const mockARN = "arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda";
-const mockContext = ({
+const mockContext = {
   invokedFunctionArn: mockARN,
   memoryLimitInMB: "128",
-} as any) as Context;
-const mockContextLocal = ({
+} as any as Context;
+const mockContextLocal = {
   functionName: "my-test-lambda",
   functionVersion: "1.0.0",
   memoryLimitInMB: "128",
-} as any) as Context;
+} as any as Context;
 
 describe("getRuntimeTag", () => {
   it("returns a null runtime tag when version is not recognized", () => {

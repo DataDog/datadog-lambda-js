@@ -324,7 +324,7 @@ describe("readTraceFromHTTPEvent", () => {
 
 describe("readTraceFromSQSEvent", () => {
   it("can read from sqs source", () => {
-    const result = readTraceFromSQSEvent(({
+    const result = readTraceFromSQSEvent({
       Records: [
         {
           body: "Hello world",
@@ -351,7 +351,7 @@ describe("readTraceFromSQSEvent", () => {
           receiptHandle: "x",
         },
       ],
-    } as unknown) as SQSEvent);
+    } as unknown as SQSEvent);
     expect(result).toEqual({
       parentID: "3369753143434738315",
       sampleMode: SampleMode.AUTO_KEEP,
@@ -360,7 +360,7 @@ describe("readTraceFromSQSEvent", () => {
     });
   });
   it("can handle malformed JSON", () => {
-    const result = readTraceFromSQSEvent(({
+    const result = readTraceFromSQSEvent({
       Records: [
         {
           body: "Hello world",
@@ -387,7 +387,7 @@ describe("readTraceFromSQSEvent", () => {
           receiptHandle: "x",
         },
       ],
-    } as unknown) as SQSEvent);
+    } as unknown as SQSEvent);
     expect(result).toBeUndefined();
   });
 });

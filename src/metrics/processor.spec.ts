@@ -4,7 +4,7 @@ import { Client } from "./api";
 import { APIMetric, Distribution, Metric } from "./model";
 import { Processor } from "./processor";
 
-jest.useFakeTimers();
+jest.useFakeTimers("legacy");
 
 class MockAPIClient implements Client {
   public metricCalls: APIMetric[][] = [];
