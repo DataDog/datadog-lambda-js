@@ -92,7 +92,7 @@ describe("MetricsListener", () => {
       shouldRetryMetrics: false,
       siteURL,
     });
-    jest.useFakeTimers();
+    jest.useFakeTimers("legacy");
 
     listener.onStartInvocation({});
     listener.sendDistributionMetric("my-metric", 10, false, "tag:a", "tag:b");
@@ -125,7 +125,7 @@ describe("MetricsListener", () => {
       shouldRetryMetrics: false,
       siteURL,
     });
-    jest.useFakeTimers();
+    jest.useFakeTimers("legacy");
 
     await listener.onStartInvocation({});
     listener.sendDistributionMetric("my-metric", 10, false, "tag:a", "tag:b");
