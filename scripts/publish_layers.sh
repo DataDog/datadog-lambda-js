@@ -11,7 +11,7 @@
 set -e
 
 NODE_VERSIONS_FOR_AWS_CLI=("nodejs10.x" "nodejs12.x" "nodejs14.x")
-LAYER_PATHS=(".layers/datadog_lambda_node10.15.zip" ".layers/datadog_lambda_node12.13.zip" ".layers/datadog_lambda_node14.15.zip")
+LAYER_PATHS=(".layers/datadog_lambda_node10.24.zip" ".layers/datadog_lambda_node12.13.zip" ".layers/datadog_lambda_node14.15.zip")
 AVAILABLE_LAYERS=("Datadog-Node10-x" "Datadog-Node12-x" "Datadog-Node14-x")
 AVAILABLE_REGIONS=$(aws ec2 describe-regions | jq -r '.[] | .[] | .RegionName')
 

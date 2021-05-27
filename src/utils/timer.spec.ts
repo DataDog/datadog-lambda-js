@@ -1,6 +1,6 @@
 import { Timer } from "./timer";
 
-jest.useFakeTimers();
+jest.useFakeTimers("legacy");
 
 describe("Timer", () => {
   it("should return on a regular interval", async () => {
