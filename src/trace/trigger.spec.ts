@@ -4,9 +4,9 @@ import { readFileSync } from "fs";
 import { Context } from "aws-lambda";
 
 const mockARN = "arn:aws:lambda:us-east-1:123456789012:function:test-nodejs-lambda";
-const mockContext = ({
+const mockContext = {
   invokedFunctionArn: mockARN,
-} as any) as Context;
+} as any as Context;
 
 describe("parseEventSource", () => {
   const events = [

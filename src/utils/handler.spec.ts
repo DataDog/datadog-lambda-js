@@ -4,9 +4,9 @@ import { didFunctionColdStart } from "./cold-start";
 import { wrap } from "./handler";
 import { LogLevel, setLogLevel } from "./log";
 
-const mockContext = ({
+const mockContext = {
   invokedFunctionArn: "arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda",
-} as any) as Context;
+} as any as Context;
 
 beforeEach(() => {
   setLogLevel(LogLevel.NONE);
@@ -215,7 +215,7 @@ describe("wrap", () => {
       setTimeout(() => {
         callback(null, { statusCode: 204, body: "The callback response" });
       }, 10);
-      return ({ statusCode: 200, body: "The promise response" } as unknown) as void;
+      return { statusCode: 200, body: "The promise response" } as unknown as void;
     };
 
     let calledOriginalHandler = false;
