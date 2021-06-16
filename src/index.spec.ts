@@ -18,9 +18,9 @@ const mockedIncrementErrors = incrementErrorsMetric as jest.Mock<typeof incremen
 const mockedIncrementInvocations = incrementInvocationsMetric as jest.Mock<typeof incrementInvocationsMetric>;
 
 const mockARN = "arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda";
-const mockContext = ({
+const mockContext = {
   invokedFunctionArn: mockARN,
-} as any) as Context;
+} as any as Context;
 
 // const MockedListener = OriginalListenerModule.MetricsListener as jest.Mocked<
 //   typeof OriginalListenerModule.MetricsListener
