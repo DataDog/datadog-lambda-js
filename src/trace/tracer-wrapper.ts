@@ -28,14 +28,6 @@ export class TracerWrapper {
       // and one in the user's code.
       const path = require.resolve("dd-trace", { paths: ["/var/task/node_modules", ...module.paths] });
       this.tracer = require(path);
-
-      // Configure the tracer to ignore HTTP calls made from the Lambda Library to the Extension
-      this.tracer.use('http', {
-        // blacklist has been deprecated in favor of blocklist, but we still use it here for
-        // compatibility with older versions of the tracer
-        'blacklist': ['localhost:8124'],
-      });
-
       return;
     } catch {
       logDebug(`Couldn't require dd-trace from main`);
