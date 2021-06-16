@@ -4,7 +4,6 @@ START RequestId: XXXX Version: $LATEST
 XXXX-XX-XX XX:XX:XX.XXX	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed APIGateway request
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	Init Duration: XXXX ms	
-XRAY TraceId: XXXX	SegmentId: XXXX	Sampled: true	
 
 START RequestId: XXXX Version: $LATEST
 {"e":XXXX,"m":"aws.lambda.enhanced.invocations","t":["region:sa-east-1","account_id:XXXX","functionname:integration-tests-js-XXXX-async-metrics_node12","resource:integration-tests-js-XXXX-async-metrics_node12","cold_start:false","memorysize:1024","datadog_lambda:vX.X.X","runtime:nodejs12.x"],"v":1}
@@ -13,7 +12,6 @@ START RequestId: XXXX Version: $LATEST
 XXXX-XX-XX XX:XX:XX.XXX	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SNS request
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	
-XRAY TraceId: XXXX	SegmentId: XXXX	Sampled: true	
 
 START RequestId: XXXX Version: $LATEST
 {"e":XXXX,"m":"aws.lambda.enhanced.invocations","t":["region:sa-east-1","account_id:XXXX","functionname:integration-tests-js-XXXX-async-metrics_node12","resource:integration-tests-js-XXXX-async-metrics_node12","cold_start:false","memorysize:1024","datadog_lambda:vX.X.X","runtime:nodejs12.x"],"v":1}
@@ -23,4 +21,3 @@ START RequestId: XXXX Version: $LATEST
 XXXX-XX-XX XX:XX:XX.XXX	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SQS request
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	
-XRAY TraceId: XXXX	SegmentId: XXXX	Sampled: true	
