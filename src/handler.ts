@@ -23,10 +23,10 @@ if (getEnvValue("DD_TRACE_ENABLED", "true").toLowerCase() === "true") {
   logDebug("automatically initialized dd-trace");
 
   // Configure the tracer to ignore HTTP calls made from the Lambda Library to the Extension
-  tracer.use('http', {
+  tracer.use("http", {
     // blacklist has been deprecated in favor of blocklist, but we still use it here for
     // compatibility with older versions of the tracer
-    'blacklist': /:8124/,
+    blacklist: /:8124/,
   });
 }
 
