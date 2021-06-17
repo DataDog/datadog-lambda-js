@@ -6,7 +6,6 @@ START RequestId: XXXX Version: $LATEST
 {"traces":[[{"trace_id":"XXXX","span_id":"XXXX","parent_id":"XXXX","name":"dns.lookup","resource":"169.254.79.2","error":0,"meta":{"XXXX": "XXXX"},"metrics":{"XXXX": "XXXX"},"start":XXXX,"duration":XXXX,"service":"integration-tests-js-XXXX-process-input-traced_node10-dns"}]]}
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	Init Duration: XXXX ms	
-XRAY TraceId: XXXX	SegmentId: XXXX	Sampled: true	
 
 START RequestId: XXXX Version: $LATEST
 {"e":XXXX,"m":"aws.lambda.enhanced.invocations","t":["region:sa-east-1","account_id:XXXX","functionname:integration-tests-js-XXXX-process-input-traced_node10","resource:integration-tests-js-XXXX-process-input-traced_node10","cold_start:false","memorysize:1024","datadog_lambda:vX.X.X","runtime:nodejs10.x"],"v":1}
@@ -16,7 +15,6 @@ START RequestId: XXXX Version: $LATEST
 {"traces":[[{"trace_id":"XXXX","span_id":"XXXX","parent_id":"XXXX","name":"dns.lookup","resource":"169.254.79.2","error":0,"meta":{"XXXX": "XXXX"},"metrics":{"XXXX": "XXXX"},"start":XXXX,"duration":XXXX,"service":"integration-tests-js-XXXX-process-input-traced_node10-dns"}]]}
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	
-XRAY TraceId: XXXX	SegmentId: XXXX	Sampled: true	
 
 START RequestId: XXXX Version: $LATEST
 {"e":XXXX,"m":"aws.lambda.enhanced.invocations","t":["region:sa-east-1","account_id:XXXX","functionname:integration-tests-js-XXXX-process-input-traced_node10","resource:integration-tests-js-XXXX-process-input-traced_node10","cold_start:false","memorysize:1024","datadog_lambda:vX.X.X","runtime:nodejs10.x"],"v":1}
@@ -26,4 +24,3 @@ START RequestId: XXXX Version: $LATEST
 {"traces":[[{"trace_id":"XXXX","span_id":"XXXX","parent_id":"XXXX","name":"dns.lookup","resource":"169.254.79.2","error":0,"meta":{"XXXX": "XXXX"},"metrics":{"XXXX": "XXXX"},"start":XXXX,"duration":XXXX,"service":"integration-tests-js-XXXX-process-input-traced_node10-dns"}]]}
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	
-XRAY TraceId: XXXX	SegmentId: XXXX	Sampled: true	

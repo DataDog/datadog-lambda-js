@@ -4,9 +4,6 @@ service: integration-tests-js
 provider:
   name: aws
   region: sa-east-1
-  tracing:
-    lambda: true
-    apiGateway: true
   environment:
     DD_INTEGRATION_TEST: true
     DD_API_KEY: ${env:DD_API_KEY}

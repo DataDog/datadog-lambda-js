@@ -15,12 +15,19 @@ if (getEnvValue("DD_TRACE_ENABLED", "true").toLowerCase() === "true") {
   // the version provided by the layer
   const path = require.resolve("dd-trace", { paths: ["/var/task/node_modules", ...module.paths] });
   // tslint:disable-next-line:no-var-requires
-  require(path).init({
+  const tracer = require(path).init({
     tags: {
       "_dd.origin": "lambda",
     },
   });
   logDebug("automatically initialized dd-trace");
+
+  // Configure the tracer to ignore HTTP calls made from the Lambda Library to the Extension
+  tracer.use("http", {
+    // blacklist has been deprecated in favor of blocklist, but we still use it here for
+    // compatibility with older versions of the tracer
+    blacklist: /:8124/,
+  });
 }
 
 const taskRootEnv = getEnvValue(lambdaTaskRootEnvVar, "");
