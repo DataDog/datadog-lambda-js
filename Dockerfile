@@ -16,7 +16,6 @@ RUN rm -rf node_modules
 
 # Move dd-trace from devDependencies to production dependencies
 # That way it is included in our layer, while keeping it an optional dependency for npm
-RUN cat package.json
 RUN node ./scripts/move_ddtrace_dependency.js "$(cat package.json)" > package.json
 # Install dependencies
 RUN yarn install --production=true
