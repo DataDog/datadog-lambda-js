@@ -31,7 +31,7 @@ else
     NEW_VERSION=$1
 fi
 
-echo "Ensure you have access to the dataodg NPM service account"
+echo "Ensure you have access to the datadog NPM service account"
 yarn login
 
 echo "Ensure you have access to the AWS GovCloud account"
