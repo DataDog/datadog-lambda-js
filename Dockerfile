@@ -14,10 +14,11 @@ RUN yarn build
 RUN cp -r dist /nodejs/node_modules/datadog-lambda-js
 RUN rm -rf node_modules
 
-# Install production dependencies
+# Move dd-trace from devDependencies to production dependencies
+# That way it is included in our layer, while keeping it an optional dependency for npm
+RUN node ./scripts/move_ddtrace_dependency.js "$(< package.json)" > package.json
+# Install dependencies
 RUN yarn install --production=true
-# Add dd-trace to our layer, while keeping it an optional dependency for npm.
-RUN yarn add dd-trace
 # Copy the dependencies to the modules folder
 RUN cp -rf node_modules/* /nodejs/node_modules
 
