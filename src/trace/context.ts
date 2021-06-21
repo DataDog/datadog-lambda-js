@@ -223,9 +223,28 @@ export function readTraceFromLambdaContext(context: any): TraceContext | undefin
     return;
   }
 
-  const traceData = context.clientContext?.custom?._datadog;
+  const custom = context.clientContext?.custom;
 
-  if (!traceData || typeof traceData !== "object") {
+  if (!custom || typeof custom !== "object") {
+    return;
+  }
+  let traceData = null;
+
+  if (
+    custom.hasOwnProperty("_datadog") &&
+    typeof custom._datadog === "object" &&
+    custom._datadog.hasOwnProperty(traceIDHeader) &&
+    custom._datadog.hasOwnProperty(parentIDHeader) &&
+    custom._datadog.hasOwnProperty(samplingPriorityHeader)
+  ) {
+    traceData = custom._datadog;
+  } else if (
+    custom.hasOwnProperty(traceIDHeader) &&
+    custom.hasOwnProperty(parentIDHeader) &&
+    custom.hasOwnProperty(samplingPriorityHeader)
+  ) {
+    traceData = custom;
+  } else {
     return;
   }
 
