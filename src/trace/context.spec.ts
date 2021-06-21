@@ -439,6 +439,14 @@ describe("readTraceFromLambdaContext", () => {
     });
     expect(result).toBeUndefined();
   });
+  it("can handle a string `custom` key", () => {
+    const result = readTraceFromLambdaContext({
+      clientContext: {
+        custom: "bar",
+      },
+    });
+    expect(result).toBeUndefined();
+  });
   it("can handle no context", () => {
     const result = readTraceFromLambdaContext(undefined);
     expect(result).toBeUndefined();

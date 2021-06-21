@@ -231,7 +231,7 @@ export function readTraceFromLambdaContext(context: any): TraceContext | undefin
   let traceData = null;
 
   if (
-    custom._datadog &&
+    custom.hasOwnProperty("_datadog") &&
     typeof custom._datadog === "object" &&
     custom._datadog.hasOwnProperty(traceIDHeader) &&
     custom._datadog.hasOwnProperty(parentIDHeader) &&
