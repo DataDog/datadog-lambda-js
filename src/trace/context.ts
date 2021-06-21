@@ -228,7 +228,7 @@ export function readTraceFromLambdaContext(context: any): TraceContext | undefin
   if (!custom || typeof custom !== "object") {
     return;
   }
-  var traceData = null;
+  let traceData = null;
 
   if (
     custom._datadog &&
