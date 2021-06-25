@@ -24,6 +24,7 @@ setLogLevel(LogLevel.NONE);
 describe("MetricsListener", () => {
   afterEach(() => {
     jest.restoreAllMocks();
+    mock.restore();
   });
 
   it("uses unencrypted api key by default", async () => {
