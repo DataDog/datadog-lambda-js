@@ -43,7 +43,7 @@ export function logError(message: string, metadata?: Error | object, error?: Err
 function emitLog(outputter: (a: string) => any, message: string, metadata?: object | Error, error?: Error) {
   message = `datadog:${message}`;
   if (metadata instanceof Error && error === undefined) {
-    //allow for log*(message), log*("message", metadata), log*("message", error), and log*("message", metadata, error)
+    // allow for log*(message), log*("message", metadata), log*("message", error), and log*("message", metadata, error)
     error = metadata;
     metadata = undefined;
   }
