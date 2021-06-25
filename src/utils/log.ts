@@ -30,24 +30,30 @@ export function logDebug(message: string, metadata?: Error | object, error?: Err
   if (logLevel > LogLevel.DEBUG) {
     return;
   }
-  emitLog(logger.debug, message, metadata, error);
+  emitLog(logger.debug, "debug", message, metadata, error);
 }
 
 export function logError(message: string, metadata?: Error | object, error?: Error) {
   if (logLevel > LogLevel.ERROR) {
     return;
   }
-  emitLog(logger.error, message, metadata, error);
+  emitLog(logger.error, "error", message, metadata, error);
 }
 
-function emitLog(outputter: (a: string) => any, message: string, metadata?: object | Error, error?: Error) {
+function emitLog(
+  outputter: (a: string) => any,
+  status: string,
+  message: string,
+  metadata?: object | Error,
+  error?: Error,
+) {
   message = `datadog:${message}`;
+  let output = { status, message };
   if (metadata instanceof Error && error === undefined) {
     // allow for log*(message), log*("message", metadata), log*("message", error), and log*("message", metadata, error)
     error = metadata;
     metadata = undefined;
   }
-  let output = { message };
   if (metadata !== undefined) {
     output = { ...output, ...metadata };
   }
