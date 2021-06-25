@@ -109,7 +109,7 @@ export class MetricsListener {
     } catch (error) {
       // This can fail for a variety of reasons, from the API not being reachable,
       // to KMS key decryption failing.
-      logError(`failed to flush metrics`, { innerError: error });
+      logError("failed to flush metrics", error);
     }
     try {
       if (this.isAgentRunning) {
@@ -117,7 +117,7 @@ export class MetricsListener {
         await flushExtension();
       }
     } catch (error) {
-      logError(`failed to flush extension`, { innerError: error });
+      logError("failed to flush extension", error);
     }
     this.currentProcessor = undefined;
   }
@@ -171,7 +171,7 @@ export class MetricsListener {
       try {
         return await this.kmsClient.decrypt(config.apiKeyKMS);
       } catch (error) {
-        logError("couldn't decrypt kms api key", { innerError: error });
+        logError("couldn't decrypt kms api key", error);
       }
     } else {
       const errorMessage = "api key not configured, see https://dtdg.co/sls-node-metrics";

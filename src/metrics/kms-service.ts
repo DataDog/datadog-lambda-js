@@ -13,8 +13,8 @@ export class KMSService {
     try {
       const kmsType = require("aws-sdk").KMS;
       this.kms = new kmsType() as KMS;
-    } catch {
-      logError("optional dependency aws-sdk not installed. KMS key decryption will not work");
+    } catch (err) {
+      logError("optional dependency aws-sdk not installed. KMS key decryption will not work", err);
     }
   }
 

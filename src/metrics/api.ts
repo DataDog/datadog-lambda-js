@@ -28,7 +28,7 @@ export class APIClient implements Client {
         logDebug(`authorization failed with api key of length ${this.apiKey.length} characters`, e);
       }
       if (e.type === HTTPErrorType.FailedSend) {
-        logDebug(`Failed to send metrics ${e.message}`, e);
+        logDebug("Failed to send metrics", e);
         throw Error(`Failed to send metrics: ${e.message}`);
       }
       throw e.message;

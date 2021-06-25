@@ -18,7 +18,7 @@ export async function isAgentRunning() {
   try {
     await get(url, { timeout: AGENT_TIMEOUT_MS });
   } catch (e) {
-    logDebug(`Agent is not running, returned with error ${JSON.stringify(e)}`);
+    logDebug("Agent is not running, returned with error", e);
     return false;
   }
   return true;
@@ -29,7 +29,7 @@ export async function flushExtension() {
   try {
     await post(url, {}, { timeout: AGENT_TIMEOUT_MS });
   } catch (e) {
-    logDebug(`Failed to flush agent, returned with error ${e}`);
+    logDebug("Failed to flush agent, returned with error", e);
     return false;
   }
   return true;
