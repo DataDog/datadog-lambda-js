@@ -29,8 +29,8 @@ export class TracerWrapper {
       const path = require.resolve("dd-trace", { paths: ["/var/task/node_modules", ...module.paths] });
       this.tracer = require(path);
       return;
-    } catch {
-      logDebug(`Couldn't require dd-trace from main`);
+    } catch (err) {
+      logDebug("Couldn't require dd-trace from main", err);
     }
   }
 

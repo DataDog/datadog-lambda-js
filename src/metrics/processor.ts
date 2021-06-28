@@ -1,6 +1,6 @@
 import promiseRetry from "promise-retry";
 
-import { Timer } from "../utils";
+import { logError, Timer } from "../utils";
 import { Client } from "./api";
 import { Batcher } from "./batcher";
 import { Metric } from "./model";

@@ -21,14 +21,14 @@ export class APIClient implements Client {
       await post(this.getUrl("api/v1/distribution_points"), { series: metrics });
     } catch (e) {
       if (!isHTTPError(e)) {
-        logDebug(`Failed to send metrics ${e}`);
+        logDebug("Failed to send metrics", e);
         throw e;
       }
       if (e.type === HTTPErrorType.BadAuth) {
-        logDebug(`authorization failed with api key of length ${this.apiKey.length} characters`);
+        logDebug(`authorization failed with api key of length ${this.apiKey.length} characters`, e);
       }
       if (e.type === HTTPErrorType.FailedSend) {
-        logDebug(`Failed to send metrics ${e.message}`);
+        logDebug("Failed to send metrics", e);
         throw Error(`Failed to send metrics: ${e.message}`);
       }
       throw e.message;

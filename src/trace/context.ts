@@ -59,7 +59,7 @@ export function extractTraceContext(
       trace = extractor(event, context);
       logDebug(`extracted trace context from the custom extractor`, { trace });
     } catch (error) {
-      logError("custom extractor function failed", { error });
+      logError("custom extractor function failed", error);
     }
   }
 
@@ -76,7 +76,7 @@ export function extractTraceContext(
     try {
       addStepFunctionContextToXray(stepFuncContext);
     } catch (error) {
-      logError("couldn't add step function metadata to xray", { innerError: error });
+      logError("couldn't add step function metadata to xray", error);
     }
   }
 
@@ -86,7 +86,7 @@ export function extractTraceContext(
       logDebug(`added trace context to xray metadata`, { trace });
     } catch (error) {
       // This might fail if running in an environment where xray isn't set up, (like for local development).
-      logError("couldn't add trace context to xray metadata", { innerError: error });
+      logError("couldn't add trace context to xray metadata", error);
     }
     return trace;
   }
@@ -173,7 +173,7 @@ export function sendXraySubsegment(segment: string) {
     });
   } catch (error) {
     client?.close();
-    logDebug("Error occurred submitting to xray daemon", { error });
+    logDebug("Error occurred submitting to xray daemon", error);
   }
 }
 

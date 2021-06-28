@@ -120,7 +120,7 @@ export function datadog<TEvent, TResult>(
         incrementInvocationsMetric(metricsListener, context);
       }
     } catch (err) {
-      logDebug(`Failed to start listeners with error ${err}`);
+      logDebug("Failed to start listeners", err);
     }
 
     let result: TResult | undefined;
@@ -157,7 +157,7 @@ export function datadog<TEvent, TResult>(
         incrementErrorsMetric(metricsListener, context);
       }
     } catch (err) {
-      logDebug(`Failed to complete listeners with error ${err}`);
+      logDebug("Failed to complete listeners", err);
     }
     currentMetricsListener = undefined;
     currentTraceListener = undefined;
