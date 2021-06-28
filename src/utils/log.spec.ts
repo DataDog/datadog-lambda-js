@@ -1,4 +1,3 @@
-import { assert } from "node:console";
 import { setLogger, logError } from "./log";
 
 describe("logger", () => {
