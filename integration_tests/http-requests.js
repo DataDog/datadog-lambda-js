@@ -9,7 +9,7 @@ async function handle(event, context) {
   sendDistributionMetric("serverless.integration_test.execution", 1, "function:http-request");
 
   for (let index = 0; index < urls.length; index++) {
-    await axios({ url: urls[index], method: 'get' });
+    await axios({ url: urls[index], method: "get" });
   }
 
   console.log(`Snapshot test http requests successfully made to URLs: ${urls}`);
