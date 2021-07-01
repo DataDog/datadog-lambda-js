@@ -1,0 +1,21 @@
+repos:
+  - repo: git@github.com:pre-commit/pre-commit-hooks
+    rev: v2.1.0
+    hooks:
+      - id: check-merge-conflict
+        files: \.py$
+      - id: trailing-whitespace
+        exclude: integration_tests/snapshots
+  - repo: git@github.com:pre-commit/mirrors-prettier
+    rev: ""
+    hooks:
+      - id: prettier
+        types_or: [javascript, jsx, ts, tsx]
+  - repo: local
+    hooks:
+      - id: detect-api-keys
+        name: detect-api-keys
+        description: Checks for AWS or Datadog API keys
+        entry: .github/.git-hooks/detect-api-keys.py
+        language: python
+        exclude: ^(yarn.lock|integration_tests/|event_samples/|src/trace/trigger.spec.ts|src/trace/context.spec.ts|src/trace/trigger.ts)

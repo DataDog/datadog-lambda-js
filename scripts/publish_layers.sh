@@ -126,7 +126,7 @@ do
 
             # This shouldn't happen unless someone manually deleted the latest version, say 28, and
             # then tries to republish 28 again. The published version would actually be 29, because
-            # Lambda layers are immutable and AWS will skip deleted version and use the next number. 
+            # Lambda layers are immutable and AWS will skip deleted version and use the next number.
             if [ $latest_version -gt $VERSION ]; then
                 echo "ERROR: Published version $latest_version is greater than the desired version $VERSION!"
                 echo "Exiting"

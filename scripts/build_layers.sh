@@ -20,7 +20,7 @@ else
     if (printf '%s\n' "${NODE_VERSIONS[@]}" | grep -xq $NODE_VERSION); then
         NODE_VERSIONS=($NODE_VERSION)
     else
-        echo "Unsupported version found, valid options are : ${NODE_VERSIONS[@]}" 
+        echo "Unsupported version found, valid options are : ${NODE_VERSIONS[@]}"
         exit 1
     fi
 fi
