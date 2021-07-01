@@ -9,7 +9,6 @@ const apiKeyQueryParam = "api_key";
 export interface Client {
   sendMetrics(metrics: APIMetric[]): Promise<void>;
 }
-
 /**
  * APIClient interfaces with the Datadog API
  */

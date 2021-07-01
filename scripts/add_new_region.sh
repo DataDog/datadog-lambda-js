@@ -58,11 +58,11 @@ for layer_name in "${LAYER_NAMES[@]}"; do
     fi
 
     # run for each version of layer
-    for i in $(seq 1 $last_layer_version); do 
+    for i in $(seq 1 $last_layer_version); do
         layer_path=$layer_name"_"$i.zip
         aws_version_key="${NODE_VERSIONS_FOR_AWS_CLI[$j]}"
 
-        # download layer versions 
+        # download layer versions
         URL=$(AWS_REGION=$OLD_REGION aws lambda get-layer-version --layer-name $layer_name --version-number $i --query Content.Location --output text)
         curl $URL -o $layer_path
 

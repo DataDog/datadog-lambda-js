@@ -17,11 +17,11 @@ about: Create a report to help us improve
 
 ## Specifications
 
-  - Datadog Lambda Layer version: 
-  - Node version: 
-  
+  - Datadog Lambda Layer version:
+  - Node version:
+
 ## Stacktrace
-  
+
   ```
   Paste here
   ```

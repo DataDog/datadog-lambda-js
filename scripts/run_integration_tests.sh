@@ -89,7 +89,7 @@ function remove_stack() {
  trap remove_stack EXIT
 
 for parameters_set in "${PARAMETERS_SETS[@]}"; do
-    
+
     serverless_runtime=$parameters_set[0]
     nodejs_version=$parameters_set[1]
     run_id=$parameters_set[2]
@@ -104,7 +104,7 @@ nodejs version : ${!nodejs_version} and run id : ${!run_id}"
     set +e # Don't exit this script if an invocation fails or there's a diff
     for input_event_file in "${input_event_files[@]}"; do
         for handler_name in "${LAMBDA_HANDLERS[@]}"; do
-            
+
             function_name="${handler_name}_node"
 
             echo "$function_name"

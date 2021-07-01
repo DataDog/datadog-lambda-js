@@ -29,7 +29,7 @@ We love pull requests. Here's a quick guide.
      # Example: ./scripts/publish_layers.sh us-east-1
      ./scripts/publish_layers.sh <AWS_REGION>
      ```
- 
+
 1. Update tests and ensure they pass
     ```bash
     yarn test

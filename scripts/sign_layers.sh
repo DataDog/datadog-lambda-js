@@ -32,7 +32,7 @@ fi
 
 for LAYER_FILE in "${LAYER_FILES[@]}"
 do
-    echo 
+    echo
     echo "${LAYER_FILE}"
     echo "-------------------------"
 
@@ -62,7 +62,7 @@ do
     do
         sleep 3
         SECONDS_WAITED_SO_FAR=$((SECONDS_WAITED_SO_FAR + 3))
-        
+
         SIGNING_JOB_DESCRIPTION=$(aws signer describe-signing-job \
             --job-id $SIGNING_JOB_ID \
             --region $REGION\
