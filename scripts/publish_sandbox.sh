@@ -7,7 +7,7 @@ if [ -z "$VERSION" ]; then
     echo "Version not specified."
     echo "Please specify the desired layer version (e.g. 5)."
     exit 1
-else
+fi
 
 ./scripts/build_layers.sh
 ./scripts/sign_layers.sh sandbox
