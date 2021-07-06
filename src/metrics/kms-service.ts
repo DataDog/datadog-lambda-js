@@ -2,6 +2,8 @@
 // in the lambda environment anyway), we use require to import the sdk, and return an error if someone
 // tries to decrypt a value.
 
+import { logError } from "../utils";
+
 export class KMSService {
   public async decrypt(value: string): Promise<string> {
     try {
@@ -15,6 +17,11 @@ export class KMSService {
       }
       return result.Plaintext.toString("ascii");
     } catch (err) {
+      if(err.code === 'MODULE_NOT_FOUND') {
+        const errorMsg = "optional dependency aws-sdk not installed. KMS key decryption will not work";
+        logError(errorMsg);
+        throw Error(errorMsg);
+      }
       throw Error("Couldn't decrypt value");
     }
   }
