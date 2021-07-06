@@ -3,7 +3,6 @@
 // tries to decrypt a value.
 
 export class KMSService {
-
   public async decrypt(value: string): Promise<string> {
     try {
       const kmsType = require("aws-sdk/clients/kms");
@@ -16,7 +15,7 @@ export class KMSService {
       }
       return result.Plaintext.toString("ascii");
     } catch (err) {
-      throw Error('Couldn\'t decrypt value');
+      throw Error("Couldn't decrypt value");
     }
   }
 }
