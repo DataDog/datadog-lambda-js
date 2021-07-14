@@ -3,8 +3,8 @@ import nock from "nock";
 
 describe("KMSService", () => {
   const ENCRYPTED_KEY = "BQICAHj0djbIQaGrIfSD2gstvRF3h8YGMeEvO5rRHNiuWwSeegEFl57KxNejRn"; // random fake key
-  const EXPECTED_RESULT = "myDecryptedKey"
-  const EXPECTED_ERROR_MESSAGE = "Couldn't decrypt ciphertext"
+  const EXPECTED_RESULT = "myDecryptedKey";
+  const EXPECTED_ERROR_MESSAGE = "Couldn't decrypt ciphertext";
 
   beforeAll(() => {
     process.env.AWS_LAMBDA_FUNCTION_NAME = "my-test-function";
@@ -22,24 +22,24 @@ describe("KMSService", () => {
 
   it("decrypts when the API key was encrypted with an encryption context", async () => {
     const firstFakeKmsCall = nock("https://kms.us-east-1.amazonaws.com:443", { encodedQueryParams: true })
-    .post("/", {
-      CiphertextBlob: "BQICAHj0djbIQaGrIfSD2gstvRF3h8YGMeEvO5rRHNiuWwSeegEFl57KxNejRg==",
-    })
-    .reply(400, {
-      KeyId: "arn:aws:kms:us-east-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab",
-    });
+      .post("/", {
+        CiphertextBlob: "BQICAHj0djbIQaGrIfSD2gstvRF3h8YGMeEvO5rRHNiuWwSeegEFl57KxNejRg==",
+      })
+      .reply(400, {
+        KeyId: "arn:aws:kms:us-east-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab",
+      });
 
     const secondFakeKmsCall = nock("https://kms.us-east-1.amazonaws.com:443", { encodedQueryParams: true })
-    .post("/", {
-      CiphertextBlob: "BQICAHj0djbIQaGrIfSD2gstvRF3h8YGMeEvO5rRHNiuWwSeegEFl57KxNejRg==",
-      EncryptionContext: {
-        LambdaFunctionName: "my-test-function",
-      },
-    })
-    .reply(200, {
-      KeyId: "arn:aws:kms:us-east-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab",
-      Plaintext: Buffer.from(EXPECTED_RESULT),
-    });
+      .post("/", {
+        CiphertextBlob: "BQICAHj0djbIQaGrIfSD2gstvRF3h8YGMeEvO5rRHNiuWwSeegEFl57KxNejRg==",
+        EncryptionContext: {
+          LambdaFunctionName: "my-test-function",
+        },
+      })
+      .reply(200, {
+        KeyId: "arn:aws:kms:us-east-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab",
+        Plaintext: Buffer.from(EXPECTED_RESULT),
+      });
 
     const kmsService = new KMSService();
     const result = await kmsService.decrypt(ENCRYPTED_KEY);
@@ -50,13 +50,13 @@ describe("KMSService", () => {
 
   it("decrypts when the API key was encrypted without an encryption context", async () => {
     const fakeKmsCall = nock("https://kms.us-east-1.amazonaws.com:443", { encodedQueryParams: true })
-    .post("/", {
-      CiphertextBlob: "BQICAHj0djbIQaGrIfSD2gstvRF3h8YGMeEvO5rRHNiuWwSeegEFl57KxNejRg==",
-    })
-    .reply(200, {
-      KeyId: "arn:aws:kms:us-east-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab",
-      Plaintext: Buffer.from(EXPECTED_RESULT),
-    });
+      .post("/", {
+        CiphertextBlob: "BQICAHj0djbIQaGrIfSD2gstvRF3h8YGMeEvO5rRHNiuWwSeegEFl57KxNejRg==",
+      })
+      .reply(200, {
+        KeyId: "arn:aws:kms:us-east-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab",
+        Plaintext: Buffer.from(EXPECTED_RESULT),
+      });
 
     const kmsService = new KMSService();
     const result = await kmsService.decrypt(ENCRYPTED_KEY);
@@ -66,22 +66,22 @@ describe("KMSService", () => {
 
   it("throws an error when unable to decrypt", async () => {
     const fakeKmsCall = nock("https://kms.us-east-1.amazonaws.com:443", { encodedQueryParams: true })
-    .post("/", {
-      CiphertextBlob: "BQICAHj0djbIQaGrIfSD2gstvRF3h8YGMeEvO5rRHNiuWwSeegEFl57KxNejRg==",
-      EncryptionContext: {
-        LambdaFunctionName: "my-test-function",
-      },
-    })
-    .reply(400, {
-      KeyId: "arn:aws:kms:us-east-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab",
-    });
+      .post("/", {
+        CiphertextBlob: "BQICAHj0djbIQaGrIfSD2gstvRF3h8YGMeEvO5rRHNiuWwSeegEFl57KxNejRg==",
+        EncryptionContext: {
+          LambdaFunctionName: "my-test-function",
+        },
+      })
+      .reply(400, {
+        KeyId: "arn:aws:kms:us-east-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab",
+      });
 
     const kmsService = new KMSService();
     try {
       await kmsService.decrypt(ENCRYPTED_KEY);
-      fail()
+      fail();
     } catch (e) {
-      expect(e.message).toEqual(EXPECTED_ERROR_MESSAGE)
+      expect(e.message).toEqual(EXPECTED_ERROR_MESSAGE);
     }
     fakeKmsCall.done();
   });
