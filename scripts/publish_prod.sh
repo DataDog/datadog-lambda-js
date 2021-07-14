@@ -38,7 +38,7 @@ echo "Ensure you have access to the AWS GovCloud account"
 saml2aws login -a govcloud-us1-fed-human-engineering
 AWS_PROFILE=govcloud-us1-fed-human-engineering aws sts get-caller-identity
 
-echo "Ensure you have access to the commercial AWS GovCloud account"
+echo "Ensure you have access to the production AWS account"
 aws-vault exec prod-engineering -- aws sts get-caller-identity
 
 CURRENT_VERSION=$(npm view datadog-lambda-js version)
