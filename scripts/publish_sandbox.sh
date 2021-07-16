@@ -9,6 +9,6 @@ if [ -z "$VERSION" ]; then
     exit 1
 fi
 
-# ./scripts/build_layers.sh
-# ./scripts/sign_layers.sh sandbox
+./scripts/build_layers.sh
+./scripts/sign_layers.sh sandbox
 VERSION=$VERSION REGIONS=sa-east-1 ./scripts/publish_layers.sh
