@@ -19,7 +19,7 @@ jobs:
       - name: Update Dependencies
         run: |
           yarn install
-          yarn upgrade --latest
+          yarn upgrade
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
