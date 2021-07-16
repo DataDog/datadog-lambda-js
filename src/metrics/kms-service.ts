@@ -1,17 +1,28 @@
 // In order to avoid the layer adding the 40mb aws-sdk to a deployment, (which is always available
-// in the lambda environment anyway), we use require to import the sdk, and return an error if someone
-// tries to decrypt a value.
+// in the Lambda environment anyway), we use require to import the SDK.
 
 import { logError } from "../utils";
 
 export class KMSService {
-  public async decrypt(value: string): Promise<string> {
+  public async decrypt(ciphertext: string): Promise<string> {
     try {
-      const kmsType = require("aws-sdk/clients/kms");
-      const kms = new kmsType();
-      const buffer = Buffer.from(value, "base64");
-      const encryptionContext = { LambdaFunctionName: process.env.AWS_LAMBDA_FUNCTION_NAME ?? "" };
-      const result = await kms.decrypt({ CiphertextBlob: buffer, EncryptionContext: encryptionContext }).promise();
+      const kms = require("aws-sdk/clients/kms");
+      const kmsClient = new kms();
+      const buffer = Buffer.from(ciphertext, "base64");
+
+      // When the API key is encrypted using the AWS console, the function name is added as an encryption context.
+      // When the API key is encrypted using the AWS CLI, no encryption context is added.
+      // We need to try decrypting the API key both with and without the encryption context.
+      let result;
+      // Try without encryption context, in case API key was encrypted using the AWS CLI
+      try {
+        result = await kmsClient.decrypt({ CiphertextBlob: buffer }).promise();
+      } catch {
+        // Then try with encryption context, in case API key was encrypted using the AWS Console
+        const encryptionContext = { LambdaFunctionName: process.env.AWS_LAMBDA_FUNCTION_NAME ?? "" };
+        result = await kmsClient.decrypt({ CiphertextBlob: buffer, EncryptionContext: encryptionContext }).promise();
+      }
+
       if (result.Plaintext === undefined) {
         throw Error();
       }
@@ -22,7 +33,7 @@ export class KMSService {
         logError(errorMsg);
         throw Error(errorMsg);
       }
-      throw Error("Couldn't decrypt value");
+      throw Error("Couldn't decrypt ciphertext");
     }
   }
 }
