@@ -3,6 +3,7 @@ import nock from "nock";
 
 describe("KMSService", () => {
   const ENCRYPTED_KEY = "BQICAHj0djbIQaGrIfSD2gstvRF3h8YGMeEvO5rRHNiuWwSeegEFl57KxNejRn"; // random fake key
+  const KEY_ID = "arn:aws:kms:us-east-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab";
   const EXPECTED_RESULT = "myDecryptedKey";
   const EXPECTED_ERROR_MESSAGE = "Couldn't decrypt ciphertext";
 
@@ -26,7 +27,7 @@ describe("KMSService", () => {
         CiphertextBlob: "BQICAHj0djbIQaGrIfSD2gstvRF3h8YGMeEvO5rRHNiuWwSeegEFl57KxNejRg==",
       })
       .reply(400, {
-        KeyId: "arn:aws:kms:us-east-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab",
+        KeyId: KEY_ID,
       });
 
     const secondFakeKmsCall = nock("https://kms.us-east-1.amazonaws.com:443", { encodedQueryParams: true })
@@ -37,7 +38,7 @@ describe("KMSService", () => {
         },
       })
       .reply(200, {
-        KeyId: "arn:aws:kms:us-east-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab",
+        KeyId: KEY_ID,
         Plaintext: Buffer.from(EXPECTED_RESULT),
       });
 
@@ -54,7 +55,7 @@ describe("KMSService", () => {
         CiphertextBlob: "BQICAHj0djbIQaGrIfSD2gstvRF3h8YGMeEvO5rRHNiuWwSeegEFl57KxNejRg==",
       })
       .reply(200, {
-        KeyId: "arn:aws:kms:us-east-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab",
+        KeyId: KEY_ID,
         Plaintext: Buffer.from(EXPECTED_RESULT),
       });
 
@@ -68,12 +69,9 @@ describe("KMSService", () => {
     const fakeKmsCall = nock("https://kms.us-east-1.amazonaws.com:443", { encodedQueryParams: true })
       .post("/", {
         CiphertextBlob: "BQICAHj0djbIQaGrIfSD2gstvRF3h8YGMeEvO5rRHNiuWwSeegEFl57KxNejRg==",
-        EncryptionContext: {
-          LambdaFunctionName: "my-test-function",
-        },
       })
       .reply(400, {
-        KeyId: "arn:aws:kms:us-east-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab",
+        KeyId: KEY_ID,
       });
 
     const kmsService = new KMSService();
