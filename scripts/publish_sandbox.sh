@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Usage: VERSION=5 aws-vault exec sandbox-acccount-admin -- publish_layers.sh
+# Usage: VERSION=5 aws-vault exec sandbox-acccount-admin -- publish_sandbox.sh
 set -e
 
 if [ -z "$VERSION" ]; then
