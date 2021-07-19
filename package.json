@@ -37,7 +37,7 @@
   "dependencies": {
     "aws-xray-sdk-core": "^3.3.3",
     "bignumber.js": "^9.0.1",
-    "hot-shots": "8.3.1",
+    "hot-shots": "8.5.0",
     "promise-retry": "^2.0.1",
     "serialize-error": "^8.1.0",
     "shimmer": "^1.2.1"
