@@ -1552,10 +1552,10 @@ hdr-histogram-js@^2.0.1:
     base64-js "^1.2.0"
     pako "^1.0.3"
 
-hot-shots@8.3.1:
-  version "8.3.1"
-  resolved "https://registry.yarnpkg.com/hot-shots/-/hot-shots-8.3.1.tgz#de262964cd506978f03218e2d1f0bcd90b931093"
-  integrity sha512-eB20m2neM+uV7IM3JDCZg8/NU1+WGM7Qh7kpvC/sGIWNg4Ng+9O8JT/zrLuA+2JStiQLEy9z/9VEDFH0BzYf0A==
+hot-shots@8.5.0:
+  version "8.5.0"
+  resolved "https://registry.yarnpkg.com/hot-shots/-/hot-shots-8.5.0.tgz#860246a3694dfb74cfe6045501eb59fb57e16eb9"
+  integrity sha512-GNXtNSxa9qibcPhi3gndyN5g14iBJS+/DDlu7hjSPfXYJy9/fcO13DgSyfPUVWrD/aIyPY36z7MksHvDe05zYg==
   optionalDependencies:
     unix-dgram "2.0.x"
 
