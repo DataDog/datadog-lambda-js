@@ -1,6 +1,6 @@
 # Contributing
 
-We love pull requests. Here's a quick guide.
+We love pull requests. For new features, consider opening an issue to discuss the idea first. When you're ready to open a pull requset, here's a quick guide.
 
 1. Fork, clone and branch off `main`:
     ```bash
