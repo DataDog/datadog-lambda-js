@@ -89,3 +89,4 @@ git push origin "refs/tags/v$NEW_VERSION"
 echo
 echo "Now create a new release with the tag v${NEW_VERSION} created"
 echo "https://github.com/DataDog/datadog-lambda-js/releases/new?tag=v$NEW_VERSION&title=v$NEW_VERSION"
+echo "Also, remember to update ${HOME}/go/src/github.com/datadog/documentation/layouts/shortcodes/latest-lambda-layer-version.html"
