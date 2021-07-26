@@ -68,7 +68,7 @@ export class MetricsListener {
     if (this.isAgentRunning) {
       logDebug(`Using StatsD client`);
 
-      this.statsDClient = new StatsD({ host: "127.0.0.1" });
+      this.statsDClient = new StatsD({ host: "127.0.0.1", closingFlushInterval: 1 });
       return;
     }
     if (this.config.logForwarding) {
