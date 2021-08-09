@@ -3,20 +3,6 @@ import http from "http";
 import { URL } from "url";
 import { logDebug } from "./log";
 
-export enum HTTPErrorType {
-  BadAuth,
-  FailedSend,
-}
-
-export interface HTTPError {
-  type: HTTPErrorType;
-  message: string;
-  statusCode?: number;
-}
-export function isHTTPError(error: any): error is HTTPError {
-  return typeof error === "object" && error !== null && Object.values(HTTPErrorType).includes(error.type);
-}
-
 export function post<T>(url: URL, body: T, options?: Partial<RequestOptions>): Promise<void> {
   const bodyJSON = JSON.stringify(body);
   const buffer = Buffer.from(bodyJSON);
@@ -54,21 +40,19 @@ function sendRequest(url: URL, options: RequestOptions, buffer?: Buffer): Promis
 
     const request = requestMethod(options, (response) => {
       if (response.statusCode === undefined || response.statusCode < 200 || response.statusCode > 299) {
-        reject({
-          type: HTTPErrorType.BadAuth,
-          message: `Invalid status code ${response.statusCode}`,
-          statusCode: response.statusCode,
-        });
-      } else {
-        resolve();
+        return reject({ statusCode: response.statusCode });
       }
+      return resolve();
     });
+
     request.on("error", (error) => {
-      reject({ type: HTTPErrorType.FailedSend, message: error.message });
+      reject({ message: error.message });
     });
+
     if (buffer) {
       request.write(buffer);
     }
+
     request.end();
   });
 }
