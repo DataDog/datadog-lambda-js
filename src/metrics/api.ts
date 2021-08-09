@@ -21,7 +21,7 @@ export class APIClient implements Client {
       await post(this.getUrl("api/v1/distribution_points"), { series: metrics });
     } catch (e) {
       if (e.statusCode === FORBIDDEN_HTTP_STATUS_CODE) {
-        logDebug("authorization failed when sending metrics, please check validity of API key")
+        logDebug("authorization failed when sending metrics, please check validity of API key");
       } else {
         logDebug("failed attempt to send metrics to Datadog");
       }
