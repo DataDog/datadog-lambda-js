@@ -12,8 +12,6 @@ const ENHANCED_LAMBDA_METRICS_NAMESPACE = "aws.lambda.enhanced";
 
 // Same tag strings added to normal Lambda integration metrics
 enum RuntimeTagValues {
-  Node8 = "nodejs8.10",
-  Node10 = "nodejs10.x",
   Node12 = "nodejs12.x",
   Node14 = "nodejs14.x",
 }
@@ -30,14 +28,6 @@ export function getVersionTag(): string {
 export function getRuntimeTag(): string | null {
   const processVersion = getProcessVersion();
   let processVersionTagString: string | null = null;
-
-  if (processVersion.startsWith("v8.10")) {
-    processVersionTagString = RuntimeTagValues.Node8;
-  }
-
-  if (processVersion.startsWith("v10")) {
-    processVersionTagString = RuntimeTagValues.Node10;
-  }
 
   if (processVersion.startsWith("v12")) {
     processVersionTagString = RuntimeTagValues.Node12;
