@@ -10,7 +10,7 @@
 
 set -e
 
-LAYER_NAMES=("Datadog-Node10-x" "Datadog-Node12-x" "Datadog-Node14-x")
+LAYER_NAMES=("Datadog-Node12-x" "Datadog-Node14-x")
 AVAILABLE_REGIONS=$(aws ec2 describe-regions | jq -r '.[] | .[] | .RegionName')
 LAYERS_MISSING_REGIONS=()
 
