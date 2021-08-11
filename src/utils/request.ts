@@ -4,10 +4,10 @@ import { URL } from "url";
 import { logDebug } from "./log";
 
 type RequestResult = {
-  success: boolean,
-  statusCode?: number,
-  errorMessage?: string,
-}
+  success: boolean;
+  statusCode?: number;
+  errorMessage?: string;
+};
 
 export function post<T>(url: URL, body: T, options?: Partial<RequestOptions>): Promise<RequestResult> {
   const bodyJSON = JSON.stringify(body);
@@ -47,7 +47,7 @@ function sendRequest(url: URL, options: RequestOptions, buffer?: Buffer): Promis
     const request = requestMethod(options, (response) => {
       const statusCode = response.statusCode;
 
-      if (statusCode === undefined || statusCode < 200 || statusCode > 299 ) {
+      if (statusCode === undefined || statusCode < 200 || statusCode > 299) {
         return resolve({
           success: false,
           statusCode,
@@ -64,7 +64,7 @@ function sendRequest(url: URL, options: RequestOptions, buffer?: Buffer): Promis
     request.on("error", (error) => {
       resolve({
         success: false,
-        errorMessage: error.message
+        errorMessage: error.message,
       });
     });
 

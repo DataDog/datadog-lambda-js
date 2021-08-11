@@ -18,8 +18,8 @@ export async function isAgentRunning() {
   const url = new URL(HELLO_PATH, AGENT_URL);
   const result = await get(url, { timeout: AGENT_TIMEOUT_MS });
   if (!result.success) {
-      logDebug(`Could not connect to agent. ${result.errorMessage}`);
-      return false;
+    logDebug(`Could not connect to agent. ${result.errorMessage}`);
+    return false;
   }
   return true;
 }
