@@ -3,7 +3,13 @@ import http from "http";
 import { URL } from "url";
 import { logDebug } from "./log";
 
-export function post<T>(url: URL, body: T, options?: Partial<RequestOptions>): Promise<void> {
+type RequestResult = {
+  success: boolean,
+  statusCode?: number,
+  errorMessage?: string,
+}
+
+export function post<T>(url: URL, body: T, options?: Partial<RequestOptions>): Promise<RequestResult> {
   const bodyJSON = JSON.stringify(body);
   const buffer = Buffer.from(bodyJSON);
   logDebug(`sending payload with body ${bodyJSON}`);
@@ -20,7 +26,7 @@ export function post<T>(url: URL, body: T, options?: Partial<RequestOptions>): P
   return sendRequest(url, requestOptions, buffer);
 }
 
-export function get(url: URL, options?: Partial<RequestOptions>): Promise<void> {
+export function get(url: URL, options?: Partial<RequestOptions>): Promise<RequestResult> {
   const requestOptions: RequestOptions = {
     headers: { "content-type": "application/json" },
     host: url.host,
@@ -34,19 +40,32 @@ export function get(url: URL, options?: Partial<RequestOptions>): Promise<void> 
   return sendRequest(url, requestOptions);
 }
 
-function sendRequest(url: URL, options: RequestOptions, buffer?: Buffer): Promise<void> {
-  return new Promise((resolve, reject) => {
+function sendRequest(url: URL, options: RequestOptions, buffer?: Buffer): Promise<RequestResult> {
+  return new Promise((resolve) => {
     const requestMethod = url.protocol === "https:" ? https.request : http.request;
 
     const request = requestMethod(options, (response) => {
-      if (response.statusCode === undefined || response.statusCode < 200 || response.statusCode > 299) {
-        return reject({ statusCode: response.statusCode });
+      const statusCode = response.statusCode;
+
+      if (statusCode === undefined || statusCode < 200 || statusCode > 200 ) {
+        return resolve({
+          success: false,
+          statusCode,
+          errorMessage: `HTTP error code: ${response.statusCode}`,
+        });
       }
-      return resolve();
+
+      return resolve({
+        success: true,
+        statusCode,
+      });
     });
 
     request.on("error", (error) => {
-      reject({ message: error.message });
+      resolve({
+        success: false,
+        errorMessage: error.message
+      });
     });
 
     if (buffer) {
