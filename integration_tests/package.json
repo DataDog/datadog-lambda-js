@@ -10,8 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "0.21.1",
-    "datadog-lambda-js": "^3.27.0"
+    "axios": "0.21.1"
   },
   "devDependencies": {
     "serverless-plugin-datadog": "2.2.1"
