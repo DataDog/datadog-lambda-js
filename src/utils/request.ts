@@ -47,7 +47,7 @@ function sendRequest(url: URL, options: RequestOptions, buffer?: Buffer): Promis
     const request = requestMethod(options, (response) => {
       const statusCode = response.statusCode;
 
-      if (statusCode === undefined || statusCode < 200 || statusCode > 200 ) {
+      if (statusCode === undefined || statusCode < 200 || statusCode > 299 ) {
         return resolve({
           success: false,
           statusCode,
