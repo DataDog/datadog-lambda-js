@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [10.24, 12.13, 14.15]
+        node-version: [12.13, 14.15]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -17,15 +17,20 @@ jobs:
         with:
           node-version: 14.15
 
-      - name: Cache Node modules
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: Restore node modules from cache
         id: cache-node-modules
         uses: actions/cache@v2
         with:
-          path: "**/node_modules"
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
       - name: Install dependencies
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: yarn install
 
       - name: Build Layers

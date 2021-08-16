@@ -44,7 +44,7 @@ describe("APIClient", () => {
       .post("/api/v1/distribution_points?api_key=bad_api_key", JSON.stringify({ series: [] }))
       .reply(403);
     const client = new APIClient("bad_api_key", baseAPIURL);
-    await expect(client.sendMetrics([])).rejects.toMatchInlineSnapshot(`"Invalid status code 403"`);
+    await expect(client.sendMetrics([])).rejects.toMatchInlineSnapshot(`"HTTP error code: 403"`);
     expect(scope.isDone()).toBeTruthy();
   });
 
@@ -53,9 +53,7 @@ describe("APIClient", () => {
       .post("/api/v1/distribution_points?api_key=api_key", JSON.stringify({ series: [] }))
       .replyWithError("Connection closed");
     const client = new APIClient("api_key", baseAPIURL);
-    await expect(client.sendMetrics([])).rejects.toMatchInlineSnapshot(
-      `[Error: Failed to send metrics: Connection closed]`,
-    );
+    await expect(client.sendMetrics([])).rejects.toMatchInlineSnapshot(`"Connection closed"`);
     expect(scope.isDone()).toBeTruthy();
   });
 });
