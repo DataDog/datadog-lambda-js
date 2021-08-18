@@ -24,7 +24,7 @@ if (getEnvValue("DD_TRACE_ENABLED", "true").toLowerCase() === "true") {
 
   // Configure the tracer to ignore HTTP calls made from the Lambda Library to the Extension
   tracer.use("http", {
-    blocklist: /8124\/lambda/,
+    blocklist: /:8124\/lambda/,
   });
 }
 
