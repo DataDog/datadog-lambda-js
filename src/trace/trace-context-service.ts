@@ -1,5 +1,3 @@
-import { getSegment, getLogger, setLogger, Logger, Segment } from "aws-xray-sdk-core";
-
 import { logDebug } from "../utils";
 import { parentIDHeader, samplingPriorityHeader, traceIDHeader } from "./constants";
 import { convertToAPMParentID, TraceContext } from "./context";
@@ -13,12 +11,6 @@ export interface TraceHeaders {
   [parentIDHeader]: string;
   [samplingPriorityHeader]: string;
 }
-const noopXrayLogger: Logger = {
-  warn: (message: string) => {},
-  debug: (message: string) => {},
-  info: (message: string) => {},
-  error: (message: string) => {},
-};
 
 /**
  * Service for retrieving the latest version of the request context from xray.
@@ -39,18 +31,6 @@ export class TraceContextService {
     if (datadogContext) {
       logDebug(`set trace context from dd-trace with parent ${datadogContext.parentID}`);
       return datadogContext;
-    }
-
-    // Update the parent id to the active X-Ray subsegment if available
-    const xraySegment = this.getXraySegment();
-    if (xraySegment === undefined) {
-      logDebug("couldn't retrieve segment from xray");
-    } else {
-      const value = convertToAPMParentID(xraySegment.id);
-      if (value !== undefined) {
-        logDebug(`set trace context from xray with parent ${value} from segment`, { xraySegment });
-        traceContext.parentID = value;
-      }
     }
 
     return traceContext;
@@ -85,21 +65,5 @@ export class TraceContextService {
 
   get traceSource() {
     return this.rootTraceContext !== undefined ? this.rootTraceContext.source : undefined;
-  }
-
-  // Get the current X-Ray (sub)segment. Note, this always return a
-  // (sub)segment even if when X-Ray active tracing is not enabled.
-  private getXraySegment(): Segment | undefined {
-    // Newer versions of X-Ray core sdk will either throw
-    // an exception or log a noisy output message when segment is empty.
-    // We temporarily disabled logging on the library as a work around.
-    const oldLogger = getLogger();
-    let xraySegment: Segment | undefined;
-    try {
-      setLogger(noopXrayLogger);
-      xraySegment = getSegment();
-    } catch (error) {}
-    setLogger(oldLogger);
-    return xraySegment;
   }
 }

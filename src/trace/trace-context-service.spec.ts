@@ -4,21 +4,6 @@ import { SampleMode, Source } from "./constants";
 
 let mockXRaySegment: any;
 let mockXRayShouldThrow = false;
-jest.mock("aws-xray-sdk-core", () => {
-  let logger = { debug: () => {}, info: () => {}, error: () => {}, warn: () => {} };
-  return {
-    getSegment: () => {
-      if (mockXRayShouldThrow) {
-        throw new Error("Xray unitialised");
-      }
-      return mockXRaySegment;
-    },
-    getLogger: () => logger,
-    setLogger: (l: any) => {
-      logger = l;
-    },
-  };
-});
 
 describe("TraceContextService", () => {
   let traceContextService: TraceContextService;
@@ -51,23 +36,6 @@ describe("TraceContextService", () => {
       parentID: "78910",
       sampleMode: SampleMode.AUTO_KEEP,
       source: Source.Event,
-    });
-  });
-  it("uses x-ray trace parent id when no datadog trace context is available", () => {
-    mockXRaySegment = {
-      id: "0b11cc4230d3e09e",
-    };
-    traceContextService.rootTraceContext = {
-      traceID: "123456",
-      parentID: "abcdef",
-      sampleMode: SampleMode.AUTO_KEEP,
-      source: Source.Xray,
-    };
-    expect(traceContextService.currentTraceContext).toEqual({
-      traceID: "123456",
-      parentID: "797643193680388254",
-      sampleMode: SampleMode.AUTO_KEEP,
-      source: Source.Xray,
     });
   });
   it("uses parent trace parent id when trace id is invalid", () => {
