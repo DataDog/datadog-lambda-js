@@ -122,6 +122,7 @@ export class TraceListener {
         function_version: tk.length > 7 ? tk[7] : "$LATEST",
         request_id: this.context.awsRequestId,
         resource_names: this.context.functionName,
+        functionname: this.context?.functionName?.toLowerCase(),
         datadog_lambda: datadogLambdaVersion,
         dd_trace: ddtraceVersion,
       };
