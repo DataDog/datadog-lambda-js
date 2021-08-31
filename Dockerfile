@@ -31,3 +31,7 @@ RUN rm -rf /nodejs/node_modules/dd-trace/prebuilds
 RUN rm -rf /nodejs/node_modules/dd-trace/dist
 RUN rm -rf /nodejs/node_modules/hdr-histogram-js/build
 RUN rm -rf /nodejs/node_modules/protobufjs/dist
+RUN rm -rf /nodejs/node_modules/protobufjs/cli
+RUN find /nodejs/node_modules -name "*.d.ts" -delete
+RUN find /nodejs/node_modules -name "*.js.map" -delete
+RUN find /nodejs/node_modules -name "*.ts.map" -delete
