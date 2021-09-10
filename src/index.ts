@@ -117,7 +117,7 @@ export function datadog<TEvent, TResult>(
       await traceListener.onStartInvocation(event, context);
       await metricsListener.onStartInvocation(event);
       if (finalConfig.enhancedMetrics) {
-        incrementInvocationsMetric(metricsListener, context);
+        await incrementInvocationsMetric(metricsListener, context);
       }
     } catch (err) {
       logDebug("Failed to start listeners", err);
@@ -154,7 +154,7 @@ export function datadog<TEvent, TResult>(
       await metricsListener.onCompleteInvocation();
       await traceListener.onCompleteInvocation();
       if (didThrow && finalConfig.enhancedMetrics) {
-        incrementErrorsMetric(metricsListener, context);
+        await incrementErrorsMetric(metricsListener, context);
       }
     } catch (err) {
       logDebug("Failed to complete listeners", err);
@@ -179,11 +179,11 @@ export function datadog<TEvent, TResult>(
  * @param metricTime The timesamp associated with this metric data point.
  * @param tags The tags associated with the metric. Should be of the format "tag:value".
  */
-export function sendDistributionMetricWithDate(name: string, value: number, metricTime: Date, ...tags: string[]) {
+export async function sendDistributionMetricWithDate(name: string, value: number, metricTime: Date, ...tags: string[]) {
   tags = [...tags, getRuntimeTag()];
 
   if (currentMetricsListener !== undefined) {
-    currentMetricsListener.sendDistributionMetricWithDate(name, value, metricTime, false, ...tags);
+    await currentMetricsListener.sendDistributionMetricWithDate(name, value, metricTime, false, ...tags);
   } else {
     logError("handler not initialized");
   }
@@ -195,11 +195,11 @@ export function sendDistributionMetricWithDate(name: string, value: number, metr
  * @param value The value of the metric
  * @param tags The tags associated with the metric. Should be of the format "tag:value".
  */
-export function sendDistributionMetric(name: string, value: number, ...tags: string[]) {
+export async function sendDistributionMetric(name: string, value: number, ...tags: string[]) {
   tags = [...tags, getRuntimeTag()];
 
   if (currentMetricsListener !== undefined) {
-    currentMetricsListener.sendDistributionMetric(name, value, false, ...tags);
+    await currentMetricsListener.sendDistributionMetric(name, value, false, ...tags);
   } else {
     logError("handler not initialized");
   }

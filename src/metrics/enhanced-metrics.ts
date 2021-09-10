@@ -64,15 +64,20 @@ export function getEnhancedMetricTags(context: Context): string[] {
  * @param context object passed to invocation by AWS
  * @param metricName name of the enhanced metric without namespace prefix, i.e. "invocations" or "errors"
  */
-function incrementEnhancedMetric(listener: MetricsListener, metricName: string, context: Context) {
+async function incrementEnhancedMetric(listener: MetricsListener, metricName: string, context: Context) {
   // Always write enhanced metrics to standard out
-  listener.sendDistributionMetric(`aws.lambda.enhanced.${metricName}`, 1, true, ...getEnhancedMetricTags(context));
+  await listener.sendDistributionMetric(
+    `aws.lambda.enhanced.${metricName}`,
+    1,
+    true,
+    ...getEnhancedMetricTags(context),
+  );
 }
 
-export function incrementInvocationsMetric(listener: MetricsListener, context: Context): void {
-  incrementEnhancedMetric(listener, "invocations", context);
+export async function incrementInvocationsMetric(listener: MetricsListener, context: Context): Promise<void> {
+  await incrementEnhancedMetric(listener, "invocations", context);
 }
 
-export function incrementErrorsMetric(listener: MetricsListener, context: Context): void {
-  incrementEnhancedMetric(listener, "errors", context);
+export async function incrementErrorsMetric(listener: MetricsListener, context: Context): Promise<void> {
+  await incrementEnhancedMetric(listener, "errors", context);
 }
