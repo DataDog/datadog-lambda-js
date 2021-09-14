@@ -143,8 +143,8 @@ export function datadog<TEvent, TResult>(
               traceListener.triggerTags["http.status_code"] = statusCode;
               if (traceListener.currentSpan) {
                 if (finalConfig.capturePayload) {
-                  tagObject(traceListener.currentSpan, "_lambda_payload.request", localEvent);
-                  tagObject(traceListener.currentSpan, "_lambda_payload.response", localResult);
+                  tagObject(traceListener.currentSpan, "function.request", localEvent);
+                  tagObject(traceListener.currentSpan, "function.response", localResult);
                 }
                 traceListener.currentSpan.setTag("http.status_code", statusCode);
               }
