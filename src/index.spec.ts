@@ -14,10 +14,8 @@ import { LogLevel, setLogLevel } from "./utils";
 
 jest.mock("./metrics/enhanced-metrics");
 
-const mockedIncrementErrors = incrementErrorsMetric as unknown as jest.Mock<typeof incrementErrorsMetric>;
-const mockedIncrementInvocations = incrementInvocationsMetric as unknown as jest.Mock<
-  typeof incrementInvocationsMetric
->;
+const mockedIncrementErrors = incrementErrorsMetric as jest.Mock<typeof incrementErrorsMetric>;
+const mockedIncrementInvocations = incrementInvocationsMetric as jest.Mock<typeof incrementInvocationsMetric>;
 
 const mockARN = "arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda";
 const mockContext = {

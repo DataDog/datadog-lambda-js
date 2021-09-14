@@ -122,7 +122,7 @@ export class MetricsListener {
     this.currentProcessor = undefined;
   }
 
-  public async sendDistributionMetricWithDate(
+  public sendDistributionMetricWithDate(
     name: string,
     value: number,
     metricTime: Date,
@@ -141,7 +141,8 @@ export class MetricsListener {
     const dist = new Distribution(name, [{ timestamp: metricTime, value }], ...tags);
 
     if (this.currentProcessor !== undefined) {
-      await this.currentProcessor.then((processor) => {
+      // tslint:disable-next-line: no-floating-promises
+      this.currentProcessor.then((processor) => {
         processor.addMetric(dist);
       });
     } else {
@@ -149,8 +150,8 @@ export class MetricsListener {
     }
   }
 
-  public async sendDistributionMetric(name: string, value: number, forceAsync: boolean, ...tags: string[]) {
-    await this.sendDistributionMetricWithDate(name, value, new Date(Date.now()), forceAsync, ...tags);
+  public sendDistributionMetric(name: string, value: number, forceAsync: boolean, ...tags: string[]) {
+    this.sendDistributionMetricWithDate(name, value, new Date(Date.now()), forceAsync, ...tags);
   }
 
   private async createProcessor(config: MetricsConfig, apiKey: Promise<string>) {
