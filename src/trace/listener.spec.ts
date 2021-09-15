@@ -54,7 +54,7 @@ describe("TraceListener", () => {
   const context = {
     invokedFunctionArn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
     awsRequestId: "1234",
-    functionName: "my-lambda",
+    functionName: "my-Lambda",
   };
   const contextWithFunctionAlias = {
     ...context,
@@ -82,14 +82,15 @@ describe("TraceListener", () => {
     expect(mockWrap).toHaveBeenCalledWith(
       "aws.lambda",
       {
-        resource: "my-lambda",
+        resource: "my-Lambda",
         service: "aws.lambda",
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
           function_version: "$LATEST",
           request_id: "1234",
-          resource_names: "my-lambda",
+          resource_names: "my-Lambda",
+          functionname: "my-lambda",
           datadog_lambda: datadogLambdaVersion,
           dd_trace: ddtraceVersion,
         },
@@ -116,14 +117,15 @@ describe("TraceListener", () => {
     expect(mockWrap).toHaveBeenCalledWith(
       "aws.lambda",
       {
-        resource: "my-lambda",
+        resource: "my-Lambda",
         service: "aws.lambda",
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
           function_version: "$LATEST",
           request_id: "1234",
-          resource_names: "my-lambda",
+          resource_names: "my-Lambda",
+          functionname: "my-lambda",
           "_dd.parent_source": "event",
           datadog_lambda: datadogLambdaVersion,
           dd_trace: ddtraceVersion,
@@ -153,14 +155,15 @@ describe("TraceListener", () => {
     expect(mockWrap).toHaveBeenCalledWith(
       "aws.lambda",
       {
-        resource: "my-lambda",
+        resource: "my-Lambda",
         service: "aws.lambda",
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
           function_version: "$LATEST",
           request_id: "1234",
-          resource_names: "my-lambda",
+          resource_names: "my-Lambda",
+          functionname: "my-lambda",
           datadog_lambda: datadogLambdaVersion,
           dd_trace: ddtraceVersion,
         },
@@ -188,14 +191,15 @@ describe("TraceListener", () => {
     expect(mockWrap).toHaveBeenCalledWith(
       "aws.lambda",
       {
-        resource: "my-lambda",
+        resource: "my-Lambda",
         service: "aws.lambda",
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
           function_version: "$LATEST",
           request_id: "1234",
-          resource_names: "my-lambda",
+          resource_names: "my-Lambda",
+          functionname: "my-lambda",
           "_dd.parent_source": "xray",
           datadog_lambda: datadogLambdaVersion,
           dd_trace: ddtraceVersion,
@@ -218,14 +222,15 @@ describe("TraceListener", () => {
     expect(mockWrap).toHaveBeenCalledWith(
       "aws.lambda",
       {
-        resource: "my-lambda",
+        resource: "my-Lambda",
         service: "aws.lambda",
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
           function_version: "alias",
           request_id: "1234",
-          resource_names: "my-lambda",
+          resource_names: "my-Lambda",
+          functionname: "my-lambda",
           datadog_lambda: datadogLambdaVersion,
           dd_trace: ddtraceVersion,
         },
@@ -246,14 +251,15 @@ describe("TraceListener", () => {
     expect(mockWrap).toHaveBeenCalledWith(
       "aws.lambda",
       {
-        resource: "my-lambda",
+        resource: "my-Lambda",
         service: "aws.lambda",
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
           function_version: "1",
           request_id: "1234",
-          resource_names: "my-lambda",
+          resource_names: "my-Lambda",
+          functionname: "my-lambda",
           datadog_lambda: datadogLambdaVersion,
           dd_trace: ddtraceVersion,
         },
