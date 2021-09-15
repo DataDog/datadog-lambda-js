@@ -141,6 +141,7 @@ export class MetricsListener {
     const dist = new Distribution(name, [{ timestamp: metricTime, value }], ...tags);
 
     if (this.currentProcessor !== undefined) {
+      // tslint:disable-next-line: no-floating-promises
       this.currentProcessor.then((processor) => {
         processor.addMetric(dist);
       });
