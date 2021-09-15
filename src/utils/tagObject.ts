@@ -1,6 +1,12 @@
 const redactableKeys = ["authorization", "x-authorization", "password", "token"];
+const maxDepth = 5;
 
-export function tagObject(currentSpan: any, key: string, obj: any): any {
+export function tagObject(currentSpan: any, key: string, obj: any, depth = 0): any {
+  if (depth >= maxDepth) {
+    return;
+  } else {
+    depth += 1;
+  }
   if (obj === null) {
     return currentSpan.setTag(key, obj);
   }
@@ -12,14 +18,14 @@ export function tagObject(currentSpan: any, key: string, obj: any): any {
       const redacted = redactVal(key, obj.substring(0, 5000));
       return currentSpan.setTag(key, redacted);
     }
-    return tagObject(currentSpan, key, parsed);
+    return tagObject(currentSpan, key, parsed, depth);
   }
   if (typeof obj === "number") {
     return currentSpan.setTag(key, obj);
   }
   if (typeof obj === "object") {
     for (const [k, v] of Object.entries(obj)) {
-      tagObject(currentSpan, `${key}.${k}`, v);
+      tagObject(currentSpan, `${key}.${k}`, v, depth);
     }
     return;
   }
