@@ -47,7 +47,7 @@ jest.mock("./trace-context-service", () => {
 describe("TraceListener", () => {
   const defaultConfig = {
     autoPatchHTTP: true,
-    capturePayload: false,
+    captureLambdaPayload: false,
     mergeDatadogXrayTraces: false,
     injectLogContext: false,
   };

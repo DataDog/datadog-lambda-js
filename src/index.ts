@@ -24,7 +24,7 @@ import { extractHTTPStatusCodeTag } from "./trace/trigger";
 
 export const apiKeyEnvVar = "DD_API_KEY";
 export const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
-export const capturePayloadEnvVar = "DD_CAPTURE_PAYLOAD";
+export const captureLambdaPayloadEnvVar = "DD_CAPTURE_LAMBDA_PAYLOAD";
 export const siteURLEnvVar = "DD_SITE";
 export const logLevelEnvVar = "DD_LOG_LEVEL";
 export const logForwardingEnvVar = "DD_FLUSH_TO_LOG";
@@ -62,7 +62,7 @@ export const defaultConfig: Config = {
   apiKey: "",
   apiKeyKMS: "",
   autoPatchHTTP: true,
-  capturePayload: false,
+  captureLambdaPayload: false,
   debugLogging: false,
   enhancedMetrics: true,
   forceWrap: false,
@@ -142,7 +142,7 @@ export function datadog<TEvent, TResult>(
               // Store the status tag in the listener to send to Xray on invocation completion
               traceListener.triggerTags["http.status_code"] = statusCode;
               if (traceListener.currentSpan) {
-                if (finalConfig.capturePayload) {
+                if (finalConfig.captureLambdaPayload) {
                   tagObject(traceListener.currentSpan, "function.request", localEvent);
                   tagObject(traceListener.currentSpan, "function.response", localResult);
                 }
@@ -267,9 +267,9 @@ function getConfig(userConfig?: Partial<Config>): Config {
     config.mergeDatadogXrayTraces = result === "true";
   }
 
-  if (userConfig === undefined || userConfig.capturePayload === undefined) {
-    const result = getEnvValue(capturePayloadEnvVar, "false").toLocaleLowerCase();
-    config.capturePayload = result === "true";
+  if (userConfig === undefined || userConfig.captureLambdaPayload === undefined) {
+    const result = getEnvValue(captureLambdaPayloadEnvVar, "false").toLocaleLowerCase();
+    config.captureLambdaPayload = result === "true";
   }
 
   return config;

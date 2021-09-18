@@ -29,7 +29,7 @@ export interface TraceConfig {
   /**
    * Whether to capture the lambda payload and response in Datadog.
    */
-  capturePayload: boolean;
+  captureLambdaPayload: boolean;
   /**
    * Whether to automatically patch console.log with Datadog's tracing ids.
    */
