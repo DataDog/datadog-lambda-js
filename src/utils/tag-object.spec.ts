@@ -1,4 +1,4 @@
-import { tagObject } from "./tagObject";
+import { tagObject } from "./tag-object";
 
 describe("tagObject", () => {
   const setTag = jest.fn();
