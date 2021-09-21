@@ -50,6 +50,7 @@ export interface StepFunctionContext {
 export function extractTraceContext(
   event: any,
   context: Context,
+  mergeDatadogXrayTraces: boolean,
   extractor?: TraceExtractor,
 ): TraceContext | undefined {
   let trace;
@@ -80,17 +81,24 @@ export function extractTraceContext(
     }
   }
 
+  const xrayContext = readTraceContextFromXray();
   if (trace !== undefined) {
     try {
       addTraceContextToXray(trace);
+      if (mergeDatadogXrayTraces && xrayContext != undefined) {
+        // If trace context merging is on,  we parent the x-ray trace to the incomming dd-trace
+        // context, and parent our root span to the x-ray trace.
+        trace.parentID = xrayContext.parentID;
+      }
       logDebug(`added trace context to xray metadata`, { trace });
     } catch (error) {
       // This might fail if running in an environment where xray isn't set up, (like for local development).
       logError("couldn't add trace context to xray metadata", error);
     }
+
     return trace;
   }
-  return readTraceContextFromXray();
+  return xrayContext;
 }
 
 export function addTraceContextToXray(traceContext: TraceContext) {

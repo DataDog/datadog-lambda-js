@@ -600,6 +600,7 @@ describe("extractTraceContext", () => {
         },
       },
       {} as Context,
+      false,
     );
     expect(result).toEqual({
       parentID: "797643193680388251",
@@ -614,6 +615,7 @@ describe("extractTraceContext", () => {
         headers: null,
       },
       {} as Context,
+      false,
     );
     expect(result).toEqual(undefined);
   });
@@ -643,6 +645,7 @@ describe("extractTraceContext", () => {
         },
       },
       {} as Context,
+      false,
       extractor,
     );
     expect(result).toEqual({
@@ -681,6 +684,7 @@ describe("extractTraceContext", () => {
         },
       },
       {} as Context,
+      false,
       extractor,
     );
     expect(result).toEqual({
@@ -720,6 +724,7 @@ describe("extractTraceContext", () => {
         ],
       },
       {} as Context,
+      false,
     );
     expect(result).toEqual({
       parentID: "3369753143434738315",
@@ -768,6 +773,7 @@ describe("extractTraceContext", () => {
         ],
       },
       lambdaContext,
+      false,
     );
     expect(result).toEqual({
       parentID: "3369753143434738315",
@@ -779,7 +785,7 @@ describe("extractTraceContext", () => {
   it("returns trace read from env if no headers present", () => {
     process.env["_X_AMZN_TRACE_ID"] = "Root=1-5ce31dc2-2c779014b90ce44db5e03875;Parent=0b11cc4230d3e09e;Sampled=1";
 
-    const result = extractTraceContext({}, {} as Context);
+    const result = extractTraceContext({}, {} as Context, false);
     expect(result).toEqual({
       parentID: "797643193680388254",
       sampleMode: SampleMode.USER_KEEP,
@@ -790,7 +796,7 @@ describe("extractTraceContext", () => {
   it("returns trace read from env if no headers present", () => {
     process.env["_X_AMZN_TRACE_ID"] = "Root=1-5ce31dc2-2c779014b90ce44db5e03875;Parent=0b11cc4230d3e09e;Sampled=1";
 
-    const result = extractTraceContext({}, {} as Context);
+    const result = extractTraceContext({}, {} as Context, false);
     expect(result).toEqual({
       parentID: "797643193680388254",
       sampleMode: SampleMode.USER_KEEP,
@@ -812,6 +818,7 @@ describe("extractTraceContext", () => {
         },
       },
       {} as Context,
+      false,
     );
 
     expect(sentSegment instanceof Buffer).toBeTruthy();
@@ -821,6 +828,33 @@ describe("extractTraceContext", () => {
       "{\\"format\\": \\"json\\", \\"version\\": 1}
       {\\"id\\":\\"11111\\",\\"trace_id\\":\\"1-5e272390-8c398be037738dc042009320\\",\\"parent_id\\":\\"94ae789b969f1cc5\\",\\"name\\":\\"datadog-metadata\\",\\"start_time\\":1487076708000,\\"end_time\\":1487076708000,\\"type\\":\\"subsegment\\",\\"metadata\\":{\\"datadog\\":{\\"trace\\":{\\"parent-id\\":\\"797643193680388251\\",\\"sampling-priority\\":\\"2\\",\\"trace-id\\":\\"4110911582297405551\\"}}}}"
     `);
+  });
+  it("adds uses dd-trace trace id and x-ray span id when trace merging is enabled", () => {
+    jest.spyOn(Date, "now").mockImplementation(() => 1487076708000);
+    process.env[xrayTraceEnvVar] = "Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1";
+    process.env[awsXrayDaemonAddressEnvVar] = "localhost:127.0.0.1:2000";
+
+    const result = extractTraceContext(
+      {
+        headers: {
+          "x-datadog-parent-id": "797643193680388251",
+          "x-datadog-sampling-priority": "2",
+          "x-datadog-trace-id": "4110911582297405551",
+        },
+      },
+      {} as Context,
+      true,
+    );
+
+    expect(sentSegment instanceof Buffer).toBeTruthy();
+    expect(closedSocket).toBeTruthy();
+    const sentMessage = sentSegment.toString();
+    expect(result).toEqual({
+      parentID: "10713633173203262661", // From x-ray segment
+      sampleMode: 2,
+      source: "event",
+      traceID: "4110911582297405551", // From dd-trace-id
+    });
   });
   it("skips adding datadog metadata to x-ray when daemon isn't present", () => {
     jest.spyOn(Date, "now").mockImplementation(() => 1487076708000);
@@ -835,6 +869,7 @@ describe("extractTraceContext", () => {
         },
       },
       {} as Context,
+      false,
     );
 
     expect(sentSegment).toBeUndefined();
@@ -861,7 +896,7 @@ describe("extractTraceContext", () => {
     process.env[xrayTraceEnvVar] = "Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1";
     process.env[awsXrayDaemonAddressEnvVar] = "localhost:127.0.0.1:2000";
 
-    extractTraceContext(stepFunctionEvent, {} as Context);
+    extractTraceContext(stepFunctionEvent, {} as Context, false);
     expect(sentSegment instanceof Buffer).toBeTruthy();
 
     expect(closedSocket).toBeTruthy();
