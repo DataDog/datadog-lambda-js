@@ -85,7 +85,7 @@ export function extractTraceContext(
   if (trace !== undefined) {
     try {
       addTraceContextToXray(trace);
-      if (mergeDatadogXrayTraces && xrayContext != undefined) {
+      if (mergeDatadogXrayTraces && xrayContext !== undefined) {
         // If trace context merging is on,  we parent the x-ray trace to the incomming dd-trace
         // context, and parent our root span to the x-ray trace.
         trace.parentID = xrayContext.parentID;

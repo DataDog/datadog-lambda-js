@@ -11,4 +11,4 @@ fi
 
 ./scripts/build_layers.sh
 ./scripts/sign_layers.sh sandbox
-VERSION=$VERSION REGIONS=sa-east-1 ./scripts/publish_layers.sh
+VERSION=$VERSION REGIONS=us-west-1 ./scripts/publish_layers.sh
