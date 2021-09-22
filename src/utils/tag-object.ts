@@ -1,5 +1,5 @@
 const redactableKeys = ["authorization", "x-authorization", "password", "token"];
-const maxDepth = 5;
+const maxDepth = 10;
 
 export function tagObject(currentSpan: any, key: string, obj: any, depth = 0): any {
   if (depth >= maxDepth) {
