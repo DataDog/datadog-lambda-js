@@ -3,7 +3,7 @@ if [ -z $GITHUB_REF ]; then
   exit 0
 fi
 
-if [ $GITHUB_REF -ne "refs/heads/main" ]; then
+if [ "$GITHUB_REF" != "refs/heads/main" ]; then
   echo "Not on the main branch, not sending the metric"
   exit 0
 fi
