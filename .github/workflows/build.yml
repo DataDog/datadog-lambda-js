@@ -122,7 +122,7 @@ jobs:
       - name: Send success metric
         env:
           DD_API_KEY_SERVERLESS: ${{ secrets.DD_API_KEY_SERVERLESS }}
-        run: ./scripts/send_status_metric.sh 0 $DD_API_KEY
+        run: ./scripts/send_status_metric.sh 0 $DD_API_KEY_SERVERLESS
 
   run-if-failed:
     runs-on: ubuntu-latest
