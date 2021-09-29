@@ -129,6 +129,8 @@ jobs:
     needs: [integration-test]
     if: always() && (needs.integration-test.result == 'failure')
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
       - name: Send a failure metric
         env:
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
