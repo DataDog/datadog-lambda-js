@@ -1,10 +1,7 @@
-#Retrieve the API KEY and status
-
-DD_API_KEY=$1
-
+#Retrieve the status
 # 0 means success
 # 1 means failure
-STATUS=$2
+STATUS=$1
 
 CURRENT_TIME=$(date +%s)
 
