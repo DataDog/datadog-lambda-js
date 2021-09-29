@@ -208,7 +208,7 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
                 perl -p -e 's/"(meta|metrics)":{(.*?)}/"\1":{"XXXX": "XXXX"}/g' |
                 # Normalize enhanced metric datadog_lambda tag
                 perl -p -e "s/(datadog_lambda:v)[0-9\.]+/\1X.X.X/g" |
-                # Normalize lookup ressource
+                # Normalize lookup resource
                 perl -p -e "s/(\"resource\":\"169.)[0-9\.]+/\1X.X.X/g"
         )
 
