@@ -12,6 +12,7 @@ curl -H "Content-type: application/json" \
 -d "{ \"series\" :
          [{\"metric\":\"serverless.integration_test.nodejs.status\",
           \"points\":[[$CURRENT_TIME, $STATUS]],
+          \"type\":\"gauge\",
           \"tags\":[\"service:serverless-integration-test\"]}
         ]
     }" \
