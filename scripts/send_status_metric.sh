@@ -19,6 +19,3 @@ curl  -X POST \
         ]
     }" \
 'https://app.datadoghq.com/api/v1/series'
-
-#Propagate the status code so github action can know whether it's a success or failure
-exit $STATUS
