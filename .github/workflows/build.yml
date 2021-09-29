@@ -122,7 +122,7 @@ jobs:
       - name: Send success metric
         env:
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
-        run: ./scripts/send_status_metric.sh 0
+        run: ./scripts/send_status_metric.sh 0 $DD_API_KEY
 
   run-if-failed:
     runs-on: ubuntu-latest
@@ -134,4 +134,4 @@ jobs:
       - name: Send a failure metric
         env:
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
-        run: ./scripts/send_status_metric.sh 1
+        run: ./scripts/send_status_metric.sh 1 $DD_API_KEY
