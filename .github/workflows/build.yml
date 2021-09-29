@@ -117,4 +117,8 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           RUNTIME_PARAM: ${{ matrix.runtime-param }}
-        run: ./scripts/run_integration_tests.sh
+        run: |
+          ./scripts/run_integration_tests.sh \
+          && exit_code=$? \
+          [ $exit_code -eq 0 ] && ./scripts/send_status_metric.sh 0 $DD_API_KEY \
+          ||./scripts/send_status_metric.sh 1 $DD_API_KEY
