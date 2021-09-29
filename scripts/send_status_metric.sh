@@ -1,3 +1,13 @@
+if [ -z $GITHUB_REF ]; then
+  echo "GITHUB_REF is not set, not sending the metric"
+  exit 0
+fi
+
+if [ $GITHUB_REF -ne "refs/heads/main" ]; then
+  echo "Not on the main branch, not sending the metric"
+  exit 0
+fi
+
 #Retrieve the status
 # 0 means success
 # 1 means failure
