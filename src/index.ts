@@ -17,12 +17,14 @@ import {
   setLogger,
   promisifiedHandler,
   logDebug,
+  tagObject,
 } from "./utils";
 export { TraceHeaders } from "./trace";
 import { extractHTTPStatusCodeTag } from "./trace/trigger";
 
 export const apiKeyEnvVar = "DD_API_KEY";
 export const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
+export const captureLambdaPayloadEnvVar = "DD_CAPTURE_LAMBDA_PAYLOAD";
 export const siteURLEnvVar = "DD_SITE";
 export const logLevelEnvVar = "DD_LOG_LEVEL";
 export const logForwardingEnvVar = "DD_FLUSH_TO_LOG";
@@ -60,6 +62,7 @@ export const defaultConfig: Config = {
   apiKey: "",
   apiKeyKMS: "",
   autoPatchHTTP: true,
+  captureLambdaPayload: false,
   debugLogging: false,
   enhancedMetrics: true,
   forceWrap: false,
@@ -139,6 +142,10 @@ export function datadog<TEvent, TResult>(
               // Store the status tag in the listener to send to Xray on invocation completion
               traceListener.triggerTags["http.status_code"] = statusCode;
               if (traceListener.currentSpan) {
+                if (finalConfig.captureLambdaPayload) {
+                  tagObject(traceListener.currentSpan, "function.request", localEvent);
+                  tagObject(traceListener.currentSpan, "function.response", localResult);
+                }
                 traceListener.currentSpan.setTag("http.status_code", statusCode);
               }
             }
@@ -176,7 +183,7 @@ export function datadog<TEvent, TResult>(
  * Sends a Distribution metric asynchronously to the Datadog API.
  * @param name The name of the metric to send.
  * @param value The value of the metric
- * @param metricTime The timesamp associated with this metric data point.
+ * @param metricTime The timestamp associated with this metric data point.
  * @param tags The tags associated with the metric. Should be of the format "tag:value".
  */
 export function sendDistributionMetricWithDate(name: string, value: number, metricTime: Date, ...tags: string[]) {
@@ -258,6 +265,11 @@ function getConfig(userConfig?: Partial<Config>): Config {
   if (userConfig === undefined || userConfig.mergeDatadogXrayTraces === undefined) {
     const result = getEnvValue(mergeXrayTracesEnvVar, "false").toLowerCase();
     config.mergeDatadogXrayTraces = result === "true";
+  }
+
+  if (userConfig === undefined || userConfig.captureLambdaPayload === undefined) {
+    const result = getEnvValue(captureLambdaPayloadEnvVar, "false").toLocaleLowerCase();
+    config.captureLambdaPayload = result === "true";
   }
 
   return config;
