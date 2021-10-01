@@ -61,5 +61,5 @@ export function isSQSEvent(event: any): event is SQSEvent {
 }
 
 export function isAppSyncResolverEvent(event: any): event is AppSyncResolverEvent<any> {
-  return event.info !== undefined && event.info.variables !== undefined;
+  return event.info !== undefined && event.info.selectionSetGraphQL !== undefined;
 }

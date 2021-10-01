@@ -202,7 +202,9 @@ describe("readTraceFromEvent", () => {
   });
   it("can read from appsync source", () => {
     const result = readTraceFromEvent({
-      info: { variables: {}},
+      info: {
+        selectionSetGraphQL: "{ items }",
+      },
       request: {
         headers: {
           "x-datadog-parent-id": "797643193680388254",
