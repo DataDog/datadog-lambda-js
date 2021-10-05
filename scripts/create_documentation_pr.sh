@@ -41,7 +41,7 @@ sed -i '' -e '/.*"node"/{' -e 'n;s/.*/    '"$VERSION"'/' -e '}' $DOCUMENTATION_F
 git add $DOCUMENTATION_FILE
 
 print_color "Creating commit -- please tap your Yubikey if prompted"
-git commit -m "Bump $LAYER layer to $VERSION"
+git commit -m "Bump $LAYER layer to version $VERSION"
 git push --set-upstream origin $USER/bump-nodejs-layer-version-$VERSION
 dd-pr
 
