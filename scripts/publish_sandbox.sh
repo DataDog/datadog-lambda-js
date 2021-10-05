@@ -14,5 +14,5 @@ fi
 VERSION=$VERSION REGIONS=sa-east-1 ./scripts/publish_layers.sh
 
 # Automatically create PR against github.com/DataDog/documentation
-# Uncomment to test this functionality
-VERSION=$VERSION LAYER=datadog-lambda-js ./scripts/create_documentation_pr.sh
+# If you'd like to test, please uncomment the below line
+# VERSION=$VERSION LAYER=datadog-lambda-js ./scripts/create_documentation_pr.sh
