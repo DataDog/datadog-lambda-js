@@ -136,16 +136,16 @@ export function datadog<TEvent, TResult>(
         try {
           localResult = await promHandler(localEvent, localContext);
         } finally {
+          if (traceListener.currentSpan && finalConfig.captureLambdaPayload) {
+            tagObject(traceListener.currentSpan, "function.request", localEvent);
+            tagObject(traceListener.currentSpan, "function.response", localResult);
+          }
           if (traceListener.triggerTags) {
             const statusCode = extractHTTPStatusCodeTag(traceListener.triggerTags, localResult);
             if (statusCode) {
               // Store the status tag in the listener to send to Xray on invocation completion
               traceListener.triggerTags["http.status_code"] = statusCode;
               if (traceListener.currentSpan) {
-                if (finalConfig.captureLambdaPayload) {
-                  tagObject(traceListener.currentSpan, "function.request", localEvent);
-                  tagObject(traceListener.currentSpan, "function.response", localResult);
-                }
                 traceListener.currentSpan.setTag("http.status_code", statusCode);
               }
             }
