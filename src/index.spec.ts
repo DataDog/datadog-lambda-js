@@ -120,6 +120,26 @@ describe("datadog", () => {
     expect(nock.isDone()).toBeTruthy();
   });
 
+  it("allow apiKey property to be a promise", async () => {
+    const apiKey = "123456";
+    const apiKeyPromise = Promise.resolve(apiKey);
+
+    nock("https://api.datadoghq.com")
+      .post(`/api/v1/distribution_points?api_key=${apiKey}`, (request: any) => request.series[0].metric === "my-dist")
+      .reply(200, {});
+
+    const wrapped = datadog(
+      async () => {
+        sendDistributionMetric("my-dist", 100, "first-tag", "second-tag");
+        return "";
+      },
+      { forceWrap: true, apiKey: apiKeyPromise },
+    );
+    await wrapped({}, {} as any, () => {});
+
+    expect(nock.isDone()).toBeTruthy();
+  });
+
   it("prefers API key from the config object over the environment variable ", async () => {
     const envApiKey = "123456";
     const apiKeyVar = "DD_API_KEY";

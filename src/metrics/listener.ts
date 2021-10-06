@@ -22,7 +22,7 @@ export interface MetricsConfig {
    * The api key used to talk to the Datadog API. If this is empty, apiKeyKMS key
    * will be used instead.
    */
-  apiKey: string;
+  apiKey: string | Promise<string>;
   /**
    * A KMS encrypted api key used to talk to the Datadog API. It will automatically
    * be decrypted before any metrics are sent.
