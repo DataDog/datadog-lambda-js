@@ -210,7 +210,7 @@ describe("readTraceFromEvent", () => {
           "x-datadog-parent-id": "797643193680388254",
           "x-datadog-sampling-priority": "2",
           "x-datadog-trace-id": "4110911582297405557",
-        }
+        },
       },
     });
     expect(result).toEqual({
