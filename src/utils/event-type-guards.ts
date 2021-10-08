@@ -1,6 +1,7 @@
 import {
   APIGatewayEvent,
   APIGatewayProxyEventV2,
+  AppSyncResolverEvent,
   ALBEvent,
   CloudWatchLogsEvent,
   ScheduledEvent,
@@ -57,4 +58,8 @@ export function isSNSEvent(event: any): event is SNSEvent {
 
 export function isSQSEvent(event: any): event is SQSEvent {
   return Array.isArray(event.Records) && event.Records.length > 0 && event.Records[0].eventSource === "aws:sqs";
+}
+
+export function isAppSyncResolverEvent(event: any): event is AppSyncResolverEvent<any> {
+  return event.info !== undefined && event.info.selectionSetGraphQL !== undefined;
 }

@@ -3,7 +3,7 @@ import { BigNumber } from "bignumber.js";
 import { randomBytes } from "crypto";
 import { createSocket, Socket } from "dgram";
 import { logDebug, logError } from "../utils";
-import { isSQSEvent } from "../utils/event-type-guards";
+import { isAppSyncResolverEvent, isSQSEvent } from "../utils/event-type-guards";
 import {
   awsXrayDaemonAddressEnvVar,
   parentIDHeader,
@@ -183,6 +183,11 @@ export function sendXraySubsegment(segment: string) {
   }
 }
 
+export function readTraceFromAppSyncEvent(event: any): TraceContext | undefined {
+  event.headers = event.request.headers;
+  return readTraceFromHTTPEvent(event);
+}
+
 export function readTraceFromSQSEvent(event: SQSEvent): TraceContext | undefined {
   if (
     event.Records[0].messageAttributes &&
@@ -320,6 +325,10 @@ export function readTraceFromEvent(event: any): TraceContext | undefined {
 
   if (event.headers !== null && typeof event.headers === "object") {
     return readTraceFromHTTPEvent(event);
+  }
+
+  if (isAppSyncResolverEvent(event)) {
+    return readTraceFromAppSyncEvent(event);
   }
 
   if (isSQSEvent(event)) {
