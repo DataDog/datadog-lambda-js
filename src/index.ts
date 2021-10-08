@@ -4,12 +4,20 @@ import {
   incrementInvocationsMetric,
   KMSService,
   MetricsConfig,
-  MetricsListener
+  MetricsListener,
 } from "./metrics";
 import { TraceConfig, TraceHeaders, TraceListener } from "./trace";
 import { extractHTTPStatusCodeTag } from "./trace/trigger";
 import {
-  logDebug, logError, Logger, LogLevel, promisifiedHandler, setColdStart, setLogger, setLogLevel, tagObject
+  logDebug,
+  logError,
+  Logger,
+  LogLevel,
+  promisifiedHandler,
+  setColdStart,
+  setLogger,
+  setLogLevel,
+  tagObject,
 } from "./utils";
 
 export { TraceHeaders } from "./trace";

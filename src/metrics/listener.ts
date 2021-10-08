@@ -8,7 +8,6 @@ import { writeMetricToStdout } from "./metric-log";
 import { Distribution } from "./model";
 import { Processor } from "./processor";
 
-
 const metricsBatchSendIntervalMS = 10000; // 10 seconds
 
 export interface MetricsConfig {

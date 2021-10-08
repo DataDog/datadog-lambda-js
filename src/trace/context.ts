@@ -5,7 +5,8 @@ import { createSocket, Socket } from "dgram";
 import { logDebug, logError } from "../utils";
 import { isSQSEvent } from "../utils/event-type-guards";
 import {
-  awsXrayDaemonAddressEnvVar, parentIDHeader,
+  awsXrayDaemonAddressEnvVar,
+  parentIDHeader,
   SampleMode,
   samplingPriorityHeader,
   Source,
@@ -15,10 +16,9 @@ import {
   xraySubsegmentKey,
   xraySubsegmentName,
   xraySubsegmentNamespace,
-  xrayTraceEnvVar
+  xrayTraceEnvVar,
 } from "./constants";
 import { TraceExtractor } from "./listener";
-
 
 export interface XRayTraceHeader {
   traceID: string;

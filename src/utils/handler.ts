@@ -1,7 +1,6 @@
 import { Callback, Context, Handler } from "aws-lambda";
 import { logError } from "./log";
 
-
 export type OnWrapFunc<T = (...args: any[]) => any> = (fn: T) => T;
 
 /**
@@ -70,10 +69,10 @@ export function promisifiedHandler<TEvent, TResult>(handler: Handler<TEvent, TRe
     // 1. By calling the "callback" function with a result.
     // 2. Returning a value directly from the function using a promise.
 
-    let modifiedCallback: Callback<TResult> = () => { };
-    let modifiedLegacyDoneCallback: Callback<TResult> = () => { };
-    let modifiedLegacySucceedCallback: (res: any) => void = () => { };
-    let modifiedLegacyFailCallback: (err: any) => void = () => { };
+    let modifiedCallback: Callback<TResult> = () => {};
+    let modifiedLegacyDoneCallback: Callback<TResult> = () => {};
+    let modifiedLegacySucceedCallback: (res: any) => void = () => {};
+    let modifiedLegacyFailCallback: (err: any) => void = () => {};
 
     const callbackProm = new Promise<TResult | undefined>((resolve, reject) => {
       modifiedCallback = (err, result) => {
