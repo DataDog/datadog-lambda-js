@@ -40,8 +40,6 @@ export function logError(message: string, metadata?: Error | object, error?: Err
   emitLog(logger.error, "error", message, metadata, error);
 }
 
-export function logException(message: string, metadata?: Error | object, error?: Error) {}
-
 function emitLog(
   outputter: (a: string) => any,
   status: string,
