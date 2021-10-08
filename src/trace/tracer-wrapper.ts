@@ -30,7 +30,9 @@ export class TracerWrapper {
       this.tracer = require(path);
       return;
     } catch (err) {
-      logDebug("Couldn't require dd-trace from main", err);
+      if (err instanceof Object || err instanceof Error) {
+        logDebug("Couldn't require dd-trace from main", err);
+      }
     }
   }
 
