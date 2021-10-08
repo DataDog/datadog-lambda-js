@@ -1,5 +1,5 @@
-import { KMSService } from "./kms-service";
 import nock from "nock";
+import { KMSService } from "./kms-service";
 
 describe("KMSService", () => {
   const ENCRYPTED_KEY = "BQICAHj0djbIQaGrIfSD2gstvRF3h8YGMeEvO5rRHNiuWwSeegEFl57KxNejRn"; // random fake key
@@ -79,7 +79,9 @@ describe("KMSService", () => {
       await kmsService.decrypt(ENCRYPTED_KEY);
       fail();
     } catch (e) {
-      expect(e.message).toEqual(EXPECTED_ERROR_MESSAGE);
+      if (e instanceof Error) {
+        expect((e as Error).message).toEqual(EXPECTED_ERROR_MESSAGE);
+      }
     }
     fakeKmsCall.done();
   });

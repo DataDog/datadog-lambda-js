@@ -1,13 +1,12 @@
+import { StatsD } from "hot-shots";
 import { promisify } from "util";
-
 import { logDebug, logError } from "../utils";
 import { APIClient } from "./api";
+import { flushExtension, isAgentRunning } from "./extension";
 import { KMSService } from "./kms-service";
 import { writeMetricToStdout } from "./metric-log";
 import { Distribution } from "./model";
 import { Processor } from "./processor";
-import { StatsD } from "hot-shots";
-import { isAgentRunning, flushExtension } from "./extension";
 
 const metricsBatchSendIntervalMS = 10000; // 10 seconds
 
@@ -109,7 +108,9 @@ export class MetricsListener {
     } catch (error) {
       // This can fail for a variety of reasons, from the API not being reachable,
       // to KMS key decryption failing.
-      logError("failed to flush metrics", error);
+      if (error instanceof Error) {
+        logError("failed to flush metrics", error as Error);
+      }
     }
     try {
       if (this.isAgentRunning) {
@@ -117,7 +118,9 @@ export class MetricsListener {
         await flushExtension();
       }
     } catch (error) {
-      logError("failed to flush extension", error);
+      if (error instanceof Error) {
+        logError("failed to flush extension", error as Error);
+      }
     }
     this.currentProcessor = undefined;
   }
@@ -172,7 +175,9 @@ export class MetricsListener {
       try {
         return await this.kmsClient.decrypt(config.apiKeyKMS);
       } catch (error) {
-        logError("couldn't decrypt kms api key", error);
+        if (error instanceof Error) {
+          logError("couldn't decrypt kms api key", error as Error);
+        }
       }
     } else {
       const errorMessage = "api key not configured, see https://dtdg.co/sls-node-metrics";
