@@ -28,7 +28,7 @@ export class KMSService {
       }
       return result.Plaintext.toString("ascii");
     } catch (err) {
-      if (err.code === "MODULE_NOT_FOUND") {
+      if ((err as any).code === "MODULE_NOT_FOUND") {
         const errorMsg = "optional dependency aws-sdk not installed. KMS key decryption will not work";
         logError(errorMsg);
         throw Error(errorMsg);

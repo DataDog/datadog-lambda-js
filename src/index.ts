@@ -1,5 +1,4 @@
-import { Handler, Context } from "aws-lambda";
-
+import { Context, Handler } from "aws-lambda";
 import {
   incrementErrorsMetric,
   incrementInvocationsMetric,
@@ -8,19 +7,20 @@ import {
   MetricsListener,
 } from "./metrics";
 import { TraceConfig, TraceHeaders, TraceListener } from "./trace";
+import { extractHTTPStatusCodeTag } from "./trace/trigger";
 import {
-  logError,
-  LogLevel,
-  Logger,
-  setColdStart,
-  setLogLevel,
-  setLogger,
-  promisifiedHandler,
   logDebug,
+  logError,
+  Logger,
+  LogLevel,
+  promisifiedHandler,
+  setColdStart,
+  setLogger,
+  setLogLevel,
   tagObject,
 } from "./utils";
+
 export { TraceHeaders } from "./trace";
-import { extractHTTPStatusCodeTag } from "./trace/trigger";
 
 export const apiKeyEnvVar = "DD_API_KEY";
 export const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
@@ -123,7 +123,9 @@ export function datadog<TEvent, TResult>(
         incrementInvocationsMetric(metricsListener, context);
       }
     } catch (err) {
-      logDebug("Failed to start listeners", err);
+      if (err instanceof Error) {
+        logDebug("Failed to start listeners", err);
+      }
     }
 
     let result: TResult | undefined;
@@ -136,16 +138,16 @@ export function datadog<TEvent, TResult>(
         try {
           localResult = await promHandler(localEvent, localContext);
         } finally {
+          if (traceListener.currentSpan && finalConfig.captureLambdaPayload) {
+            tagObject(traceListener.currentSpan, "function.request", localEvent);
+            tagObject(traceListener.currentSpan, "function.response", localResult);
+          }
           if (traceListener.triggerTags) {
             const statusCode = extractHTTPStatusCodeTag(traceListener.triggerTags, localResult);
             if (statusCode) {
               // Store the status tag in the listener to send to Xray on invocation completion
               traceListener.triggerTags["http.status_code"] = statusCode;
               if (traceListener.currentSpan) {
-                if (finalConfig.captureLambdaPayload) {
-                  tagObject(traceListener.currentSpan, "function.request", localEvent);
-                  tagObject(traceListener.currentSpan, "function.response", localResult);
-                }
                 traceListener.currentSpan.setTag("http.status_code", statusCode);
               }
             }
@@ -164,7 +166,9 @@ export function datadog<TEvent, TResult>(
         incrementErrorsMetric(metricsListener, context);
       }
     } catch (err) {
-      logDebug("Failed to complete listeners", err);
+      if (err instanceof Error) {
+        logDebug("Failed to complete listeners", err);
+      }
     }
     currentMetricsListener = undefined;
     currentTraceListener = undefined;
