@@ -1,26 +1,18 @@
-import { Handler, Context } from "aws-lambda";
-
+import { Context, Handler } from "aws-lambda";
 import {
   incrementErrorsMetric,
   incrementInvocationsMetric,
   KMSService,
   MetricsConfig,
-  MetricsListener,
+  MetricsListener
 } from "./metrics";
 import { TraceConfig, TraceHeaders, TraceListener } from "./trace";
-import {
-  logError,
-  LogLevel,
-  Logger,
-  setColdStart,
-  setLogLevel,
-  setLogger,
-  promisifiedHandler,
-  logDebug,
-  tagObject,
-} from "./utils";
-export { TraceHeaders } from "./trace";
 import { extractHTTPStatusCodeTag } from "./trace/trigger";
+import {
+  logDebug, logError, Logger, LogLevel, promisifiedHandler, setColdStart, setLogger, setLogLevel, tagObject
+} from "./utils";
+
+export { TraceHeaders } from "./trace";
 
 export const apiKeyEnvVar = "DD_API_KEY";
 export const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
@@ -123,7 +115,9 @@ export function datadog<TEvent, TResult>(
         incrementInvocationsMetric(metricsListener, context);
       }
     } catch (err) {
-      logDebug("Failed to start listeners", err);
+      if (err instanceof Error) {
+        logDebug("Failed to start listeners", err);
+      }
     }
 
     let result: TResult | undefined;
@@ -164,7 +158,9 @@ export function datadog<TEvent, TResult>(
         incrementErrorsMetric(metricsListener, context);
       }
     } catch (err) {
-      logDebug("Failed to complete listeners", err);
+      if (err instanceof Error) {
+        logDebug("Failed to complete listeners", err);
+      }
     }
     currentMetricsListener = undefined;
     currentTraceListener = undefined;
