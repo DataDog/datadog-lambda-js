@@ -134,7 +134,7 @@ export function generateXraySubsegment(key: string, metadata: Record<string, any
     logDebug("couldn't parse xray trace header from env");
     return;
   }
-  
+
   // Convert from milliseconds to seconds
   const time = Date.now() * 0.001;
 
