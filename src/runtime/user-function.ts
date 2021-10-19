@@ -1,6 +1,9 @@
 /**
  * Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * Modifictions copyright 2021 Datadog, Inc.
+ * 
+ * The original file was part of aws-lambda-nodejs-runtime-interface-client
+ * https://github.com/aws/aws-lambda-nodejs-runtime-interface-client/blob/main/src/utils/UserFunction.ts
  *
  * This module defines the functions for loading the user's code as specified
  * in a handler string.
