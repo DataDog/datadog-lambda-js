@@ -1,5 +1,10 @@
 {
   "extends": "tslint:recommended",
+  "linterOptions": {
+    "exclude": [
+      "**/runtime/**"
+    ]
+  },
   "rules": {
     "interface-name": false,
     "variable-name": {
