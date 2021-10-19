@@ -1,9 +1,7 @@
 import { datadog, datadogHandlerEnvVar, lambdaTaskRootEnvVar, traceExtractorEnvVar, getEnvValue } from "./index";
 import { TraceExtractor } from "./trace";
 import { logDebug, logError } from "./utils";
-// We reuse the function loading logic already inside the lambda runtime.
-// tslint:disable-next-line:no-var-requires
-const { load } = require("/var/runtime/UserFunction") as any;
+import { load } from "./runtime";
 
 if (process.env.DD_TRACE_DISABLED_PLUGINS === undefined) {
   process.env.DD_TRACE_DISABLED_PLUGINS = "fs";
