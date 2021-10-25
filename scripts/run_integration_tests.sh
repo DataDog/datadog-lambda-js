@@ -207,7 +207,9 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
                 # Remove metrics and metas in logged traces (their order is inconsistent)
                 perl -p -e 's/"(meta|metrics)":{(.*?)}/"\1":{"XXXX": "XXXX"}/g' |
                 # Normalize enhanced metric datadog_lambda tag
-                perl -p -e "s/(datadog_lambda:v)[0-9\.]+/\1X.X.X/g"
+                perl -p -e "s/(datadog_lambda:v)[0-9\.]+/\1X.X.X/g" |
+                # Normalize lookup resource
+                perl -p -e "s/(\"resource\":\"169.)[0-9\.]+/\1X.X.X/g"
         )
 
         if [ ! -f $function_snapshot_path ]; then

@@ -2,3 +2,6 @@ Datadog datadog-lambda-js
 Copyright 2019 Datadog, Inc.
 
 This product includes software developed at Datadog (https://www.datadoghq.com/).
+
+The Initial Developer of the files in the runtime directory is Amazon.com, Inc.
+Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.

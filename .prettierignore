@@ -1,0 +1,2 @@
+# Ignore code that was originally part of the Lambda runtime
+runtime

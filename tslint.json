@@ -1,5 +1,10 @@
 {
   "extends": "tslint:recommended",
+  "linterOptions": {
+    "exclude": [
+      "**/runtime/**"
+    ]
+  },
   "rules": {
     "interface-name": false,
     "variable-name": {
@@ -7,6 +12,7 @@
     },
     "no-console": false,
     "no-empty": false,
+    "no-floating-promises": true,
     "trailing-comma": [
       false,
       {

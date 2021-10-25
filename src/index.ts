@@ -1,5 +1,4 @@
-import { Handler, Context } from "aws-lambda";
-
+import { Context, Handler } from "aws-lambda";
 import {
   incrementErrorsMetric,
   incrementInvocationsMetric,
@@ -8,21 +7,24 @@ import {
   MetricsListener,
 } from "./metrics";
 import { TraceConfig, TraceHeaders, TraceListener } from "./trace";
-import {
-  logError,
-  LogLevel,
-  Logger,
-  setColdStart,
-  setLogLevel,
-  setLogger,
-  promisifiedHandler,
-  logDebug,
-} from "./utils";
-export { TraceHeaders } from "./trace";
 import { extractHTTPStatusCodeTag } from "./trace/trigger";
+import {
+  logDebug,
+  logError,
+  Logger,
+  LogLevel,
+  promisifiedHandler,
+  setColdStart,
+  setLogger,
+  setLogLevel,
+  tagObject,
+} from "./utils";
+
+export { TraceHeaders } from "./trace";
 
 export const apiKeyEnvVar = "DD_API_KEY";
 export const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
+export const captureLambdaPayloadEnvVar = "DD_CAPTURE_LAMBDA_PAYLOAD";
 export const siteURLEnvVar = "DD_SITE";
 export const logLevelEnvVar = "DD_LOG_LEVEL";
 export const logForwardingEnvVar = "DD_FLUSH_TO_LOG";
@@ -60,6 +62,7 @@ export const defaultConfig: Config = {
   apiKey: "",
   apiKeyKMS: "",
   autoPatchHTTP: true,
+  captureLambdaPayload: false,
   debugLogging: false,
   enhancedMetrics: true,
   forceWrap: false,
@@ -120,7 +123,9 @@ export function datadog<TEvent, TResult>(
         incrementInvocationsMetric(metricsListener, context);
       }
     } catch (err) {
-      logDebug("Failed to start listeners", err);
+      if (err instanceof Error) {
+        logDebug("Failed to start listeners", err);
+      }
     }
 
     let result: TResult | undefined;
@@ -133,6 +138,10 @@ export function datadog<TEvent, TResult>(
         try {
           localResult = await promHandler(localEvent, localContext);
         } finally {
+          if (traceListener.currentSpan && finalConfig.captureLambdaPayload) {
+            tagObject(traceListener.currentSpan, "function.request", localEvent);
+            tagObject(traceListener.currentSpan, "function.response", localResult);
+          }
           if (traceListener.triggerTags) {
             const statusCode = extractHTTPStatusCodeTag(traceListener.triggerTags, localResult);
             if (statusCode) {
@@ -157,7 +166,9 @@ export function datadog<TEvent, TResult>(
         incrementErrorsMetric(metricsListener, context);
       }
     } catch (err) {
-      logDebug("Failed to complete listeners", err);
+      if (err instanceof Error) {
+        logDebug("Failed to complete listeners", err);
+      }
     }
     currentMetricsListener = undefined;
     currentTraceListener = undefined;
@@ -176,7 +187,7 @@ export function datadog<TEvent, TResult>(
  * Sends a Distribution metric asynchronously to the Datadog API.
  * @param name The name of the metric to send.
  * @param value The value of the metric
- * @param metricTime The timesamp associated with this metric data point.
+ * @param metricTime The timestamp associated with this metric data point.
  * @param tags The tags associated with the metric. Should be of the format "tag:value".
  */
 export function sendDistributionMetricWithDate(name: string, value: number, metricTime: Date, ...tags: string[]) {
@@ -258,6 +269,11 @@ function getConfig(userConfig?: Partial<Config>): Config {
   if (userConfig === undefined || userConfig.mergeDatadogXrayTraces === undefined) {
     const result = getEnvValue(mergeXrayTracesEnvVar, "false").toLowerCase();
     config.mergeDatadogXrayTraces = result === "true";
+  }
+
+  if (userConfig === undefined || userConfig.captureLambdaPayload === undefined) {
+    const result = getEnvValue(captureLambdaPayloadEnvVar, "false").toLocaleLowerCase();
+    config.captureLambdaPayload = result === "true";
   }
 
   return config;
