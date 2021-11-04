@@ -10,7 +10,6 @@ if [ -z "$VERSION" ]; then
 fi
 
 ./scripts/build_layers.sh
-./scripts/sign_layers.sh sandbox
 VERSION=$VERSION REGIONS=sa-east-1 ./scripts/publish_layers.sh
 
 # Automatically create PR against github.com/DataDog/documentation
