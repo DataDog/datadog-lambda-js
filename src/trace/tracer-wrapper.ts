@@ -16,6 +16,12 @@ export interface TraceOptions {
   childOf?: SpanContext;
 }
 
+export interface SpanOptions {
+  childOf?: SpanContext;
+  tags?: { [key: string]: any };
+  startTime?: number;
+}
+
 // TraceWrapper is used to remove dd-trace as a hard dependency from the npm package.
 // This lets a customer bring their own version of the tracer.
 export class TracerWrapper {
@@ -59,6 +65,13 @@ export class TracerWrapper {
       return fn;
     }
     return this.tracer.wrap(name, options, fn);
+  }
+
+  public startSpan<T = (...args: any[]) => any>(name: string, options: TraceOptions): T | null {
+    if (!this.isTracerAvailable) {
+      return null;
+    }
+    return this.tracer.startSpan(name, options);
   }
 
   public traceContext(): TraceContext | undefined {

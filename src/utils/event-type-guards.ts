@@ -20,8 +20,15 @@ export function isAPIGatewayEvent(event: any): event is APIGatewayEvent {
 
 export function isAPIGatewayEventV2(event: any): event is APIGatewayProxyEventV2 {
   return (
-    event.requestContext !== undefined && event.version === apiGatewayEventV2 && event.rawQueryString !== undefined
+    event.requestContext !== undefined &&
+    event.version === apiGatewayEventV2 &&
+    event.rawQueryString !== undefined &&
+    event.routeKey !== null
   );
+}
+
+export function isLambdaUrlEvent(event: any): boolean {
+  return event.version === apiGatewayEventV2 && event.routeKey === null;
 }
 
 export function isALBEvent(event: any): event is ALBEvent {
