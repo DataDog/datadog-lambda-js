@@ -17,6 +17,7 @@ import { datadogLambdaVersion } from "../constants";
 import { Source, ddtraceVersion } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
+import { SpanInferrer } from "./inferred-spans";
 
 export type TraceExtractor = (event: any, context: Context) => TraceContext;
 
@@ -50,6 +51,8 @@ export class TraceListener {
   private context?: Context;
   private stepFunctionContext?: StepFunctionContext;
   private tracerWrapper: TracerWrapper;
+  private inferrer: SpanInferrer;
+  private inferredSpan: any;
 
   public triggerTags?: { [key: string]: string };
   public get currentTraceHeaders() {
@@ -61,6 +64,7 @@ export class TraceListener {
   constructor(private config: TraceConfig, private handlerName: string) {
     this.tracerWrapper = new TracerWrapper();
     this.contextService = new TraceContextService(this.tracerWrapper);
+    this.inferrer = new SpanInferrer(this.tracerWrapper);
   }
 
   public onStartInvocation(event: any, context: Context) {
@@ -79,7 +83,8 @@ export class TraceListener {
     } else {
       logDebug("Not patching HTTP libraries", { autoPatchHTTP: this.config.autoPatchHTTP, tracerInitialized });
     }
-
+    logDebug("Creating inferred span");
+    this.inferredSpan = this.inferrer.createInferredSpan(event, context);
     this.context = context;
     this.triggerTags = extractTriggerTags(event, context);
     this.contextService.rootTraceContext = extractTraceContext(event, context, this.config.traceExtractor);
@@ -97,6 +102,10 @@ export class TraceListener {
     if (this.config.autoPatchHTTP && !tracerInitialized) {
       logDebug("Unpatching HTTP libraries");
       unpatchHttp();
+    }
+    if (this.inferredSpan) {
+      logDebug("Finishing inferred span");
+      this.inferredSpan.finish(Date.now());
     }
   }
 
@@ -147,8 +156,12 @@ export class TraceListener {
         ...this.stepFunctionContext,
       };
     }
-
-    if (parentSpanContext !== null) {
+    if (this.inferredSpan !== null) {
+      options.childOf = this.inferredSpan;
+      if (parentSpanContext !== null) {
+        this.inferredSpan.childOf = parentSpanContext;
+      }
+    } else if (parentSpanContext !== null) {
       options.childOf = parentSpanContext;
     }
     options.type = "serverless";

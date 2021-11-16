@@ -8,14 +8,14 @@ export class SpanInferrer {
     this.traceWrapper = traceWrapper;
   }
 
-  public createInferredSpan(event: any, context: Context): any {
-    // TODO: this
+  public createInferredSpan(event: any, context: Context | undefined): any {
     const eventSource = parseEventSource(event);
     if (eventSource === eventSources.lambdaUrl) {
       return this.createInferredSpanForLambdaUrl(event, context);
     }
   }
-  createInferredSpanForLambdaUrl(event: any, context: Context): any {
+
+  createInferredSpanForLambdaUrl(event: any, context: Context | undefined): any {
     const options: SpanOptions = {};
     const domain = event.requestContext.domainName;
     const path = event.rawPath;
@@ -25,12 +25,12 @@ export class SpanInferrer {
       endpoint: path,
       "http.method": event.requestContext.httpMethod,
       resource_name: domain + path,
-      request_id: context.awsRequestId,
+      request_id: context?.awsRequestId,
     };
     options.type = "serverless";
     options.service = "aws.lambda";
     const request_time_epoch = event.requestContext.timeEpoch;
-    options.startTime = request_time_epoch / 1000;
+    options.startTime = request_time_epoch;
     const args = {
       resource: domain + path,
       span_type: "http",
@@ -40,5 +40,6 @@ export class SpanInferrer {
     // https://github.com/opentracing/opentracing-javascript/blob/111ea4f7939c8f8f538333330d72115e5b28bcce/src/tracer.ts#L35
     /// span.finish(endTime) should work
     let span = this.traceWrapper.startSpan("aws.lambda.url", options);
+    return span;
   }
 }

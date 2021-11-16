@@ -82,7 +82,7 @@ export enum eventSources {
   cloudWatch = "cloudwatch",
   dynamoDB = "dynamodb",
   kinesis = "kinesis",
-  lambdaUrl = "lmbda-function-url",
+  lambdaUrl = "lambda-function-url",
   s3 = "s3",
   sns = "sns",
   sqs = "sqs",
