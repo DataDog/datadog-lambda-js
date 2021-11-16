@@ -28,7 +28,11 @@ export function isAPIGatewayEventV2(event: any): event is APIGatewayProxyEventV2
 }
 
 export function isLambdaUrlEvent(event: any): boolean {
-  return event.requestContext !== undefined && event.requestContext.domainName.includes("lambda-url");
+  return (
+    event.requestContext !== undefined &&
+    event.requestContext.domainName &&
+    event.requestContext.domainName.includes("lambda-url")
+  );
 }
 
 export function isALBEvent(event: any): event is ALBEvent {
