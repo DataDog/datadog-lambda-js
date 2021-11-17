@@ -15,9 +15,23 @@ import {
 import * as eventType from "../utils/event-type-guards";
 import { logError } from "../utils";
 import { gunzipSync } from "zlib";
+type LambdaURLEvent = {
+  headers: { [name: string]: string | undefined };
+  requestContext: {
+    domainName?: string | undefined;
+    http: {
+      method: string;
+      path: string;
+    };
+  };
+};
 
 function isHTTPTriggerEvent(eventSource: string | undefined) {
-  return eventSource === "api-gateway" || eventSource === "application-load-balancer";
+  return (
+    eventSource === "api-gateway" ||
+    eventSource === "application-load-balancer" ||
+    eventSource === "lambda-function-url"
+  );
 }
 
 function getAWSPartitionByRegion(region: string) {
@@ -209,7 +223,7 @@ export function parseEventSourceARN(source: string | undefined, event: any, cont
 /**
  * extractHTTPTags extracts HTTP facet tags from the triggering event
  */
-function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEvent) {
+function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEvent | LambdaURLEvent) {
   const httpTags: { [key: string]: string } = {};
 
   if (eventType.isAPIGatewayEvent(event)) {
@@ -240,6 +254,19 @@ function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEv
     httpTags["http.url_details.path"] = event.path;
     httpTags["http.method"] = event.httpMethod;
     if (event.headers && event.headers.Referer) {
+      httpTags["http.referer"] = event.headers.Referer;
+    }
+    return httpTags;
+  }
+
+  if (eventType.isLambdaUrlEvent(event)) {
+    const requestContext = event.requestContext;
+    if (requestContext.domainName) {
+      httpTags["http.url"] = requestContext.domainName;
+    }
+    httpTags["http.url_details.path"] = requestContext.http.path;
+    httpTags["http.method"] = requestContext.http.method;
+    if (event.headers?.Referer) {
       httpTags["http.referer"] = event.headers.Referer;
     }
     return httpTags;
