@@ -51,6 +51,21 @@ By default, the Datadog trace id gets automatically injected into the logs for c
 
 Set the environment variable `DD_LOGS_INJECTION` to `false` to disable this feature.
 
+## Handler wrapper
+
+In order to instrument individual invocations, the Datadog Lambda library needs to wrap around your Lambda handler function. This is usually achieved by pointing your function's handler setting to the provided Datadog handler function and passing the original handler function through an environment variable to be called by the Datadog handler.
+
+If this method doesn't work for you, instead of overriding the handler and setting the `DD_LAMBDA_HANDLER` environment variable, you can apply the Datadog Lambda library wrapper in your function code like below:
+
+```js
+const { datadog } = require("datadog-lambda-js");
+const tracer = require('dd-trace').init({});
+
+module.exports.myHandler = datadog(myHandler, {
+  // my function code
+});
+```
+
 ## Custom logger
 
 You can use your own logger to log layer error and debug logs instead of default `console`
