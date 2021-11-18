@@ -17,7 +17,7 @@ import { datadogLambdaVersion } from "../constants";
 import { Source, ddtraceVersion } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
-import { SpanInferrer } from "./inferred-spans";
+import { SpanInferrer } from "./span-inferrer";
 
 export type TraceExtractor = (event: any, context: Context) => TraceContext;
 

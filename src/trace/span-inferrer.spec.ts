@@ -1,4 +1,4 @@
-import { SpanInferrer } from "./inferred-spans";
+import { SpanInferrer } from "./span-inferrer";
 import { TracerWrapper } from "./tracer-wrapper";
 const lambdaURLEvent = require("../../event_samples/lambda-function-urls.json");
 
