@@ -23,7 +23,7 @@ export class SpanInferrer {
       operation_name: "aws.lambda.url",
       "http.url": domain + path,
       endpoint: path,
-      "http.method": event.requestContext.httpMethod,
+      "http.method": event.requestContext.http.method,
       resource_name: domain + path,
       request_id: context?.awsRequestId,
     };
@@ -31,14 +31,7 @@ export class SpanInferrer {
     options.service = "aws.lambda";
     const request_time_epoch = event.requestContext.timeEpoch;
     options.startTime = request_time_epoch;
-    const args = {
-      resource: domain + path,
-      span_type: "http",
-    };
 
-    // verify, but I think traceOptions can take a startTime.
-    // https://github.com/opentracing/opentracing-javascript/blob/111ea4f7939c8f8f538333330d72115e5b28bcce/src/tracer.ts#L35
-    /// span.finish(endTime) should work
     let span = this.traceWrapper.startSpan("aws.lambda.url", options);
     return span;
   }
