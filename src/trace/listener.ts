@@ -61,6 +61,9 @@ export class TraceListener {
   public get currentSpan() {
     return this.tracerWrapper.currentSpan;
   }
+  public get currentInferredSpan() {
+    return this.inferredSpan;
+  }
   constructor(private config: TraceConfig, private handlerName: string) {
     this.tracerWrapper = new TracerWrapper();
     this.contextService = new TraceContextService(this.tracerWrapper);

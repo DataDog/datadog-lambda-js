@@ -22,9 +22,10 @@ describe("SpanInferrer", () => {
         "http.url": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com/",
         operation_name: "aws.lambda.url",
         request_id: "abcd-1234",
-        resource_name: "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com/",
+        "resource.name": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com/",
+        resource_names: "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com/",
+        "span.type": "http",
       },
-      type: "serverless",
     });
   });
 });

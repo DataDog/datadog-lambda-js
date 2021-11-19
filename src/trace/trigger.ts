@@ -92,7 +92,7 @@ export enum eventSources {
   cloudFront = "cloudfront",
   cloudWatchEvents = "cloudwatch-events",
   cloudWatchLogs = "cloudwatch-logs",
-  //alb = "alb",
+  // alb = "alb",
   cloudWatch = "cloudwatch",
   dynamoDB = "dynamodb",
   kinesis = "kinesis",

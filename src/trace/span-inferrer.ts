@@ -24,15 +24,14 @@ export class SpanInferrer {
       "http.url": domain + path,
       endpoint: path,
       "http.method": event.requestContext.http.method,
-      resource_name: domain + path,
+      resource_names: domain + path,
       request_id: context?.awsRequestId,
+      "span.type": "http",
+      "resource.name": domain + path,
     };
-    options.type = "serverless";
     options.service = "aws.lambda";
-    const request_time_epoch = event.requestContext.timeEpoch;
-    options.startTime = request_time_epoch;
+    options.startTime = event.requestContext.timeEpoch;
 
-    let span = this.traceWrapper.startSpan("aws.lambda.url", options);
-    return span;
+    return this.traceWrapper.startSpan("aws.lambda.url", options);
   }
 }
