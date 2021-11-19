@@ -159,7 +159,7 @@ export class TraceListener {
         ...this.stepFunctionContext,
       };
     }
-    if (this.inferredSpan !== (null || undefined)) {
+    if (this.inferredSpan) {
       options.childOf = this.inferredSpan;
       if (parentSpanContext !== null) {
         this.inferredSpan.childOf = parentSpanContext;
