@@ -15,9 +15,23 @@ import {
 import * as eventType from "../utils/event-type-guards";
 import { logError } from "../utils";
 import { gunzipSync } from "zlib";
+type LambdaURLEvent = {
+  headers: { [name: string]: string | undefined };
+  requestContext: {
+    domainName?: string | undefined;
+    http: {
+      method: string;
+      path: string;
+    };
+  };
+};
 
 function isHTTPTriggerEvent(eventSource: string | undefined) {
-  return eventSource === "api-gateway" || eventSource === "application-load-balancer";
+  return (
+    eventSource === "api-gateway" ||
+    eventSource === "application-load-balancer" ||
+    eventSource === "lambda-function-url"
+  );
 }
 
 function getAWSPartitionByRegion(region: string) {
@@ -72,55 +86,72 @@ function extractSQSEventARN(event: SQSEvent) {
   return event.Records[0].eventSourceARN;
 }
 
+export enum eventSources {
+  apiGateway = "api-gateway",
+  applicationLoadBalancer = "application-load-balancer",
+  cloudFront = "cloudfront",
+  cloudWatchEvents = "cloudwatch-events",
+  cloudWatchLogs = "cloudwatch-logs",
+  // alb = "alb",
+  cloudWatch = "cloudwatch",
+  dynamoDB = "dynamodb",
+  kinesis = "kinesis",
+  lambdaUrl = "lambda-function-url",
+  s3 = "s3",
+  sns = "sns",
+  sqs = "sqs",
+}
 /**
  * parseEventSource parses the triggering event to determine the source
  * Possible Returns:
  * api-gateway | application-load-balancer | cloudwatch-logs |
  * cloudwatch-events | cloudfront | dynamodb | kinesis | s3 | sns | sqs
  */
-export function parseEventSource(event: any) {
-  let eventSource: string | undefined;
-
+export function parseEventSource(event: any): eventSources | undefined {
   if (eventType.isAPIGatewayEvent(event) || eventType.isAPIGatewayEventV2(event)) {
-    eventSource = "api-gateway";
+    return eventSources.apiGateway;
+  }
+
+  if (eventType.isLambdaUrlEvent(event)) {
+    return eventSources.lambdaUrl;
   }
 
   if (eventType.isALBEvent(event)) {
-    eventSource = "application-load-balancer";
+    return eventSources.applicationLoadBalancer;
   }
 
   if (eventType.isCloudWatchLogsEvent(event)) {
-    eventSource = "cloudwatch-logs";
+    return eventSources.cloudWatchLogs;
   }
 
   if (eventType.isCloudWatchEvent(event)) {
-    eventSource = "cloudwatch-events";
+    return eventSources.cloudWatchEvents;
   }
 
   if (eventType.isCloudFrontRequestEvent(event)) {
-    eventSource = "cloudfront";
+    return eventSources.cloudFront;
   }
 
   if (eventType.isDynamoDBStreamEvent(event)) {
-    eventSource = "dynamodb";
+    return eventSources.dynamoDB;
   }
 
   if (eventType.isKinesisStreamEvent(event)) {
-    eventSource = "kinesis";
+    return eventSources.kinesis;
   }
 
   if (eventType.isS3Event(event)) {
-    eventSource = "s3";
+    return eventSources.s3;
   }
 
   if (eventType.isSNSEvent(event)) {
-    eventSource = "sns";
+    return eventSources.sns;
   }
 
   if (eventType.isSQSEvent(event)) {
-    eventSource = "sqs";
+    return eventSources.sqs;
   }
-  return eventSource;
+  return undefined;
 }
 
 /**
@@ -192,7 +223,7 @@ export function parseEventSourceARN(source: string | undefined, event: any, cont
 /**
  * extractHTTPTags extracts HTTP facet tags from the triggering event
  */
-function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEvent) {
+function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEvent | LambdaURLEvent) {
   const httpTags: { [key: string]: string } = {};
 
   if (eventType.isAPIGatewayEvent(event)) {
@@ -223,6 +254,19 @@ function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEv
     httpTags["http.url_details.path"] = event.path;
     httpTags["http.method"] = event.httpMethod;
     if (event.headers && event.headers.Referer) {
+      httpTags["http.referer"] = event.headers.Referer;
+    }
+    return httpTags;
+  }
+
+  if (eventType.isLambdaUrlEvent(event)) {
+    const requestContext = event.requestContext;
+    if (requestContext.domainName) {
+      httpTags["http.url"] = requestContext.domainName;
+    }
+    httpTags["http.url_details.path"] = requestContext.http.path;
+    httpTags["http.method"] = requestContext.http.method;
+    if (event.headers?.Referer) {
       httpTags["http.referer"] = event.headers.Referer;
     }
     return httpTags;
