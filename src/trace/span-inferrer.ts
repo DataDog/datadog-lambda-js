@@ -8,6 +8,20 @@ export class SpanInferrer {
     this.traceWrapper = traceWrapper;
   }
 
+  public createColdStartSpan(startTime: number, endTime: number): void {
+    const options: SpanOptions = {
+      tags: {
+        operation_name: "aws.lambda.cold_start",
+        "span.type": "serverless",
+        "resource.name": "cold_start",
+      },
+      service: "aws.lambda",
+      startTime,
+    };
+    const coldStartSpan = this.traceWrapper.startSpan("aws.lambda.cold_start", options) as any;
+    coldStartSpan.finish(endTime);
+  }
+
   public createInferredSpan(event: any, context: Context | undefined): any {
     const eventSource = parseEventSource(event);
     if (eventSource === eventSources.lambdaUrl) {
