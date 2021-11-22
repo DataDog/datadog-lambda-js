@@ -135,7 +135,7 @@ export function generateXraySubsegment(key: string, metadata: Record<string, any
     return;
   }
   const sampled = convertToSampleMode(parseInt(context.xraySampled, 10));
-  if (sampled == SampleMode.USER_REJECT || sampled == SampleMode.AUTO_REJECT) {
+  if (sampled === SampleMode.USER_REJECT || sampled === SampleMode.AUTO_REJECT) {
     logDebug("discarding xray metadata subsegment due to sampling");
     return;
   }
