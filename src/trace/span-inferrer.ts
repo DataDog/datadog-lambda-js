@@ -45,17 +45,19 @@ export class SpanInferrer {
     const options: SpanOptions = {};
     const domain = event.requestContext.domainName;
     const path = event.rawPath;
+    const method = event.requestContext.http.method;
+    const resourceName = [method, path].join(" ");
     options.tags = {
       operation_name: "aws.lambda.url",
       "http.url": domain + path,
       endpoint: path,
-      "http.method": event.requestContext.http.method,
-      resource_names: domain + path,
+      "http.method": method,
+      resource_names: resourceName,
       request_id: context?.awsRequestId,
       "span.type": "http",
-      "resource.name": domain + path,
+      "resource.name": resourceName,
     };
-    options.service = "aws.lambda";
+    options.service = domain;
     options.startTime = event.requestContext.timeEpoch;
     const spanWrapperOptions = {
       isAsync: false,
@@ -67,17 +69,19 @@ export class SpanInferrer {
     const options: SpanOptions = {};
     const domain = event.requestContext.domainName;
     const path = event.rawPath;
+    const method = event.requestContext.http.method;
+    const resourceName = [method, path].join(" ");
     options.tags = {
       operation_name: "aws.api_gateway",
       "http.url": domain + path,
       endpoint: path,
-      "http.method": event.requestContext.http.method,
-      resource_names: domain + path,
+      "http.method": method,
+      resource_names: resourceName,
       request_id: context?.awsRequestId,
       "span.type": "http",
-      "resource.name": domain + path,
+      "resource.name": resourceName,
     };
-    options.service = "aws.lambda";
+    options.service = domain;
     options.startTime = event.requestContext.timeEpoch;
     const spanWrapperOptions = {
       isAsync: false,

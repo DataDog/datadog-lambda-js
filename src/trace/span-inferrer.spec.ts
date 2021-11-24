@@ -14,7 +14,7 @@ describe("SpanInferrer", () => {
     } as any);
 
     expect(mockWrapper.startSpan).toBeCalledWith("aws.lambda.url", {
-      service: "aws.lambda",
+      service: "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com",
       startTime: 1637169449721,
       tags: {
         endpoint: "/",
@@ -22,8 +22,8 @@ describe("SpanInferrer", () => {
         "http.url": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com/",
         operation_name: "aws.lambda.url",
         request_id: "abcd-1234",
-        "resource.name": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com/",
-        resource_names: "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com/",
+        "resource.name": "GET /",
+        resource_names: "GET /",
         "span.type": "http",
       },
     });
