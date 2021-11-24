@@ -18,6 +18,7 @@ import { Source, ddtraceVersion } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 import { SpanInferrer } from "./span-inferrer";
+import { SpanWrapper, SpanWrapperOptions } from "./span-wrapper";
 
 export type TraceExtractor = (event: any, context: Context) => TraceContext;
 
@@ -51,20 +52,20 @@ export class TraceListener {
   private context?: Context;
   private stepFunctionContext?: StepFunctionContext;
   private tracerWrapper: TracerWrapper;
-  private inferrer: SpanInferrer;
-  private inferredSpan: any;
+  private currentWrappedSpan?: SpanWrapper;
+  public inferrer: SpanInferrer;
+  public inferredSpan?: SpanWrapper;
 
-  public triggerTags?: { [key: string]: string };
-  public get currentTraceHeaders() {
-    return this.contextService.currentTraceHeaders;
-  }
   public get currentSpan() {
     return this.tracerWrapper.currentSpan;
   }
-  public get currentInferredSpan() {
-    return this.inferredSpan;
+  public triggerTags?: { [key: string]: string };
+
+  public get currentTraceHeaders() {
+    return this.contextService.currentTraceHeaders;
   }
-  constructor(private config: TraceConfig, private handlerName: string) {
+
+  constructor(private config: TraceConfig) {
     this.tracerWrapper = new TracerWrapper();
     this.contextService = new TraceContextService(this.tracerWrapper);
     this.inferrer = new SpanInferrer(this.tracerWrapper);
@@ -128,12 +129,13 @@ export class TraceListener {
     }
 
     const options: TraceOptions = {};
+    const invocationIsColdStart = didFunctionColdStart();
     if (this.context) {
       logDebug("Creating the aws.lambda span");
       const functionArn = (this.context.invokedFunctionArn ?? "").toLowerCase();
       const tk = functionArn.split(":");
       options.tags = {
-        cold_start: didFunctionColdStart(),
+        cold_start: invocationIsColdStart,
         function_arn: tk.length > 7 ? tk.slice(0, 7).join(":") : functionArn,
         function_version: tk.length > 7 ? tk[7] : "$LATEST",
         request_id: this.context.awsRequestId,
@@ -160,9 +162,9 @@ export class TraceListener {
       };
     }
     if (this.inferredSpan) {
-      options.childOf = this.inferredSpan;
+      options.childOf = this.inferredSpan.span;
       if (parentSpanContext !== null) {
-        this.inferredSpan.childOf = parentSpanContext;
+        this.inferredSpan.childOf(parentSpanContext);
       }
     } else if (parentSpanContext !== null) {
       options.childOf = parentSpanContext;
@@ -172,7 +174,6 @@ export class TraceListener {
     if (this.context) {
       options.resource = this.context.functionName;
     }
-
     return this.tracerWrapper.wrap("aws.lambda", options, func);
   }
 }

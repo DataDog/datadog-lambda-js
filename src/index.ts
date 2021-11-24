@@ -1,4 +1,5 @@
 import { Context, Handler } from "aws-lambda";
+import { trace } from "console";
 import {
   incrementErrorsMetric,
   incrementInvocationsMetric,
@@ -94,9 +95,8 @@ export function datadog<TEvent, TResult>(
 ): Handler<TEvent, TResult> {
   const finalConfig = getConfig(config);
   const metricsListener = new MetricsListener(new KMSService(), finalConfig);
-  const handlerName = getEnvValue(datadogHandlerEnvVar, getEnvValue("_HANDLER", "handler"));
 
-  const traceListener = new TraceListener(finalConfig, handlerName);
+  const traceListener = new TraceListener(finalConfig);
 
   // Only wrap the handler once unless forced
   const _ddWrappedKey = "_ddWrapped";
@@ -138,9 +138,19 @@ export function datadog<TEvent, TResult>(
         try {
           localResult = await promHandler(localEvent, localContext);
         } finally {
-          if (traceListener.currentSpan && finalConfig.captureLambdaPayload) {
-            tagObject(traceListener.currentSpan, "function.request", localEvent);
-            tagObject(traceListener.currentSpan, "function.response", localResult);
+          // TODO encapsulate all of this in an after hook?
+          if (traceListener.currentSpan)
+            if (traceListener.currentSpan && finalConfig.captureLambdaPayload) {
+              tagObject(traceListener.currentSpan, "function.request", localEvent);
+              tagObject(traceListener.currentSpan, "function.response", localResult);
+            }
+          // TODO encapsulate in service class
+          if (traceListener.currentSpan && traceListener.inferredSpan) {
+            traceListener.inferrer.createColdStartSpan(
+              traceListener.inferredSpan.span,
+              traceListener.currentSpan._startTime,
+              "some-function-name",
+            );
           }
           if (traceListener.triggerTags) {
             const statusCode = extractHTTPStatusCodeTag(traceListener.triggerTags, localResult);
@@ -150,8 +160,8 @@ export function datadog<TEvent, TResult>(
               if (traceListener.currentSpan) {
                 traceListener.currentSpan.setTag("http.status_code", statusCode);
               }
-              if (traceListener.currentInferredSpan) {
-                traceListener.currentInferredSpan.setTag("http.status_code", statusCode);
+              if (traceListener.inferredSpan) {
+                traceListener.inferredSpan.setTag("http.status_code", statusCode);
               }
             }
           }
