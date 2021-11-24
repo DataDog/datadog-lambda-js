@@ -28,7 +28,7 @@ export class SpanInferrer {
     };
     options.childOf = inferredSpan.span;
     const coldStartSpan = this.traceWrapper.startSpan("aws.lambda.cold_start", options) as any;
-    coldStartSpan.finish(lambdaSpan.endTime());
+    coldStartSpan.finish(lambdaSpan.startTime());
   }
 
   public createInferredSpan(event: any, context: Context | undefined): any {

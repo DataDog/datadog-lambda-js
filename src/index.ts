@@ -1,5 +1,4 @@
 import { Context, Handler } from "aws-lambda";
-import { trace } from "console";
 import {
   incrementErrorsMetric,
   incrementInvocationsMetric,
@@ -8,7 +7,6 @@ import {
   MetricsListener,
 } from "./metrics";
 import { TraceConfig, TraceHeaders, TraceListener } from "./trace";
-import { extractHTTPStatusCodeTag } from "./trace/trigger";
 import {
   logDebug,
   logError,

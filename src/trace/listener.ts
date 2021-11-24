@@ -112,6 +112,7 @@ export class TraceListener {
       tagObject(this.tracerWrapper.currentSpan, "function.response", result);
     }
     if (this.inferredSpan && didFunctionColdStart()) {
+      logDebug("Creating cold start span");
       this.inferrer.createColdStartSpan(
         this.inferredSpan,
         wrappedCurrentSpan,
@@ -143,7 +144,7 @@ export class TraceListener {
       logDebug("Unpatching HTTP libraries");
       unpatchHttp();
     }
-    if (this.inferredSpan && !this.inferredSpan.isAsync) {
+    if (this.inferredSpan && !this.inferredSpan.isAsync()) {
       logDebug("Finishing inferred span");
       this.inferredSpan.finish(Date.now());
     }
@@ -165,13 +166,12 @@ export class TraceListener {
     }
 
     const options: TraceOptions = {};
-    const invocationIsColdStart = didFunctionColdStart();
     if (this.context) {
       logDebug("Creating the aws.lambda span");
       const functionArn = (this.context.invokedFunctionArn ?? "").toLowerCase();
       const tk = functionArn.split(":");
       options.tags = {
-        cold_start: invocationIsColdStart,
+        cold_start: didFunctionColdStart(),
         function_arn: tk.length > 7 ? tk.slice(0, 7).join(":") : functionArn,
         function_version: tk.length > 7 ? tk[7] : "$LATEST",
         request_id: this.context.awsRequestId,
