@@ -55,7 +55,7 @@ export class TraceListener {
   private currentWrappedSpan?: SpanWrapper;
   private inferrer: SpanInferrer;
   private inferredSpan?: SpanWrapper;
-  private triggerTags: { [key: string]: string };
+  private triggerTags?: { [key: string]: string };
 
   public get currentTraceHeaders() {
     return this.contextService.currentTraceHeaders;
@@ -65,7 +65,6 @@ export class TraceListener {
     this.tracerWrapper = new TracerWrapper();
     this.contextService = new TraceContextService(this.tracerWrapper);
     this.inferrer = new SpanInferrer(this.tracerWrapper);
-    this.triggerTags = {};
   }
 
   public onStartInvocation(event: any, context: Context) {
