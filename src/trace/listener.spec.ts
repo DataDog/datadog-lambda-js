@@ -72,7 +72,7 @@ describe("TraceListener", () => {
   });
 
   it("wraps dd-trace span around invocation", async () => {
-    const listener = new TraceListener(defaultConfig, "handler.my-handler");
+    const listener = new TraceListener(defaultConfig);
     listener.onStartInvocation({}, context as any);
     const unwrappedFunc = () => {};
     const wrappedFunc = listener.onWrap(unwrappedFunc);
@@ -101,7 +101,7 @@ describe("TraceListener", () => {
   });
 
   it("wraps dd-trace span around invocation, with trace context from event", async () => {
-    const listener = new TraceListener(defaultConfig, "handler.my-handler");
+    const listener = new TraceListener(defaultConfig);
     mockTraceHeaders = {
       "x-datadog-parent-id": "797643193680388251",
       "x-datadog-sampling-priority": "2",
@@ -138,7 +138,7 @@ describe("TraceListener", () => {
   });
 
   it("wraps dd-trace span around invocation, without trace context from xray", async () => {
-    const listener = new TraceListener(defaultConfig, "handler.my-handler");
+    const listener = new TraceListener(defaultConfig);
     mockTraceHeaders = {
       "x-datadog-parent-id": "797643193680388251",
       "x-datadog-sampling-priority": "2",
@@ -174,7 +174,7 @@ describe("TraceListener", () => {
   });
 
   it("wraps dd-trace span around invocation, with trace context from xray when mergeDatadogXrayTraces is enabled", async () => {
-    const listener = new TraceListener({ ...defaultConfig, mergeDatadogXrayTraces: true }, "handler.my-handler");
+    const listener = new TraceListener({ ...defaultConfig, mergeDatadogXrayTraces: true });
     mockTraceHeaders = {
       "x-datadog-parent-id": "797643193680388251",
       "x-datadog-sampling-priority": "2",
@@ -212,7 +212,7 @@ describe("TraceListener", () => {
   });
 
   it("wraps dd-trace span around invocation, with function alias", async () => {
-    const listener = new TraceListener(defaultConfig, "handler.my-handler");
+    const listener = new TraceListener(defaultConfig);
     listener.onStartInvocation({}, contextWithFunctionAlias as any);
     const unwrappedFunc = () => {};
     const wrappedFunc = listener.onWrap(unwrappedFunc);
@@ -241,7 +241,7 @@ describe("TraceListener", () => {
   });
 
   it("wraps dd-trace span around invocation, with function version", async () => {
-    const listener = new TraceListener(defaultConfig, "handler.my-handler");
+    const listener = new TraceListener(defaultConfig);
     listener.onStartInvocation({}, contextWithFunctionVersion as any);
     const unwrappedFunc = () => {};
     const wrappedFunc = listener.onWrap(unwrappedFunc);

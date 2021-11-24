@@ -18,7 +18,6 @@ import {
   setColdStart,
   setLogger,
   setLogLevel,
-  tagObject,
 } from "./utils";
 
 export { TraceHeaders } from "./trace";
@@ -132,39 +131,12 @@ export function datadog<TEvent, TResult>(
     let localResult: TResult | undefined;
     let error: any;
     let didThrow = false;
-
     try {
       result = await traceListener.onWrap(async (localEvent: TEvent, localContext: Context) => {
         try {
           localResult = await promHandler(localEvent, localContext);
         } finally {
-          // TODO encapsulate all of this in an after hook?
-          if (traceListener.currentSpan)
-            if (traceListener.currentSpan && finalConfig.captureLambdaPayload) {
-              tagObject(traceListener.currentSpan, "function.request", localEvent);
-              tagObject(traceListener.currentSpan, "function.response", localResult);
-            }
-          // TODO encapsulate in service class
-          if (traceListener.currentSpan && traceListener.inferredSpan) {
-            traceListener.inferrer.createColdStartSpan(
-              traceListener.inferredSpan.span,
-              traceListener.currentSpan._startTime,
-              "some-function-name",
-            );
-          }
-          if (traceListener.triggerTags) {
-            const statusCode = extractHTTPStatusCodeTag(traceListener.triggerTags, localResult);
-            if (statusCode) {
-              // Store the status tag in the listener to send to Xray on invocation completion
-              traceListener.triggerTags["http.status_code"] = statusCode;
-              if (traceListener.currentSpan) {
-                traceListener.currentSpan.setTag("http.status_code", statusCode);
-              }
-              if (traceListener.inferredSpan) {
-                traceListener.inferredSpan.setTag("http.status_code", statusCode);
-              }
-            }
-          }
+          traceListener.onEndingInvocation(localEvent, localResult);
         }
         return localResult;
       })(event, context);

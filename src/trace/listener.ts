@@ -9,9 +9,9 @@ import {
 } from "./context";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
-import { extractTriggerTags } from "./trigger";
+import { extractTriggerTags, extractHTTPStatusCodeTag } from "./trigger";
 
-import { logDebug } from "../utils";
+import { logDebug, tagObject } from "../utils";
 import { didFunctionColdStart } from "../utils/cold-start";
 import { datadogLambdaVersion } from "../constants";
 import { Source, ddtraceVersion } from "./constants";
@@ -53,13 +53,9 @@ export class TraceListener {
   private stepFunctionContext?: StepFunctionContext;
   private tracerWrapper: TracerWrapper;
   private currentWrappedSpan?: SpanWrapper;
-  public inferrer: SpanInferrer;
-  public inferredSpan?: SpanWrapper;
-
-  public get currentSpan() {
-    return this.tracerWrapper.currentSpan;
-  }
-  public triggerTags?: { [key: string]: string };
+  private inferrer: SpanInferrer;
+  private inferredSpan?: SpanWrapper;
+  private triggerTags: { [key: string]: string };
 
   public get currentTraceHeaders() {
     return this.contextService.currentTraceHeaders;
@@ -69,6 +65,7 @@ export class TraceListener {
     this.tracerWrapper = new TracerWrapper();
     this.contextService = new TraceContextService(this.tracerWrapper);
     this.inferrer = new SpanInferrer(this.tracerWrapper);
+    this.triggerTags = {};
   }
 
   public onStartInvocation(event: any, context: Context) {
@@ -95,6 +92,46 @@ export class TraceListener {
     this.stepFunctionContext = readStepFunctionContextFromEvent(event);
   }
 
+  /**
+   * onEndingInvocation runs after the user function has returned
+   * but before the wrapped function has returned
+   * this is needed to apply tags to the lambda span
+   * before it is flushed to logs or extension
+   *
+   * @param event
+   * @param result
+   * @param shouldTagPayload
+   */
+  public onEndingInvocation(event: any, result: any, shouldTagPayload = false) {
+    // Guard clause if something has gone horribly wrong
+    // so we won't crash user code.
+    if (!this.tracerWrapper.currentSpan) return;
+
+    const wrappedCurrentSpan = new SpanWrapper(this.tracerWrapper.currentSpan, {});
+    if (shouldTagPayload) {
+      tagObject(this.tracerWrapper.currentSpan, "function.request", event);
+      tagObject(this.tracerWrapper.currentSpan, "function.response", result);
+    }
+    if (this.inferredSpan && didFunctionColdStart()) {
+      this.inferrer.createColdStartSpan(
+        this.inferredSpan,
+        wrappedCurrentSpan,
+        this.context?.functionName?.toLowerCase(),
+      );
+    }
+    if (this.triggerTags) {
+      const statusCode = extractHTTPStatusCodeTag(this.triggerTags, result);
+      // Store the status tag in the listener to send to Xray on invocation completion
+      this.triggerTags["http.status_code"] = statusCode!;
+      if (this.tracerWrapper.currentSpan) {
+        this.tracerWrapper.currentSpan.setTag("http.status_code", statusCode);
+      }
+      if (this.inferredSpan) {
+        this.inferredSpan.setTag("http.status_code", statusCode);
+      }
+    }
+  }
+
   public async onCompleteInvocation() {
     // Create a new dummy Datadog subsegment for function trigger tags so we
     // can attach them to X-Ray spans when hybrid tracing is used
@@ -107,7 +144,7 @@ export class TraceListener {
       logDebug("Unpatching HTTP libraries");
       unpatchHttp();
     }
-    if (this.inferredSpan) {
+    if (this.inferredSpan && !this.inferredSpan.isAsync) {
       logDebug("Finishing inferred span");
       this.inferredSpan.finish(Date.now());
     }

@@ -307,7 +307,10 @@ export function extractTriggerTags(event: any, context: Context) {
  * extractHTTPStatusCode extracts a status code from the response if the Lambda was triggered
  * by API Gateway or ALB
  */
-export function extractHTTPStatusCodeTag(triggerTags: { [key: string]: string }, result: any) {
+export function extractHTTPStatusCodeTag(
+  triggerTags: { [key: string]: string } | undefined,
+  result: any,
+): string | undefined {
   let eventSource: string | undefined;
   triggerTags ? (eventSource = triggerTags["function_trigger.event_source"]) : (eventSource = undefined);
   if (!isHTTPTriggerEvent(eventSource)) {

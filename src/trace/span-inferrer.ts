@@ -12,7 +12,11 @@ export class SpanInferrer {
   // [astuyve] TODO does this belong here?
   // We'd probably want to create a coldstart span
   // even if we can't create an inferred span
-  public createColdStartSpan(inferredSpan: any, endTime: number, resourceName: string | undefined): void {
+  public createColdStartSpan(
+    inferredSpan: SpanWrapper,
+    lambdaSpan: SpanWrapper,
+    resourceName: string | undefined,
+  ): void {
     const options: SpanOptions = {
       tags: {
         operation_name: "aws.lambda.cold_start",
@@ -20,11 +24,11 @@ export class SpanInferrer {
         "resource.name": resourceName || "aws.lambda.cold_start",
       },
       service: "aws.lambda",
-      startTime: inferredSpan._startTime,
+      startTime: inferredSpan.startTime(),
     };
-    options.childOf = inferredSpan;
+    options.childOf = inferredSpan.span;
     const coldStartSpan = this.traceWrapper.startSpan("aws.lambda.cold_start", options) as any;
-    coldStartSpan.finish(endTime);
+    coldStartSpan.finish(lambdaSpan.endTime());
   }
 
   public createInferredSpan(event: any, context: Context | undefined): any {
@@ -54,7 +58,6 @@ export class SpanInferrer {
     options.service = "aws.lambda";
     options.startTime = event.requestContext.timeEpoch;
     const spanWrapperOptions = {
-      isColdStart: false,
       isAsync: false,
     };
     return new SpanWrapper(this.traceWrapper.startSpan("aws.lambda.url", options), spanWrapperOptions);
@@ -77,7 +80,6 @@ export class SpanInferrer {
     options.service = "aws.lambda";
     options.startTime = event.requestContext.timeEpoch;
     const spanWrapperOptions = {
-      isColdStart: false,
       isAsync: false,
     };
     return new SpanWrapper(this.traceWrapper.startSpan("aws.api_gateway", options), spanWrapperOptions);

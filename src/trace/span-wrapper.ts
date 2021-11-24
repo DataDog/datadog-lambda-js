@@ -1,7 +1,5 @@
 export type SpanWrapperOptions = {
   isAsync?: boolean;
-  isColdStart?: boolean;
-  operationType?: string;
 };
 
 export class SpanWrapper {
@@ -11,6 +9,10 @@ export class SpanWrapper {
   constructor(span: any, options: SpanWrapperOptions) {
     this.span = span;
     this.options = options;
+  }
+
+  public isAsync(): boolean {
+    return this.options.isAsync || false;
   }
 
   public startTime(): number {
