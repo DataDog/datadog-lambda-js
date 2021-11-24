@@ -860,6 +860,25 @@ describe("extractTraceContext", () => {
     expect(sentSegment).toBeUndefined();
   });
 
+  it("skips adding datadog metadata to x-ray when x-ray trace isn't sampled", () => {
+    jest.spyOn(Date, "now").mockImplementation(() => 1487076708000);
+    process.env[xrayTraceEnvVar] = "Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=0";
+    process.env[awsXrayDaemonAddressEnvVar] = "localhost:127.0.0.1:2000";
+
+    const result = extractTraceContext(
+      {
+        headers: {
+          "x-datadog-parent-id": "797643193680388251",
+          "x-datadog-sampling-priority": "2",
+          "x-datadog-trace-id": "4110911582297405551",
+        },
+      },
+      {} as Context,
+    );
+
+    expect(sentSegment).toBeUndefined();
+  });
+
   it("adds step function metadata to xray", () => {
     const stepFunctionEvent = {
       dd: {

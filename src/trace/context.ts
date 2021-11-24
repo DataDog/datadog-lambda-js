@@ -134,6 +134,11 @@ export function generateXraySubsegment(key: string, metadata: Record<string, any
     logDebug("couldn't parse xray trace header from env");
     return;
   }
+  const sampled = convertToSampleMode(parseInt(context.xraySampled, 10));
+  if (sampled === SampleMode.USER_REJECT || sampled === SampleMode.AUTO_REJECT) {
+    logDebug("discarding xray metadata subsegment due to sampling");
+    return;
+  }
 
   // Convert from milliseconds to seconds
   const time = Date.now() * 0.001;
