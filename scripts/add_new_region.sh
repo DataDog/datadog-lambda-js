@@ -17,6 +17,7 @@ publish_layer() {
         --zip-file "fileb://$layer_path" \
         --region $region \
         --compatible-runtimes $aws_version_key \
+        --compatible-architectures "arm64" "x86_64" 
                         | jq -r '.Version')
 
     aws lambda add-layer-version-permission --layer-name $layer_name \
