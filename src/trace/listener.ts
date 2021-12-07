@@ -18,8 +18,8 @@ import { Source, ddtraceVersion } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 import { SpanInferrer } from "./span-inferrer";
-import { SpanWrapper, SpanWrapperOptions } from "./span-wrapper";
-
+import { SpanWrapper } from "./span-wrapper";
+const util = require("util");
 export type TraceExtractor = (event: any, context: Context) => TraceContext;
 
 export interface TraceConfig {
@@ -52,9 +52,9 @@ export class TraceListener {
   private context?: Context;
   private stepFunctionContext?: StepFunctionContext;
   private tracerWrapper: TracerWrapper;
-  private currentWrappedSpan?: SpanWrapper;
   private inferrer: SpanInferrer;
   private inferredSpan?: SpanWrapper;
+  private wrappedCurrentSpan?: SpanWrapper;
   private triggerTags?: { [key: string]: string };
 
   public get currentTraceHeaders() {
@@ -85,6 +85,7 @@ export class TraceListener {
     }
     logDebug("Creating inferred span");
     this.inferredSpan = this.inferrer.createInferredSpan(event, context);
+    console.log("INFERRED SPAN CREATED IS: ", util.inspect(this.inferredSpan?.span));
     this.context = context;
     this.triggerTags = extractTriggerTags(event, context);
     this.contextService.rootTraceContext = extractTraceContext(event, context, this.config.traceExtractor);
@@ -106,19 +107,12 @@ export class TraceListener {
     // so we won't crash user code.
     if (!this.tracerWrapper.currentSpan) return;
 
-    const wrappedCurrentSpan = new SpanWrapper(this.tracerWrapper.currentSpan, {});
+    this.wrappedCurrentSpan = new SpanWrapper(this.tracerWrapper.currentSpan, {});
     if (shouldTagPayload) {
       tagObject(this.tracerWrapper.currentSpan, "function.request", event);
       tagObject(this.tracerWrapper.currentSpan, "function.response", result);
     }
-    if (this.inferredSpan && didFunctionColdStart()) {
-      logDebug("Creating cold start span");
-      this.inferrer.createColdStartSpan(
-        this.inferredSpan,
-        wrappedCurrentSpan,
-        this.context?.functionName?.toLowerCase(),
-      );
-    }
+
     if (this.triggerTags) {
       const statusCode = extractHTTPStatusCodeTag(this.triggerTags, result);
       // Store the status tag in the listener to send to Xray on invocation completion
@@ -144,9 +138,11 @@ export class TraceListener {
       logDebug("Unpatching HTTP libraries");
       unpatchHttp();
     }
-    if (this.inferredSpan && !this.inferredSpan.isAsync()) {
+    if (this.inferredSpan) {
       logDebug("Finishing inferred span");
-      this.inferredSpan.finish(Date.now());
+      const finishTime = this.inferredSpan.isAsync() ? this.wrappedCurrentSpan?.startTime() : Date.now();
+      this.inferredSpan.finish(finishTime);
+      console.log("INFERRED SPAN FINISHED IS: ", util.inspect(this.inferredSpan?.span));
     }
   }
 
