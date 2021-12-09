@@ -46,6 +46,12 @@ export class SpanInferrer {
     if (eventSource === eventSources.dynamoDB) {
       return this.createInferredSpanForDynamoDBStreamEvent(event, context);
     }
+    if (eventSource === eventSources.sqs) {
+      return this.createInferredSpanForSqs(event, context);
+    }
+    if (eventSource === eventSources.kinesis) {
+      return this.createInferredSpanForKinesis(event, context);
+    }
   }
 
   createInferredSpanForLambdaUrl(event: any, context: Context | undefined): SpanWrapper {
@@ -163,7 +169,7 @@ export class SpanInferrer {
       "resource.name": resourceName,
       service: "sqs",
     };
-    options.startTime = Number(SentTimestamp) / 1000;
+    options.startTime = Number(SentTimestamp);
     const spanWrapperOptions = {
       isAsync: true,
     };

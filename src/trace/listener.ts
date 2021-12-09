@@ -143,6 +143,11 @@ export class TraceListener {
       const finishTime = this.inferredSpan.isAsync() ? this.wrappedCurrentSpan?.startTime() : Date.now();
       this.inferredSpan.finish(finishTime);
       console.log("INFERRED SPAN FINISHED IS: ", util.inspect(this.inferredSpan?.span));
+      console.log(
+        "INFERRED SPAN CHILD OF TRACE ID: ",
+        util.inspect(this.inferredSpan?.span.childOf._traceId.toString()),
+      );
+      console.log("INFERRED SPAN CHILD OF SPAN ID: ", util.inspect(this.inferredSpan?.span.childOf._spanId.toString()));
     }
   }
 
@@ -196,7 +201,9 @@ export class TraceListener {
     if (this.inferredSpan) {
       options.childOf = this.inferredSpan.span;
       if (parentSpanContext !== null) {
+        console.log(`SETTING INFERRED SPAN PARENT CONTEXT TO ${JSON.stringify(parentSpanContext)}`);
         this.inferredSpan.childOf(parentSpanContext);
+        console.log(`dumped inferred span after parenting: ${util.inspect(this.inferredSpan.span)}`);
       }
     } else if (parentSpanContext !== null) {
       options.childOf = parentSpanContext;
