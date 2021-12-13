@@ -56,6 +56,7 @@ export class TraceListener {
   private inferredSpan?: SpanWrapper;
   private wrappedCurrentSpan?: SpanWrapper;
   private triggerTags?: { [key: string]: string };
+  private lambdaSpanParentContext?: SpanContext;
 
   public get currentTraceHeaders() {
     return this.contextService.currentTraceHeaders;
@@ -83,12 +84,24 @@ export class TraceListener {
     } else {
       logDebug("Not patching HTTP libraries", { autoPatchHTTP: this.config.autoPatchHTTP, tracerInitialized });
     }
-    logDebug("Creating inferred span");
-    this.inferredSpan = this.inferrer.createInferredSpan(event, context);
-    console.log("INFERRED SPAN CREATED IS: ", util.inspect(this.inferredSpan?.span));
+    const rootTraceHeaders = this.contextService.extractHeadersFromContext(event, context, this.config.traceExtractor);
+    // The aws.lambda span needs to have a parented to the Datadog trace context from the
+    // incoming event if available or the X-Ray trace context if hybrid tracing is enabled
+    let parentSpanContext: SpanContext | undefined;
+    if (this.contextService.traceSource === Source.Event || this.config.mergeDatadogXrayTraces) {
+      // TODO [astuyve] discuss with team RE nulls or undefined, or a coalescing strategy
+      parentSpanContext = rootTraceHeaders ? this.tracerWrapper.extract(rootTraceHeaders) || undefined : undefined;
+      logDebug("Attempting to find parent for the aws.lambda span");
+    } else {
+      logDebug("Didn't attempt to find parent for aws.lambda span", {
+        mergeDatadogXrayTraces: this.config.mergeDatadogXrayTraces,
+        traceSource: this.contextService.traceSource,
+      });
+    }
+    this.inferredSpan = this.inferrer.createInferredSpan(event, context, parentSpanContext);
+    this.lambdaSpanParentContext = this.inferredSpan?.span || parentSpanContext;
     this.context = context;
     this.triggerTags = extractTriggerTags(event, context);
-    this.contextService.rootTraceContext = extractTraceContext(event, context, this.config.traceExtractor);
     this.stepFunctionContext = readStepFunctionContextFromEvent(event);
   }
 
@@ -142,30 +155,10 @@ export class TraceListener {
       logDebug("Finishing inferred span");
       const finishTime = this.inferredSpan.isAsync() ? this.wrappedCurrentSpan?.startTime() : Date.now();
       this.inferredSpan.finish(finishTime);
-      console.log("INFERRED SPAN FINISHED IS: ", util.inspect(this.inferredSpan?.span));
-      console.log(
-        "INFERRED SPAN CHILD OF TRACE ID: ",
-        util.inspect(this.inferredSpan?.span.childOf._traceId.toString()),
-      );
-      console.log("INFERRED SPAN CHILD OF SPAN ID: ", util.inspect(this.inferredSpan?.span.childOf._spanId.toString()));
     }
   }
 
   public onWrap<T = (...args: any[]) => any>(func: T): T {
-    // The aws.lambda span needs to have a parented to the Datadog trace context from the
-    // incoming event if available or the X-Ray trace context if hybrid tracing is enabled
-    let parentSpanContext: SpanContext | null = null;
-    if (this.contextService.traceSource === Source.Event || this.config.mergeDatadogXrayTraces) {
-      const rootTraceHeaders = this.contextService.rootTraceHeaders;
-      parentSpanContext = this.tracerWrapper.extract(rootTraceHeaders);
-      logDebug("Attempting to find parent for the aws.lambda span");
-    } else {
-      logDebug("Didn't attempt to find parent for aws.lambda span", {
-        mergeDatadogXrayTraces: this.config.mergeDatadogXrayTraces,
-        traceSource: this.contextService.traceSource,
-      });
-    }
-
     const options: TraceOptions = {};
     if (this.context) {
       logDebug("Creating the aws.lambda span");
@@ -198,15 +191,8 @@ export class TraceListener {
         ...this.stepFunctionContext,
       };
     }
-    if (this.inferredSpan) {
-      options.childOf = this.inferredSpan.span;
-      if (parentSpanContext !== null) {
-        console.log(`SETTING INFERRED SPAN PARENT CONTEXT TO ${JSON.stringify(parentSpanContext)}`);
-        this.inferredSpan.childOf(parentSpanContext);
-        console.log(`dumped inferred span after parenting: ${util.inspect(this.inferredSpan.span)}`);
-      }
-    } else if (parentSpanContext !== null) {
-      options.childOf = parentSpanContext;
+    if (this.lambdaSpanParentContext) {
+      options.childOf = this.lambdaSpanParentContext;
     }
     options.type = "serverless";
     options.service = "aws.lambda";

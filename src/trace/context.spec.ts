@@ -15,7 +15,6 @@ import {
   convertToAPMParentID,
   convertToAPMTraceID,
   convertToSampleMode,
-  convertTraceContext,
   extractTraceContext,
   readTraceContextFromXray,
   readTraceFromEvent,
@@ -117,38 +116,6 @@ describe("convertToSampleMode", () => {
   it("returns USER_REJECT if xray wasn't sampled", () => {
     const result = convertToSampleMode(0);
     expect(result).toBe(SampleMode.USER_REJECT);
-  });
-});
-
-describe("convertTraceContext", () => {
-  it("converts a valid xray trace header", () => {
-    const result = convertTraceContext({
-      parentID: "0b11cc4230d3e09e",
-      sampled: 1,
-      traceID: "1-5ce31dc2-ac779014b90ce44db5e03875",
-    });
-    expect(result).toEqual({
-      parentID: "797643193680388254",
-      sampleMode: SampleMode.USER_KEEP,
-      traceID: "4110911582297405557",
-      source: Source.Xray,
-    });
-  });
-  it("returns undefined if traceID is invalid", () => {
-    const result = convertTraceContext({
-      parentID: "0b11cc4230d3e09e",
-      sampled: 1,
-      traceID: "1-5ce31dc2",
-    });
-    expect(result).toBeUndefined();
-  });
-  it("returns undefined if parentID is invalid", () => {
-    const result = convertTraceContext({
-      parentID: "0b11cc4230d;09e",
-      sampled: 1,
-      traceID: "1-5ce31dc2-ac779014b90ce44db5e03875",
-    });
-    expect(result).toBeUndefined();
   });
 });
 

@@ -23,10 +23,6 @@ export class SpanWrapper {
     return this.span._endTime;
   }
 
-  public childOf(parentSpan: any): void {
-    this.span.childOf = parentSpan;
-  }
-
   public finish(timestamp = Date.now()): void {
     this.span.finish(timestamp);
   }

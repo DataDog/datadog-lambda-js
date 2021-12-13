@@ -379,7 +379,7 @@ export function readTraceContextFromXray(): TraceContext | undefined {
   return trace;
 }
 
-export function parseXrayTraceContextHeader(header: string) {
+function parseXrayTraceContextHeader(header: string) {
   // Example: Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1
   logDebug(`Reading trace context from env var ${header}`);
   const [root, parent, sampled] = header.split(";");
@@ -455,22 +455,6 @@ export function readStepFunctionContextFromEvent(event: any): StepFunctionContex
     "step_function.step_name": stepName,
   };
 }
-
-export function convertTraceContext(traceHeader: XRayTraceHeader): TraceContext | undefined {
-  const sampleMode = convertToSampleMode(traceHeader.sampled);
-  const traceID = convertToAPMTraceID(traceHeader.traceID);
-  const parentID = convertToAPMParentID(traceHeader.parentID);
-  if (traceID === undefined || parentID === undefined) {
-    return;
-  }
-  return {
-    parentID,
-    sampleMode,
-    source: Source.Xray,
-    traceID,
-  };
-}
-
 export function convertToSampleMode(xraySampled: number): SampleMode {
   return xraySampled === 1 ? SampleMode.USER_KEEP : SampleMode.USER_REJECT;
 }

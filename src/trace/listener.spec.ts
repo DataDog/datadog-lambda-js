@@ -1,6 +1,8 @@
-import { TraceListener } from "./listener";
+import { TraceExtractor, TraceListener } from "./listener";
 import { Source, ddtraceVersion } from "./constants";
 import { datadogLambdaVersion } from "../constants";
+import { Context } from "aws-lambda";
+import { TraceHeaders } from "./trace-context-service";
 
 let mockWrap: jest.Mock<any, any>;
 let mockExtract: jest.Mock<any, any>;
@@ -32,6 +34,14 @@ jest.mock("./tracer-wrapper", () => {
 
 jest.mock("./trace-context-service", () => {
   class MockTraceContextService {
+    extractHeadersFromContext(
+      event: any,
+      context: Context,
+      extractor?: TraceExtractor,
+    ): Partial<TraceHeaders> | undefined {
+      return mockTraceHeaders;
+    }
+
     get traceSource() {
       return mockTraceSource;
     }

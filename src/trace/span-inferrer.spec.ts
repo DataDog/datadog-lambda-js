@@ -1,5 +1,5 @@
 import { SpanInferrer } from "./span-inferrer";
-import { TracerWrapper } from "./tracer-wrapper";
+import { SpanContext, TracerWrapper } from "./tracer-wrapper";
 const lambdaURLEvent = require("../../event_samples/lambda-function-urls.json");
 
 const mockWrapper = {
@@ -9,9 +9,13 @@ const mockWrapper = {
 describe("SpanInferrer", () => {
   it("creates an inferred span for lambda function URLs", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
-    inferrer.createInferredSpan(lambdaURLEvent, {
-      awsRequestId: "abcd-1234",
-    } as any);
+    inferrer.createInferredSpan(
+      lambdaURLEvent,
+      {
+        awsRequestId: "abcd-1234",
+      } as any,
+      {} as SpanContext,
+    );
 
     expect(mockWrapper.startSpan).toBeCalledWith("aws.lambda.url", {
       service: "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com",
