@@ -79,10 +79,11 @@ export class SpanInferrer {
     context: Context | undefined,
     parentSpanContext: SpanContext | undefined,
   ): SpanWrapper {
+    console.log(`INTERNAL EVENT: ${JSON.stringify(event)}`);
     const options: SpanOptions = {};
     const domain = event.requestContext.domainName;
     const path = event.rawPath;
-    const method = event.requestContext.http.method;
+    const method = event.requestContext.httpMethod || event.requestContext.http.method; // httpMethod for v1, http.method for v2
     const resourceName = [method, path].join(" ");
     options.tags = {
       operation_name: "aws.api_gateway",
@@ -211,7 +212,7 @@ export class SpanInferrer {
     const { Records } = event as SQSEvent;
     const referenceRecord = Records[0];
     const {
-      attributes: { SentTimestamp },
+      attributes: { SentTimestamp, ApproximateReceiveCount },
       eventSourceARN,
       body,
     } = referenceRecord;
@@ -230,6 +231,9 @@ export class SpanInferrer {
         synchronicity: "async",
       },
     };
+    if (ApproximateReceiveCount && Number(ApproximateReceiveCount) > 0) {
+      options.tags.retry_count = Number(ApproximateReceiveCount);
+    }
     // Check if sqs message was from sns
     // If so, unpack and look at timestamp
     // create further upstream sns span and finish/attach it here

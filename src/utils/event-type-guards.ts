@@ -11,6 +11,7 @@ import {
   S3Event,
   SNSEvent,
   SQSEvent,
+  SNSMessage,
 } from "aws-lambda";
 import { apiGatewayEventV2 } from "../trace/constants";
 
@@ -69,6 +70,20 @@ export function isSNSEvent(event: any): event is SNSEvent {
 
 export function isSQSEvent(event: any): event is SQSEvent {
   return Array.isArray(event.Records) && event.Records.length > 0 && event.Records[0].eventSource === "aws:sqs";
+}
+
+export function isSNSSQSEvent(event: any): event is SQSEvent {
+  if (Array.isArray(event.Records) && event.Records.length > 0 && event.Records[0].eventSource === "aws:sqs") {
+    try {
+      const body = JSON.parse(event.Records[0].body) as SNSMessage;
+      if (body.Type === "Notification" && body.TopicArn) {
+        return true;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
+  return false;
 }
 
 export function isAppSyncResolverEvent(event: any): event is AppSyncResolverEvent<any> {

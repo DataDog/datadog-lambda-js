@@ -1,9 +1,9 @@
-import { Context, SQSEvent } from "aws-lambda";
+import { Context, SNSEvent, SNSMessage, SQSEvent } from "aws-lambda";
 import { BigNumber } from "bignumber.js";
 import { randomBytes } from "crypto";
 import { createSocket, Socket } from "dgram";
 import { logDebug, logError } from "../utils";
-import { isAppSyncResolverEvent, isSQSEvent } from "../utils/event-type-guards";
+import { isAppSyncResolverEvent, isSNSEvent, isSNSSQSEvent, isSQSEvent } from "../utils/event-type-guards";
 import {
   awsXrayDaemonAddressEnvVar,
   parentIDHeader,
@@ -238,6 +238,89 @@ export function readTraceFromSQSEvent(event: SQSEvent): TraceContext | undefined
   return;
 }
 
+export function readTraceFromSNSSQSEvent(event: SQSEvent): TraceContext | undefined {
+  if (event.Records && event.Records[0] && event.Records[0].body) {
+    try {
+      const parsedBody = JSON.parse(event.Records[0].body) as SNSMessage;
+      if (
+        parsedBody.MessageAttributes &&
+        parsedBody.MessageAttributes._datadog &&
+        parsedBody.MessageAttributes._datadog.Value
+      ) {
+        const traceData = JSON.parse(parsedBody.MessageAttributes._datadog.Value);
+        const traceID = traceData[traceIDHeader];
+        if (typeof traceID !== "string") {
+          return;
+        }
+        const parentID = traceData[parentIDHeader];
+        if (typeof parentID !== "string") {
+          return;
+        }
+        const sampledHeader = traceData[samplingPriorityHeader];
+        if (typeof sampledHeader !== "string") {
+          return;
+        }
+        const sampleMode = parseInt(sampledHeader, 10);
+
+        const trace = {
+          parentID,
+          sampleMode,
+          source: Source.Event,
+          traceID,
+        };
+        logDebug(`extracted trace context from SNS SQS event`, { trace, event });
+        return trace;
+      }
+    } catch (err) {
+      if (err instanceof Error) {
+        logError("Error parsing SNS SQS message trace data", err as Error);
+      }
+      return;
+    }
+  }
+}
+
+export function readTraceFromSNSEvent(event: SNSEvent): TraceContext | undefined {
+  if (event.Records && event.Records[0] && event.Records[0].Sns) {
+    if (
+      event.Records[0].Sns.MessageAttributes &&
+      event.Records[0].Sns.MessageAttributes._datadog &&
+      event.Records[0].Sns.MessageAttributes._datadog.Value
+    ) {
+      try {
+        const traceData = JSON.parse(event.Records[0].Sns.MessageAttributes._datadog.Value);
+        const traceID = traceData[traceIDHeader];
+        if (typeof traceID !== "string") {
+          return;
+        }
+        const parentID = traceData[parentIDHeader];
+        if (typeof parentID !== "string") {
+          return;
+        }
+        const sampledHeader = traceData[samplingPriorityHeader];
+        if (typeof sampledHeader !== "string") {
+          return;
+        }
+        const sampleMode = parseInt(sampledHeader, 10);
+
+        const trace = {
+          parentID,
+          sampleMode,
+          source: Source.Event,
+          traceID,
+        };
+        logDebug(`extracted trace context from SNS event`, { trace, event });
+        return trace;
+      } catch (err) {
+        if (err instanceof Error) {
+          logError("Error parsing SNS SQS message trace data", err as Error);
+        }
+        return;
+      }
+    }
+  }
+}
+
 export function readTraceFromLambdaContext(context: any): TraceContext | undefined {
   if (!context || typeof context !== "object") {
     return;
@@ -332,6 +415,17 @@ export function readTraceFromEvent(event: any): TraceContext | undefined {
 
   if (event.headers !== null && typeof event.headers === "object") {
     return readTraceFromHTTPEvent(event);
+  }
+
+  if (isSNSEvent(event)) {
+    return readTraceFromSNSEvent(event);
+  }
+  // TODO [astuyve] SNSSQS must be before SQS
+  // As otherwise the type guard will think
+  // this is a purely SQS event
+  // and fail to extract trace context
+  if (isSNSSQSEvent(event)) {
+    return readTraceFromSNSSQSEvent(event);
   }
 
   if (isAppSyncResolverEvent(event)) {
