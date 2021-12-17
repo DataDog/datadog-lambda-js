@@ -66,7 +66,7 @@ export class SpanInferrer {
         synchronicity: "sync",
       },
     };
-    options.childOf = parentSpanContext;
+    parentSpanContext ? (options.childOf = parentSpanContext) : null;
     options.startTime = event.requestContext.timeEpoch;
     const spanWrapperOptions = {
       isAsync: false,
@@ -101,7 +101,7 @@ export class SpanInferrer {
         synchronicity: "sync",
       },
     };
-    options.childOf = parentSpanContext;
+    parentSpanContext ? (options.childOf = parentSpanContext) : null;
     options.startTime = event.requestContext.timeEpoch;
     const spanWrapperOptions = {
       isAsync: false,
@@ -133,7 +133,7 @@ export class SpanInferrer {
         synchronicity: "async",
       },
     };
-    options.childOf = parentSpanContext;
+    parentSpanContext ? (options.childOf = parentSpanContext) : undefined;
     options.startTime = Number(referenceRecord.dynamodb?.ApproximateCreationDateTime) * 1000;
     const spanWrapperOptions = {
       isAsync: true,
@@ -158,7 +158,7 @@ export class SpanInferrer {
       operation_name: "aws.sns",
       resource_names: resourceName,
       request_id: context?.awsRequestId,
-      "span.type": "web",
+      "span.type": "sns",
       "resource.name": resourceName,
       service: "sns",
       _inferred_span: {
@@ -166,7 +166,7 @@ export class SpanInferrer {
         synchronicity: "async",
       },
     };
-    options.childOf = parentSpanContext;
+    parentSpanContext ? (options.childOf = parentSpanContext) : undefined;
     options.startTime = Date.parse(Timestamp);
     const spanWrapperOptions = {
       isAsync: true,
@@ -186,8 +186,7 @@ export class SpanInferrer {
     options.tags = {
       operation_name: "aws.sns",
       resource_names: resourceName,
-      request_id: context?.awsRequestId,
-      "span.type": "web",
+      "span.type": "sns",
       "resource.name": resourceName,
       service: "sns",
       _inferred_span: {
@@ -195,7 +194,7 @@ export class SpanInferrer {
         synchronicity: "async",
       },
     };
-    options.childOf = parentSpanContext;
+    parentSpanContext ? (options.childOf = parentSpanContext) : undefined;
     options.startTime = Date.parse(Timestamp);
     const spanWrapperOptions = {
       isAsync: true,
@@ -283,7 +282,7 @@ export class SpanInferrer {
         synchronicity: "async",
       },
     };
-    options.childOf = parentSpanContext;
+    parentSpanContext ? (options.childOf = parentSpanContext) : undefined;
 
     options.startTime = Number(approximateArrivalTimestamp);
     const spanWrapperOptions = {

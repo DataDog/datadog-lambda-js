@@ -112,12 +112,15 @@ export function parseEventSource(event: any) {
   if (eventType.isAPIGatewayEvent(event) || eventType.isAPIGatewayEventV2(event)) {
     return eventSources.apiGateway;
   }
+
   if (eventType.isLambdaUrlEvent(event)) {
     return eventSources.lambdaUrl;
   }
+
   if (eventType.isALBEvent(event)) {
     return eventSources.applicationLoadBalancer;
   }
+
   if (eventType.isCloudWatchLogsEvent(event)) {
     return eventSources.cloudWatchLogs;
   }
