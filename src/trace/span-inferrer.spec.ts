@@ -18,9 +18,13 @@ describe("SpanInferrer", () => {
     );
 
     expect(mockWrapper.startSpan).toBeCalledWith("aws.lambda.url", {
-      service: "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com",
       startTime: 1637169449721,
+      childOf: {},
       tags: {
+        _inferred_span: {
+          synchronicity: "sync",
+          tag_source: "self",
+        },
         endpoint: "/",
         "http.method": "GET",
         "http.url": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com/",
@@ -28,6 +32,8 @@ describe("SpanInferrer", () => {
         request_id: "abcd-1234",
         "resource.name": "GET /",
         resource_names: "GET /",
+        service: "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com",
+        "service.name": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com",
         "span.type": "http",
       },
     });
