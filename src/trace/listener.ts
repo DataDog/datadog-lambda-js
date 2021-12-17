@@ -3,7 +3,6 @@ import { Context } from "aws-lambda";
 import {
   addLambdaFunctionTagsToXray,
   TraceContext,
-  extractTraceContext,
   readStepFunctionContextFromEvent,
   StepFunctionContext,
 } from "./context";

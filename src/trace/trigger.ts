@@ -15,23 +15,9 @@ import {
 import * as eventType from "../utils/event-type-guards";
 import { logError } from "../utils";
 import { gunzipSync } from "zlib";
-type LambdaURLEvent = {
-  headers: { [name: string]: string | undefined };
-  requestContext: {
-    domainName?: string | undefined;
-    http: {
-      method: string;
-      path: string;
-    };
-  };
-};
 
 function isHTTPTriggerEvent(eventSource: string | undefined) {
-  return (
-    eventSource === "api-gateway" ||
-    eventSource === "application-load-balancer" ||
-    eventSource === "lambda-function-url"
-  );
+  return eventSource === "api-gateway" || eventSource === "application-load-balancer";
 }
 
 function getAWSPartitionByRegion(region: string) {
@@ -86,72 +72,55 @@ function extractSQSEventARN(event: SQSEvent) {
   return event.Records[0].eventSourceARN;
 }
 
-export enum eventSources {
-  apiGateway = "api-gateway",
-  applicationLoadBalancer = "application-load-balancer",
-  cloudFront = "cloudfront",
-  cloudWatchEvents = "cloudwatch-events",
-  cloudWatchLogs = "cloudwatch-logs",
-  // alb = "alb",
-  cloudWatch = "cloudwatch",
-  dynamoDB = "dynamodb",
-  kinesis = "kinesis",
-  lambdaUrl = "lambda-function-url",
-  s3 = "s3",
-  sns = "sns",
-  sqs = "sqs",
-}
 /**
  * parseEventSource parses the triggering event to determine the source
  * Possible Returns:
  * api-gateway | application-load-balancer | cloudwatch-logs |
  * cloudwatch-events | cloudfront | dynamodb | kinesis | s3 | sns | sqs
  */
-export function parseEventSource(event: any): eventSources | undefined {
-  if (eventType.isAPIGatewayEvent(event) || eventType.isAPIGatewayEventV2(event)) {
-    return eventSources.apiGateway;
-  }
+export function parseEventSource(event: any) {
+  let eventSource: string | undefined;
 
-  if (eventType.isLambdaUrlEvent(event)) {
-    return eventSources.lambdaUrl;
+  if (eventType.isAPIGatewayEvent(event) || eventType.isAPIGatewayEventV2(event)) {
+    eventSource = "api-gateway";
   }
 
   if (eventType.isALBEvent(event)) {
-    return eventSources.applicationLoadBalancer;
+    eventSource = "application-load-balancer";
   }
 
   if (eventType.isCloudWatchLogsEvent(event)) {
-    return eventSources.cloudWatchLogs;
+    eventSource = "cloudwatch-logs";
   }
 
   if (eventType.isCloudWatchEvent(event)) {
-    return eventSources.cloudWatchEvents;
+    eventSource = "cloudwatch-events";
   }
 
   if (eventType.isCloudFrontRequestEvent(event)) {
-    return eventSources.cloudFront;
+    eventSource = "cloudfront";
   }
 
   if (eventType.isDynamoDBStreamEvent(event)) {
-    return eventSources.dynamoDB;
+    eventSource = "dynamodb";
   }
 
   if (eventType.isKinesisStreamEvent(event)) {
-    return eventSources.kinesis;
+    eventSource = "kinesis";
   }
 
   if (eventType.isS3Event(event)) {
-    return eventSources.s3;
+    eventSource = "s3";
   }
 
   if (eventType.isSNSEvent(event)) {
-    return eventSources.sns;
+    eventSource = "sns";
   }
 
   if (eventType.isSQSEvent(event)) {
-    return eventSources.sqs;
+    eventSource = "sqs";
   }
-  return undefined;
+  return eventSource;
 }
 
 /**
@@ -223,7 +192,7 @@ export function parseEventSourceARN(source: string | undefined, event: any, cont
 /**
  * extractHTTPTags extracts HTTP facet tags from the triggering event
  */
-function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEvent | LambdaURLEvent) {
+function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEvent) {
   const httpTags: { [key: string]: string } = {};
 
   if (eventType.isAPIGatewayEvent(event)) {
@@ -254,19 +223,6 @@ function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEv
     httpTags["http.url_details.path"] = event.path;
     httpTags["http.method"] = event.httpMethod;
     if (event.headers && event.headers.Referer) {
-      httpTags["http.referer"] = event.headers.Referer;
-    }
-    return httpTags;
-  }
-
-  if (eventType.isLambdaUrlEvent(event)) {
-    const requestContext = event.requestContext;
-    if (requestContext.domainName) {
-      httpTags["http.url"] = requestContext.domainName;
-    }
-    httpTags["http.url_details.path"] = requestContext.http.path;
-    httpTags["http.method"] = requestContext.http.method;
-    if (event.headers?.Referer) {
       httpTags["http.referer"] = event.headers.Referer;
     }
     return httpTags;
