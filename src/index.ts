@@ -150,9 +150,6 @@ export function datadog<TEvent, TResult>(
               if (traceListener.currentSpan) {
                 traceListener.currentSpan.setTag("http.status_code", statusCode);
               }
-              if (traceListener.currentInferredSpan) {
-                traceListener.currentInferredSpan.setTag("http.status_code", statusCode);
-              }
             }
           }
         }
