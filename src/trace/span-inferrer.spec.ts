@@ -105,12 +105,27 @@ describe("SpanInferrer", () => {
     });
   });
 
-  // it("creates an inferred span for kinesis events", () => {
-  //   const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
-  //   inferrer.createInferredSpan(kinesisEvent, {} as any, {} as SpanContext);
+  it("creates an inferred span for kinesis events", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(kinesisEvent, {} as any, {} as SpanContext);
 
-  //   expect(mockWrapper.startSpan).toBeCalledWith("aws.kinesis");
-  // });
+    expect(mockWrapper.startSpan).toBeCalledWith("aws.kinesis", {
+      childOf: {},
+      startTime: 1428537600,
+      tags: {
+        _inferred_span: { synchronicity: "async", tag_source: "self" },
+        eventName: "aws:kinesis:record",
+        eventVersion: "1.0",
+        operation_name: "aws.kinesis",
+        partitionKey: "partitionKey-03",
+        request_id: undefined,
+        "resource.name": "EXAMPLE",
+        resource_names: "EXAMPLE",
+        service: "kinesis",
+        "span.type": "web",
+      },
+    });
+  });
 
   it("creates an inferred span for sns sqs events", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);

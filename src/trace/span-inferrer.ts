@@ -19,7 +19,6 @@ export class SpanInferrer {
 
   public createInferredSpan(event: any, context: Context | undefined, parentSpanContext: SpanContext | undefined): any {
     const eventSource = parseEventSource(event);
-    console.log(`PARENT CONTEXT: ${util.inspect(parentSpanContext)}`);
     if (eventSource === eventSources.lambdaUrl) {
       return this.createInferredSpanForLambdaUrl(event, context, parentSpanContext);
     }
@@ -79,7 +78,6 @@ export class SpanInferrer {
     context: Context | undefined,
     parentSpanContext: SpanContext | undefined,
   ): SpanWrapper {
-    console.log(`INTERNAL EVENT: ${JSON.stringify(event)}`);
     const options: SpanOptions = {};
     const domain = event.requestContext.domainName;
     const path = event.rawPath;
@@ -266,8 +264,10 @@ export class SpanInferrer {
     const { Records } = event as KinesisStreamEvent;
     const referenceRecord = Records[0];
     const {
-      kinesis: { approximateArrivalTimestamp },
+      kinesis: { approximateArrivalTimestamp, partitionKey },
       eventSourceARN,
+      eventName,
+      eventVersion,
     } = referenceRecord;
     const streamName = eventSourceARN?.split(":").pop();
     options.tags = {
@@ -281,6 +281,9 @@ export class SpanInferrer {
         tag_source: "self",
         synchronicity: "async",
       },
+      eventName,
+      eventVersion,
+      partitionKey,
     };
     parentSpanContext ? (options.childOf = parentSpanContext) : undefined;
 
