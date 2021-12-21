@@ -18,7 +18,6 @@ import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 import { SpanInferrer } from "./span-inferrer";
 import { SpanWrapper } from "./span-wrapper";
-const util = require("util");
 export type TraceExtractor = (event: any, context: Context) => TraceContext;
 
 export interface TraceConfig {
