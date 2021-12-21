@@ -10,7 +10,6 @@ import {
 import { SpanContext, SpanOptions, TracerWrapper } from "./tracer-wrapper";
 import { eventSources, parseEventSource } from "./trigger";
 import { SpanWrapper, SpanWrapperOptions } from "./span-wrapper";
-import util from "util";
 export class SpanInferrer {
   traceWrapper: TracerWrapper;
   constructor(traceWrapper: TracerWrapper) {
