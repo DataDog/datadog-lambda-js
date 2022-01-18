@@ -111,7 +111,7 @@ describe("SpanInferrer", () => {
 
     expect(mockWrapper.startSpan).toBeCalledWith("aws.kinesis", {
       childOf: {},
-      startTime: 1428537600,
+      startTime: 1428537600000,
       tags: {
         _inferred_span: { synchronicity: "async", tag_source: "self" },
         eventName: "aws:kinesis:record",
