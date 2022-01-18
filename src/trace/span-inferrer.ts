@@ -36,6 +36,9 @@ export class SpanInferrer {
     if (eventSource === eventSources.kinesis) {
       return this.createInferredSpanForKinesis(event, context, parentSpanContext);
     }
+    if (eventSource === eventSources.s3) {
+      return this.createInferredSpanForS3(event, context, parentSpanContext);
+    }
   }
 
   createInferredSpanForLambdaUrl(
@@ -297,7 +300,7 @@ export class SpanInferrer {
     if (parentSpanContext) {
       options.childOf = parentSpanContext;
     }
-    options.startTime = Number(approximateArrivalTimestamp);
+    options.startTime = Number(approximateArrivalTimestamp) * 1000;
     const spanWrapperOptions = {
       isAsync: true,
     };

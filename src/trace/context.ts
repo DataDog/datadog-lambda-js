@@ -1,9 +1,15 @@
-import { Context, SNSEvent, SNSMessage, SQSEvent } from "aws-lambda";
+import { Context, KinesisStreamEvent, SNSEvent, SNSMessage, SQSEvent } from "aws-lambda";
 import { BigNumber } from "bignumber.js";
 import { randomBytes } from "crypto";
 import { createSocket, Socket } from "dgram";
 import { logDebug, logError } from "../utils";
-import { isAppSyncResolverEvent, isSNSEvent, isSNSSQSEvent, isSQSEvent } from "../utils/event-type-guards";
+import {
+  isAppSyncResolverEvent,
+  isKinesisStreamEvent,
+  isSNSEvent,
+  isSNSSQSEvent,
+  isSQSEvent,
+} from "../utils/event-type-guards";
 import {
   awsXrayDaemonAddressEnvVar,
   parentIDHeader,
@@ -280,6 +286,45 @@ export function readTraceFromSNSSQSEvent(event: SQSEvent): TraceContext | undefi
   }
 }
 
+export function readTraceFromKinesisEvent(event: KinesisStreamEvent): TraceContext | undefined {
+  console.log("GOT EVENT", event.Records[0].kinesis);
+  if (event.Records && event.Records[0] && event.Records[0].kinesis && event.Records[0].kinesis.data) {
+    try {
+      const parsedBody = JSON.parse(Buffer.from(event.Records[0].kinesis.data, "base64").toString("ascii")) as any;
+      if (parsedBody && parsedBody._datadog) {
+        const traceData = parsedBody._datadog;
+        const traceID = traceData[traceIDHeader];
+        if (typeof traceID !== "string") {
+          return;
+        }
+        const parentID = traceData[parentIDHeader];
+        if (typeof parentID !== "string") {
+          return;
+        }
+        const sampledHeader = traceData[samplingPriorityHeader];
+        if (typeof sampledHeader !== "string") {
+          return;
+        }
+        const sampleMode = parseInt(sampledHeader, 10);
+
+        const trace = {
+          parentID,
+          sampleMode,
+          source: Source.Event,
+          traceID,
+        };
+        logDebug(`extracted trace context from Kinesis event`, { trace, event });
+        return trace;
+      }
+    } catch (err) {
+      if (err instanceof Error) {
+        logError("Error parsing Kinesis message trace data", err as Error);
+      }
+      return;
+    }
+  }
+}
+
 export function readTraceFromSNSEvent(event: SNSEvent): TraceContext | undefined {
   if (event.Records && event.Records[0] && event.Records[0].Sns) {
     if (
@@ -434,6 +479,9 @@ export function readTraceFromEvent(event: any): TraceContext | undefined {
 
   if (isSQSEvent(event)) {
     return readTraceFromSQSEvent(event);
+  }
+  if (isKinesisStreamEvent(event)) {
+    return readTraceFromKinesisEvent(event);
   }
 
   return;
