@@ -232,7 +232,7 @@ export function parseEventSourceARN(source: string | undefined, event: any, cont
     eventSourceARN = extractKinesisStreamEventARN(event);
   }
 
-  if (source == "eventbridge") {
+  if (source === "eventbridge") {
     eventSourceARN = extractEventBridgeARN(event);
   }
 
