@@ -12,6 +12,7 @@ import {
   SNSEvent,
   SQSEvent,
   SNSMessage,
+  EventBridgeEvent,
 } from "aws-lambda";
 import { apiGatewayEventV2 } from "../trace/constants";
 
@@ -26,6 +27,10 @@ export function isAPIGatewayEventV2(event: any): event is APIGatewayProxyEventV2
     event.rawQueryString !== undefined &&
     !event.requestContext.domainName.includes("lambda-url")
   );
+}
+
+export function isAPIGatewayWebsocketEvent(event: any): event is any {
+  return event.requestContext !== undefined && event.requestContext.messageDirection !== undefined;
 }
 
 export function isLambdaUrlEvent(event: any): boolean {
@@ -88,4 +93,8 @@ export function isSNSSQSEvent(event: any): event is SQSEvent {
 
 export function isAppSyncResolverEvent(event: any): event is AppSyncResolverEvent<any> {
   return event.info !== undefined && event.info.selectionSetGraphQL !== undefined;
+}
+
+export function isEventBridgeEvent(event: any): event is EventBridgeEvent<any, any> {
+  return event["detail-type"] !== undefined;
 }

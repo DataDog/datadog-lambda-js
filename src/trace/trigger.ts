@@ -11,6 +11,7 @@ import {
   S3Event,
   SNSEvent,
   SQSEvent,
+  EventBridgeEvent,
 } from "aws-lambda";
 import * as eventType from "../utils/event-type-guards";
 import { logError } from "../utils";
@@ -87,6 +88,10 @@ function extractSQSEventARN(event: SQSEvent) {
   return event.Records[0].eventSourceARN;
 }
 
+function extractEventBridgeARN(event: EventBridgeEvent<any, any>) {
+  return event.source;
+}
+
 export enum eventSources {
   apiGateway = "api-gateway",
   applicationLoadBalancer = "application-load-balancer",
@@ -95,6 +100,7 @@ export enum eventSources {
   cloudWatchLogs = "cloudwatch-logs",
   cloudWatch = "cloudwatch",
   dynamoDB = "dynamodb",
+  eventBridge = "eventbridge",
   kinesis = "kinesis",
   lambdaUrl = "lambda-function-url",
   s3 = "s3",
@@ -109,7 +115,11 @@ export enum eventSources {
  * cloudwatch-events | cloudfront | dynamodb | kinesis | s3 | sns | sqs
  */
 export function parseEventSource(event: any) {
-  if (eventType.isAPIGatewayEvent(event) || eventType.isAPIGatewayEventV2(event)) {
+  if (
+    eventType.isAPIGatewayEvent(event) ||
+    eventType.isAPIGatewayEventV2(event) ||
+    eventType.isAPIGatewayWebsocketEvent(event)
+  ) {
     return eventSources.apiGateway;
   }
 
@@ -151,6 +161,10 @@ export function parseEventSource(event: any) {
 
   if (eventType.isSQSEvent(event)) {
     return eventSources.sqs;
+  }
+
+  if (eventType.isEventBridgeEvent(event)) {
+    return eventSources.eventBridge;
   }
 }
 
@@ -217,6 +231,11 @@ export function parseEventSourceARN(source: string | undefined, event: any, cont
   if (source === "kinesis") {
     eventSourceARN = extractKinesisStreamEventARN(event);
   }
+
+  if (source == "eventbridge") {
+    eventSourceARN = extractEventBridgeARN(event);
+  }
+
   return eventSourceARN;
 }
 

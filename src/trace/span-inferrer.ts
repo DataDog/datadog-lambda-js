@@ -1,6 +1,7 @@
 import {
   Context,
   DynamoDBStreamEvent,
+  EventBridgeEvent,
   KinesisStreamEvent,
   S3CreateEvent,
   SNSEvent,
@@ -38,6 +39,9 @@ export class SpanInferrer {
     }
     if (eventSource === eventSources.s3) {
       return this.createInferredSpanForS3(event, context, parentSpanContext);
+    }
+    if (eventSource === eventSources.eventBridge) {
+      return this.createInferredSpanForEventBridge(event, context, parentSpanContext);
     }
   }
 
@@ -77,6 +81,12 @@ export class SpanInferrer {
     return new SpanWrapper(this.traceWrapper.startSpan("aws.lambda.url", options), spanWrapperOptions);
   }
 
+  isApiGatewayAsync(event: any): boolean {
+    return (
+      event.headers && event.headers["X-Amz-Invocation-Type"] && event.headers["X-Amz-Invocation-Type"] === "Event"
+    );
+  }
+
   createInferredSpanForApiGateway(
     event: any,
     context: Context | undefined,
@@ -84,14 +94,18 @@ export class SpanInferrer {
   ): SpanWrapper {
     const options: SpanOptions = {};
     const domain = event.requestContext.domainName;
-    const path = event.rawPath;
-    const method = event.requestContext.httpMethod || event.requestContext.http.method; // httpMethod for v1, http.method for v2
-    const resourceName = [method, path].join(" ");
+    const path = event.rawPath || event.requestContext.routeKey;
+    let method;
+    if (event.requestContext.httpMethod) {
+      method = event.requestContext.httpMethod;
+    } else if (event.requestContext.http) {
+      method = event.requestContext.http.method;
+    }
+    const resourceName = [domain, path].join(" ");
     options.tags = {
-      operation_name: "aws.api_gateway",
+      operation_name: "aws.apigateway",
       "http.url": domain + path,
       endpoint: path,
-      "http.method": method,
       resource_names: resourceName,
       request_id: context?.awsRequestId,
       "span.type": "http",
@@ -100,17 +114,27 @@ export class SpanInferrer {
       service: domain,
       _inferred_span: {
         tag_source: "self",
-        synchronicity: "sync",
+        synchronicity: this.isApiGatewayAsync(event),
       },
     };
+    // Set APIGW v1 or v1 metadata
+    if (method) {
+      options.tags["http.method"] = method;
+    }
+    // Set websocket metadata
+    if (event.requestContext.messageDirection) {
+      options.tags.message_direction = event.requestContext.messageDirection;
+      options.tags.connection_id = event.requestContext.connectionId;
+      options.tags.event_type = event.requestContext.eventType;
+    }
     if (parentSpanContext) {
       options.childOf = parentSpanContext;
     }
     options.startTime = event.requestContext.timeEpoch;
     const spanWrapperOptions = {
-      isAsync: false,
+      isAsync: this.isApiGatewayAsync(event),
     };
-    return new SpanWrapper(this.traceWrapper.startSpan("aws.api_gateway", options), spanWrapperOptions);
+    return new SpanWrapper(this.traceWrapper.startSpan("aws.apigateway", options), spanWrapperOptions);
   }
 
   createInferredSpanForDynamoDBStreamEvent(
@@ -293,9 +317,9 @@ export class SpanInferrer {
         tag_source: "self",
         synchronicity: "async",
       },
-      eventName,
-      eventVersion,
-      partitionKey,
+      event_name: eventName,
+      event_version: eventVersion,
+      partition_key: partitionKey,
     };
     if (parentSpanContext) {
       options.childOf = parentSpanContext;
@@ -341,5 +365,34 @@ export class SpanInferrer {
       isAsync: true,
     };
     return new SpanWrapper(this.traceWrapper.startSpan("aws.s3", options), spanWrapperOptions);
+  }
+
+  createInferredSpanForEventBridge(
+    event: any,
+    context: Context | undefined,
+    parentSpanContext: SpanContext | undefined,
+  ): SpanWrapper {
+    const options: SpanOptions = {};
+    const { time, source } = event as EventBridgeEvent<any, any>;
+    options.tags = {
+      operation_name: "aws.eventbridge",
+      resource_names: source,
+      request_id: context?.awsRequestId,
+      "span.type": "web",
+      "resource.name": source,
+      service: "eventbridge",
+      _inferred_span: {
+        tag_source: "self",
+        synchronicity: "async",
+      },
+    };
+    if (parentSpanContext) {
+      options.childOf = parentSpanContext;
+    }
+    options.startTime = Date.parse(time);
+    const spanWrapperOptions = {
+      isAsync: true,
+    };
+    return new SpanWrapper(this.traceWrapper.startSpan("aws.eventbridge", options), spanWrapperOptions);
   }
 }

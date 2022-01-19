@@ -1,10 +1,11 @@
-import { Context, KinesisStreamEvent, SNSEvent, SNSMessage, SQSEvent } from "aws-lambda";
+import { Context, EventBridgeEvent, KinesisStreamEvent, SNSEvent, SNSMessage, SQSEvent } from "aws-lambda";
 import { BigNumber } from "bignumber.js";
 import { randomBytes } from "crypto";
 import { createSocket, Socket } from "dgram";
 import { logDebug, logError } from "../utils";
 import {
   isAppSyncResolverEvent,
+  isEventBridgeEvent,
   isKinesisStreamEvent,
   isSNSEvent,
   isSNSSQSEvent,
@@ -287,7 +288,6 @@ export function readTraceFromSNSSQSEvent(event: SQSEvent): TraceContext | undefi
 }
 
 export function readTraceFromKinesisEvent(event: KinesisStreamEvent): TraceContext | undefined {
-  console.log("GOT EVENT", event.Records[0].kinesis);
   if (event.Records && event.Records[0] && event.Records[0].kinesis && event.Records[0].kinesis.data) {
     try {
       const parsedBody = JSON.parse(Buffer.from(event.Records[0].kinesis.data, "base64").toString("ascii")) as any;
@@ -319,6 +319,41 @@ export function readTraceFromKinesisEvent(event: KinesisStreamEvent): TraceConte
     } catch (err) {
       if (err instanceof Error) {
         logError("Error parsing Kinesis message trace data", err as Error);
+      }
+      return;
+    }
+  }
+}
+
+export function readTraceFromEventbridgeEvent(event: EventBridgeEvent<any, any>): TraceContext | undefined {
+  if (event.detail && event.detail._datadog) {
+    try {
+      const traceData = event.detail._datadog;
+      const traceID = traceData[traceIDHeader];
+      if (typeof traceID !== "string") {
+        return;
+      }
+      const parentID = traceData[parentIDHeader];
+      if (typeof parentID !== "string") {
+        return;
+      }
+      const sampledHeader = traceData[samplingPriorityHeader];
+      if (typeof sampledHeader !== "string") {
+        return;
+      }
+      const sampleMode = parseInt(sampledHeader, 10);
+
+      const trace = {
+        parentID,
+        sampleMode,
+        source: Source.Event,
+        traceID,
+      };
+      logDebug(`extracted trace context from Eventbridge event`, { trace, event });
+      return trace;
+    } catch (err) {
+      if (err instanceof Error) {
+        logError("Error parsing Eventbridge trace data", err as Error);
       }
       return;
     }
@@ -482,6 +517,10 @@ export function readTraceFromEvent(event: any): TraceContext | undefined {
   }
   if (isKinesisStreamEvent(event)) {
     return readTraceFromKinesisEvent(event);
+  }
+
+  if (isEventBridgeEvent(event)) {
+    return readTraceFromEventbridgeEvent(event);
   }
 
   return;
