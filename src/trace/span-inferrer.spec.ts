@@ -114,10 +114,10 @@ describe("SpanInferrer", () => {
       startTime: 1428537600000,
       tags: {
         _inferred_span: { synchronicity: "async", tag_source: "self" },
-        eventName: "aws:kinesis:record",
-        eventVersion: "1.0",
+        event_name: "aws:kinesis:record",
+        event_version: "1.0",
         operation_name: "aws.kinesis",
-        partitionKey: "partitionKey-03",
+        partition_key: "partitionKey-03",
         request_id: undefined,
         "resource.name": "EXAMPLE",
         resource_names: "EXAMPLE",
