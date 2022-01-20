@@ -19,9 +19,6 @@ export class SpanInferrer {
 
   public createInferredSpan(event: any, context: Context | undefined, parentSpanContext: SpanContext | undefined): any {
     const eventSource = parseEventSource(event);
-    if (eventSource === eventSources.lambdaUrl) {
-      return this.createInferredSpanForLambdaUrl(event, context, parentSpanContext);
-    }
     if (eventSource === eventSources.apiGateway) {
       return this.createInferredSpanForApiGateway(event, context, parentSpanContext);
     }
@@ -43,42 +40,6 @@ export class SpanInferrer {
     if (eventSource === eventSources.eventBridge) {
       return this.createInferredSpanForEventBridge(event, context, parentSpanContext);
     }
-  }
-
-  createInferredSpanForLambdaUrl(
-    event: any,
-    context: Context | undefined,
-    parentSpanContext: SpanContext | undefined,
-  ): SpanWrapper {
-    const options: SpanOptions = {};
-    const domain = event.requestContext.domainName;
-    const path = event.rawPath;
-    const method = event.requestContext.http.method;
-    const resourceName = [method, path].join(" ");
-    options.tags = {
-      operation_name: "aws.lambda.url",
-      "http.url": domain + path,
-      endpoint: path,
-      "http.method": method,
-      resource_names: resourceName,
-      request_id: context?.awsRequestId,
-      "span.type": "http",
-      "resource.name": resourceName,
-      "service.name": domain,
-      service: domain,
-      _inferred_span: {
-        tag_source: "self",
-        synchronicity: "sync",
-      },
-    };
-    if (parentSpanContext) {
-      options.childOf = parentSpanContext;
-    }
-    options.startTime = event.requestContext.timeEpoch;
-    const spanWrapperOptions = {
-      isAsync: false,
-    };
-    return new SpanWrapper(this.traceWrapper.startSpan("aws.lambda.url", options), spanWrapperOptions);
   }
 
   isApiGatewayAsync(event: any): boolean {

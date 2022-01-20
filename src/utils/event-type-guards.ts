@@ -33,14 +33,6 @@ export function isAPIGatewayWebsocketEvent(event: any): event is any {
   return event.requestContext !== undefined && event.requestContext.messageDirection !== undefined;
 }
 
-export function isLambdaUrlEvent(event: any): boolean {
-  return (
-    event.requestContext !== undefined &&
-    event.requestContext.domainName &&
-    event.requestContext.domainName.includes("lambda-url")
-  );
-}
-
 export function isALBEvent(event: any): event is ALBEvent {
   return event.requestContext !== undefined && event.requestContext.elb !== undefined;
 }

@@ -17,17 +17,6 @@ import * as eventType from "../utils/event-type-guards";
 import { logError } from "../utils";
 import { gunzipSync } from "zlib";
 
-type LambdaURLEvent = {
-  headers: { [name: string]: string | undefined };
-  requestContext: {
-    domainName?: string | undefined;
-    http: {
-      method: string;
-      path: string;
-    };
-  };
-};
-
 function isHTTPTriggerEvent(eventSource: string | undefined) {
   return (
     eventSource === "api-gateway" ||
@@ -102,7 +91,6 @@ export enum eventSources {
   dynamoDB = "dynamodb",
   eventBridge = "eventbridge",
   kinesis = "kinesis",
-  lambdaUrl = "lambda-function-url",
   s3 = "s3",
   sns = "sns",
   sqs = "sqs",
@@ -121,10 +109,6 @@ export function parseEventSource(event: any) {
     eventType.isAPIGatewayWebsocketEvent(event)
   ) {
     return eventSources.apiGateway;
-  }
-
-  if (eventType.isLambdaUrlEvent(event)) {
-    return eventSources.lambdaUrl;
   }
 
   if (eventType.isALBEvent(event)) {
@@ -242,7 +226,7 @@ export function parseEventSourceARN(source: string | undefined, event: any, cont
 /**
  * extractHTTPTags extracts HTTP facet tags from the triggering event
  */
-function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEvent | LambdaURLEvent) {
+function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEvent) {
   const httpTags: { [key: string]: string } = {};
 
   if (eventType.isAPIGatewayEvent(event)) {
@@ -273,19 +257,6 @@ function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEv
     httpTags["http.url_details.path"] = event.path;
     httpTags["http.method"] = event.httpMethod;
     if (event.headers && event.headers.Referer) {
-      httpTags["http.referer"] = event.headers.Referer;
-    }
-    return httpTags;
-  }
-
-  if (eventType.isLambdaUrlEvent(event)) {
-    const requestContext = event.requestContext;
-    if (requestContext.domainName) {
-      httpTags["http.url"] = requestContext.domainName;
-    }
-    httpTags["http.url_details.path"] = requestContext.http.path;
-    httpTags["http.method"] = requestContext.http.method;
-    if (event.headers?.Referer) {
       httpTags["http.referer"] = event.headers.Referer;
     }
     return httpTags;
