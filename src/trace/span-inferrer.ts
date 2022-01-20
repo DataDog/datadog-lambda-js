@@ -10,7 +10,7 @@ import {
 } from "aws-lambda";
 import { SpanContext, SpanOptions, TracerWrapper } from "./tracer-wrapper";
 import { eventSources, parseEventSource } from "./trigger";
-import { SpanWrapper, SpanWrapperOptions } from "./span-wrapper";
+import { SpanWrapper } from "./span-wrapper";
 export class SpanInferrer {
   traceWrapper: TracerWrapper;
   constructor(traceWrapper: TracerWrapper) {
@@ -120,6 +120,8 @@ export class SpanInferrer {
     // Set APIGW v1 or v1 metadata
     if (method) {
       options.tags["http.method"] = method;
+      options.tags.stage = event.requestContext.stage;
+      options.tags.domain_name = domain;
     }
     // Set websocket metadata
     if (event.requestContext.messageDirection) {
@@ -145,7 +147,7 @@ export class SpanInferrer {
     const options: SpanOptions = {};
     const { Records } = event as DynamoDBStreamEvent;
     const referenceRecord = Records[0];
-    const { eventSourceARN, eventName } = referenceRecord;
+    const { eventSourceARN, eventName, eventVersion, eventID, dynamodb } = referenceRecord;
     const [tableArn, tableName] = eventSourceARN?.split("/") || [undefined, undefined];
     const resourceName = `${eventName} ${tableName}`;
     options.tags = {
@@ -160,7 +162,15 @@ export class SpanInferrer {
         tag_source: "self",
         synchronicity: "async",
       },
+      event_name: eventName,
+      event_version: eventVersion,
+      event_source_arn: eventSourceARN,
+      event_id: eventID,
     };
+    if (dynamodb) {
+      options.tags.stream_view_type = dynamodb.StreamViewType;
+      options.tags.size_bytes = dynamodb.SizeBytes;
+    }
     if (parentSpanContext) {
       options.childOf = parentSpanContext;
     }
@@ -180,7 +190,8 @@ export class SpanInferrer {
     const { Records } = event as SNSEvent;
     const referenceRecord = Records[0];
     const {
-      Sns: { TopicArn, Timestamp },
+      EventSubscriptionArn,
+      Sns: { TopicArn, Timestamp, Type, Subject, MessageId },
     } = referenceRecord;
     const topicName = TopicArn?.split(":").pop();
     const resourceName = topicName;
@@ -195,6 +206,12 @@ export class SpanInferrer {
         tag_source: "self",
         synchronicity: "async",
       },
+      type: Type,
+      subject: Subject,
+      message_id: MessageId,
+      topic_name: topicName,
+      topic_arn: TopicArn,
+      event_subscription_arn: EventSubscriptionArn,
     };
     if (parentSpanContext) {
       options.childOf = parentSpanContext;
@@ -212,7 +229,7 @@ export class SpanInferrer {
     parentSpanContext: SpanContext | undefined,
   ): SpanWrapper {
     const options: SpanOptions = {};
-    const { TopicArn, Timestamp } = event;
+    const { TopicArn, Timestamp, Type, Subject, MessageId } = event;
     const topicName = TopicArn?.split(":").pop();
     const resourceName = topicName;
     options.tags = {
@@ -225,6 +242,11 @@ export class SpanInferrer {
         tag_source: "self",
         synchronicity: "async",
       },
+      type: Type,
+      subject: Subject,
+      message_id: MessageId,
+      topic_name: topicName,
+      topic_arn: TopicArn,
     };
     if (parentSpanContext) {
       options.childOf = parentSpanContext;
@@ -245,8 +267,9 @@ export class SpanInferrer {
     const { Records } = event as SQSEvent;
     const referenceRecord = Records[0];
     const {
-      attributes: { SentTimestamp, ApproximateReceiveCount },
+      attributes: { SentTimestamp, ApproximateReceiveCount, SenderId },
       eventSourceARN,
+      receiptHandle,
       body,
     } = referenceRecord;
     const queueName = eventSourceARN?.split(":").pop();
@@ -263,6 +286,10 @@ export class SpanInferrer {
         tag_source: "self",
         synchronicity: "async",
       },
+      queuename: queueName,
+      event_source_arn: eventSourceARN,
+      receipt_handle: receiptHandle,
+      sender_id: SenderId,
     };
     if (ApproximateReceiveCount && Number(ApproximateReceiveCount) > 0) {
       options.tags.retry_count = Number(ApproximateReceiveCount);
@@ -304,8 +331,10 @@ export class SpanInferrer {
       eventSourceARN,
       eventName,
       eventVersion,
+      eventID,
     } = referenceRecord;
     const streamName = eventSourceARN?.split(":").pop();
+    const shardId = eventID.split(":").pop();
     options.tags = {
       operation_name: "aws.kinesis",
       resource_names: streamName,
@@ -317,9 +346,13 @@ export class SpanInferrer {
         tag_source: "self",
         synchronicity: "async",
       },
+      streamname: streamName,
+      event_id: eventID,
       event_name: eventName,
+      event_source_arn: eventSourceARN,
       event_version: eventVersion,
       partition_key: partitionKey,
+      shardid: shardId,
     };
     if (parentSpanContext) {
       options.childOf = parentSpanContext;
@@ -341,9 +374,11 @@ export class SpanInferrer {
     const referenceRecord = Records[0];
     const {
       s3: {
-        bucket: { name: bucketName },
+        bucket: { name: bucketName, arn },
+        object: { key, size, eTag },
       },
       eventTime,
+      eventName,
     } = referenceRecord;
     options.tags = {
       operation_name: "aws.s3",
@@ -356,6 +391,12 @@ export class SpanInferrer {
         tag_source: "self",
         synchronicity: "async",
       },
+      bucketname: bucketName,
+      bucket_arn: arn,
+      event_name: eventName,
+      object_key: key,
+      object_size: size,
+      object_etag: eTag,
     };
     if (parentSpanContext) {
       options.childOf = parentSpanContext;

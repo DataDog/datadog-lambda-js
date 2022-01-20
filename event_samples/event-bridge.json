@@ -1,0 +1,11 @@
+{
+  "version": "0",
+  "id": "8dba41a6-02a8-6017-0251-0dc52525d29e",
+  "detail-type": "UserSignUp",
+  "source": "my.event",
+  "account": "601427279990",
+  "time": "2022-01-20T16:40:06Z",
+  "region": "sa-east-1",
+  "resources": [],
+  "detail": { "hello": "there" }
+}
