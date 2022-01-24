@@ -297,12 +297,10 @@ describe("readTraceFromEvent", () => {
       resources: [],
       detail: {
         hello: "there",
-        _datadog: {
-          "x-datadog-trace-id": "5827606813695714842",
-          "x-datadog-parent-id": "4726693487091824375",
-          "x-datadog-sampled": "1",
-          "x-datadog-sampling-priority": "1",
-        },
+        "x-datadog-trace-id": "5827606813695714842",
+        "x-datadog-parent-id": "4726693487091824375",
+        "x-datadog-sampled": "1",
+        "x-datadog-sampling-priority": "1",
       },
     });
 
