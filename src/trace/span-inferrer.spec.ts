@@ -23,10 +23,10 @@ describe("SpanInferrer", () => {
 
     expect(mockWrapper.startSpan).toBeCalledWith("aws.sns", {
       childOf: {},
-      startTime: 0,
+      startTime: 1643039127968,
       tags: {
         _inferred_span: { synchronicity: "async", tag_source: "self" },
-        event_subscription_arn: "arn:aws:sns:us-east-1:{{{accountId}}}:ExampleTopic",
+        event_subscription_arn: "arn:aws:sns:us-east-1:123456789012:ExampleTopic",
         message_id: "95df01b4-ee98-5cb9-9903-4c221d41eb5e",
         operation_name: "aws.sns",
         request_id: undefined,
@@ -100,7 +100,7 @@ describe("SpanInferrer", () => {
 
     expect(mockWrapper.startSpan).toBeCalledWith("aws.kinesis", {
       childOf: {},
-      startTime: 1428537600000,
+      startTime: 1642518727248,
       tags: {
         _inferred_span: { synchronicity: "async", tag_source: "self" },
         event_id: "shardId-000000000000:49545115243490985018280067714973144582180062593244200961",
@@ -108,7 +108,7 @@ describe("SpanInferrer", () => {
         event_source_arn: "arn:aws:kinesis:EXAMPLE",
         event_version: "1.0",
         operation_name: "aws.kinesis",
-        partition_key: "partitionKey-03",
+        partition_key: "cdbfd750-cec0-4f0f-a4b0-82ae6152c7fb",
         request_id: undefined,
         "resource.name": "EXAMPLE",
         resource_names: "EXAMPLE",
@@ -176,7 +176,7 @@ describe("SpanInferrer", () => {
 
     expect(mockWrapper.startSpan).toBeCalledWith("aws.eventbridge", {
       childOf: {},
-      startTime: 1642696806000,
+      startTime: 1643040010000,
       tags: {
         _inferred_span: { synchronicity: "async", tag_source: "self" },
         operation_name: "aws.eventbridge",
