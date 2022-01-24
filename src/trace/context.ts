@@ -326,9 +326,9 @@ export function readTraceFromKinesisEvent(event: KinesisStreamEvent): TraceConte
 }
 
 export function readTraceFromEventbridgeEvent(event: EventBridgeEvent<any, any>): TraceContext | undefined {
-  if (event.detail && event.detail[traceIDHeader]) {
+  if (event.detail && event.detail._datadog) {
     try {
-      const traceData = event.detail;
+      const traceData = event.detail._datadog;
       const traceID = traceData[traceIDHeader];
       if (typeof traceID !== "string") {
         return;
