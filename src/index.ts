@@ -23,6 +23,7 @@ export { TraceHeaders } from "./trace";
 export const apiKeyEnvVar = "DD_API_KEY";
 export const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
 export const captureLambdaPayloadEnvVar = "DD_CAPTURE_LAMBDA_PAYLOAD";
+export const traceManagedServicesEnvVar = "DD_TRACE_MANAGED_SERVICES";
 export const siteURLEnvVar = "DD_SITE";
 export const logLevelEnvVar = "DD_LOG_LEVEL";
 export const logForwardingEnvVar = "DD_FLUSH_TO_LOG";
@@ -61,6 +62,7 @@ export const defaultConfig: Config = {
   apiKeyKMS: "",
   autoPatchHTTP: true,
   captureLambdaPayload: false,
+  createInferredSpan: true,
   debugLogging: false,
   enhancedMetrics: true,
   forceWrap: false,
@@ -255,8 +257,13 @@ function getConfig(userConfig?: Partial<Config>): Config {
   }
 
   if (userConfig === undefined || userConfig.captureLambdaPayload === undefined) {
-    const result = getEnvValue(captureLambdaPayloadEnvVar, "false").toLocaleLowerCase();
+    const result = getEnvValue(captureLambdaPayloadEnvVar, "false").toLowerCase();
     config.captureLambdaPayload = result === "true";
+  }
+
+  if (userConfig === undefined || userConfig.createInferredSpan === undefined) {
+    const result = getEnvValue(traceManagedServicesEnvVar, "true").toLowerCase();
+    config.createInferredSpan = result === "true";
   }
 
   return config;

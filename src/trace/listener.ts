@@ -31,6 +31,10 @@ export interface TraceConfig {
    */
   captureLambdaPayload: boolean;
   /**
+   * Whether to create inferred spans for managed services
+   */
+  createInferredSpan: boolean;
+  /**
    * Whether to automatically patch console.log with Datadog's tracing ids.
    */
   injectLogContext: boolean;
@@ -96,7 +100,9 @@ export class TraceListener {
         traceSource: this.contextService.traceSource,
       });
     }
-    this.inferredSpan = this.inferrer.createInferredSpan(event, context, parentSpanContext);
+    if (this.config.createInferredSpan) {
+      this.inferredSpan = this.inferrer.createInferredSpan(event, context, parentSpanContext);
+    }
     this.lambdaSpanParentContext = this.inferredSpan?.span || parentSpanContext;
     this.context = context;
     this.triggerTags = extractTriggerTags(event, context);

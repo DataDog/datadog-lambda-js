@@ -313,7 +313,7 @@ export function readTraceFromKinesisEvent(event: KinesisStreamEvent): TraceConte
           source: Source.Event,
           traceID,
         };
-        logDebug(`extracted trace context from Kinesis event`, { trace, event });
+        logDebug(`extracted trace context from Kinesis event`, { trace });
         return trace;
       }
     } catch (err) {
