@@ -58,6 +58,7 @@ describe("TraceListener", () => {
   const defaultConfig = {
     autoPatchHTTP: true,
     captureLambdaPayload: false,
+    createInferredSpan: true,
     mergeDatadogXrayTraces: false,
     injectLogContext: false,
   };
