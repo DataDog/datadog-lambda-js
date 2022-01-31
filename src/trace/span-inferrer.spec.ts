@@ -197,6 +197,7 @@ describe("SpanInferrer", () => {
       startTime: undefined,
       tags: {
         _inferred_span: { synchronicity: undefined, tag_source: "self" },
+        api_id: "08se3mvh28",
         connection_id: "MM0qReAFGjQCE-w=",
         endpoint: "$connect",
         event_type: "CONNECT",

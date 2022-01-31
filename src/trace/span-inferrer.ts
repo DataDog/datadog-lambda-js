@@ -72,6 +72,7 @@ export class SpanInferrer {
       "span.type": "http",
       "resource.name": resourceName,
       "service.name": domain,
+      api_id: event.requestContext.apiId,
       service: domain,
       _inferred_span: {
         tag_source: "self",
