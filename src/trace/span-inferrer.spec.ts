@@ -5,7 +5,7 @@ const snsEvent = require("../../event_samples/sns.json");
 const sqsEvent = require("../../event_samples/sqs.json");
 const ddbEvent = require("../../event_samples/dynamodb.json");
 const kinesisEvent = require("../../event_samples/kinesis.json");
-const eventBridgeEvent = require("../../event_samples/event-bridge.json");
+const eventBridgeEvent = require("../../event_samples/eventbridge.json");
 const webSocketEvent = require("../../event_samples/api-gateway-wss.json");
 const s3Event = require("../../event_samples/s3.json");
 const mockWrapper = {
@@ -36,7 +36,7 @@ describe("SpanInferrer", () => {
         "span.type": "sns",
         subject: "example subject",
         topic_arn: "arn:aws:sns:us-east-1:123456789012:ExampleTopic",
-        topic_name: "ExampleTopic",
+        topicname: "ExampleTopic",
         type: "Notification",
       },
     });
@@ -76,7 +76,7 @@ describe("SpanInferrer", () => {
       startTime: 1428537600000,
       tags: {
         _inferred_span: { synchronicity: "async", tag_source: "self" },
-        "aws.dynamodb.table_name": "ExampleTableWithStream",
+        tablename: "ExampleTableWithStream",
         event_id: "c4ca4238a0b923820dcc509a6f75849b",
         event_name: "INSERT",
         event_source_arn:
@@ -140,7 +140,7 @@ describe("SpanInferrer", () => {
             "span.type": "sns",
             subject: undefined,
             topic_arn: "arn:aws:sns:sa-east-1:601427279990:js-library-test-dev-demoTopic-15WGUVRCBMPAA",
-            topic_name: "js-library-test-dev-demoTopic-15WGUVRCBMPAA",
+            topicname: "js-library-test-dev-demoTopic-15WGUVRCBMPAA",
             type: "Notification",
           },
         },
@@ -197,7 +197,7 @@ describe("SpanInferrer", () => {
       startTime: undefined,
       tags: {
         _inferred_span: { synchronicity: undefined, tag_source: "self" },
-        api_id: "08se3mvh28",
+        apiid: "08se3mvh28",
         connection_id: "MM0qReAFGjQCE-w=",
         endpoint: "$connect",
         event_type: "CONNECT",

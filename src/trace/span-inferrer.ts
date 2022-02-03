@@ -72,7 +72,7 @@ export class SpanInferrer {
       "span.type": "http",
       "resource.name": resourceName,
       "service.name": domain,
-      api_id: event.requestContext.apiId,
+      apiid: event.requestContext.apiId,
       service: domain,
       _inferred_span: {
         tag_source: "self",
@@ -114,7 +114,7 @@ export class SpanInferrer {
     const resourceName = `${eventName} ${tableName}`;
     options.tags = {
       operation_name: "aws.dynamodb",
-      "aws.dynamodb.table_name": tableName,
+      tablename: tableName,
       resource_names: resourceName,
       request_id: context?.awsRequestId,
       "span.type": "web",
@@ -171,7 +171,7 @@ export class SpanInferrer {
       type: Type,
       subject: Subject,
       message_id: MessageId,
-      topic_name: topicName,
+      topicname: topicName,
       topic_arn: TopicArn,
       event_subscription_arn: EventSubscriptionArn,
     };
@@ -207,7 +207,7 @@ export class SpanInferrer {
       type: Type,
       subject: Subject,
       message_id: MessageId,
-      topic_name: topicName,
+      topicname: topicName,
       topic_arn: TopicArn,
     };
     if (parentSpanContext) {

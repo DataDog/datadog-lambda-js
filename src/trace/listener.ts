@@ -91,8 +91,7 @@ export class TraceListener {
     // incoming event if available or the X-Ray trace context if hybrid tracing is enabled
     let parentSpanContext: SpanContext | undefined;
     if (this.contextService.traceSource === Source.Event || this.config.mergeDatadogXrayTraces) {
-      // TODO [astuyve] discuss with team RE nulls or undefined, or a coalescing strategy
-      parentSpanContext = rootTraceHeaders ? this.tracerWrapper.extract(rootTraceHeaders) || undefined : undefined;
+      parentSpanContext = rootTraceHeaders ? this.tracerWrapper.extract(rootTraceHeaders) ?? undefined : undefined;
       logDebug("Attempting to find parent for the aws.lambda span");
     } else {
       logDebug("Didn't attempt to find parent for aws.lambda span", {
