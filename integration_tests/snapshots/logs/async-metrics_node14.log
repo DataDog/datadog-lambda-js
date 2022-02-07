@@ -1,23 +1,19 @@
-START RequestId: XXXX Version: $LATEST
+START
 {"e":XXXX,"m":"aws.lambda.enhanced.invocations","t":["region:sa-east-1","account_id:XXXX","functionname:integration-tests-js-XXXX-async-metrics_node14","resource:integration-tests-js-XXXX-async-metrics_node14","cold_start:true","memorysize:1024","datadog_lambda:vX.X.X","runtime:nodejs14.x"],"v":1}
 {"e":XXXX,"m":"serverless.integration_test.execution","t":["tagkey:tagvalue","eventsource:APIGateway","dd_lambda_layer:datadog-nodev14.XX.X"],"v":1}
-XXXX-XX-XX XX:XX:XX.XXX	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed APIGateway request
-END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	Init Duration: XXXX ms	
+XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed APIGateway request
+END Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	Init Duration: XXXX ms	
 
-START RequestId: XXXX Version: $LATEST
-{"e":XXXX,"m":"aws.lambda.enhanced.invocations","t":["region:sa-east-1","account_id:XXXX","functionname:integration-tests-js-XXXX-async-metrics_node14","resource:integration-tests-js-XXXX-async-metrics_node14","cold_start:false","memorysize:1024","datadog_lambda:vX.X.X","runtime:nodejs14.x"],"v":1}
+START
 {"e":XXXX,"m":"serverless.integration_test.records_processed","t":["tagkey:tagvalue","eventsource:SNS","dd_lambda_layer:datadog-nodev14.XX.X"],"v":1}
 {"e":XXXX,"m":"serverless.integration_test.execution","t":["tagkey:tagvalue","eventsource:SNS","dd_lambda_layer:datadog-nodev14.XX.X"],"v":1}
-XXXX-XX-XX XX:XX:XX.XXX	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SNS request
-END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	
+XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SNS request
+END Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	
 
-START RequestId: XXXX Version: $LATEST
+START
 {"e":XXXX,"m":"aws.lambda.enhanced.invocations","t":["region:sa-east-1","account_id:XXXX","functionname:integration-tests-js-XXXX-async-metrics_node14","resource:integration-tests-js-XXXX-async-metrics_node14","cold_start:false","memorysize:1024","datadog_lambda:vX.X.X","runtime:nodejs14.x"],"v":1}
 {"e":XXXX,"m":"serverless.integration_test.records_processed","t":["tagkey:tagvalue","eventsource:SQS","dd_lambda_layer:datadog-nodev14.XX.X"],"v":1}
 {"e":XXXX,"m":"serverless.integration_test.records_processed","t":["tagkey:tagvalue","eventsource:SQS","dd_lambda_layer:datadog-nodev14.XX.X"],"v":1}
 {"e":XXXX,"m":"serverless.integration_test.execution","t":["tagkey:tagvalue","eventsource:SQS","dd_lambda_layer:datadog-nodev14.XX.X"],"v":1}
-XXXX-XX-XX XX:XX:XX.XXX	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SQS request
-END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	
+XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SQS request
+END Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	

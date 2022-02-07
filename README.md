@@ -1,4 +1,5 @@
 # datadog-lambda-js
+
 ![build](https://github.com/DataDog/datadog-lambda-js/workflows/build/badge.svg)
 [![Code Coverage](https://img.shields.io/codecov/c/github/DataDog/datadog-lambda-js)](https://codecov.io/gh/DataDog/datadog-lambda-js)
 [![NPM](https://img.shields.io/npm/v/datadog-lambda-js)](https://www.npmjs.com/package/datadog-lambda-js)
@@ -35,15 +36,15 @@ By default, the Datadog Lambda library automatically initializes the tracer. How
 
 1. Set enviornment variable `DD_TRACE_ENABLED` to `false`, so the Datadog Lambda library does not initialize the tracer.
 1. Add the following snippet to the function code to manually initialize the tracer with your desired settings.
-    ```js
-    const tracer = require('dd-trace').init({
-      enabled: true,
-      tags: {
-        "_dd.origin": "lambda",
-      },
-      sampleRate: 0.1 // e.g., keep 10% of traces
-    });
-    ```
+   ```js
+   const tracer = require("dd-trace").init({
+     enabled: true,
+     tags: {
+       "_dd.origin": "lambda",
+     },
+     sampleRate: 0.1, // e.g., keep 10% of traces
+   });
+   ```
 
 ### Trace & Log Correlation
 
@@ -59,7 +60,7 @@ If this method doesn't work for you, instead of overriding the handler and setti
 
 ```js
 const { datadog } = require("datadog-lambda-js");
-const tracer = require('dd-trace').init({});
+const tracer = require("dd-trace").init({});
 
 module.exports.myHandler = datadog(myHandler, {
   // my function code
@@ -112,7 +113,7 @@ If `DD_FLUSH_TO_LOG` is set to `false` (not recommended), the Datadog API Key mu
 
 ### DD_SITE
 
-If `DD_FLUSH_TO_LOG` is set to `false` (not recommended), you must set `DD_SITE`. Possible values are `datadoghq.com`, `datadoghq.eu`, `us3.datadoghq.com`, `us5.datadoghq.com`,  and `ddog-gov.com`. The default is `datadoghq.com`.
+If `DD_FLUSH_TO_LOG` is set to `false` (not recommended), you must set `DD_SITE`. Possible values are `datadoghq.com`, `datadoghq.eu`, `us3.datadoghq.com`, `us5.datadoghq.com`, and `ddog-gov.com`. The default is `datadoghq.com`.
 
 ### DD_LOG_LEVEL
 
@@ -137,6 +138,10 @@ Inject Datadog trace id into logs for correlation. Defaults to `true`.
 ### DD_MERGE_XRAY_TRACES
 
 Set to `true` to merge the X-Ray trace and the Datadog trace, when using both the X-Ray and Datadog tracing. Defaults to `false`.
+
+### DD_TRACE_MANAGED_SERVICES
+
+Create inferred spans for managed services. Defaults to `true`.
 
 ## Opening Issues
 

@@ -7,7 +7,6 @@ import {
   MetricsListener,
 } from "./metrics";
 import { TraceConfig, TraceHeaders, TraceListener } from "./trace";
-import { extractHTTPStatusCodeTag } from "./trace/trigger";
 import {
   logDebug,
   logError,
@@ -17,7 +16,6 @@ import {
   setColdStart,
   setLogger,
   setLogLevel,
-  tagObject,
 } from "./utils";
 
 export { TraceHeaders } from "./trace";
@@ -25,6 +23,7 @@ export { TraceHeaders } from "./trace";
 export const apiKeyEnvVar = "DD_API_KEY";
 export const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
 export const captureLambdaPayloadEnvVar = "DD_CAPTURE_LAMBDA_PAYLOAD";
+export const traceManagedServicesEnvVar = "DD_TRACE_MANAGED_SERVICES";
 export const siteURLEnvVar = "DD_SITE";
 export const logLevelEnvVar = "DD_LOG_LEVEL";
 export const logForwardingEnvVar = "DD_FLUSH_TO_LOG";
@@ -63,6 +62,7 @@ export const defaultConfig: Config = {
   apiKeyKMS: "",
   autoPatchHTTP: true,
   captureLambdaPayload: false,
+  createInferredSpan: true,
   debugLogging: false,
   enhancedMetrics: true,
   forceWrap: false,
@@ -94,9 +94,8 @@ export function datadog<TEvent, TResult>(
 ): Handler<TEvent, TResult> {
   const finalConfig = getConfig(config);
   const metricsListener = new MetricsListener(new KMSService(), finalConfig);
-  const handlerName = getEnvValue(datadogHandlerEnvVar, getEnvValue("_HANDLER", "handler"));
 
-  const traceListener = new TraceListener(finalConfig, handlerName);
+  const traceListener = new TraceListener(finalConfig);
 
   // Only wrap the handler once unless forced
   const _ddWrappedKey = "_ddWrapped";
@@ -132,26 +131,12 @@ export function datadog<TEvent, TResult>(
     let localResult: TResult | undefined;
     let error: any;
     let didThrow = false;
-
     try {
       result = await traceListener.onWrap(async (localEvent: TEvent, localContext: Context) => {
         try {
           localResult = await promHandler(localEvent, localContext);
         } finally {
-          if (traceListener.currentSpan && finalConfig.captureLambdaPayload) {
-            tagObject(traceListener.currentSpan, "function.request", localEvent);
-            tagObject(traceListener.currentSpan, "function.response", localResult);
-          }
-          if (traceListener.triggerTags) {
-            const statusCode = extractHTTPStatusCodeTag(traceListener.triggerTags, localResult);
-            if (statusCode) {
-              // Store the status tag in the listener to send to Xray on invocation completion
-              traceListener.triggerTags["http.status_code"] = statusCode;
-              if (traceListener.currentSpan) {
-                traceListener.currentSpan.setTag("http.status_code", statusCode);
-              }
-            }
-          }
+          traceListener.onEndingInvocation(localEvent, localResult, finalConfig.captureLambdaPayload);
         }
         return localResult;
       })(event, context);
@@ -272,8 +257,13 @@ function getConfig(userConfig?: Partial<Config>): Config {
   }
 
   if (userConfig === undefined || userConfig.captureLambdaPayload === undefined) {
-    const result = getEnvValue(captureLambdaPayloadEnvVar, "false").toLocaleLowerCase();
+    const result = getEnvValue(captureLambdaPayloadEnvVar, "false").toLowerCase();
     config.captureLambdaPayload = result === "true";
+  }
+
+  if (userConfig === undefined || userConfig.createInferredSpan === undefined) {
+    const result = getEnvValue(traceManagedServicesEnvVar, "true").toLowerCase();
+    config.createInferredSpan = result === "true";
   }
 
   return config;

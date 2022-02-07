@@ -28,7 +28,7 @@ describe("patchHttp", () => {
 
   beforeEach(() => {
     contextService = new TraceContextService(traceWrapper as any);
-    contextService.rootTraceContext = {
+    contextService["rootTraceContext"] = {
       parentID: "78910",
       sampleMode: SampleMode.USER_KEEP,
       source: Source.Event,
@@ -124,7 +124,7 @@ describe("patchHttp", () => {
   it("doesn't inject tracing headers when context is empty", () => {
     nock("http://www.example.com").get("/").reply(200, {});
 
-    contextService.rootTraceContext = undefined;
+    contextService["rootTraceContext"] = undefined;
     patchHttp(contextService);
     const req = http.request("http://www.example.com");
     const headers = req.getHeaders();

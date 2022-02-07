@@ -1,26 +1,22 @@
-START RequestId: XXXX Version: $LATEST
+START
 {"e":XXXX,"m":"aws.lambda.enhanced.invocations","t":["region:sa-east-1","account_id:XXXX","functionname:integration-tests-js-XXXX-http-requests_node14","resource:integration-tests-js-XXXX-http-requests_node14","cold_start:true","memorysize:1024","datadog_lambda:vX.X.X","runtime:nodejs14.x"],"v":1}
 HTTP GET https://ip-ranges.datadoghq.com/ Headers: ["Accept:application/json, text/plain, */*","User-Agent:axios/X.X.X","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
 HTTP GET https://ip-ranges.datadoghq.eu/ Headers: ["Accept:application/json, text/plain, */*","User-Agent:axios/X.X.X","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
-XXXX-XX-XX XX:XX:XX.XXX	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Snapshot test http requests successfully made to URLs: https://ip-ranges.datadoghq.com,https://ip-ranges.datadoghq.eu
+XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Snapshot test http requests successfully made to URLs: https://ip-ranges.datadoghq.com,https://ip-ranges.datadoghq.eu
 HTTP POST https://api.datadoghq.com/api/v1/distribution_points?api_key=XXXX Headers: ["content-type:application/json","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
-END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	Init Duration: XXXX ms	
+END Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	Init Duration: XXXX ms	
 
-START RequestId: XXXX Version: $LATEST
+START
+XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] {"status":"error","message":"datadog:can't send metrics, datadog lambda handler not set up."}
+HTTP GET https://ip-ranges.datadoghq.com/ Headers: ["Accept:application/json, text/plain, */*","User-Agent:axios/X.X.X","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
+HTTP GET https://ip-ranges.datadoghq.eu/ Headers: ["Accept:application/json, text/plain, */*","User-Agent:axios/X.X.X","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
+XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Snapshot test http requests successfully made to URLs: https://ip-ranges.datadoghq.com,https://ip-ranges.datadoghq.eu
+END Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	
+
+START
 {"e":XXXX,"m":"aws.lambda.enhanced.invocations","t":["region:sa-east-1","account_id:XXXX","functionname:integration-tests-js-XXXX-http-requests_node14","resource:integration-tests-js-XXXX-http-requests_node14","cold_start:false","memorysize:1024","datadog_lambda:vX.X.X","runtime:nodejs14.x"],"v":1}
 HTTP GET https://ip-ranges.datadoghq.com/ Headers: ["Accept:application/json, text/plain, */*","User-Agent:axios/X.X.X","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
 HTTP GET https://ip-ranges.datadoghq.eu/ Headers: ["Accept:application/json, text/plain, */*","User-Agent:axios/X.X.X","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
-XXXX-XX-XX XX:XX:XX.XXX	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Snapshot test http requests successfully made to URLs: https://ip-ranges.datadoghq.com,https://ip-ranges.datadoghq.eu
+XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Snapshot test http requests successfully made to URLs: https://ip-ranges.datadoghq.com,https://ip-ranges.datadoghq.eu
 HTTP POST https://api.datadoghq.com/api/v1/distribution_points?api_key=XXXX Headers: ["content-type:application/json","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
-END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	
-
-START RequestId: XXXX Version: $LATEST
-{"e":XXXX,"m":"aws.lambda.enhanced.invocations","t":["region:sa-east-1","account_id:XXXX","functionname:integration-tests-js-XXXX-http-requests_node14","resource:integration-tests-js-XXXX-http-requests_node14","cold_start:false","memorysize:1024","datadog_lambda:vX.X.X","runtime:nodejs14.x"],"v":1}
-HTTP GET https://ip-ranges.datadoghq.com/ Headers: ["Accept:application/json, text/plain, */*","User-Agent:axios/X.X.X","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
-HTTP GET https://ip-ranges.datadoghq.eu/ Headers: ["Accept:application/json, text/plain, */*","User-Agent:axios/X.X.X","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
-XXXX-XX-XX XX:XX:XX.XXX	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Snapshot test http requests successfully made to URLs: https://ip-ranges.datadoghq.com,https://ip-ranges.datadoghq.eu
-HTTP POST https://api.datadoghq.com/api/v1/distribution_points?api_key=XXXX Headers: ["content-type:application/json","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
-END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	
+END Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	

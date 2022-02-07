@@ -1,8 +1,9 @@
+import { Context } from "aws-lambda";
 import { logDebug } from "../utils";
 import { parentIDHeader, samplingPriorityHeader, traceIDHeader } from "./constants";
-import { convertToAPMParentID, TraceContext } from "./context";
+import { TraceContext, extractTraceContext } from "./context";
 import { TracerWrapper } from "./tracer-wrapper";
-
+import { TraceExtractor } from "./listener";
 /**
  * Headers that can be added to a request.
  */
@@ -16,9 +17,18 @@ export interface TraceHeaders {
  * Service for retrieving the latest version of the request context from xray.
  */
 export class TraceContextService {
-  public rootTraceContext?: TraceContext;
+  private rootTraceContext?: TraceContext;
 
   constructor(private tracerWrapper: TracerWrapper) {}
+
+  extractHeadersFromContext(
+    event: any,
+    context: Context,
+    extractor?: TraceExtractor,
+  ): Partial<TraceHeaders> | undefined {
+    this.rootTraceContext = extractTraceContext(event, context, extractor);
+    return this.currentTraceHeaders;
+  }
 
   get currentTraceContext(): TraceContext | undefined {
     if (this.rootTraceContext === undefined) {

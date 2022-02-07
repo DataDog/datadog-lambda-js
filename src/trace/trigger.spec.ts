@@ -146,7 +146,14 @@ describe("parseEventSource", () => {
       for (let response of responses) {
         const statusCode = extractHTTPStatusCodeTag(triggerTags, response.responseBody);
         // We should always return a status code for API Gateway and ALB
-        if (["api-gateway-v1.json", "api-gateway-v2.json", "application-load-balancer.json"].includes(event.file)) {
+        if (
+          [
+            "api-gateway-v1.json",
+            "api-gateway-v2.json",
+            "application-load-balancer.json",
+            "lambda-function-urls.json",
+          ].includes(event.file)
+        ) {
           expect(statusCode).toEqual(response.expectedStatusCode);
         } else {
           expect(statusCode).toBeUndefined();

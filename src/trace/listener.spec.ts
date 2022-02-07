@@ -1,6 +1,8 @@
-import { TraceListener } from "./listener";
+import { TraceExtractor, TraceListener } from "./listener";
 import { Source, ddtraceVersion } from "./constants";
 import { datadogLambdaVersion } from "../constants";
+import { Context } from "aws-lambda";
+import { TraceHeaders } from "./trace-context-service";
 
 let mockWrap: jest.Mock<any, any>;
 let mockExtract: jest.Mock<any, any>;
@@ -32,6 +34,14 @@ jest.mock("./tracer-wrapper", () => {
 
 jest.mock("./trace-context-service", () => {
   class MockTraceContextService {
+    extractHeadersFromContext(
+      event: any,
+      context: Context,
+      extractor?: TraceExtractor,
+    ): Partial<TraceHeaders> | undefined {
+      return mockTraceHeaders;
+    }
+
     get traceSource() {
       return mockTraceSource;
     }
@@ -48,6 +58,7 @@ describe("TraceListener", () => {
   const defaultConfig = {
     autoPatchHTTP: true,
     captureLambdaPayload: false,
+    createInferredSpan: true,
     mergeDatadogXrayTraces: false,
     injectLogContext: false,
   };
@@ -72,7 +83,7 @@ describe("TraceListener", () => {
   });
 
   it("wraps dd-trace span around invocation", async () => {
-    const listener = new TraceListener(defaultConfig, "handler.my-handler");
+    const listener = new TraceListener(defaultConfig);
     listener.onStartInvocation({}, context as any);
     const unwrappedFunc = () => {};
     const wrappedFunc = listener.onWrap(unwrappedFunc);
@@ -101,7 +112,7 @@ describe("TraceListener", () => {
   });
 
   it("wraps dd-trace span around invocation, with trace context from event", async () => {
-    const listener = new TraceListener(defaultConfig, "handler.my-handler");
+    const listener = new TraceListener(defaultConfig);
     mockTraceHeaders = {
       "x-datadog-parent-id": "797643193680388251",
       "x-datadog-sampling-priority": "2",
@@ -138,7 +149,7 @@ describe("TraceListener", () => {
   });
 
   it("wraps dd-trace span around invocation, without trace context from xray", async () => {
-    const listener = new TraceListener(defaultConfig, "handler.my-handler");
+    const listener = new TraceListener(defaultConfig);
     mockTraceHeaders = {
       "x-datadog-parent-id": "797643193680388251",
       "x-datadog-sampling-priority": "2",
@@ -174,7 +185,7 @@ describe("TraceListener", () => {
   });
 
   it("wraps dd-trace span around invocation, with trace context from xray when mergeDatadogXrayTraces is enabled", async () => {
-    const listener = new TraceListener({ ...defaultConfig, mergeDatadogXrayTraces: true }, "handler.my-handler");
+    const listener = new TraceListener({ ...defaultConfig, mergeDatadogXrayTraces: true });
     mockTraceHeaders = {
       "x-datadog-parent-id": "797643193680388251",
       "x-datadog-sampling-priority": "2",
@@ -212,7 +223,7 @@ describe("TraceListener", () => {
   });
 
   it("wraps dd-trace span around invocation, with function alias", async () => {
-    const listener = new TraceListener(defaultConfig, "handler.my-handler");
+    const listener = new TraceListener(defaultConfig);
     listener.onStartInvocation({}, contextWithFunctionAlias as any);
     const unwrappedFunc = () => {};
     const wrappedFunc = listener.onWrap(unwrappedFunc);
@@ -241,7 +252,7 @@ describe("TraceListener", () => {
   });
 
   it("wraps dd-trace span around invocation, with function version", async () => {
-    const listener = new TraceListener(defaultConfig, "handler.my-handler");
+    const listener = new TraceListener(defaultConfig);
     listener.onStartInvocation({}, contextWithFunctionVersion as any);
     const unwrappedFunc = () => {};
     const wrappedFunc = listener.onWrap(unwrappedFunc);

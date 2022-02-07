@@ -3,21 +3,21 @@ import { Context } from "aws-lambda";
 import {
   addLambdaFunctionTagsToXray,
   TraceContext,
-  extractTraceContext,
   readStepFunctionContextFromEvent,
   StepFunctionContext,
 } from "./context";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
-import { extractTriggerTags } from "./trigger";
+import { extractTriggerTags, extractHTTPStatusCodeTag } from "./trigger";
 
-import { logDebug } from "../utils";
+import { logDebug, tagObject } from "../utils";
 import { didFunctionColdStart } from "../utils/cold-start";
 import { datadogLambdaVersion } from "../constants";
 import { Source, ddtraceVersion } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
-
+import { SpanInferrer } from "./span-inferrer";
+import { SpanWrapper } from "./span-wrapper";
 export type TraceExtractor = (event: any, context: Context) => TraceContext;
 
 export interface TraceConfig {
@@ -30,6 +30,10 @@ export interface TraceConfig {
    * Whether to capture the lambda payload and response in Datadog.
    */
   captureLambdaPayload: boolean;
+  /**
+   * Whether to create inferred spans for managed services
+   */
+  createInferredSpan: boolean;
   /**
    * Whether to automatically patch console.log with Datadog's tracing ids.
    */
@@ -50,17 +54,20 @@ export class TraceListener {
   private context?: Context;
   private stepFunctionContext?: StepFunctionContext;
   private tracerWrapper: TracerWrapper;
+  private inferrer: SpanInferrer;
+  private inferredSpan?: SpanWrapper;
+  private wrappedCurrentSpan?: SpanWrapper;
+  private triggerTags?: { [key: string]: string };
+  private lambdaSpanParentContext?: SpanContext;
 
-  public triggerTags?: { [key: string]: string };
   public get currentTraceHeaders() {
     return this.contextService.currentTraceHeaders;
   }
-  public get currentSpan() {
-    return this.tracerWrapper.currentSpan;
-  }
-  constructor(private config: TraceConfig, private handlerName: string) {
+
+  constructor(private config: TraceConfig) {
     this.tracerWrapper = new TracerWrapper();
     this.contextService = new TraceContextService(this.tracerWrapper);
+    this.inferrer = new SpanInferrer(this.tracerWrapper);
   }
 
   public onStartInvocation(event: any, context: Context) {
@@ -79,11 +86,60 @@ export class TraceListener {
     } else {
       logDebug("Not patching HTTP libraries", { autoPatchHTTP: this.config.autoPatchHTTP, tracerInitialized });
     }
-
+    const rootTraceHeaders = this.contextService.extractHeadersFromContext(event, context, this.config.traceExtractor);
+    // The aws.lambda span needs to have a parented to the Datadog trace context from the
+    // incoming event if available or the X-Ray trace context if hybrid tracing is enabled
+    let parentSpanContext: SpanContext | undefined;
+    if (this.contextService.traceSource === Source.Event || this.config.mergeDatadogXrayTraces) {
+      parentSpanContext = rootTraceHeaders ? this.tracerWrapper.extract(rootTraceHeaders) ?? undefined : undefined;
+      logDebug("Attempting to find parent for the aws.lambda span");
+    } else {
+      logDebug("Didn't attempt to find parent for aws.lambda span", {
+        mergeDatadogXrayTraces: this.config.mergeDatadogXrayTraces,
+        traceSource: this.contextService.traceSource,
+      });
+    }
+    if (this.config.createInferredSpan) {
+      this.inferredSpan = this.inferrer.createInferredSpan(event, context, parentSpanContext);
+    }
+    this.lambdaSpanParentContext = this.inferredSpan?.span || parentSpanContext;
     this.context = context;
     this.triggerTags = extractTriggerTags(event, context);
-    this.contextService.rootTraceContext = extractTraceContext(event, context, this.config.traceExtractor);
     this.stepFunctionContext = readStepFunctionContextFromEvent(event);
+  }
+
+  /**
+   * onEndingInvocation runs after the user function has returned
+   * but before the wrapped function has returned
+   * this is needed to apply tags to the lambda span
+   * before it is flushed to logs or extension
+   *
+   * @param event
+   * @param result
+   * @param shouldTagPayload
+   */
+  public onEndingInvocation(event: any, result: any, shouldTagPayload = false) {
+    // Guard clause if something has gone horribly wrong
+    // so we won't crash user code.
+    if (!this.tracerWrapper.currentSpan) return;
+
+    this.wrappedCurrentSpan = new SpanWrapper(this.tracerWrapper.currentSpan, {});
+    if (shouldTagPayload) {
+      tagObject(this.tracerWrapper.currentSpan, "function.request", event);
+      tagObject(this.tracerWrapper.currentSpan, "function.response", result);
+    }
+
+    if (this.triggerTags) {
+      const statusCode = extractHTTPStatusCodeTag(this.triggerTags, result);
+      // Store the status tag in the listener to send to Xray on invocation completion
+      this.triggerTags["http.status_code"] = statusCode!;
+      if (this.tracerWrapper.currentSpan) {
+        this.tracerWrapper.currentSpan.setTag("http.status_code", statusCode);
+      }
+      if (this.inferredSpan) {
+        this.inferredSpan.setTag("http.status_code", statusCode);
+      }
+    }
   }
 
   public async onCompleteInvocation() {
@@ -98,23 +154,14 @@ export class TraceListener {
       logDebug("Unpatching HTTP libraries");
       unpatchHttp();
     }
+    if (this.inferredSpan) {
+      logDebug("Finishing inferred span");
+      const finishTime = this.inferredSpan.isAsync() ? this.wrappedCurrentSpan?.startTime() : Date.now();
+      this.inferredSpan.finish(finishTime);
+    }
   }
 
   public onWrap<T = (...args: any[]) => any>(func: T): T {
-    // The aws.lambda span needs to have a parented to the Datadog trace context from the
-    // incoming event if available or the X-Ray trace context if hybrid tracing is enabled
-    let parentSpanContext: SpanContext | null = null;
-    if (this.contextService.traceSource === Source.Event || this.config.mergeDatadogXrayTraces) {
-      const rootTraceHeaders = this.contextService.rootTraceHeaders;
-      parentSpanContext = this.tracerWrapper.extract(rootTraceHeaders);
-      logDebug("Attempting to find parent for the aws.lambda span");
-    } else {
-      logDebug("Didn't attempt to find parent for aws.lambda span", {
-        mergeDatadogXrayTraces: this.config.mergeDatadogXrayTraces,
-        traceSource: this.contextService.traceSource,
-      });
-    }
-
     const options: TraceOptions = {};
     if (this.context) {
       logDebug("Creating the aws.lambda span");
@@ -147,16 +194,14 @@ export class TraceListener {
         ...this.stepFunctionContext,
       };
     }
-
-    if (parentSpanContext !== null) {
-      options.childOf = parentSpanContext;
+    if (this.lambdaSpanParentContext) {
+      options.childOf = this.lambdaSpanParentContext;
     }
     options.type = "serverless";
     options.service = "aws.lambda";
     if (this.context) {
       options.resource = this.context.functionName;
     }
-
     return this.tracerWrapper.wrap("aws.lambda", options, func);
   }
 }

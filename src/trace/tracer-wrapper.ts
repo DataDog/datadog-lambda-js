@@ -8,6 +8,14 @@ export interface SpanContext {
   toSpanId(): string;
 }
 
+export interface SpanOptions {
+  childOf?: SpanContext;
+  tags?: { [key: string]: any };
+  startTime?: number;
+  service?: string;
+  type?: string;
+}
+
 export interface TraceOptions {
   resource?: string;
   service?: string;
@@ -59,6 +67,13 @@ export class TracerWrapper {
       return fn;
     }
     return this.tracer.wrap(name, options, fn);
+  }
+
+  public startSpan<T = (...args: any[]) => any>(name: string, options: TraceOptions): T | null {
+    if (!this.isTracerAvailable) {
+      return null;
+    }
+    return this.tracer.startSpan(name, options);
   }
 
   public traceContext(): TraceContext | undefined {
