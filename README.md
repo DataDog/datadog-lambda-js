@@ -143,6 +143,14 @@ Set to `true` to merge the X-Ray trace and the Datadog trace, when using both th
 
 Create inferred spans for managed services. Defaults to `true`.
 
+## Major Version Notes
+
+### 5.0
+
+The 5.0 release introduces version 2 of the Datadog tracer, [dd-trace-js](https://github.com/DataDog/dd-trace-js/). This includes a few breaking changes, and the migration guide found [here](https://github.com/DataDog/dd-trace-js/blob/master/MIGRATING.md#nested-objects-as-tags).
+
+5.0 was released with Lambda Layer version `69`.
+
 ## Opening Issues
 
 If you encounter a bug with this package, we want to hear about it. Before opening a new issue, search the existing issues to avoid duplicates.
