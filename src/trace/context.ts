@@ -203,7 +203,7 @@ export function readTraceFromAppSyncEvent(event: any): TraceContext | undefined 
 }
 
 export function readTraceFromSQSEvent(event: SQSEvent): TraceContext | undefined {
-  if (event.Records?.[0]?.messageAttributes?._datadog?.stringValue) {
+  if (event?.Records?.[0]?.messageAttributes?._datadog?.stringValue) {
     const traceHeaders = event.Records[0].messageAttributes._datadog.stringValue;
 
     try {
