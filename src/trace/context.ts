@@ -338,7 +338,7 @@ export function readTraceFromEventbridgeEvent(event: EventBridgeEvent<any, any>)
 }
 
 export function readTraceFromSNSEvent(event: SNSEvent): TraceContext | undefined {
-  if (event?.Records?.[0]?.Sns?.MessageAttributes?._datadog.Value) {
+  if (event?.Records?.[0]?.Sns?.MessageAttributes?._datadog?.Value) {
     try {
       const traceData = JSON.parse(event.Records[0].Sns.MessageAttributes._datadog.Value);
       const traceID = traceData[traceIDHeader];
