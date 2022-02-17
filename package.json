@@ -1,6 +1,6 @@
 {
   "name": "datadog-lambda-js",
-  "version": "5.69.0",
+  "version": "5.70.0",
   "description": "Lambda client library that supports hybrid tracing in node js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
