@@ -203,7 +203,7 @@ export function readTraceFromAppSyncEvent(event: any): TraceContext | undefined 
 }
 
 export function readTraceFromSQSEvent(event: SQSEvent): TraceContext | undefined {
-  if (event.Records?.[0]?.messageAttributes?._datadog?.stringValue) {
+  if (event?.Records?.[0]?.messageAttributes?._datadog?.stringValue) {
     const traceHeaders = event.Records[0].messageAttributes._datadog.stringValue;
 
     try {
@@ -338,7 +338,7 @@ export function readTraceFromEventbridgeEvent(event: EventBridgeEvent<any, any>)
 }
 
 export function readTraceFromSNSEvent(event: SNSEvent): TraceContext | undefined {
-  if (event?.Records?.[0]?.Sns?.MessageAttributes?._datadog.Value) {
+  if (event?.Records?.[0]?.Sns?.MessageAttributes?._datadog?.Value) {
     try {
       const traceData = JSON.parse(event.Records[0].Sns.MessageAttributes._datadog.Value);
       const traceID = traceData[traceIDHeader];
