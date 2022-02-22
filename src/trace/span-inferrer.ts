@@ -55,7 +55,7 @@ export class SpanInferrer {
   ): SpanWrapper {
     const options: SpanOptions = {};
     const domain = event.requestContext.domainName;
-    const path = event.rawPath || event.requestContext.routeKey;
+    const path = event.rawPath || event.requestContext.path || event.requestContext.routeKey;
     let method;
     if (event.requestContext.httpMethod) {
       method = event.requestContext.httpMethod;
