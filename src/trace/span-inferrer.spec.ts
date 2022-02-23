@@ -7,6 +7,8 @@ const ddbEvent = require("../../event_samples/dynamodb.json");
 const kinesisEvent = require("../../event_samples/kinesis.json");
 const eventBridgeEvent = require("../../event_samples/eventbridge.json");
 const webSocketEvent = require("../../event_samples/api-gateway-wss.json");
+const apiGatewayV1 = require("../../event_samples/api-gateway-v1.json");
+const apiGatewayV2 = require("../../event_samples/api-gateway-v2.json");
 const s3Event = require("../../event_samples/s3.json");
 const mockWrapper = {
   startSpan: jest.fn(),
@@ -210,6 +212,56 @@ describe("SpanInferrer", () => {
         service: "08se3mvh28.execute-api.sa-east-1.amazonaws.com",
         "service.name": "08se3mvh28.execute-api.sa-east-1.amazonaws.com",
         "span.type": "http",
+      },
+    });
+  });
+  it("creates an inferred span for API Gateway V1 events", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(apiGatewayV1, {} as any, {} as SpanContext);
+
+    expect(mockWrapper.startSpan).toBeCalledWith("aws.apigateway", {
+      childOf: {},
+      startTime: undefined,
+      tags: {
+        _inferred_span: { synchronicity: undefined, tag_source: "self" },
+        apiid: "id",
+        endpoint: "/my/path",
+        "http.url": "id.execute-api.us-east-1.amazonaws.com/my/path",
+        domain_name: "id.execute-api.us-east-1.amazonaws.com",
+        operation_name: "aws.apigateway",
+        request_id: undefined,
+        "http.method": "GET",
+        "resource.name": "id.execute-api.us-east-1.amazonaws.com /my/path",
+        resource_names: "id.execute-api.us-east-1.amazonaws.com /my/path",
+        service: "id.execute-api.us-east-1.amazonaws.com",
+        "service.name": "id.execute-api.us-east-1.amazonaws.com",
+        "span.type": "http",
+        stage: "$default",
+      },
+    });
+  });
+  it("creates an inferred span for API Gateway V2 events", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(apiGatewayV2, {} as any, {} as SpanContext);
+
+    expect(mockWrapper.startSpan).toBeCalledWith("aws.apigateway", {
+      childOf: {},
+      startTime: 1583817383220,
+      tags: {
+        _inferred_span: { synchronicity: undefined, tag_source: "self" },
+        apiid: "r3pmxmplak",
+        endpoint: "/default/nodejs-apig-function-1G3XMPLZXVXYI",
+        "http.url": "r3pmxmplak.execute-api.us-east-2.amazonaws.com/default/nodejs-apig-function-1G3XMPLZXVXYI",
+        domain_name: "r3pmxmplak.execute-api.us-east-2.amazonaws.com",
+        operation_name: "aws.apigateway",
+        request_id: undefined,
+        "http.method": "GET",
+        "resource.name": "r3pmxmplak.execute-api.us-east-2.amazonaws.com /default/nodejs-apig-function-1G3XMPLZXVXYI",
+        resource_names: "r3pmxmplak.execute-api.us-east-2.amazonaws.com /default/nodejs-apig-function-1G3XMPLZXVXYI",
+        service: "r3pmxmplak.execute-api.us-east-2.amazonaws.com",
+        "service.name": "r3pmxmplak.execute-api.us-east-2.amazonaws.com",
+        "span.type": "http",
+        stage: "default",
       },
     });
   });
