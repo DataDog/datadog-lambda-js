@@ -227,7 +227,7 @@ describe("SpanInferrer", () => {
         apiid: "id",
         endpoint: "/my/path",
         "http.url": "id.execute-api.us-east-1.amazonaws.com/my/path",
-        "domain_name": "id.execute-api.us-east-1.amazonaws.com",
+        domain_name: "id.execute-api.us-east-1.amazonaws.com",
         operation_name: "aws.apigateway",
         request_id: undefined,
         "http.method": "GET",
@@ -236,7 +236,7 @@ describe("SpanInferrer", () => {
         service: "id.execute-api.us-east-1.amazonaws.com",
         "service.name": "id.execute-api.us-east-1.amazonaws.com",
         "span.type": "http",
-        "stage": "$default"
+        stage: "$default",
       },
     });
   });
@@ -252,7 +252,7 @@ describe("SpanInferrer", () => {
         apiid: "r3pmxmplak",
         endpoint: "/default/nodejs-apig-function-1G3XMPLZXVXYI",
         "http.url": "r3pmxmplak.execute-api.us-east-2.amazonaws.com/default/nodejs-apig-function-1G3XMPLZXVXYI",
-        "domain_name": "r3pmxmplak.execute-api.us-east-2.amazonaws.com",
+        domain_name: "r3pmxmplak.execute-api.us-east-2.amazonaws.com",
         operation_name: "aws.apigateway",
         request_id: undefined,
         "http.method": "GET",
@@ -261,7 +261,7 @@ describe("SpanInferrer", () => {
         service: "r3pmxmplak.execute-api.us-east-2.amazonaws.com",
         "service.name": "r3pmxmplak.execute-api.us-east-2.amazonaws.com",
         "span.type": "http",
-        "stage": "default"
+        stage: "default",
       },
     });
   });
