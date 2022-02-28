@@ -131,6 +131,8 @@ export class TraceListener {
 
     if (this.triggerTags) {
       const statusCode = extractHTTPStatusCodeTag(this.triggerTags, result);
+      const errorMessage = this.triggerTags['error.message'];
+
       // Store the status tag in the listener to send to Xray on invocation completion
       this.triggerTags["http.status_code"] = statusCode!;
       if (this.tracerWrapper.currentSpan) {
@@ -138,6 +140,9 @@ export class TraceListener {
       }
       if (this.inferredSpan) {
         this.inferredSpan.setTag("http.status_code", statusCode);
+        if(errorMessage) {
+          this.inferredSpan.setTag('error.message', errorMessage);
+        }
       }
     }
   }

@@ -70,7 +70,7 @@
     "requestTime": "04/Mar/2020:19:15:17 +0000",
     "requestTimeEpoch": 1583349317135,
     "resourceId": null,
-    "resourcePath": "/my/path",
+    "resourcePath": "/path",
     "stage": "$default"
   },
   "pathParameters": null,
