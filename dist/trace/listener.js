@@ -137,7 +137,6 @@ var TraceListener = /** @class */ (function () {
         }
         if (this.triggerTags) {
             var statusCode = (0, trigger_1.extractHTTPStatusCodeTag)(this.triggerTags, result);
-            var errorMessage = this.triggerTags['error.message'];
             // Store the status tag in the listener to send to Xray on invocation completion
             this.triggerTags["http.status_code"] = statusCode;
             if (this.tracerWrapper.currentSpan) {
@@ -145,8 +144,8 @@ var TraceListener = /** @class */ (function () {
             }
             if (this.inferredSpan) {
                 this.inferredSpan.setTag("http.status_code", statusCode);
-                if (errorMessage) {
-                    this.inferredSpan.setTag('error.message', errorMessage);
+                if (statusCode) {
+                    this.inferredSpan.setTag("error", parseInt(statusCode) >= 500);
                 }
             }
         }
