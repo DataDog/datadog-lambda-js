@@ -2,16 +2,14 @@ START
 {"e":XXXX,"m":"aws.lambda.enhanced.invocations","t":["region:sa-east-1","account_id:XXXX","functionname:integration-tests-js-XXXX-sync-metrics_node14","resource:integration-tests-js-XXXX-sync-metrics_node14","cold_start:true","memorysize:1024","datadog_lambda:vX.X.X","runtime:nodejs14.x"],"v":1}
 XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed APIGateway request
 HTTP POST https://api.datadoghq.com/api/v1/distribution_points?api_key=XXXX Headers: ["content-type:application/json","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
-END Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	Init Duration: XXXX ms	
-
+END Duration: XXXX ms (init: XXXX ms) Memory Used: XXXX MB
 START
 {"e":XXXX,"m":"aws.lambda.enhanced.invocations","t":["region:sa-east-1","account_id:XXXX","functionname:integration-tests-js-XXXX-sync-metrics_node14","resource:integration-tests-js-XXXX-sync-metrics_node14","cold_start:false","memorysize:1024","datadog_lambda:vX.X.X","runtime:nodejs14.x"],"v":1}
 XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SNS request
 HTTP POST https://api.datadoghq.com/api/v1/distribution_points?api_key=XXXX Headers: ["content-type:application/json","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
-END Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	
-
+END Duration: XXXX ms Memory Used: XXXX MB
 START
 {"e":XXXX,"m":"aws.lambda.enhanced.invocations","t":["region:sa-east-1","account_id:XXXX","functionname:integration-tests-js-XXXX-sync-metrics_node14","resource:integration-tests-js-XXXX-sync-metrics_node14","cold_start:false","memorysize:1024","datadog_lambda:vX.X.X","runtime:nodejs14.x"],"v":1}
 XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SQS request
 HTTP POST https://api.datadoghq.com/api/v1/distribution_points?api_key=XXXX Headers: ["content-type:application/json","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
-END Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	
+END Duration: XXXX ms Memory Used: XXXX MB

@@ -186,7 +186,7 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
                 # Filter serverless cli errors
                 sed '/Serverless: Recoverable error occurred/d' |
                 # Normalize Lambda runtime report logs
-                perl -p -e 's/(RequestId|TraceId|SegmentId|Duration|Memory Used|"e"):( )?[a-z0-9\.\-]+/\1:\2XXXX/g' |
+                perl -p -e 's/(RequestId|TraceId|init|SegmentId|Duration|Memory Used|"e"):( )?[a-z0-9\.\-]+/\1:\2XXXX/g' |
                 # Normalize DD APM headers and AWS account ID
                 perl -p -e "s/(x-datadog-parent-id:|x-datadog-trace-id:|account_id:)[0-9]+/\1XXXX/g" |
                 # Strip API key from logged requests

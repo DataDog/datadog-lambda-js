@@ -2,19 +2,17 @@ START
 {"e":XXXX,"m":"aws.lambda.enhanced.invocations","t":["region:sa-east-1","account_id:XXXX","functionname:integration-tests-js-XXXX-async-metrics_node14","resource:integration-tests-js-XXXX-async-metrics_node14","cold_start:true","memorysize:1024","datadog_lambda:vX.X.X","runtime:nodejs14.x"],"v":1}
 {"e":XXXX,"m":"serverless.integration_test.execution","t":["tagkey:tagvalue","eventsource:APIGateway","dd_lambda_layer:datadog-nodev14.XX.X"],"v":1}
 XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed APIGateway request
-END Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	Init Duration: XXXX ms	
-
+END Duration: XXXX ms (init: XXXX ms) Memory Used: XXXX MB
 START
 {"e":XXXX,"m":"aws.lambda.enhanced.invocations","t":["region:sa-east-1","account_id:XXXX","functionname:integration-tests-js-XXXX-async-metrics_node14","resource:integration-tests-js-XXXX-async-metrics_node14","cold_start:false","memorysize:1024","datadog_lambda:vX.X.X","runtime:nodejs14.x"],"v":1}
 {"e":XXXX,"m":"serverless.integration_test.records_processed","t":["tagkey:tagvalue","eventsource:SNS","dd_lambda_layer:datadog-nodev14.XX.X"],"v":1}
 {"e":XXXX,"m":"serverless.integration_test.execution","t":["tagkey:tagvalue","eventsource:SNS","dd_lambda_layer:datadog-nodev14.XX.X"],"v":1}
 XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SNS request
-END Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	
-
+END Duration: XXXX ms Memory Used: XXXX MB
 START
 {"e":XXXX,"m":"aws.lambda.enhanced.invocations","t":["region:sa-east-1","account_id:XXXX","functionname:integration-tests-js-XXXX-async-metrics_node14","resource:integration-tests-js-XXXX-async-metrics_node14","cold_start:false","memorysize:1024","datadog_lambda:vX.X.X","runtime:nodejs14.x"],"v":1}
 {"e":XXXX,"m":"serverless.integration_test.records_processed","t":["tagkey:tagvalue","eventsource:SQS","dd_lambda_layer:datadog-nodev14.XX.X"],"v":1}
 {"e":XXXX,"m":"serverless.integration_test.records_processed","t":["tagkey:tagvalue","eventsource:SQS","dd_lambda_layer:datadog-nodev14.XX.X"],"v":1}
 {"e":XXXX,"m":"serverless.integration_test.execution","t":["tagkey:tagvalue","eventsource:SQS","dd_lambda_layer:datadog-nodev14.XX.X"],"v":1}
 XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SQS request
-END Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 1024 MB	Max Memory Used: XXXX MB	
+END Duration: XXXX ms Memory Used: XXXX MB
