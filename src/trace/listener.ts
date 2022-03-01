@@ -140,7 +140,7 @@ export class TraceListener {
       if (this.inferredSpan) {
         this.inferredSpan.setTag("http.status_code", statusCode);
 
-        if(statusCode) {
+        if (statusCode) {
           this.inferredSpan.setTag("error", Number(statusCode) >= 500);
         }
       }
