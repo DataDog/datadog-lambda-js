@@ -228,7 +228,7 @@ export function readTraceFromSQSEvent(event: SQSEvent): TraceContext | undefined
       return trace;
     } catch (err) {
       if (err instanceof Error) {
-        logError("Error parsing SQS message trace data", err as Error);
+        logDebug("Error parsing SQS message trace data", err as Error);
       }
       return;
     }
@@ -267,7 +267,7 @@ export function readTraceFromSNSSQSEvent(event: SQSEvent): TraceContext | undefi
       }
     } catch (err) {
       if (err instanceof Error) {
-        logError("Error parsing SNS SQS message trace data", err as Error);
+        logDebug("Error parsing SNS SQS message trace data", err as Error);
       }
       return;
     }
@@ -300,7 +300,7 @@ export function readTraceFromKinesisEvent(event: KinesisStreamEvent): TraceConte
       }
     } catch (err) {
       if (err instanceof Error) {
-        logError("Error parsing Kinesis message trace data", err as Error);
+        logDebug("Error parsing Kinesis message trace data", err as Error);
       }
       return;
     }
@@ -330,7 +330,7 @@ export function readTraceFromEventbridgeEvent(event: EventBridgeEvent<any, any>)
       return trace;
     } catch (err) {
       if (err instanceof Error) {
-        logError("Error parsing Eventbridge trace data", err as Error);
+        logDebug("Error parsing Eventbridge trace data", err as Error);
       }
       return;
     }
@@ -360,7 +360,7 @@ export function readTraceFromSNSEvent(event: SNSEvent): TraceContext | undefined
       return trace;
     } catch (err) {
       if (err instanceof Error) {
-        logError("Error parsing SNS SQS message trace data", err as Error);
+        logDebug("Error parsing SNS SQS message trace data", err as Error);
       }
       return;
     }
