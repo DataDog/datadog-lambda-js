@@ -1,1 +1,0 @@
-{"version":3,"file":"batcher.d.ts","sourceRoot":"","sources":["../../src/metrics/batcher.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,SAAS,EAAE,MAAM,EAAa,MAAM,SAAS,CAAC;AAEvD;;GAEG;AACH,qBAAa,OAAO;IAClB,OAAO,CAAC,OAAO,CAA6B;IAE5C;;;OAGG;IACI,GAAG,CAAC,MAAM,EAAE,MAAM;IASzB;;OAEG;IACI,YAAY,IAAI,SAAS,EAAE;IAMlC,OAAO,CAAC,WAAW;CAQpB"}

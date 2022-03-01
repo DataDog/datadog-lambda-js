@@ -1,1 +1,0 @@
-{"version":3,"file":"patch-console.d.ts","sourceRoot":"","sources":["../../src/trace/patch-console.ts"],"names":[],"mappings":";AAIA,OAAO,EAAE,mBAAmB,EAAE,MAAM,yBAAyB,CAAC;AAI9D;;;GAGG;AACH,wBAAgB,YAAY,CAAC,KAAK,EAAE,OAAO,EAAE,cAAc,EAAE,mBAAmB,QAO/E;AAED;;GAEG;AACH,wBAAgB,cAAc,CAAC,KAAK,EAAE,OAAO,QAO5C"}
