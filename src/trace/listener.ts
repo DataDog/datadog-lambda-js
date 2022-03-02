@@ -158,13 +158,13 @@ export class TraceListener {
     if (this.inferredSpan) {
       logDebug("Finishing inferred span");
 
-      const finishTime = this.inferredSpan.isAsync() ? this.wrappedCurrentSpan?.startTime() : Date.now();
-      this.inferredSpan.finish(finishTime);
-
       if (error && !this.inferredSpan.isAsync()) {
         logDebug("Setting error tag to inferred span");
         this.inferredSpan.setTag("error", error);
       }
+
+      const finishTime = this.inferredSpan.isAsync() ? this.wrappedCurrentSpan?.startTime() : Date.now();
+      this.inferredSpan.finish(finishTime);
     }
   }
 
