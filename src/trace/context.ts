@@ -246,7 +246,13 @@ export function readTraceFromSNSSQSEvent(event: SQSEvent): TraceContext | undefi
         parsedBody.MessageAttributes._datadog &&
         parsedBody.MessageAttributes._datadog.Value
       ) {
-        const traceData = JSON.parse(parsedBody.MessageAttributes._datadog.Value);
+        let traceData;
+        if (parsedBody.MessageAttributes._datadog.Type === "String") {
+          traceData = JSON.parse(parsedBody.MessageAttributes._datadog.Value);
+        } else {
+          const b64Decoded = Buffer.from(parsedBody.MessageAttributes._datadog.Value, "base64").toString("ascii");
+          traceData = JSON.parse(b64Decoded);
+        }
         const traceID = traceData[traceIDHeader];
         const parentID = traceData[parentIDHeader];
         const sampledHeader = traceData[samplingPriorityHeader];
@@ -340,7 +346,15 @@ export function readTraceFromEventbridgeEvent(event: EventBridgeEvent<any, any>)
 export function readTraceFromSNSEvent(event: SNSEvent): TraceContext | undefined {
   if (event?.Records?.[0]?.Sns?.MessageAttributes?._datadog?.Value) {
     try {
-      const traceData = JSON.parse(event.Records[0].Sns.MessageAttributes._datadog.Value);
+      let traceData;
+      if (event.Records[0].Sns.MessageAttributes._datadog.Type === "String") {
+        traceData = JSON.parse(event.Records[0].Sns.MessageAttributes._datadog.Value);
+      } else {
+        const b64Decoded = Buffer.from(event.Records[0].Sns.MessageAttributes._datadog.Value, "base64").toString(
+          "ascii",
+        );
+        traceData = JSON.parse(b64Decoded);
+      }
       const traceID = traceData[traceIDHeader];
       const parentID = traceData[parentIDHeader];
       const sampledHeader = traceData[samplingPriorityHeader];
