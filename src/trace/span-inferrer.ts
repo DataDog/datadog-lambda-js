@@ -56,13 +56,15 @@ export class SpanInferrer {
     const options: SpanOptions = {};
     const domain = event.requestContext.domainName;
     const path = event.rawPath || event.requestContext.path || event.requestContext.routeKey;
+    const resourcePath = event.rawPath || event.requestContext.resourcePath || event.requestContext.routeKey;
+
     let method;
     if (event.requestContext.httpMethod) {
       method = event.requestContext.httpMethod;
     } else if (event.requestContext.http) {
       method = event.requestContext.http.method;
     }
-    const resourceName = [domain, path].join(" ");
+    const resourceName = [method || domain, resourcePath].join(" ");
     options.tags = {
       operation_name: "aws.apigateway",
       "http.url": domain + path,
