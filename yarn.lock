@@ -845,11 +845,6 @@ asynckit@^0.4.0:
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
   integrity sha1-x57Zf380y48robyXkLzDZkdLS3k=
 
-atob@^2.1.2:
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/atob/-/atob-2.1.2.tgz#6d9517eb9e030d2436666651e86bd9f6f13533c9"
-  integrity sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==
-
 aws-sdk@*:
   version "2.1054.0"
   resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1054.0.tgz#70196fcc90b066d892e6f848046542dd1f23a4ca"
@@ -1199,10 +1194,10 @@ data-urls@^2.0.0:
     whatwg-mimetype "^2.3.0"
     whatwg-url "^8.0.0"
 
-dd-trace@^2.1.1:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-2.1.1.tgz#42c5d035512d1a65aa9a3f7881dfb3a72f642c0b"
-  integrity sha512-zV8npDF1fHtnf4GPu/FStV7q7df8NK7FyKAzIrsqtdq/ZXbpGZ1dqm2Pfd4g66vODAjjMIBwEAN6j7IydDZEgQ==
+dd-trace@^2.3.1:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-2.3.1.tgz#bec4d159fcef3ffc63e090581394e8cb597d0c75"
+  integrity sha512-vCQ7bs9a1WfqZA1JBWEZJsQDRT/rYeN6BVOI9rWGW/KJyIcUfOhP4n0fctvEOCpumJx4+H0vUP2hBog7YFkSAw==
   dependencies:
     "@datadog/native-appsec" "^0.8.1"
     "@datadog/native-metrics" "^1.1.0"
@@ -1212,7 +1207,7 @@ dd-trace@^2.1.1:
     crypto-randomuuid "^1.0.0"
     diagnostics_channel "^1.1.0"
     form-data "^3.0.0"
-    import-in-the-middle "^1.1.2"
+    import-in-the-middle "^1.2.1"
     koalas "^1.0.2"
     limiter "^1.1.4"
     lodash.kebabcase "^4.1.1"
@@ -1227,8 +1222,6 @@ dd-trace@^2.1.1:
     performance-now "^2.1.0"
     retry "^0.10.1"
     semver "^5.5.0"
-    source-map "^0.7.3"
-    source-map-resolve "^0.6.0"
 
 debug@4, debug@^4.1.0, debug@^4.1.1:
   version "4.3.3"
@@ -1241,11 +1234,6 @@ decimal.js@^10.2.1:
   version "10.3.1"
   resolved "https://registry.yarnpkg.com/decimal.js/-/decimal.js-10.3.1.tgz#d8c3a444a9c6774ba60ca6ad7261c3a94fd5e783"
   integrity sha512-V0pfhfr8suzyPGOx3nmq4aHqabehUZn6Ch9kyFpV79TGDTWFmHqUqXdabR7QHqxzrYolF4+tVmJhUG4OURg5dQ==
-
-decode-uri-component@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/decode-uri-component/-/decode-uri-component-0.2.0.tgz#eb3913333458775cb84cd1a1fae062106bb87545"
-  integrity sha1-6zkTMzRYd1y4TNGh+uBiEGu4dUU=
 
 dedent@^0.7.0:
   version "0.7.0"
@@ -1609,10 +1597,10 @@ ieee754@^1.1.4:
   resolved "https://registry.yarnpkg.com/ieee754/-/ieee754-1.2.1.tgz#8eb7a10a63fff25d15a57b001586d177d1b0d352"
   integrity sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==
 
-import-in-the-middle@^1.1.2:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/import-in-the-middle/-/import-in-the-middle-1.2.0.tgz#203a910e08e7e3db8a0cb3abb85d919459162cbf"
-  integrity sha512-i2OrkKW2UH/W4asmzQztA5qjYxMFLh5BaOUEWLv6Ra0MDT+5v7P/7x5/ESZgG9LOaKijYjXnMfupzzy66tfcyA==
+import-in-the-middle@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/import-in-the-middle/-/import-in-the-middle-1.2.1.tgz#30d4e98be7329eee0d284943dd0df092cc422b3c"
+  integrity sha512-KdYqCJbJWBOU9740nr9lrmCDhW7htxY1dHmbP4iUEeCaxupj2fKFhyHixsly2WmxMbRIsxzSWSJMfGNEU7el+w==
   dependencies:
     module-details-from-path "^1.0.3"
 
@@ -2877,14 +2865,6 @@ slash@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/slash/-/slash-3.0.0.tgz#6539be870c165adbd5240220dbe361f1bc4d4634"
   integrity sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==
-
-source-map-resolve@^0.6.0:
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/source-map-resolve/-/source-map-resolve-0.6.0.tgz#3d9df87e236b53f16d01e58150fc7711138e5ed2"
-  integrity sha512-KXBr9d/fO/bWo97NXsPIAW1bFSBOuCnjbNTBMO7N59hsv5i9yzRDfcYwwt0l04+VqnKC+EwzvJZIP/qkuMgR/w==
-  dependencies:
-    atob "^2.1.2"
-    decode-uri-component "^0.2.0"
 
 source-map-support@^0.5.6:
   version "0.5.21"
