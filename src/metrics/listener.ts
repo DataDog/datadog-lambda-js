@@ -181,7 +181,7 @@ export class MetricsListener {
       }
     } else {
       const errorMessage = "api key not configured, see https://dtdg.co/sls-node-metrics";
-      if (config.logForwarding) {
+      if (config.logForwarding || this.isAgentRunning) {
         logDebug(errorMessage);
       } else {
         logError(errorMessage);
