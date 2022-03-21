@@ -153,6 +153,7 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
     for parameters_set in "${PARAMETERS_SETS[@]}"; do
         function_name="${handler_name}_node"
         function_snapshot_path="./snapshots/logs/${handler_name}_${parameters_set}.log"
+        unstripped_path="./snapshots/logs/${handler_name}_${parameters_set}.log.unstripped"
         serverless_runtime=$parameters_set[0]
         nodejs_version=$parameters_set[1]
         run_id=$parameters_set[2]
@@ -183,6 +184,7 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
         # Replace invocation-specific data like timestamps and IDs with XXXX to normalize logs across executions
         logs=$(
             echo "$raw_logs" |
+                node parse-json.js |
                 # Filter serverless cli errors
                 sed '/Serverless: Recoverable error occurred/d' |
                 # Normalize Lambda runtime report logs
@@ -199,7 +201,7 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
                 perl -p -e $'s/[0-9a-z]+\-[0-9a-z]+\-[0-9a-z]+\-[0-9a-z]+\-[0-9a-z]+\t/XXXX-XXXX-XXXX-XXXX-XXXX\t/' |
                 # Normalize minor package version tag so that these snapshots aren't broken on version bumps
                 perl -p -e "s/(dd_lambda_layer:datadog-nodev[0-9]+\.)[0-9]+\.[0-9]+/\1XX\.X/g" |
-                perl -p -e 's/"(span_id|apiid|parent_id|trace_id|start|duration|tcp\.local\.address|tcp\.local\.port|dns\.address|request_id|function_arn|x-datadog-trace-id|x-datadog-parent-id|datadog_lambda|dd_trace)":("?)[a-zA-Z0-9\.:\-]+("?)/"\1":\2XXXX\3/g' |
+                perl -p -e 's/"(span_id|apiid|runtime-id|record_ids|parent_id|trace_id|start|duration|tcp\.local\.address|tcp\.local\.port|dns\.address|request_id|function_arn|x-datadog-trace-id|x-datadog-parent-id|datadog_lambda|dd_trace)":\ ("?)[a-zA-Z0-9\.:\-]+("?)/"\1":\2XXXX\3/g' |
                 # Strip out run ID (from function name, resource, etc.)
                 perl -p -e "s/${!run_id}/XXXX/g" |
                 # Normalize line numbers in stack traces
