@@ -153,6 +153,7 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
     for parameters_set in "${PARAMETERS_SETS[@]}"; do
         function_name="${handler_name}_node"
         function_snapshot_path="./snapshots/logs/${handler_name}_${parameters_set}.log"
+        unstripped_path="./snapshots/logs/${handler_name}_${parameters_set}.log.unstripped"
         serverless_runtime=$parameters_set[0]
         nodejs_version=$parameters_set[1]
         run_id=$parameters_set[2]
@@ -183,6 +184,7 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
         # Replace invocation-specific data like timestamps and IDs with XXXX to normalize logs across executions
         logs=$(
             echo "$raw_logs" |
+                node parse-json.js |
                 # Filter serverless cli errors
                 sed '/Serverless: Recoverable error occurred/d' |
                 # Normalize Lambda runtime report logs

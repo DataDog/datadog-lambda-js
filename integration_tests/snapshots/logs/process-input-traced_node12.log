@@ -1,15 +1,363 @@
 START
-{"e":XXXX,"m":"aws.lambda.enhanced.invocations","t":["region:sa-east-1","account_id:XXXX","functionname:integration-tests-js-XXXX-process-input-traced_node12","resource:integration-tests-js-XXXX-process-input-traced_node12","cold_start:true","memorysize:1024","datadog_lambda:vX.X.X","runtime:nodejs12.x"],"v":1}
-{"e":XXXX,"m":"serverless.integration_test.execution","t":["function:process-input-traced","dd_lambda_layer:datadog-nodev12.XX.X"],"v":1}
-{"traces":[[{"trace_id":"XXXX","span_id":"XXXX","parent_id":"XXXX","name":"aws.apigateway","resource":"GET /{proxy+}","error":0,"meta":{"XXXX": "XXXX"}","request_id":"XXXX","apiid":"XXXX","_inferred_span.tag_source":"self","http.method":"GET","stage":"test","http.status_code":"200"},"metrics":{"XXXX": "XXXX"},"start":XXXX,"duration":XXXX,"type":"http"},{"trace_id":"XXXX","span_id":"XXXX","parent_id":"XXXX","name":"aws.lambda","resource":"integration-tests-js-XXXX-process-input-traced_node12","error":0,"meta":{"XXXX": "XXXX"},"metrics":{"XXXX": "XXXX"},"start":XXXX,"duration":XXXX,"service":"aws.lambda","type":"serverless"},{"trace_id":"XXXX","span_id":"XXXX","parent_id":"XXXX","name":"getRecordIds","resource":"getRecordIds","error":0,"meta":{"XXXX": "XXXX"},"metrics":{"XXXX": "XXXX"},"start":XXXX,"duration":XXXX,"service":"integration-tests-js-XXXX-process-input-traced_node12"},{"trace_id":"XXXX","span_id":"XXXX","parent_id":"XXXX","name":"getAPIGatewayRequestId","resource":"getAPIGatewayRequestId","error":0,"meta":{"XXXX": "XXXX"},"metrics":{"XXXX": "XXXX"},"start":XXXX,"duration":XXXX,"service":"integration-tests-js-XXXX-process-input-traced_node12"}]]}
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:sa-east-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-process-input-traced_node12",
+    "resource:integration-tests-js-XXXX-process-input-traced_node12",
+    "cold_start:true",
+    "memorysize:1024",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs12.x"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "serverless.integration_test.execution",
+  "t": [
+    "function:process-input-traced",
+    "dd_lambda_layer:datadog-nodev12.XX.X"
+  ],
+  "v": 1
+}
+{
+  "traces": [
+    [
+      {
+        "trace_id": "71070c0d5c05376d",
+        "span_id": "71070c0d5c05376d",
+        "parent_id": "0000000000000000",
+        "name": "aws.apigateway",
+        "resource": "GET /{proxy+}",
+        "error": 0,
+        "meta": {
+          "runtime-id": "18528499-0b37-4864-9b6f-6fa8389c9d6b",
+          "operation_name": "aws.apigateway",
+          "resource_names": "GET /{proxy+}",
+          "request_id": "c0b51222-0b5b-4165-82dc-dd4ea0804e19",
+          "apiid": "wt6mne2s9k",
+          "_inferred_span.tag_source": "self",
+          "http.method": "GET",
+          "stage": "test",
+          "http.status_code": "200"
+        },
+        "metrics": {
+          "_dd.agent_psr": 1,
+          "_sampling_priority_v1": 1
+        },
+        "start": 1647874550393047000,
+        "duration": 5952881,
+        "type": "http"
+      },
+      {
+        "trace_id": "71070c0d5c05376d",
+        "span_id": "6310fde3831f61fc",
+        "parent_id": "71070c0d5c05376d",
+        "name": "aws.lambda",
+        "resource": "integration-tests-js-XXXX-process-input-traced_node12",
+        "error": 0,
+        "meta": {
+          "service": "integration-tests-js-XXXX-process-input-traced_node12",
+          "runtime-id": "18528499-0b37-4864-9b6f-6fa8389c9d6b",
+          "function_arn": "arn:aws:lambda:sa-east-1:601427279990:function:integration-tests-js-XXXX-process-input-traced_node12",
+          "function_version": "$LATEST",
+          "request_id": "c0b51222-0b5b-4165-82dc-dd4ea0804e19",
+          "resource_names": "integration-tests-js-XXXX-process-input-traced_node12",
+          "functionname": "integration-tests-js-XXXX-process-input-traced_node12",
+          "datadog_lambda": "5.74.0",
+          "function_trigger.event_source": "api-gateway",
+          "function_trigger.event_source_arn": "arn:aws:apigateway:sa-east-1::/restapis/wt6mne2s9k/stages/test",
+          "http.method": "GET",
+          "api_gateway_request_id": "41b45ea3-70b5-11e6-b7bd-69b5aaebc7d9",
+          "event_type": "APIGateway",
+          "http.status_code": "200"
+        },
+        "metrics": {
+          "cold_start": 1,
+          "_dd.measured": 1,
+          "_sampling_priority_v1": 1
+        },
+        "start": 1647874550396258800,
+        "duration": 1742676,
+        "service": "aws.lambda",
+        "type": "serverless"
+      },
+      {
+        "trace_id": "71070c0d5c05376d",
+        "span_id": "6f33e3003fdea91a",
+        "parent_id": "6310fde3831f61fc",
+        "name": "getRecordIds",
+        "resource": "getRecordIds",
+        "error": 0,
+        "meta": {
+          "service": "integration-tests-js-XXXX-process-input-traced_node12",
+          "runtime-id": "18528499-0b37-4864-9b6f-6fa8389c9d6b",
+          "language": "javascript"
+        },
+        "metrics": {
+          "_dd.measured": 1,
+          "_sampling_priority_v1": 1
+        },
+        "start": 1647874550397239300,
+        "duration": 201660,
+        "service": "integration-tests-js-XXXX-process-input-traced_node12"
+      },
+      {
+        "trace_id": "71070c0d5c05376d",
+        "span_id": "4c9ef87348b65608",
+        "parent_id": "6310fde3831f61fc",
+        "name": "getAPIGatewayRequestId",
+        "resource": "getAPIGatewayRequestId",
+        "error": 0,
+        "meta": {
+          "service": "integration-tests-js-XXXX-process-input-traced_node12",
+          "runtime-id": "18528499-0b37-4864-9b6f-6fa8389c9d6b",
+          "api_gateway_request_id": "41b45ea3-70b5-11e6-b7bd-69b5aaebc7d9",
+          "event_type": "APIGateway",
+          "language": "javascript"
+        },
+        "metrics": {
+          "_dd.measured": 1,
+          "_sampling_priority_v1": 1
+        },
+        "start": 1647874550397564200,
+        "duration": 91309,
+        "service": "integration-tests-js-XXXX-process-input-traced_node12"
+      }
+    ]
+  ]
+}
 END Duration: XXXX ms (init: XXXX ms) Memory Used: XXXX MB
 START
-{"e":XXXX,"m":"aws.lambda.enhanced.invocations","t":["region:sa-east-1","account_id:XXXX","functionname:integration-tests-js-XXXX-process-input-traced_node12","resource:integration-tests-js-XXXX-process-input-traced_node12","cold_start:false","memorysize:1024","datadog_lambda:vX.X.X","runtime:nodejs12.x"],"v":1}
-{"e":XXXX,"m":"serverless.integration_test.execution","t":["function:process-input-traced","dd_lambda_layer:datadog-nodev12.XX.X"],"v":1}
-{"traces":[[{"trace_id":"XXXX","span_id":"XXXX","parent_id":"XXXX","name":"aws.sns","resource":"sns-lambda","error":0,"meta":{"XXXX": "XXXX"},"metrics":{"XXXX": "XXXX"},"start":XXXX,"duration":XXXX,"service":"integration-tests-js-XXXX-process-input-traced_node12","type":"sns"},{"trace_id":"XXXX","span_id":"XXXX","parent_id":"XXXX","name":"aws.lambda","resource":"integration-tests-js-XXXX-process-input-traced_node12","error":0,"meta":{"XXXX": "XXXX"},"metrics":{"XXXX": "XXXX"},"start":XXXX,"duration":XXXX,"service":"aws.lambda","type":"serverless"},{"trace_id":"XXXX","span_id":"XXXX","parent_id":"XXXX","name":"getRecordIds","resource":"getRecordIds","error":0,"meta":{"XXXX": "XXXX"},"metrics":{"XXXX": "XXXX"},"start":XXXX,"duration":XXXX,"service":"integration-tests-js-XXXX-process-input-traced_node12"}]]}
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:sa-east-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-process-input-traced_node12",
+    "resource:integration-tests-js-XXXX-process-input-traced_node12",
+    "cold_start:false",
+    "memorysize:1024",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs12.x"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "serverless.integration_test.execution",
+  "t": [
+    "function:process-input-traced",
+    "dd_lambda_layer:datadog-nodev12.XX.X"
+  ],
+  "v": 1
+}
+{
+  "traces": [
+    [
+      {
+        "trace_id": "4f257ce1cc89d30f",
+        "span_id": "4f257ce1cc89d30f",
+        "parent_id": "0000000000000000",
+        "name": "aws.sns",
+        "resource": "sns-lambda",
+        "error": 0,
+        "meta": {
+          "service": "sns",
+          "runtime-id": "18528499-0b37-4864-9b6f-6fa8389c9d6b",
+          "operation_name": "aws.sns",
+          "resource_names": "sns-lambda",
+          "request_id": "3e9ba41d-426a-463f-b4c9-1b21d269ca4d",
+          "_inferred_span.tag_source": "self",
+          "_inferred_span.synchronicity": "async",
+          "type": "Notification",
+          "subject": "TestInvoke",
+          "message_id": "95df01b4-ee98-5cb9-9903-4c221d41eb5e",
+          "topicname": "sns-lambda",
+          "topic_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda",
+          "event_subscription_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda:21be56ed-a058-49f5-8c98-aedd2564c486",
+          "language": "javascript"
+        },
+        "metrics": {
+          "_dd.agent_psr": 1,
+          "_sampling_priority_v1": 1
+        },
+        "start": 1546433107000000000,
+        "duration": 101441463314454100,
+        "service": "integration-tests-js-XXXX-process-input-traced_node12",
+        "type": "sns"
+      },
+      {
+        "trace_id": "4f257ce1cc89d30f",
+        "span_id": "6ae5a6a1e4c2a5b7",
+        "parent_id": "4f257ce1cc89d30f",
+        "name": "aws.lambda",
+        "resource": "integration-tests-js-XXXX-process-input-traced_node12",
+        "error": 0,
+        "meta": {
+          "service": "integration-tests-js-XXXX-process-input-traced_node12",
+          "runtime-id": "18528499-0b37-4864-9b6f-6fa8389c9d6b",
+          "function_arn": "arn:aws:lambda:sa-east-1:601427279990:function:integration-tests-js-XXXX-process-input-traced_node12",
+          "function_version": "$LATEST",
+          "request_id": "3e9ba41d-426a-463f-b4c9-1b21d269ca4d",
+          "resource_names": "integration-tests-js-XXXX-process-input-traced_node12",
+          "functionname": "integration-tests-js-XXXX-process-input-traced_node12",
+          "datadog_lambda": "5.74.0",
+          "function_trigger.event_source": "sns",
+          "function_trigger.event_source_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda",
+          "event_type": "SNS"
+        },
+        "metrics": {
+          "cold_start": 0,
+          "_dd.measured": 1,
+          "_sampling_priority_v1": 1
+        },
+        "start": 1647874570314454000,
+        "duration": 363770,
+        "service": "aws.lambda",
+        "type": "serverless"
+      },
+      {
+        "trace_id": "4f257ce1cc89d30f",
+        "span_id": "6330f756925c1723",
+        "parent_id": "6ae5a6a1e4c2a5b7",
+        "name": "getRecordIds",
+        "resource": "getRecordIds",
+        "error": 0,
+        "meta": {
+          "service": "integration-tests-js-XXXX-process-input-traced_node12",
+          "runtime-id": "18528499-0b37-4864-9b6f-6fa8389c9d6b",
+          "record_event_type": "SNS",
+          "record_ids": "95df01b4-ee98-5cb9-9903-4c221d41eb5e",
+          "language": "javascript"
+        },
+        "metrics": {
+          "_dd.measured": 1,
+          "_sampling_priority_v1": 1
+        },
+        "start": 1647874570314631400,
+        "duration": 98633,
+        "service": "integration-tests-js-XXXX-process-input-traced_node12"
+      }
+    ]
+  ]
+}
 END Duration: XXXX ms Memory Used: XXXX MB
 START
-{"e":XXXX,"m":"aws.lambda.enhanced.invocations","t":["region:sa-east-1","account_id:XXXX","functionname:integration-tests-js-XXXX-process-input-traced_node12","resource:integration-tests-js-XXXX-process-input-traced_node12","cold_start:false","memorysize:1024","datadog_lambda:vX.X.X","runtime:nodejs12.x"],"v":1}
-{"e":XXXX,"m":"serverless.integration_test.execution","t":["function:process-input-traced","dd_lambda_layer:datadog-nodev12.XX.X"],"v":1}
-{"traces":[[{"trace_id":"XXXX","span_id":"XXXX","parent_id":"XXXX","name":"aws.sqs","resource":"my-queue","error":0,"meta":{"XXXX": "XXXX"},"metrics":{"XXXX": "XXXX"},"start":XXXX,"duration":XXXX,"service":"my-queue","type":"web"},{"trace_id":"XXXX","span_id":"XXXX","parent_id":"XXXX","name":"aws.lambda","resource":"integration-tests-js-XXXX-process-input-traced_node12","error":0,"meta":{"XXXX": "XXXX"},"metrics":{"XXXX": "XXXX"},"start":XXXX,"duration":XXXX,"service":"aws.lambda","type":"serverless"},{"trace_id":"XXXX","span_id":"XXXX","parent_id":"XXXX","name":"getRecordIds","resource":"getRecordIds","error":0,"meta":{"XXXX": "XXXX"},"metrics":{"XXXX": "XXXX"},"start":XXXX,"duration":XXXX,"service":"integration-tests-js-XXXX-process-input-traced_node12"}]]}
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:sa-east-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-process-input-traced_node12",
+    "resource:integration-tests-js-XXXX-process-input-traced_node12",
+    "cold_start:false",
+    "memorysize:1024",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs12.x"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "serverless.integration_test.execution",
+  "t": [
+    "function:process-input-traced",
+    "dd_lambda_layer:datadog-nodev12.XX.X"
+  ],
+  "v": 1
+}
+{
+  "traces": [
+    [
+      {
+        "trace_id": "5d6068b3c8e3b887",
+        "span_id": "5d6068b3c8e3b887",
+        "parent_id": "0000000000000000",
+        "name": "aws.sqs",
+        "resource": "my-queue",
+        "error": 0,
+        "meta": {
+          "service": "sqs",
+          "runtime-id": "18528499-0b37-4864-9b6f-6fa8389c9d6b",
+          "operation_name": "aws.sqs",
+          "resource_names": "my-queue",
+          "request_id": "795e0cf7-2c86-4af3-a8a0-48b1b30a12f6",
+          "_inferred_span.tag_source": "self",
+          "_inferred_span.synchronicity": "async",
+          "queuename": "my-queue",
+          "event_source_arn": "arn:aws:sqs:us-east-2:123456789012:my-queue",
+          "receipt_handle": "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
+          "sender_id": "AIDAIENQZJOLO23YVJ4VO"
+        },
+        "metrics": {
+          "_dd.agent_psr": 1,
+          "retry_count": 1,
+          "_sampling_priority_v1": 1
+        },
+        "start": 1545082649183000000,
+        "duration": 102791941599426750,
+        "service": "my-queue",
+        "type": "web"
+      },
+      {
+        "trace_id": "5d6068b3c8e3b887",
+        "span_id": "50b15bd32e26c8ee",
+        "parent_id": "5d6068b3c8e3b887",
+        "name": "aws.lambda",
+        "resource": "integration-tests-js-XXXX-process-input-traced_node12",
+        "error": 0,
+        "meta": {
+          "service": "integration-tests-js-XXXX-process-input-traced_node12",
+          "runtime-id": "18528499-0b37-4864-9b6f-6fa8389c9d6b",
+          "function_arn": "arn:aws:lambda:sa-east-1:601427279990:function:integration-tests-js-XXXX-process-input-traced_node12",
+          "function_version": "$LATEST",
+          "request_id": "795e0cf7-2c86-4af3-a8a0-48b1b30a12f6",
+          "resource_names": "integration-tests-js-XXXX-process-input-traced_node12",
+          "functionname": "integration-tests-js-XXXX-process-input-traced_node12",
+          "datadog_lambda": "5.74.0",
+          "function_trigger.event_source": "sqs",
+          "function_trigger.event_source_arn": "arn:aws:sqs:us-east-2:123456789012:my-queue",
+          "event_type": "SQS"
+        },
+        "metrics": {
+          "cold_start": 0,
+          "_dd.measured": 1,
+          "_sampling_priority_v1": 1
+        },
+        "start": 1647874590782427000,
+        "duration": 474854,
+        "service": "aws.lambda",
+        "type": "serverless"
+      },
+      {
+        "trace_id": "5d6068b3c8e3b887",
+        "span_id": "5e2751d2f8e57943",
+        "parent_id": "50b15bd32e26c8ee",
+        "name": "getRecordIds",
+        "resource": "getRecordIds",
+        "error": 0,
+        "meta": {
+          "service": "integration-tests-js-XXXX-process-input-traced_node12",
+          "runtime-id": "18528499-0b37-4864-9b6f-6fa8389c9d6b",
+          "record_event_type": "SQS",
+          "record_ids": "059f36b4-87a3-44ab-83d2-661975830a7d,2e1424d4-f796-459a-8184-9c92662be6da",
+          "language": "javascript"
+        },
+        "metrics": {
+          "_dd.measured": 1,
+          "_sampling_priority_v1": 1
+        },
+        "start": 1647874590782767900,
+        "duration": 40283,
+        "service": "integration-tests-js-XXXX-process-input-traced_node12"
+      }
+    ]
+  ]
+}
 END Duration: XXXX ms Memory Used: XXXX MB
