@@ -90,3 +90,11 @@ export function isAppSyncResolverEvent(event: any): event is AppSyncResolverEven
 export function isEventBridgeEvent(event: any): event is EventBridgeEvent<any, any> {
   return event["detail-type"] !== undefined;
 }
+
+export function isLambdaUrlEvent(event: any): boolean {
+  return (
+    event.requestContext !== undefined &&
+    event.requestContext.domainName &&
+    event.requestContext.domainName.includes("lambda-url")
+  );
+}

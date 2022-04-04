@@ -19,6 +19,9 @@ export class SpanInferrer {
 
   public createInferredSpan(event: any, context: Context | undefined, parentSpanContext: SpanContext | undefined): any {
     const eventSource = parseEventSource(event);
+    if (eventSource === eventSources.lambdaUrl) {
+      return this.createInferredSpanForLambdaUrl(event, context);
+    }
     if (eventSource === eventSources.apiGateway) {
       return this.createInferredSpanForApiGateway(event, context, parentSpanContext);
     }
@@ -42,10 +45,11 @@ export class SpanInferrer {
     }
   }
 
-  isApiGatewayAsync(event: any): boolean {
-    return (
-      event.headers && event.headers["X-Amz-Invocation-Type"] && event.headers["X-Amz-Invocation-Type"] === "Event"
-    );
+  isApiGatewayAsync(event: any): string {
+    if (event.headers && event.headers["X-Amz-Invocation-Type"] && event.headers["X-Amz-Invocation-Type"] === "Event") {
+      return "async";
+    }
+    return "sync";
   }
 
   createInferredSpanForApiGateway(
@@ -98,9 +102,35 @@ export class SpanInferrer {
     }
     options.startTime = event.requestContext.timeEpoch;
     const spanWrapperOptions = {
-      isAsync: this.isApiGatewayAsync(event),
+      isAsync: this.isApiGatewayAsync(event) === "async",
     };
     return new SpanWrapper(this.traceWrapper.startSpan("aws.apigateway", options), spanWrapperOptions);
+  }
+
+  createInferredSpanForLambdaUrl(event: any, context: Context | undefined): any {
+    const options: SpanOptions = {};
+    const domain = event.requestContext.domainName;
+    const path = event.rawPath;
+    options.tags = {
+      operation_name: "aws.lambda.url",
+      "http.url": domain + path,
+      endpoint: path,
+      "http.method": event.requestContext.http.method,
+      resource_names: domain + path,
+      request_id: context?.awsRequestId,
+      "span.type": "http",
+      "resource.name": domain + path,
+      _inferred_span: {
+        tag_source: "self",
+        synchronicity: "sync",
+      },
+    };
+    options.service = "aws.lambda";
+    options.startTime = event.requestContext.timeEpoch;
+    const spanWrapperOptions = {
+      isAsync: false,
+    };
+    return new SpanWrapper(this.traceWrapper.startSpan("aws.lambda.url", options), spanWrapperOptions);
   }
 
   createInferredSpanForDynamoDBStreamEvent(

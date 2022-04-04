@@ -32,6 +32,15 @@ describe("parseEventSource", () => {
     },
     {
       result: {
+        "function_trigger.event_source": "lambda-function-url",
+        "http.url": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com",
+        "http.url_details.path": "/",
+        "http.method": "GET",
+      },
+      file: "lambda-function-urls.json",
+    },
+    {
+      result: {
         "function_trigger.event_source": "application-load-balancer",
         "function_trigger.event_source_arn":
           "arn:aws:elasticloadbalancing:us-east-2:123456789012:targetgroup/lambda-xyz/123abc",
