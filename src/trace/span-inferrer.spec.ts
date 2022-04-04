@@ -276,7 +276,6 @@ describe("SpanInferrer", () => {
     inferrer.createInferredSpan(functionUrlEvent, {} as any, {} as SpanContext);
 
     expect(mockWrapper.startSpan).toBeCalledWith("aws.lambda.url", {
-      service: "aws.lambda",
       startTime: 1637169449721,
       tags: {
         _inferred_span: {
@@ -288,8 +287,9 @@ describe("SpanInferrer", () => {
         "http.url": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com/",
         operation_name: "aws.lambda.url",
         request_id: undefined,
-        "resource.name": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com/",
-        resource_names: "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com/",
+        "resource.name": "GET /",
+        resource_names: "GET /",
+        "service.name": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com",
         "span.type": "http",
       },
     });

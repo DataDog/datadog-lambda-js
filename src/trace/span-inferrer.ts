@@ -111,21 +111,28 @@ export class SpanInferrer {
     const options: SpanOptions = {};
     const domain = event.requestContext.domainName;
     const path = event.rawPath;
+    let method;
+    if (event.requestContext.httpMethod) {
+      method = event.requestContext.httpMethod;
+    } else if (event.requestContext.http) {
+      method = event.requestContext.http.method;
+    }
+    const resourceName = [method || domain, path].join(" ");
     options.tags = {
       operation_name: "aws.lambda.url",
       "http.url": domain + path,
       endpoint: path,
       "http.method": event.requestContext.http.method,
-      resource_names: domain + path,
+      resource_names: resourceName,
       request_id: context?.awsRequestId,
       "span.type": "http",
-      "resource.name": domain + path,
+      "resource.name": resourceName,
+      "service.name": domain,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "sync",
       },
     };
-    options.service = "aws.lambda";
     options.startTime = event.requestContext.timeEpoch;
     const spanWrapperOptions = {
       isAsync: false,
