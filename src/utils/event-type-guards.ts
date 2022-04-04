@@ -92,9 +92,5 @@ export function isEventBridgeEvent(event: any): event is EventBridgeEvent<any, a
 }
 
 export function isLambdaUrlEvent(event: any): boolean {
-  return (
-    event.requestContext !== undefined &&
-    event.requestContext.domainName &&
-    event.requestContext.domainName.includes("lambda-url")
-  );
+  return event?.requestContext?.domainName?.includes("lambda-url");
 }
