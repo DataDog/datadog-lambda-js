@@ -10,6 +10,7 @@ const webSocketEvent = require("../../event_samples/api-gateway-wss.json");
 const apiGatewayV1 = require("../../event_samples/api-gateway-v1.json");
 const apiGatewayV2 = require("../../event_samples/api-gateway-v2.json");
 const s3Event = require("../../event_samples/s3.json");
+const functionUrlEvent = require("../../event_samples/lambda-function-urls.json");
 const mockWrapper = {
   startSpan: jest.fn(),
 };
@@ -172,6 +173,7 @@ describe("SpanInferrer", () => {
       ],
     ]);
   });
+
   it("creates an inferred span for eventbridge events", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(eventBridgeEvent, {} as any, {} as SpanContext);
@@ -190,6 +192,7 @@ describe("SpanInferrer", () => {
       },
     });
   });
+
   it("creates an inferred span for websocket events", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(webSocketEvent, {} as any, {} as SpanContext);
@@ -198,7 +201,7 @@ describe("SpanInferrer", () => {
       childOf: {},
       startTime: undefined,
       tags: {
-        _inferred_span: { synchronicity: undefined, tag_source: "self" },
+        _inferred_span: { synchronicity: "sync", tag_source: "self" },
         apiid: "08se3mvh28",
         connection_id: "MM0qReAFGjQCE-w=",
         endpoint: "$connect",
@@ -215,6 +218,7 @@ describe("SpanInferrer", () => {
       },
     });
   });
+
   it("creates an inferred span for API Gateway V1 events", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(apiGatewayV1, {} as any, {} as SpanContext);
@@ -223,7 +227,7 @@ describe("SpanInferrer", () => {
       childOf: {},
       startTime: undefined,
       tags: {
-        _inferred_span: { synchronicity: undefined, tag_source: "self" },
+        _inferred_span: { synchronicity: "sync", tag_source: "self" },
         apiid: "id",
         endpoint: "/my/path",
         "http.url": "id.execute-api.us-east-1.amazonaws.com/my/path",
@@ -240,6 +244,7 @@ describe("SpanInferrer", () => {
       },
     });
   });
+
   it("creates an inferred span for API Gateway V2 events", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(apiGatewayV2, {} as any, {} as SpanContext);
@@ -248,7 +253,7 @@ describe("SpanInferrer", () => {
       childOf: {},
       startTime: 1583817383220,
       tags: {
-        _inferred_span: { synchronicity: undefined, tag_source: "self" },
+        _inferred_span: { synchronicity: "sync", tag_source: "self" },
         apiid: "r3pmxmplak",
         endpoint: "/default/nodejs-apig-function-1G3XMPLZXVXYI",
         "http.url": "r3pmxmplak.execute-api.us-east-2.amazonaws.com/default/nodejs-apig-function-1G3XMPLZXVXYI",
@@ -265,6 +270,31 @@ describe("SpanInferrer", () => {
       },
     });
   });
+
+  it("creates an inferred span for Lambda Function URL Events", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(functionUrlEvent, {} as any, {} as SpanContext);
+
+    expect(mockWrapper.startSpan).toBeCalledWith("aws.lambda.url", {
+      startTime: 1637169449721,
+      tags: {
+        _inferred_span: {
+          synchronicity: "sync",
+          tag_source: "self",
+        },
+        endpoint: "/",
+        "http.method": "GET",
+        "http.url": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com/",
+        operation_name: "aws.lambda.url",
+        request_id: undefined,
+        "resource.name": "GET /",
+        resource_names: "GET /",
+        "service.name": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com",
+        "span.type": "http",
+      },
+    });
+  });
+
   it("creates an inferred span for s3 events", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(s3Event, {} as any, {} as SpanContext);
