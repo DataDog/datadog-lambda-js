@@ -1,6 +1,6 @@
 import { Context, EventBridgeEvent, KinesisStreamEvent, SNSEvent, SNSMessage, SQSEvent } from "aws-lambda";
 import { BigNumber } from "bignumber.js";
-import { randomBytes } from "crypto";
+import { x64 } from 'murmurhash3js';
 import { createSocket, Socket } from "dgram";
 import { logDebug, logError } from "../utils";
 import {
@@ -26,6 +26,7 @@ import {
   xrayTraceEnvVar,
 } from "./constants";
 import { TraceExtractor } from "./listener";
+import { randomBytes } from "crypto";
 
 export interface XRayTraceHeader {
   traceID: string;
@@ -46,6 +47,7 @@ export interface StepFunctionContext {
   "step_function.state_machine_name": string;
   "step_function.state_machine_arn": string;
   "step_function.step_name": string;
+  "step_function.timestamp": string;
 }
 
 /**
@@ -86,7 +88,7 @@ export function extractTraceContext(
       if (error instanceof Error) {
         logError("couldn't add step function metadata to xray", error as Error);
       }
-    }
+    } 
   }
 
   if (trace !== undefined) {
@@ -101,7 +103,17 @@ export function extractTraceContext(
     }
     return trace;
   }
-  return readTraceContextFromXray();
+
+  var traceContext = readTraceContextFromXray(); 
+  if (stepFuncContext && traceContext) {
+    console.log({ stepFuncContext })
+    traceContext.parentID = buildParentSpanID(stepFuncContext["step_function.timestamp"]);
+    traceContext.traceID = buildTraceID(stepFuncContext["step_function.state_machine_arn"]);
+    logDebug(`added step function trace ID and parent span ID`, { traceContext });
+  }
+  
+  console.log({traceContext})
+  return traceContext;
 }
 
 export function addTraceContextToXray(traceContext: TraceContext) {
@@ -489,7 +501,7 @@ export function readTraceFromEvent(event: any): TraceContext | undefined {
 }
 
 export function readTraceContextFromXray(): TraceContext | undefined {
-  const header = process.env[xrayTraceEnvVar];
+  const header = process.env[xrayTraceEnvVar]; 
   if (header === undefined) {
     logDebug("couldn't read xray trace header from env");
     return;
@@ -562,6 +574,10 @@ export function readStepFunctionContextFromEvent(event: any): StepFunctionContex
   if (typeof state !== "object") {
     return;
   }
+  const timestamp = state.EnteredTime; 
+  if (typeof timestamp !== "string") {
+    return;
+  }
   const retryCount = state.RetryCount;
   if (typeof retryCount !== "number") {
     return;
@@ -582,14 +598,26 @@ export function readStepFunctionContextFromEvent(event: any): StepFunctionContex
   if (typeof stateMachineName !== "string") {
     return;
   }
+
   return {
     "step_function.execution_id": executionID,
     "step_function.retry_count": retryCount,
     "step_function.state_machine_arn": stateMachineArn,
     "step_function.state_machine_name": stateMachineName,
     "step_function.step_name": stepName,
+    "step_function.timestamp": timestamp
   };
 }
+
+export function buildTraceID(execution_arn: string): string {
+  const executionID = execution_arn.slice(-36).replaceAll("-", "");
+  return x64.hash128(executionID).slice(0,16);
+}
+
+export function buildParentSpanID(startTime: string): string {
+  return x64.hash128(startTime).slice(0,16);
+} 
+
 export function convertToSampleMode(xraySampled: number): SampleMode {
   return xraySampled === 1 ? SampleMode.USER_KEEP : SampleMode.USER_REJECT;
 }

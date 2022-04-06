@@ -557,6 +557,26 @@ describe("readTraceFromLambdaContext", () => {
     });
     expect(result).toBeUndefined();
   });
+  it("can add in stepfunction metadata", () => {
+    const stepFunctionEvent = {
+      dd: {
+        Execution: {
+          Name: "fb7b1e15-e4a2-4cb2-963f-8f1fa4aec492",
+          StartTime: "2019-09-30T20:28:24.236Z",
+        },
+        State: {
+          Name: "step-one",
+          RetryCount: 2,
+          EnteredTime: "123456789"
+        },
+        StateMachine: {
+          Id: "arn:aws:states:us-east-1:601427279990:stateMachine:HelloStepOneStepFunctionsStateMachine-z4T0mJveJ7pJ",
+          Name: "my-state-machine",
+        },
+      },
+    } as const;
+
+  });
   it("can handle no context", () => {
     const result = readTraceFromLambdaContext(undefined);
     expect(result).toBeUndefined();
@@ -573,6 +593,7 @@ describe("readStepFunctionContextFromEvent", () => {
       State: {
         Name: "step-one",
         RetryCount: 2,
+        EnteredTime: "1234567"
       },
       StateMachine: {
         Id: "arn:aws:states:us-east-1:601427279990:stateMachine:HelloStepOneStepFunctionsStateMachine-z4T0mJveJ7pJ",
@@ -589,6 +610,7 @@ describe("readStepFunctionContextFromEvent", () => {
         "arn:aws:states:us-east-1:601427279990:stateMachine:HelloStepOneStepFunctionsStateMachine-z4T0mJveJ7pJ",
       "step_function.state_machine_name": "my-state-machine",
       "step_function.step_name": "step-one",
+      "step_function.timestamp": "1234567",
     });
   });
   it("returns undefined when event isn't an object", () => {
@@ -967,6 +989,7 @@ describe("extractTraceContext", () => {
         State: {
           Name: "step-one",
           RetryCount: 2,
+          EnteredTime: "1234567890",
         },
         StateMachine: {
           Id: "arn:aws:states:us-east-1:601427279990:stateMachine:HelloStepOneStepFunctionsStateMachine-z4T0mJveJ7pJ",
@@ -986,7 +1009,7 @@ describe("extractTraceContext", () => {
     const sentMessage = sentSegment.toString();
     expect(sentMessage).toMatchInlineSnapshot(`
       "{\\"format\\": \\"json\\", \\"version\\": 1}
-      {\\"id\\":\\"11111\\",\\"trace_id\\":\\"1-5e272390-8c398be037738dc042009320\\",\\"parent_id\\":\\"94ae789b969f1cc5\\",\\"name\\":\\"datadog-metadata\\",\\"start_time\\":1487076708,\\"end_time\\":1487076708,\\"type\\":\\"subsegment\\",\\"metadata\\":{\\"datadog\\":{\\"root_span_metadata\\":{\\"step_function.execution_id\\":\\"fb7b1e15-e4a2-4cb2-963f-8f1fa4aec492\\",\\"step_function.retry_count\\":2,\\"step_function.state_machine_arn\\":\\"arn:aws:states:us-east-1:601427279990:stateMachine:HelloStepOneStepFunctionsStateMachine-z4T0mJveJ7pJ\\",\\"step_function.state_machine_name\\":\\"my-state-machine\\",\\"step_function.step_name\\":\\"step-one\\"}}}}"
+      {\\"id\\":\\"11111\\",\\"trace_id\\":\\"1-5e272390-8c398be037738dc042009320\\",\\"parent_id\\":\\"94ae789b969f1cc5\\",\\"name\\":\\"datadog-metadata\\",\\"start_time\\":1487076708,\\"end_time\\":1487076708,\\"type\\":\\"subsegment\\",\\"metadata\\":{\\"datadog\\":{\\"root_span_metadata\\":{\\"step_function.execution_id\\":\\"fb7b1e15-e4a2-4cb2-963f-8f1fa4aec492\\",\\"step_function.retry_count\\":2,\\"step_function.state_machine_arn\\":\\"arn:aws:states:us-east-1:601427279990:stateMachine:HelloStepOneStepFunctionsStateMachine-z4T0mJveJ7pJ\\",\\"step_function.state_machine_name\\":\\"my-state-machine\\",\\"step_function.step_name\\":\\"step-one\\",\\"step_function.timestamp\\":\\"1234567890\\"}}}}"
     `);
   });
 });

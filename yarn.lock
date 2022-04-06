@@ -686,6 +686,11 @@
   dependencies:
     "@types/node" "*"
 
+"@types/murmurhash3js@^3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@types/murmurhash3js/-/murmurhash3js-3.0.2.tgz#eeaf46ed69b0e473f0c310a383c9362c299981f7"
+  integrity sha512-xx8QZPFSzd5520I/EVZCNYUEzTPHYkKf+V0CBDPMA/X0vRRQRkFiEjTfoM3Yd+oE0jTKR/qZ+vDWF+2PMaVXMg==
+
 "@types/nock@^11.1.0":
   version "11.1.0"
   resolved "https://registry.yarnpkg.com/@types/nock/-/nock-11.1.0.tgz#0a8c1056a31ba32a959843abccf99626dd90a538"
@@ -2431,6 +2436,11 @@ multer@^1.4.2:
     on-finished "^2.3.0"
     type-is "^1.6.4"
     xtend "^4.0.0"
+
+murmurhash3js@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/murmurhash3js/-/murmurhash3js-3.0.1.tgz#3e983e5b47c2a06f43a713174e7e435ca044b998"
+  integrity sha1-Ppg+W0fCoG9DpxMXTn5DXKBEuZg=
 
 nan@^2.13.2, nan@^2.14.0, nan@^2.14.2:
   version "2.15.0"
