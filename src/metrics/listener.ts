@@ -146,8 +146,8 @@ export class MetricsListener {
 
     if (!this.apiKey) {
       const errorMessage = "api key not configured, see https://dtdg.co/sls-node-metrics";
-        logError(errorMessage);
-        return;
+      logError(errorMessage);
+      return;
     }
     if (this.currentProcessor !== undefined) {
       // tslint:disable-next-line: no-floating-promises
