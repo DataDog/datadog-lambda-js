@@ -56,6 +56,7 @@ export class MetricsListener {
 
   constructor(private kmsClient: KMSService, private config: MetricsConfig) {
     this.apiKey = this.getAPIKey(config);
+    this.config = config;
   }
 
   public async onStartInvocation(_: any) {
@@ -143,6 +144,11 @@ export class MetricsListener {
 
     const dist = new Distribution(name, [{ timestamp: metricTime, value }], ...tags);
 
+    if (!this.apiKey) {
+      const errorMessage = "api key not configured, see https://dtdg.co/sls-node-metrics";
+      logError(errorMessage);
+      return;
+    }
     if (this.currentProcessor !== undefined) {
       // tslint:disable-next-line: no-floating-promises
       this.currentProcessor.then((processor) => {
@@ -178,13 +184,6 @@ export class MetricsListener {
         if (error instanceof Error) {
           logError("couldn't decrypt kms api key", error as Error);
         }
-      }
-    } else {
-      const errorMessage = "api key not configured, see https://dtdg.co/sls-node-metrics";
-      if (config.logForwarding || this.isAgentRunning) {
-        logDebug(errorMessage);
-      } else {
-        logError(errorMessage);
       }
     }
     return "";
