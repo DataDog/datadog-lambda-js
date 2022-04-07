@@ -40,6 +40,7 @@ START
           "request_id":"XXXX",
           "apiid":"XXXX",
           "_inferred_span.tag_source": "self",
+          "_inferred_span.synchronicity": "sync",
           "http.method": "GET",
           "stage": "test",
           "http.status_code": "200"
