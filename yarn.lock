@@ -622,6 +622,11 @@
   dependencies:
     "@babel/types" "^7.3.0"
 
+"@types/deasync@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@types/deasync/-/deasync-0.1.2.tgz#a64b68d6ebc145d0a5fe004a53e8e0f4e6d2ec7e"
+  integrity sha512-sCBFlGCEmZMPS06wdnQELcYzyUYio2K1Hp6g0fjJSKP1jkGKQpIdjRNUQAvdSCCJCWxIMCkX2CL7pi4BCm8Ydg==
+
 "@types/graceful-fs@^4.1.2":
   version "4.1.5"
   resolved "https://registry.yarnpkg.com/@types/graceful-fs/-/graceful-fs-4.1.5.tgz#21ffba0d98da4350db64891f92a9e5db3cdb4e15"
@@ -923,7 +928,7 @@ bignumber.js@^9.0.1:
   resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-9.0.1.tgz#8d7ba124c882bfd8e43260c67475518d0689e4e5"
   integrity sha512-IdZR9mh6ahOBv/hYGiXyVuyCetmGJhtYkqLBpTStdhEGjegpPlUawydyaF3pbIOFynJTpllEs+NP+CS9jKFLjA==
 
-bindings@^1.3.0:
+bindings@^1.3.0, bindings@^1.5.0:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/bindings/-/bindings-1.5.0.tgz#10353c9e945334bc0511a6d90b38fbc7c9c504df"
   integrity sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==
@@ -1198,6 +1203,14 @@ dd-trace@1.1.2:
     shimmer "1.2.1"
     source-map "^0.7.3"
     source-map-resolve "^0.6.0"
+
+deasync@^0.1.26:
+  version "0.1.26"
+  resolved "https://registry.yarnpkg.com/deasync/-/deasync-0.1.26.tgz#87f54440034b87afc1e6a46667930c4e06363256"
+  integrity sha512-YKw0BmJSWxkjtQsbgn6Q9CHSWB7DKMen8vKrgyC006zy0UZ6nWyGidB0IzZgqkVRkOglAeUaFtiRTeLyel72bg==
+  dependencies:
+    bindings "^1.5.0"
+    node-addon-api "^1.7.1"
 
 debug@4, debug@^4.1.0, debug@^4.1.1:
   version "4.3.2"
@@ -2394,6 +2407,11 @@ nock@13.0.11:
     json-stringify-safe "^5.0.1"
     lodash.set "^4.3.2"
     propagate "^2.0.0"
+
+node-addon-api@^1.7.1:
+  version "1.7.2"
+  resolved "https://registry.yarnpkg.com/node-addon-api/-/node-addon-api-1.7.2.tgz#3df30b95720b53c24e59948b49532b662444f54d"
+  integrity sha512-ibPK3iA+vaY1eEjESkQkM0BbCqFOaZMiXRTtdB0u7b4djtY6JnsjvPdUHVMg6xQt3B8fpTTWHI9A+ADjM9frzg==
 
 node-gyp-build@^3.8.0:
   version "3.9.0"

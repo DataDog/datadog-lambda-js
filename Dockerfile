@@ -12,6 +12,7 @@ RUN yarn install
 # Build the lambda layer
 RUN yarn build
 RUN cp -r dist /nodejs/node_modules/datadog-lambda-js
+RUN cp ./src/runtime/module_importer.js /nodejs/node_modules/datadog-lambda-js/runtime
 RUN rm -rf node_modules
 
 # Move dd-trace from devDependencies to production dependencies
@@ -21,6 +22,10 @@ RUN node ./scripts/move_ddtrace_dependency.js "$(cat package.json)" > package.js
 RUN yarn install --production=true
 # Copy the dependencies to the modules folder
 RUN cp -rf node_modules/* /nodejs/node_modules
+
+# Remove unused deasync binaries, and replace them with ones copied from the AWS image
+RUN rm -rf /nodejs/node_modules/deasync/bin/*
+RUN cp -rf ./.vendored/* /nodejs/node_modules/deasync/bin
 
 # Remove the AWS SDK, which is installed in the lambda by default
 RUN rm -rf /nodejs/node_modules/aws-sdk
@@ -35,3 +40,5 @@ RUN rm -rf /nodejs/node_modules/protobufjs/cli
 RUN find /nodejs/node_modules -name "*.d.ts" -delete
 RUN find /nodejs/node_modules -name "*.js.map" -delete
 RUN find /nodejs/node_modules -name "*.ts.map" -delete
+
+

@@ -11,7 +11,9 @@ set -e
 LAYER_DIR=".layers"
 LAYER_FILES_PREFIX="datadog_lambda_node"
 
-NODE_VERSIONS=("12.13" "14.15")
+export NODE_VERSIONS=("12.13" "14.15")
+
+./scripts/fetch_deasync_binary.sh
 
 if [ -z "$NODE_VERSION" ]; then
     echo "Node version not specified, running for all node versions."
