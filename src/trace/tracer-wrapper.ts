@@ -8,20 +8,20 @@ export interface SpanContext {
   toSpanId(): string;
 }
 
-export interface TraceOptions {
-  resource?: string;
-  service?: string;
-  type?: string;
-  tags?: { [key: string]: any };
-  childOf?: SpanContext;
-}
-
 export interface SpanOptions {
   childOf?: SpanContext;
   tags?: { [key: string]: any };
   startTime?: number;
   service?: string;
   type?: string;
+}
+
+export interface TraceOptions {
+  resource?: string;
+  service?: string;
+  type?: string;
+  tags?: { [key: string]: any };
+  childOf?: SpanContext;
 }
 
 // TraceWrapper is used to remove dd-trace as a hard dependency from the npm package.

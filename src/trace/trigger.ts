@@ -11,10 +11,12 @@ import {
   S3Event,
   SNSEvent,
   SQSEvent,
+  EventBridgeEvent,
 } from "aws-lambda";
 import * as eventType from "../utils/event-type-guards";
 import { logError } from "../utils";
 import { gunzipSync } from "zlib";
+
 type LambdaURLEvent = {
   headers: { [name: string]: string | undefined };
   requestContext: {
@@ -86,36 +88,43 @@ function extractSQSEventARN(event: SQSEvent) {
   return event.Records[0].eventSourceARN;
 }
 
+function extractEventBridgeARN(event: EventBridgeEvent<any, any>) {
+  return event.source;
+}
+
 export enum eventSources {
   apiGateway = "api-gateway",
   applicationLoadBalancer = "application-load-balancer",
   cloudFront = "cloudfront",
   cloudWatchEvents = "cloudwatch-events",
   cloudWatchLogs = "cloudwatch-logs",
-  // alb = "alb",
   cloudWatch = "cloudwatch",
   dynamoDB = "dynamodb",
+  eventBridge = "eventbridge",
   kinesis = "kinesis",
   lambdaUrl = "lambda-function-url",
   s3 = "s3",
   sns = "sns",
   sqs = "sqs",
 }
+
 /**
  * parseEventSource parses the triggering event to determine the source
  * Possible Returns:
  * api-gateway | application-load-balancer | cloudwatch-logs |
  * cloudwatch-events | cloudfront | dynamodb | kinesis | s3 | sns | sqs
  */
-export function parseEventSource(event: any): eventSources | undefined {
-  if (eventType.isAPIGatewayEvent(event) || eventType.isAPIGatewayEventV2(event)) {
-    return eventSources.apiGateway;
-  }
-
+export function parseEventSource(event: any) {
   if (eventType.isLambdaUrlEvent(event)) {
     return eventSources.lambdaUrl;
   }
-
+  if (
+    eventType.isAPIGatewayEvent(event) ||
+    eventType.isAPIGatewayEventV2(event) ||
+    eventType.isAPIGatewayWebsocketEvent(event)
+  ) {
+    return eventSources.apiGateway;
+  }
   if (eventType.isALBEvent(event)) {
     return eventSources.applicationLoadBalancer;
   }
@@ -151,7 +160,10 @@ export function parseEventSource(event: any): eventSources | undefined {
   if (eventType.isSQSEvent(event)) {
     return eventSources.sqs;
   }
-  return undefined;
+
+  if (eventType.isEventBridgeEvent(event)) {
+    return eventSources.eventBridge;
+  }
 }
 
 /**
@@ -217,6 +229,11 @@ export function parseEventSourceARN(source: string | undefined, event: any, cont
   if (source === "kinesis") {
     eventSourceARN = extractKinesisStreamEventARN(event);
   }
+
+  if (source === "eventbridge") {
+    eventSourceARN = extractEventBridgeARN(event);
+  }
+
   return eventSourceARN;
 }
 
@@ -307,7 +324,10 @@ export function extractTriggerTags(event: any, context: Context) {
  * extractHTTPStatusCode extracts a status code from the response if the Lambda was triggered
  * by API Gateway or ALB
  */
-export function extractHTTPStatusCodeTag(triggerTags: { [key: string]: string }, result: any) {
+export function extractHTTPStatusCodeTag(
+  triggerTags: { [key: string]: string } | undefined,
+  result: any,
+): string | undefined {
   let eventSource: string | undefined;
   triggerTags ? (eventSource = triggerTags["function_trigger.event_source"]) : (eventSource = undefined);
   if (!isHTTPTriggerEvent(eventSource)) {

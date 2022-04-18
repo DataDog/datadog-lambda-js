@@ -25,7 +25,7 @@ describe("TraceContextService", () => {
       sampleMode: SampleMode.AUTO_KEEP,
       source: Source.Event,
     };
-    traceContextService.rootTraceContext = {
+    traceContextService["rootTraceContext"] = {
       traceID: "123456",
       parentID: "abcdef",
       sampleMode: SampleMode.AUTO_KEEP,
@@ -43,7 +43,7 @@ describe("TraceContextService", () => {
     mockXRaySegment = {
       id: "0b11cc",
     };
-    traceContextService.rootTraceContext = {
+    traceContextService["rootTraceContext"] = {
       traceID: "123456",
       parentID: "abcdef",
       sampleMode: SampleMode.AUTO_KEEP,
@@ -58,7 +58,7 @@ describe("TraceContextService", () => {
   });
   it("uses parent trace parent id when no datadog trace context is available and xray throws", () => {
     mockXRayShouldThrow = true;
-    traceContextService.rootTraceContext = {
+    traceContextService["rootTraceContext"] = {
       traceID: "123456",
       parentID: "abcdef",
       sampleMode: SampleMode.AUTO_KEEP,
