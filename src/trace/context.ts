@@ -108,8 +108,10 @@ export function extractTraceContext(
   if (stepFuncContext && traceContext) {
     console.log({ stepFuncContext })
     traceContext.parentID = buildParentSpanID(stepFuncContext["step_function.timestamp"]);
-    traceContext.traceID = buildTraceID(stepFuncContext["step_function.state_machine_arn"]);
+    traceContext.traceID = buildTraceID(stepFuncContext["step_function.execution_id"]);
     logDebug(`added step function trace ID and parent span ID`, { traceContext });
+  } else{ 
+    logDebug(`step function context or trace context not found`);
   }
   
   console.log({traceContext})
@@ -609,13 +611,14 @@ export function readStepFunctionContextFromEvent(event: any): StepFunctionContex
   };
 }
 
-export function buildTraceID(execution_arn: string): string {
-  const executionID = execution_arn.slice(-36).replaceAll("-", "");
-  return x64.hash128(executionID).slice(0,16);
+export function buildTraceID(executionID: string): string {
+  executionID = executionID.replace("-", "");
+  return parseInt(x64.hash128(executionID).slice(0,16), 16).toString();
+
 }
 
 export function buildParentSpanID(startTime: string): string {
-  return x64.hash128(startTime).slice(0,16);
+  return parseInt(x64.hash128(startTime).slice(0,16), 16).toString();
 } 
 
 export function convertToSampleMode(xraySampled: number): SampleMode {

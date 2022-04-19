@@ -90,8 +90,11 @@ export class TraceListener {
     // The aws.lambda span needs to have a parented to the Datadog trace context from the
     // incoming event if available or the X-Ray trace context if hybrid tracing is enabled
     let parentSpanContext: SpanContext | undefined;
-    if (this.contextService.traceSource === Source.Event || this.config.mergeDatadogXrayTraces) {
+    if (this.contextService.traceSource === Source.Event || this.contextService.traceSource === Source.Xray || this.config.mergeDatadogXrayTraces) {
+      logDebug(`logging trace source: ${this.contextService.traceSource}`);
+      logDebug(`logging the root trace headers`, { rootTraceHeaders });
       parentSpanContext = rootTraceHeaders ? this.tracerWrapper.extract(rootTraceHeaders) ?? undefined : undefined;
+      logDebug(`logging parent span context`, {parentSpanContext: parentSpanContext});
       logDebug("Attempting to find parent for the aws.lambda span");
     } else {
       logDebug("Didn't attempt to find parent for aws.lambda span", {
@@ -103,6 +106,9 @@ export class TraceListener {
       this.inferredSpan = this.inferrer.createInferredSpan(event, context, parentSpanContext);
     }
     this.lambdaSpanParentContext = this.inferredSpan?.span || parentSpanContext;
+    logDebug(`logging inferred span: `, {...this.inferredSpan?.span});
+    logDebug(`logging parent span context 1: `,  {...this.lambdaSpanParentContext});
+    logDebug(`logging parent span context 2: `,  { lambdaSpanParentContext: this.lambdaSpanParentContext});
     this.context = context;
     this.triggerTags = extractTriggerTags(event, context);
     this.stepFunctionContext = readStepFunctionContextFromEvent(event);
@@ -193,10 +199,16 @@ export class TraceListener {
         ...options.tags,
         ...this.stepFunctionContext,
       };
+      // if (this.lambdaSpanParentContext) {
+      //   this.lambdaSpanParentContext.toSpanId()
+      // }
     }
     if (this.lambdaSpanParentContext) {
       options.childOf = this.lambdaSpanParentContext;
     }
+    // logDebug(`logging parent span context ${this.lambdaSpanParentContext}`);
+    logDebug(`logging parent span context 1: `,  {...this.lambdaSpanParentContext});
+    logDebug(`logging parent span context 2: `,  { lambdaSpanParentContext: this.lambdaSpanParentContext});
     options.type = "serverless";
     options.service = "aws.lambda";
     if (this.context) {

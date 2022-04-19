@@ -82,6 +82,7 @@ describe("convertToAPMTraceID", () => {
     const xrayTraceID = "1-2c779014b90ce44db5e03875";
     const traceID = convertToAPMTraceID(xrayTraceID);
     expect(traceID).toBeUndefined();
+    expect(false).toBeTruthy();
   });
   it("returns undefined when xray trace id uses invalid characters", () => {
     const xrayTraceID = "1-5ce31dc2-c779014b90ce44db5e03875;";
@@ -979,7 +980,7 @@ describe("extractTraceContext", () => {
     expect(sentSegment).toBeUndefined();
   });
 
-  it("adds step function metadata to xray", () => {
+  fit("adds step function metadata to xray", () => {
     const stepFunctionEvent = {
       dd: {
         Execution: {
