@@ -612,13 +612,13 @@ export function readStepFunctionContextFromEvent(event: any): StepFunctionContex
 }
 
 export function buildTraceID(executionID: string): string {
-  executionID = executionID.replace("-", "");
-  return parseInt(x64.hash128(executionID).slice(0,16), 16).toString();
+  executionID = executionID.replace(/-/g, '');
+  return BigInt(`0x${x64.hash128(executionID).slice(0,16)}`).toString(10);
 
 }
 
 export function buildParentSpanID(startTime: string): string {
-  return parseInt(x64.hash128(startTime).slice(0,16), 16).toString();
+  return BigInt(`0x${x64.hash128(startTime).slice(0,16)}`).toString(10);
 } 
 
 export function convertToSampleMode(xraySampled: number): SampleMode {
