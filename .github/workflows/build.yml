@@ -97,6 +97,9 @@ jobs:
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v1
+        
+      - name: Complete Buildx Setup
+        run:  docker run --privileged --rm tonistiigi/binfmt --install all
 
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
