@@ -12,17 +12,9 @@ Datadog Lambda Library for Node.js (12.x and 14.x) enables enhanced Lambda metri
 
 Follow the [installation instructions](https://docs.datadoghq.com/serverless/installation/nodejs/), and view your function's enhanced metrics, traces and logs in Datadog.
 
-## Custom Metrics
+## Configuration
 
-Once [installed](#installation), you should be able to submit custom metrics from your Lambda function.
-
-Check out the instructions for [submitting custom metrics from AWS Lambda functions](https://docs.datadoghq.com/integrations/amazon_lambda/?tab=nodejs#custom-metrics).
-
-## Tracing
-
-Once [installed](#installation), you should be able to view your function's traces in Datadog.
-
-For additional details on trace collection, take a look at [collecting traces from AWS Lambda functions](https://docs.datadoghq.com/integrations/amazon_lambda/?tab=nodejs#trace-collection).
+Follow the [configuration instructions][https://docs.datadoghq.com/serverless/configuration] to tag your telemetry, capture request/response payloads, filter or scrub sensitive information from logs or traces, and more.
 
 For additional details on trace and log connection, check out the [official documentation for Datadog trace client](https://datadoghq.dev/dd-trace-js/).
 
