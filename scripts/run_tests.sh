@@ -8,7 +8,7 @@
 # Run unit tests in Docker
 set -e
 
-NODE_VERSIONS=("12.13" "14.15")
+NODE_VERSIONS=("12.13" "14.15" "16.14")
 
 for node_version in "${NODE_VERSIONS[@]}"
 do

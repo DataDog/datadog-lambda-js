@@ -8,7 +8,7 @@
 
 # Builds Datadog node layers for lambda functions, using Docker
 set -e
-export NODE_VERSIONS=("12" "14")
+export NODE_VERSIONS=("12" "14" "16")
 
 script_path=${BASH_SOURCE[0]}
 cd $(dirname $script_path)/..

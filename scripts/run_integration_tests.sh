@@ -31,8 +31,9 @@ mismatch_found=false
 # [2]: random 8-character ID to avoid collisions with other runs
 node12=("nodejs12.x" "12.13" $(xxd -l 4 -c 4 -p < /dev/random))
 node14=("nodejs14.x" "14.15" $(xxd -l 4 -c 4 -p < /dev/random))
+node16=("nodejs16.x" "16.14" $(xxd -l 4 -c 4 -p < /dev/random))
 
-PARAMETERS_SETS=("node12" "node14")
+PARAMETERS_SETS=("node12" "node14" "node16")
 
 if [ -z "$RUNTIME_PARAM" ]; then
     echo "Node version not specified, running for all node versions."
