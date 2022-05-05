@@ -14,9 +14,9 @@ Follow the [installation instructions](https://docs.datadoghq.com/serverless/ins
 
 ## Configuration
 
-Follow the [configuration instructions][https://docs.datadoghq.com/serverless/configuration] to tag your telemetry, capture request/response payloads, filter or scrub sensitive information from logs or traces, and more.
+Follow the [configuration instructions](https://docs.datadoghq.com/serverless/configuration) to tag your telemetry, capture request/response payloads, filter or scrub sensitive information from logs or traces, and more.
 
-For additional details on trace and log connection, check out the [official documentation for Datadog trace client](https://datadoghq.dev/dd-trace-js/).
+For additional tracing configuration options, check out the [official documentation for Datadog trace client](https://datadoghq.dev/dd-trace-js/).
 
 ## Major Version Notes
 
