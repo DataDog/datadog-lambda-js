@@ -1,5 +1,6 @@
 ARG image
 FROM $image
+ARG image
 
 # Create the directory structure required for AWS Lambda Layer
 RUN mkdir -p /nodejs/node_modules/
@@ -13,6 +14,8 @@ RUN yarn install
 RUN yarn build
 RUN cp -r dist /nodejs/node_modules/datadog-lambda-js
 RUN cp ./src/runtime/module_importer.js /nodejs/node_modules/datadog-lambda-js/runtime
+
+RUN if [ "$image" = "node:12.13-alpine" ]; then cp ./src/handler.js /nodejs/node_modules/datadog-lambda-js/handler.js; else cp ./src/handler.mjs /nodejs/node_modules/datadog-lambda-js; fi
 RUN rm -rf node_modules
 
 # Move dd-trace from devDependencies to production dependencies
@@ -22,10 +25,6 @@ RUN node ./scripts/move_ddtrace_dependency.js "$(cat package.json)" > package.js
 RUN yarn install --production=true
 # Copy the dependencies to the modules folder
 RUN cp -rf node_modules/* /nodejs/node_modules
-
-# Remove unused deasync binaries, and replace them with ones copied from the AWS image
-RUN rm -rf /nodejs/node_modules/deasync/bin/*
-RUN cp -rf ./.vendored/* /nodejs/node_modules/deasync/bin
 
 # Remove the AWS SDK, which is installed in the lambda by default
 RUN rm -rf /nodejs/node_modules/aws-sdk
