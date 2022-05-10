@@ -14,3 +14,7 @@ echo "$MAIN_CONSTANTS" |
 
 echo "$TRACE_CONSTANTS" |
   sed "s/\(ddtraceVersion =\) \"\(X\.X\.X\)\"/\1 \"$DD_TRACE_VERSION\"/" > ./dist/trace/constants.js
+
+echo "Copying handler js files"
+cp src/handler.* dist/
+cp src/runtime/module_importer.js dist/runtime/

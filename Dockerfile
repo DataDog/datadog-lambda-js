@@ -15,7 +15,7 @@ RUN yarn build
 RUN cp -r dist /nodejs/node_modules/datadog-lambda-js
 RUN cp ./src/runtime/module_importer.js /nodejs/node_modules/datadog-lambda-js/runtime
 
-RUN if [ "$image" = "node:12.13-alpine" ]; then cp ./src/handler.js /nodejs/node_modules/datadog-lambda-js/handler.js; else cp ./src/handler.mjs /nodejs/node_modules/datadog-lambda-js; fi
+RUN if [ "$image" = "node:12.13-alpine" ]; then cp ./src/handler.cjs /nodejs/node_modules/datadog-lambda-js/handler.js; else cp ./src/handler.mjs /nodejs/node_modules/datadog-lambda-js; fi
 RUN rm -rf node_modules
 
 # Move dd-trace from devDependencies to production dependencies
