@@ -15,7 +15,6 @@ enum RuntimeTagValues {
   Node12 = "nodejs12.x",
   Node14 = "nodejs14.x",
   Node16 = "nodejs16.x",
-
 }
 
 export function getVersionTag(): string {
