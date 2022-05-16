@@ -1,5 +1,6 @@
 ARG image
 FROM $image
+ARG image
 
 # Create the directory structure required for AWS Lambda Layer
 RUN mkdir -p /nodejs/node_modules/
@@ -12,6 +13,9 @@ RUN yarn install
 # Build the lambda layer
 RUN yarn build
 RUN cp -r dist /nodejs/node_modules/datadog-lambda-js
+RUN cp ./src/runtime/module_importer.js /nodejs/node_modules/datadog-lambda-js/runtime
+
+RUN if [ "$image" = "node:12.13-alpine" ]; then cp ./src/handler.cjs /nodejs/node_modules/datadog-lambda-js/handler.js; else cp ./src/handler.mjs /nodejs/node_modules/datadog-lambda-js; fi
 RUN rm -rf node_modules
 
 # Move dd-trace from devDependencies to production dependencies
@@ -38,3 +42,5 @@ RUN rm -rf /nodejs/node_modules/protobufjs/cli
 RUN find /nodejs/node_modules -name "*.d.ts" -delete
 RUN find /nodejs/node_modules -name "*.js.map" -delete
 RUN find /nodejs/node_modules -name "*.ts.map" -delete
+
+

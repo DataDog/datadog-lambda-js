@@ -14,6 +14,7 @@ const ENHANCED_LAMBDA_METRICS_NAMESPACE = "aws.lambda.enhanced";
 enum RuntimeTagValues {
   Node12 = "nodejs12.x",
   Node14 = "nodejs14.x",
+  Node16 = "nodejs16.x",
 }
 
 export function getVersionTag(): string {
@@ -35,6 +36,10 @@ export function getRuntimeTag(): string | null {
 
   if (processVersion.startsWith("v14")) {
     processVersionTagString = RuntimeTagValues.Node14;
+  }
+
+  if (processVersion.startsWith("v16")) {
+    processVersionTagString = RuntimeTagValues.Node16;
   }
 
   if (!processVersionTagString) {

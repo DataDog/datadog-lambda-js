@@ -4,6 +4,7 @@ yarn-error.log
 coverage
 .layers
 .DS_Store
+.vendored
 package-lock.json
 
 **/.serverless

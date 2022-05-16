@@ -13,10 +13,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Node 14.15
+      - name: Set up Node 16.14
         uses: actions/setup-node@v1
         with:
-          node-version: 14.15
+          node-version: 16.14
 
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
@@ -45,7 +45,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        node-version: [12.13, 14.15]
+        node-version: [12.13, 14.15, 16.14]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -84,7 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        runtime-param: [12, 14]
+        runtime-param: [12, 14, 16]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -93,6 +93,13 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 14
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        
+      - name: Complete Buildx Setup
+        run:  docker run --privileged --rm tonistiigi/binfmt --install all
 
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path

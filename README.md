@@ -6,7 +6,7 @@
 [![Slack](https://chat.datadoghq.com/badge.svg?bg=632CA6)](https://chat.datadoghq.com/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](https://github.com/DataDog/datadog-lambda-js/blob/main/LICENSE)
 
-Datadog Lambda Library for Node.js (12.x and 14.x) enables enhanced Lambda metrics, distributed tracing, and custom metric submission from AWS Lambda functions.
+Datadog Lambda Library for Node.js (12.x, 14.x and 16.x) enables enhanced Lambda metrics, distributed tracing, and custom metric submission from AWS Lambda functions.
 
 ## Installation
 

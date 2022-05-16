@@ -2,8 +2,8 @@
 
 OLD_REGION='us-east-1'
 
-LAYER_NAMES=("Datadog-Node12-x" "Datadog-Node14-x")
-NODE_VERSIONS_FOR_AWS_CLI=("nodejs12.x" "nodejs14.x")
+LAYER_NAMES=("Datadog-Node12-x" "Datadog-Node14-x" "Datadog-Node16-x")
+NODE_VERSIONS_FOR_AWS_CLI=("nodejs12.x" "nodejs14.x" "nodejs16.x")
 NEW_REGION=$1
 
 publish_layer() {
