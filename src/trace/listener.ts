@@ -141,6 +141,12 @@ export class TraceListener {
         this.inferredSpan.setTag("http.status_code", statusCode);
       }
     }
+
+    if (result) {
+      if (result.context) {
+        result.context._datadog = JSON.stringify(this.tracerWrapper.traceContext());
+      }
+    }
   }
 
   public async onCompleteInvocation(error?: any) {
