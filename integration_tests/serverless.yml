@@ -31,6 +31,19 @@ functions:
     environment:
       DD_FLUSH_TO_LOG: true
 
+  # esm
+  esm_node:
+    name: integration-tests-js-${sls:stage}-esm_${env:RUNTIME}
+    handler: /opt/nodejs/node_modules/datadog-lambda-js/handler.handler
+    runtime: ${env:SERVERLESS_RUNTIME}
+    layers:
+      - { Ref: NodeLambdaLayer }
+    environment:
+      DD_FLUSH_TO_LOG: true
+      DD_LAMBDA_HANDLER: esm.handle
+
+
+
   # sync-metrics
   sync-metrics_node:
     name: integration-tests-js-${sls:stage}-sync-metrics_${env:RUNTIME}

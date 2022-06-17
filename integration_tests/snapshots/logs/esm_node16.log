@@ -1,0 +1,51 @@
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:sa-east-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-esm_node16",
+    "resource:integration-tests-js-XXXX-esm_node16",
+    "cold_start:true",
+    "memorysize:1024",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs16.x"
+  ],
+  "v": 1
+}
+END Duration: XXXX ms (init: XXXX ms) Memory Used: XXXX MB
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:sa-east-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-esm_node16",
+    "resource:integration-tests-js-XXXX-esm_node16",
+    "cold_start:false",
+    "memorysize:1024",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs16.x"
+  ],
+  "v": 1
+}
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:sa-east-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-esm_node16",
+    "resource:integration-tests-js-XXXX-esm_node16",
+    "cold_start:false",
+    "memorysize:1024",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs16.x"
+  ],
+  "v": 1
+}
+END Duration: XXXX ms Memory Used: XXXX MB

@@ -1,1 +1,1 @@
-export { load } from "./user-function";
+export { load, loadSync } from "./user-function";
