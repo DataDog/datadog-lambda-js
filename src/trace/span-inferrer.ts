@@ -52,6 +52,10 @@ export class SpanInferrer {
     return "sync";
   }
 
+  // isAuthorizerInvocation(event: any): boolean {
+
+  // }
+
   createInferredSpanForApiGateway(
     event: any,
     context: Context | undefined,
@@ -97,6 +101,9 @@ export class SpanInferrer {
       options.tags.connection_id = event.requestContext.connectionId;
       options.tags.event_type = event.requestContext.eventType;
     }
+    // if (isAuthorizerInvocation(event)) {
+    //   options.childOf = this.traceWrapper.surrogateAuthorizerSpan();
+    // }
     if (parentSpanContext) {
       options.childOf = parentSpanContext;
     }
