@@ -77,6 +77,7 @@ describe("datadog", () => {
     expect(parentId).toEqual("9101112");
     expect(sampled).toEqual("2");
   });
+
   it("doesn't patch http requests when autoPatch is disabled", async () => {
     nock("http://www.example.com").get("/").reply(200, {});
     const wrapped = datadog(handler, { autoPatchHTTP: false, forceWrap: true });

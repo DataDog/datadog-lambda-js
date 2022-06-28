@@ -136,7 +136,13 @@ export function datadog<TEvent, TResult>(
         try {
           localResult = await promHandler(localEvent, localContext);
         } finally {
-          traceListener.onEndingInvocation(localEvent, localResult, metricsListener, localContext, finalConfig.captureLambdaPayload);
+          traceListener.onEndingInvocation(
+            localEvent,
+            localResult,
+            metricsListener,
+            localContext,
+            finalConfig.captureLambdaPayload,
+          );
         }
         return localResult;
       })(event, context);

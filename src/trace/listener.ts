@@ -10,7 +10,7 @@ import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
 import { extractTriggerTags, extractHTTPStatusCodeTag } from "./trigger";
 
-import {logDebug, logError, tagObject} from "../utils";
+import { logDebug, logError, tagObject } from "../utils";
 import { didFunctionColdStart } from "../utils/cold-start";
 import { datadogLambdaVersion } from "../constants";
 import { Source, ddtraceVersion } from "./constants";
@@ -18,7 +18,7 @@ import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 import { SpanInferrer } from "./span-inferrer";
 import { SpanWrapper } from "./span-wrapper";
-import {incrementErrorsMetric, MetricsListener} from "../metrics";
+import { incrementErrorsMetric, MetricsListener } from "../metrics";
 export type TraceExtractor = (event: any, context: Context) => TraceContext;
 
 export interface TraceConfig {
@@ -121,7 +121,13 @@ export class TraceListener {
    * @param metricsListener
    * @param shouldTagPayload
    */
-  public onEndingInvocation(event: any, result: any, metricsListener: MetricsListener, context: Context, shouldTagPayload = false) {
+  public onEndingInvocation(
+    event: any,
+    result: any,
+    metricsListener: MetricsListener,
+    context: Context,
+    shouldTagPayload = false,
+  ) {
     // Guard clause if something has gone horribly wrong
     // so we won't crash user code.
     if (!this.tracerWrapper.currentSpan) return;
@@ -142,7 +148,7 @@ export class TraceListener {
       }
       if (this.inferredSpan) {
         this.inferredSpan.setTag("http.status_code", statusCode);
-        if (statusCode!.length == 3 && statusCode!.startsWith("5")){
+        if (statusCode!.length === 3 && statusCode!.startsWith("5")) {
           incrementErrorsMetric(metricsListener, context);
           this.wrappedCurrentSpan.setTag("error", "5xx Server Error");
         }
