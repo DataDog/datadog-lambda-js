@@ -149,7 +149,7 @@ export class TraceListener {
       if (this.inferredSpan) {
         this.inferredSpan.setTag("http.status_code", statusCode);
 
-        if (statusCode!.length === 3 && statusCode!.startsWith("5")) {
+        if (statusCode?.length === 3 && statusCode?.startsWith("5")) {
           incrementErrorsMetric(metricsListener, context);
           this.wrappedCurrentSpan.setTag("error", "5xx Server Error");
         }
