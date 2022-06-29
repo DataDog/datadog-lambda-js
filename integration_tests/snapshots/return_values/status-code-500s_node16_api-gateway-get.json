@@ -1,4 +1,6 @@
 {
     "statusCode": 500,
-    "body": {}
+    "body": {},
+    "recordIds": [],
+    "eventType": "APIGateway"
 }
