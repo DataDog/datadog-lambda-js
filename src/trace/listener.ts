@@ -10,7 +10,7 @@ import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
 import { extractTriggerTags, extractHTTPStatusCodeTag } from "./trigger";
 
-import { logDebug, logError, tagObject } from "../utils";
+import { logDebug, tagObject } from "../utils";
 import { didFunctionColdStart } from "../utils/cold-start";
 import { datadogLambdaVersion } from "../constants";
 import { Source, ddtraceVersion } from "./constants";
