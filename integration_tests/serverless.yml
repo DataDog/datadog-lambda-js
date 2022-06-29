@@ -80,12 +80,12 @@ functions:
     environment:
       DD_FLUSH_TO_LOG: true
 
-  status-code-500s:
+  # status-code-500s
+  status-code-500s_node:
     name: integration-tests-js-${sls:stage}-status-code-500s_${env:RUNTIME}
     handler: status-code-500s.handle
     runtime: ${env:SERVERLESS_RUNTIME}
     layers:
       - { Ref: NodeLambdaLayer }
     environment:
-#      DD_FLUSH_TO_LOG: true
       DD_TRACE_ENABLED: true
