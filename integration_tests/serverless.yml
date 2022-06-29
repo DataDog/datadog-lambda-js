@@ -87,4 +87,5 @@ functions:
     layers:
       - { Ref: NodeLambdaLayer }
     environment:
-      DD_FLUSH_TO_LOG: true
+#      DD_FLUSH_TO_LOG: true
+      DD_TRACE_ENABLED: true
