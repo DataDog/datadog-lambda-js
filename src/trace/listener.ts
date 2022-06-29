@@ -117,20 +117,12 @@ export class TraceListener {
    *
    * @param event
    * @param result
-   * @param context
-   * @param metricsListener
    * @param shouldTagPayload
    */
-  public onEndingInvocation(
-    event: any,
-    result: any,
-    metricsListener: MetricsListener,
-    context: Context,
-    shouldTagPayload = false,
-  ) {
+  public onEndingInvocation(event: any, result: any, shouldTagPayload = false): boolean {
     // Guard clause if something has gone horribly wrong
     // so we won't crash user code.
-    if (!this.tracerWrapper.currentSpan) return;
+    if (!this.tracerWrapper.currentSpan) return false;
 
     this.wrappedCurrentSpan = new SpanWrapper(this.tracerWrapper.currentSpan, {});
     if (shouldTagPayload) {
@@ -150,11 +142,12 @@ export class TraceListener {
         this.inferredSpan.setTag("http.status_code", statusCode);
 
         if (statusCode?.length === 3 && statusCode?.startsWith("5")) {
-          incrementErrorsMetric(metricsListener, context);
           this.wrappedCurrentSpan.setTag("error", "5xx Server Error");
+          return true;
         }
       }
     }
+    return false;
   }
 
   public async onCompleteInvocation(error?: any) {
