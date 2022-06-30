@@ -325,8 +325,6 @@ START
     ]
   ]
 }
-END Duration: XXXX ms Memory Used: XXXX MB
-START
 {
   "traces": [
     [
@@ -408,6 +406,8 @@ START
     ]
   ]
 }
+END Duration: XXXX ms Memory Used: XXXX MB
+START
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
