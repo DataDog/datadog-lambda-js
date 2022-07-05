@@ -142,7 +142,7 @@ export class TraceListener {
         this.inferredSpan.setTag("http.status_code", statusCode);
 
         if (statusCode?.length === 3 && statusCode?.startsWith("5")) {
-          this.wrappedCurrentSpan.setTag("error", "5xx Server Error");
+          this.wrappedCurrentSpan.setTag("error", 1);
           return true;
         }
       }
