@@ -18,6 +18,7 @@ import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 import { SpanInferrer } from "./span-inferrer";
 import { SpanWrapper } from "./span-wrapper";
+import { incrementErrorsMetric, MetricsListener } from "../metrics";
 export type TraceExtractor = (event: any, context: Context) => TraceContext;
 
 export interface TraceConfig {
@@ -118,10 +119,10 @@ export class TraceListener {
    * @param result
    * @param shouldTagPayload
    */
-  public onEndingInvocation(event: any, result: any, shouldTagPayload = false) {
+  public onEndingInvocation(event: any, result: any, shouldTagPayload = false): boolean {
     // Guard clause if something has gone horribly wrong
     // so we won't crash user code.
-    if (!this.tracerWrapper.currentSpan) return;
+    if (!this.tracerWrapper.currentSpan) return false;
 
     this.wrappedCurrentSpan = new SpanWrapper(this.tracerWrapper.currentSpan, {});
     if (shouldTagPayload) {
@@ -139,8 +140,14 @@ export class TraceListener {
       }
       if (this.inferredSpan) {
         this.inferredSpan.setTag("http.status_code", statusCode);
+
+        if (statusCode?.length === 3 && statusCode?.startsWith("5")) {
+          this.wrappedCurrentSpan.setTag("error", 1);
+          return true;
+        }
       }
     }
+    return false;
   }
 
   public async onCompleteInvocation(error?: any) {
