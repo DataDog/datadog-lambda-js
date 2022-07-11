@@ -89,6 +89,7 @@ export function extractTraceContext(
     }
   }
 
+  console.log("TRACE IS", trace);
   if (trace !== undefined) {
     try {
       addTraceContextToXray(trace);
@@ -468,21 +469,9 @@ export function readTraceFromHTTPEvent(event: any): TraceContext | undefined {
   return trace;
 }
 
-function readTraceFromAuthorizer(event: any): TraceContext | undefined {
-  try {
-    return JSON.parse(event.requestContext?.authorizer?._datadog);
-  } catch (e) {
-    return;
-  }
-}
-
 export function readTraceFromEvent(event: any): TraceContext | undefined {
   if (!event || typeof event !== "object") {
     return;
-  }
-
-  if (event.requestContext?.authorizer?._datadog) {
-    return readTraceFromAuthorizer(event);
   }
 
   if (event.headers !== null && typeof event.headers === "object") {

@@ -5,6 +5,10 @@ import { SpanInferrer } from "./span-inferrer";
 import { TraceHeaders } from "./trace-context-service";
 
 export interface SpanContext {
+  _spanId: {
+    _isUint64BE: boolean;
+    _buffer: Uint8Array;
+  };
   toTraceId(): string;
   toSpanId(): string;
 }
@@ -95,10 +99,10 @@ export class TracerWrapper {
     };
   }
 
-  public surrogateAuthorizerSpan(): SpanContext | undefined {
+  public surrogateAuthorizerSpan(parentContext?: SpanContext): SpanContext | undefined {
     if (!this.isTracerAvailable) {
       return;
     }
-    return this.currentSpan._createContext();
+    return this.currentSpan._createContext(parentContext);
   }
 }

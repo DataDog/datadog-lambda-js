@@ -13,7 +13,7 @@ import { extractTriggerTags, extractHTTPStatusCodeTag } from "./trigger";
 import { logDebug, tagObject } from "../utils";
 import { didFunctionColdStart } from "../utils/cold-start";
 import { datadogLambdaVersion } from "../constants";
-import { Source, ddtraceVersion } from "./constants";
+import { Source, ddtraceVersion, parentIDHeader, traceIDHeader, samplingPriorityHeader } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 import { SpanInferrer } from "./span-inferrer";
@@ -142,9 +142,17 @@ export class TraceListener {
       }
     }
 
+    console.log("CURRENT SPAN IS", this.tracerWrapper.currentSpan);
     if (result) {
       if (result.context) {
-        result.context._datadog = JSON.stringify(this.tracerWrapper.traceContext());
+        const surrogateAuthorizerSpan = this.tracerWrapper.surrogateAuthorizerSpan();
+        console.log("SURROGATE AUTHORIZER SPAN IS", surrogateAuthorizerSpan);
+        this.tracerWrapper.currentSpan._spanContext._parentId = surrogateAuthorizerSpan?._spanId;
+        result.context._datadog = JSON.stringify({
+          "x-datadog-surrogate-parent-id": surrogateAuthorizerSpan?.toSpanId(),
+          [traceIDHeader]: this.tracerWrapper.currentSpan.context().toTraceId(),
+          [samplingPriorityHeader]: this.contextService.currentTraceContext?.sampleMode,
+        });
       }
     }
   }

@@ -11,6 +11,8 @@ import {
 import { SpanContext, SpanOptions, TracerWrapper } from "./tracer-wrapper";
 import { eventSources, parseEventSource } from "./trigger";
 import { SpanWrapper } from "./span-wrapper";
+import { logDebug, id } from "../utils";
+
 export class SpanInferrer {
   traceWrapper: TracerWrapper;
   constructor(traceWrapper: TracerWrapper) {
@@ -52,9 +54,9 @@ export class SpanInferrer {
     return "sync";
   }
 
-  // isAuthorizerInvocation(event: any): boolean {
-
-  // }
+  isTracedAuthorizerInvocation(event: any): boolean {
+    return event.requestContext?.authorizer?._datadog;
+  }
 
   createInferredSpanForApiGateway(
     event: any,
@@ -101,9 +103,6 @@ export class SpanInferrer {
       options.tags.connection_id = event.requestContext.connectionId;
       options.tags.event_type = event.requestContext.eventType;
     }
-    // if (isAuthorizerInvocation(event)) {
-    //   options.childOf = this.traceWrapper.surrogateAuthorizerSpan();
-    // }
     if (parentSpanContext) {
       options.childOf = parentSpanContext;
     }
@@ -111,7 +110,21 @@ export class SpanInferrer {
     const spanWrapperOptions = {
       isAsync: this.isApiGatewayAsync(event) === "async",
     };
-    return new SpanWrapper(this.traceWrapper.startSpan("aws.apigateway", options), spanWrapperOptions);
+    const wrappedSpan = new SpanWrapper(this.traceWrapper.startSpan("aws.apigateway", options), spanWrapperOptions);
+    if (this.isTracedAuthorizerInvocation(event)) {
+      let surrogateId = "";
+      try {
+        const parsedSurrogateContext = JSON.parse(event.requestContext.authorizer._datadog);
+        surrogateId = parsedSurrogateContext["x-datadog-surrogate-parent-id"];
+      } catch (e) {
+        logDebug("Error parsing surrogate authorizer context, passing", { e });
+      }
+      const newId = id(surrogateId);
+      wrappedSpan.span._spanId = newId;
+      return wrappedSpan;
+    } else {
+      return wrappedSpan;
+    }
   }
 
   createInferredSpanForLambdaUrl(event: any, context: Context | undefined): any {
