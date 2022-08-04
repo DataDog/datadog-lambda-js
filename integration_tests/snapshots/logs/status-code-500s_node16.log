@@ -1,0 +1,268 @@
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:sa-east-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-status-code-500s_node16",
+    "resource:integration-tests-js-XXXX-status-code-500s_node16",
+    "cold_start:true",
+    "memorysize:1024",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs16.x"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.errors",
+  "t": [
+    "region:sa-east-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-status-code-500s_node16",
+    "resource:integration-tests-js-XXXX-status-code-500s_node16",
+    "cold_start:true",
+    "memorysize:1024",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs16.x"
+  ],
+  "v": 1
+}
+{
+  "traces": [
+    [
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "aws.apigateway",
+        "resource": "GET /{proxy+}",
+        "error": 0,
+        "meta": {
+          "version": "1.0.0",
+          "runtime-id":"XXXX",
+          "operation_name": "aws.apigateway",
+          "resource_names": "GET /{proxy+}",
+          "request_id":"XXXX",
+          "apiid":"XXXX",
+          "_inferred_span.tag_source": "self",
+          "_inferred_span.synchronicity": "sync",
+          "http.method": "GET",
+          "stage": "test",
+          "http.status_code": "500"
+        },
+        "metrics": {
+          "_dd.agent_psr": 1,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "type": "http"
+      },
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "aws.lambda",
+        "resource": "integration-tests-js-XXXX-status-code-500s_node16",
+        "error": 1,
+        "meta": {
+          "service": "integration-tests-js-XXXX-status-code-500s_node16",
+          "version": "1.0.0",
+          "runtime-id":"XXXX",
+          "function_arn":"XXXX_node16",
+          "function_version": "$LATEST",
+          "request_id":"XXXX",
+          "resource_names": "integration-tests-js-XXXX-status-code-500s_node16",
+          "functionname": "integration-tests-js-XXXX-status-code-500s_node16",
+          "datadog_lambda":"XXXX",
+          "function_trigger.event_source": "api-gateway",
+          "function_trigger.event_source_arn": "arn:aws:apigateway:sa-east-1::/restapis/wt6mne2s9k/stages/test",
+          "http.method": "GET",
+          "http.status_code": "500"
+        },
+        "metrics": {
+          "cold_start": 1,
+          "_dd.measured": 1,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "service": "aws.lambda",
+        "type": "serverless"
+      }
+    ]
+  ]
+}
+END Duration: XXXX ms (init: XXXX ms) Memory Used: XXXX MB
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:sa-east-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-status-code-500s_node16",
+    "resource:integration-tests-js-XXXX-status-code-500s_node16",
+    "cold_start:false",
+    "memorysize:1024",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs16.x"
+  ],
+  "v": 1
+}
+{
+  "traces": [
+    [
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "aws.sns",
+        "resource": "sns-lambda",
+        "error": 0,
+        "meta": {
+          "service": "sns",
+          "version": "1.0.0",
+          "runtime-id":"XXXX",
+          "operation_name": "aws.sns",
+          "resource_names": "sns-lambda",
+          "request_id":"XXXX",
+          "_inferred_span.tag_source": "self",
+          "_inferred_span.synchronicity": "async",
+          "type": "Notification",
+          "subject": "TestInvoke",
+          "message_id": "95df01b4-ee98-5cb9-9903-4c221d41eb5e",
+          "topicname": "sns-lambda",
+          "topic_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda",
+          "event_subscription_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda:21be56ed-a058-49f5-8c98-aedd2564c486",
+          "language": "javascript"
+        },
+        "metrics": {
+          "_dd.agent_psr": 1,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "service": "integration-tests-js-XXXX-status-code-500s_node16",
+        "type": "sns"
+      },
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "aws.lambda",
+        "resource": "integration-tests-js-XXXX-status-code-500s_node16",
+        "error": 0,
+        "meta": {
+          "service": "integration-tests-js-XXXX-status-code-500s_node16",
+          "version": "1.0.0",
+          "runtime-id":"XXXX",
+          "function_arn":"XXXX_node16",
+          "function_version": "$LATEST",
+          "request_id":"XXXX",
+          "resource_names": "integration-tests-js-XXXX-status-code-500s_node16",
+          "functionname": "integration-tests-js-XXXX-status-code-500s_node16",
+          "datadog_lambda":"XXXX",
+          "function_trigger.event_source": "sns",
+          "function_trigger.event_source_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda"
+        },
+        "metrics": {
+          "cold_start": 0,
+          "_dd.measured": 1,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "service": "aws.lambda",
+        "type": "serverless"
+      }
+    ]
+  ]
+}
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:sa-east-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-status-code-500s_node16",
+    "resource:integration-tests-js-XXXX-status-code-500s_node16",
+    "cold_start:false",
+    "memorysize:1024",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs16.x"
+  ],
+  "v": 1
+}
+{
+  "traces": [
+    [
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "aws.sqs",
+        "resource": "my-queue",
+        "error": 0,
+        "meta": {
+          "service": "sqs",
+          "version": "1.0.0",
+          "runtime-id":"XXXX",
+          "operation_name": "aws.sqs",
+          "resource_names": "my-queue",
+          "request_id":"XXXX",
+          "_inferred_span.tag_source": "self",
+          "_inferred_span.synchronicity": "async",
+          "queuename": "my-queue",
+          "event_source_arn": "arn:aws:sqs:us-east-2:123456789012:my-queue",
+          "receipt_handle": "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
+          "sender_id": "AIDAIENQZJOLO23YVJ4VO"
+        },
+        "metrics": {
+          "_dd.agent_psr": 1,
+          "retry_count": 1,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "service": "my-queue",
+        "type": "web"
+      },
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "aws.lambda",
+        "resource": "integration-tests-js-XXXX-status-code-500s_node16",
+        "error": 0,
+        "meta": {
+          "service": "integration-tests-js-XXXX-status-code-500s_node16",
+          "version": "1.0.0",
+          "runtime-id":"XXXX",
+          "function_arn":"XXXX_node16",
+          "function_version": "$LATEST",
+          "request_id":"XXXX",
+          "resource_names": "integration-tests-js-XXXX-status-code-500s_node16",
+          "functionname": "integration-tests-js-XXXX-status-code-500s_node16",
+          "datadog_lambda":"XXXX",
+          "function_trigger.event_source": "sqs",
+          "function_trigger.event_source_arn": "arn:aws:sqs:us-east-2:123456789012:my-queue"
+        },
+        "metrics": {
+          "cold_start": 0,
+          "_dd.measured": 1,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "service": "aws.lambda",
+        "type": "serverless"
+      }
+    ]
+  ]
+}
+END Duration: XXXX ms Memory Used: XXXX MB
