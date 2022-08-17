@@ -89,7 +89,6 @@ export function extractTraceContext(
     }
   }
 
-  console.log("TRACE IS", trace);
   if (trace !== undefined) {
     try {
       addTraceContextToXray(trace);
@@ -469,9 +468,42 @@ export function readTraceFromHTTPEvent(event: any): TraceContext | undefined {
   return trace;
 }
 
+export function readTraceFromAuthorizerEvent(event: any): TraceContext | undefined {
+  let traceData;
+  try {
+    traceData = JSON.parse(event.requestContext.authorizer._datadog);
+  } catch (error) {
+    logDebug(`unable to extract trace context from authorizer event`, { error });
+    return;
+  }
+  const traceID = traceData[traceIDHeader];
+  const parentID = traceData[parentIDHeader];
+  const sampledHeader = traceData[samplingPriorityHeader];
+
+  if (typeof traceID !== "string" || typeof parentID !== "string" || typeof sampledHeader !== "string") {
+    return;
+  }
+  const sampleMode = parseInt(sampledHeader, 10);
+
+  const data = {
+    parentID,
+    sampleMode,
+    source: Source.Event,
+    traceID,
+  };
+  console.log("okay returning data", data);
+
+  return data;
+}
+
 export function readTraceFromEvent(event: any): TraceContext | undefined {
   if (!event || typeof event !== "object") {
     return;
+  }
+
+  if (event?.requestContext?.authorizer?._datadog && event.requestContext.authorizer.integrationLatency > 0) {
+    console.log("RETURNING TRACE DATA FROM UPSTREAM AUTHORIZER EVENT");
+    return readTraceFromAuthorizerEvent(event);
   }
 
   if (event.headers !== null && typeof event.headers === "object") {

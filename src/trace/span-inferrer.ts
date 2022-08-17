@@ -103,28 +103,46 @@ export class SpanInferrer {
       options.tags.connection_id = event.requestContext.connectionId;
       options.tags.event_type = event.requestContext.eventType;
     }
-    if (parentSpanContext) {
-      options.childOf = parentSpanContext;
+    let upstreamAuthorizerSpan: SpanWrapper | undefined;
+    if (this.isTracedAuthorizerInvocation(event) && event.requestContext.authorizer.integrationLatency > 0) {
+      const parsedUpstreamContext = JSON.parse(event.requestContext.authorizer._datadog);
+      let upstreamSpanOptions: SpanOptions = {};
+      upstreamSpanOptions = {
+        startTime: parsedUpstreamContext.parentSpanFinishTime,
+        tags: { operation_name: "aws.apigateway.authorizer", ...options.tags },
+      };
+      upstreamSpanOptions.childOf = parentSpanContext;
+      upstreamAuthorizerSpan = new SpanWrapper(
+        this.traceWrapper.startSpan("aws.apigateway.authorizer", upstreamSpanOptions),
+        { isAsync: false },
+      );
+      upstreamAuthorizerSpan.span.finish(event.requestContext.timeEpoch);
     }
+    options.childOf = upstreamAuthorizerSpan ? upstreamAuthorizerSpan.span : parentSpanContext;
+
     options.startTime = event.requestContext.timeEpoch;
     const spanWrapperOptions = {
       isAsync: this.isApiGatewayAsync(event) === "async",
     };
     const wrappedSpan = new SpanWrapper(this.traceWrapper.startSpan("aws.apigateway", options), spanWrapperOptions);
-    if (this.isTracedAuthorizerInvocation(event)) {
-      let surrogateId = "";
-      try {
-        const parsedSurrogateContext = JSON.parse(event.requestContext.authorizer._datadog);
-        surrogateId = parsedSurrogateContext["x-datadog-surrogate-parent-id"];
-      } catch (e) {
-        logDebug("Error parsing surrogate authorizer context, passing", { e });
-      }
-      const newId = id(surrogateId);
-      wrappedSpan.span._spanId = newId;
-      return wrappedSpan;
-    } else {
-      return wrappedSpan;
-    }
+    // if (this.isTracedAuthorizerInvocation(event)) {
+    //   let surrogateId = "";
+    //   try {
+    //     const parsedSurrogateContext = JSON.parse(event.requestContext.authorizer._datadog);
+    //     surrogateId = parsedSurrogateContext["x-datadog-surrogate-parent-id"];
+    //   } catch (e) {
+    //     logDebug("Error parsing surrogate authorizer context, passing", { e });
+    //     return wrappedSpan;
+    //   }
+    //   const newId = id(surrogateId);
+    //   wrappedSpan.span._spanId = newId;
+    //   wrappedSpan.span._traceId = newId;
+    //   console.log("Wrapped span ID is", wrappedSpan.span.context().toSpanId());
+    //   return wrappedSpan;
+    // } else {
+    //   return wrappedSpan;
+    // }
+    return wrappedSpan;
   }
 
   createInferredSpanForLambdaUrl(event: any, context: Context | undefined): any {
