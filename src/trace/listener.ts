@@ -148,15 +148,16 @@ export class TraceListener {
       }
     }
 
-    if (result && result.context && this.inferredSpan) {
+    // We're in an authorizer
+    if (result?.principalId && result?.policyDocument && this.inferredSpan) {
       const finishTime = this.inferredSpan.isAsync() ? this.wrappedCurrentSpan?.startTime() : Date.now();
+      if (!result.context) {
+        result.context = {};
+      }
       result.context._datadog = JSON.stringify({
-        [parentIDHeader]: this.inferredSpan.span.context().toSpanId().toString(),
-        [samplingPriorityHeader]: SampleMode.AUTO_KEEP.toString(),
-        [traceIDHeader]: this.inferredSpan.span.context().toTraceId().toString(),
+        ...this.tracerWrapper.injectSpan(this.inferredSpan.span),
         parentSpanFinishTime: finishTime,
       });
-      console.log("RESULT CONTEXT IS, ", result.context);
     }
     return false;
   }

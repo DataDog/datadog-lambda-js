@@ -105,4 +105,10 @@ export class TracerWrapper {
     }
     return this.currentSpan._createContext(parentContext);
   }
+
+  public injectSpan(span: SpanContext): any {
+    const dest = {};
+    this.tracer.inject(span, "text_map", dest);
+    return dest;
+  }
 }
