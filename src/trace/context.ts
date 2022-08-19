@@ -207,8 +207,7 @@ export function readTraceFromSQSEvent(event: SQSEvent): TraceContext | undefined
     const traceHeaders = event.Records[0].messageAttributes._datadog.stringValue;
 
     try {
-      const traceData = JSON.parse(traceHeaders);
-      const trace = exportTraceData(traceData);
+      const trace = exportTraceData(JSON.parse(traceHeaders));
 
       logDebug(`extracted trace context from sqs event`, { trace, event });
       return trace;
@@ -258,8 +257,7 @@ export function readTraceFromKinesisEvent(event: KinesisStreamEvent): TraceConte
     try {
       const parsedBody = JSON.parse(Buffer.from(event.Records[0].kinesis.data, "base64").toString("ascii")) as any;
       if (parsedBody && parsedBody._datadog) {
-        const traceData = parsedBody._datadog;
-        const trace = exportTraceData(traceData);
+        const trace = exportTraceData(parsedBody._datadog);
         logDebug(`extracted trace context from Kinesis event`, { trace });
         return trace;
       }
@@ -275,8 +273,7 @@ export function readTraceFromKinesisEvent(event: KinesisStreamEvent): TraceConte
 export function readTraceFromEventbridgeEvent(event: EventBridgeEvent<any, any>): TraceContext | undefined {
   if (event?.detail?._datadog) {
     try {
-      const traceData = event.detail._datadog;
-      const trace = exportTraceData(traceData);
+      const trace = exportTraceData(event.detail._datadog);
       logDebug(`extracted trace context from Eventbridge event`, { trace, event });
       return trace;
     } catch (err) {
