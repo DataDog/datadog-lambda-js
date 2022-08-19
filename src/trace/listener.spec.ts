@@ -59,6 +59,7 @@ describe("TraceListener", () => {
     autoPatchHTTP: true,
     captureLambdaPayload: false,
     createInferredSpan: true,
+    encodeAuthorizerContext: true,
     mergeDatadogXrayTraces: false,
     injectLogContext: false,
   };
