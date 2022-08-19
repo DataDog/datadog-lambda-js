@@ -125,23 +125,6 @@ export class SpanInferrer {
       isAsync: this.isApiGatewayAsync(event) === "async",
     };
     const wrappedSpan = new SpanWrapper(this.traceWrapper.startSpan("aws.apigateway", options), spanWrapperOptions);
-    // if (this.isTracedAuthorizerInvocation(event)) {
-    //   let surrogateId = "";
-    //   try {
-    //     const parsedSurrogateContext = JSON.parse(event.requestContext.authorizer._datadog);
-    //     surrogateId = parsedSurrogateContext["x-datadog-surrogate-parent-id"];
-    //   } catch (e) {
-    //     logDebug("Error parsing surrogate authorizer context, passing", { e });
-    //     return wrappedSpan;
-    //   }
-    //   const newId = id(surrogateId);
-    //   wrappedSpan.span._spanId = newId;
-    //   wrappedSpan.span._traceId = newId;
-    //   console.log("Wrapped span ID is", wrappedSpan.span.context().toSpanId());
-    //   return wrappedSpan;
-    // } else {
-    //   return wrappedSpan;
-    // }
     return wrappedSpan;
   }
 

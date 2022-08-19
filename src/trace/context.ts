@@ -375,7 +375,6 @@ export function readTraceFromEvent(event: any): TraceContext | undefined {
   }
 
   if (event?.requestContext?.authorizer?._datadog && event.requestContext.authorizer.integrationLatency > 0) {
-    console.log("RETURNING TRACE DATA FROM UPSTREAM AUTHORIZER EVENT");
     return readTraceFromAuthorizerEvent(event);
   }
 

@@ -64,6 +64,7 @@ export const defaultConfig: Config = {
   captureLambdaPayload: false,
   createInferredSpan: true,
   debugLogging: false,
+  encodeAuthorizerContext: true,
   enhancedMetrics: true,
   forceWrap: false,
   injectLogContext: true,

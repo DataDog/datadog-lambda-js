@@ -36,6 +36,10 @@ export interface TraceConfig {
    */
   createInferredSpan: boolean;
   /**
+   * Whether to encode trace context in authorizer metadata
+   */
+  encodeAuthorizerContext: boolean;
+  /**
    * Whether to automatically patch console.log with Datadog's tracing ids.
    */
   injectLogContext: boolean;
@@ -130,6 +134,11 @@ export class TraceListener {
       tagObject(this.tracerWrapper.currentSpan, "function.response", result);
     }
 
+    // We're in an authorizer
+    if (this.config.encodeAuthorizerContext && result?.principalId && result?.policyDocument) {
+      this.injectAuthorizerSpan(result);
+    }
+
     if (this.triggerTags) {
       const statusCode = extractHTTPStatusCodeTag(this.triggerTags, result);
 
@@ -147,9 +156,11 @@ export class TraceListener {
         }
       }
     }
+    return false;
+  }
 
-    // We're in an authorizer
-    if (result?.principalId && result?.policyDocument && this.inferredSpan) {
+  injectAuthorizerSpan(result: any): any {
+    if (this.inferredSpan) {
       const finishTime = this.inferredSpan.isAsync() ? this.wrappedCurrentSpan?.startTime() : Date.now();
       if (!result.context) {
         result.context = {};
@@ -159,7 +170,6 @@ export class TraceListener {
         parentSpanFinishTime: finishTime,
       });
     }
-    return false;
   }
 
   public async onCompleteInvocation(error?: any) {
