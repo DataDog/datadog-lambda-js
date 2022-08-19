@@ -208,22 +208,8 @@ export function readTraceFromSQSEvent(event: SQSEvent): TraceContext | undefined
 
     try {
       const traceData = JSON.parse(traceHeaders);
-      const traceID = traceData[traceIDHeader];
-      const parentID = traceData[parentIDHeader];
-      const sampledHeader = traceData[samplingPriorityHeader];
+      const trace = exportTraceData(traceData);
 
-      if (typeof traceID !== "string" || typeof parentID !== "string" || typeof sampledHeader !== "string") {
-        return;
-      }
-
-      const sampleMode = parseInt(sampledHeader, 10);
-
-      const trace = {
-        parentID,
-        sampleMode,
-        source: Source.Event,
-        traceID,
-      };
       logDebug(`extracted trace context from sqs event`, { trace, event });
       return trace;
     } catch (err) {
@@ -253,21 +239,8 @@ export function readTraceFromSNSSQSEvent(event: SQSEvent): TraceContext | undefi
           const b64Decoded = Buffer.from(parsedBody.MessageAttributes._datadog.Value, "base64").toString("ascii");
           traceData = JSON.parse(b64Decoded);
         }
-        const traceID = traceData[traceIDHeader];
-        const parentID = traceData[parentIDHeader];
-        const sampledHeader = traceData[samplingPriorityHeader];
+        const trace = exportTraceData(traceData);
 
-        if (typeof traceID !== "string" || typeof parentID !== "string" || typeof sampledHeader !== "string") {
-          return;
-        }
-        const sampleMode = parseInt(sampledHeader, 10);
-
-        const trace = {
-          parentID,
-          sampleMode,
-          source: Source.Event,
-          traceID,
-        };
         logDebug(`extracted trace context from SNS SQS event`, { trace, event });
         return trace;
       }
@@ -286,21 +259,7 @@ export function readTraceFromKinesisEvent(event: KinesisStreamEvent): TraceConte
       const parsedBody = JSON.parse(Buffer.from(event.Records[0].kinesis.data, "base64").toString("ascii")) as any;
       if (parsedBody && parsedBody._datadog) {
         const traceData = parsedBody._datadog;
-        const traceID = traceData[traceIDHeader];
-        const parentID = traceData[parentIDHeader];
-        const sampledHeader = traceData[samplingPriorityHeader];
-
-        if (typeof traceID !== "string" || typeof parentID !== "string" || typeof sampledHeader !== "string") {
-          return;
-        }
-        const sampleMode = parseInt(sampledHeader, 10);
-
-        const trace = {
-          parentID,
-          sampleMode,
-          source: Source.Event,
-          traceID,
-        };
+        const trace = exportTraceData(traceData);
         logDebug(`extracted trace context from Kinesis event`, { trace });
         return trace;
       }
@@ -317,21 +276,7 @@ export function readTraceFromEventbridgeEvent(event: EventBridgeEvent<any, any>)
   if (event?.detail?._datadog) {
     try {
       const traceData = event.detail._datadog;
-      const traceID = traceData[traceIDHeader];
-      const parentID = traceData[parentIDHeader];
-      const sampledHeader = traceData[samplingPriorityHeader];
-
-      if (typeof traceID !== "string" || typeof parentID !== "string" || typeof sampledHeader !== "string") {
-        return;
-      }
-      const sampleMode = parseInt(sampledHeader, 10);
-
-      const trace = {
-        parentID,
-        sampleMode,
-        source: Source.Event,
-        traceID,
-      };
+      const trace = exportTraceData(traceData);
       logDebug(`extracted trace context from Eventbridge event`, { trace, event });
       return trace;
     } catch (err) {
@@ -355,21 +300,7 @@ export function readTraceFromSNSEvent(event: SNSEvent): TraceContext | undefined
         );
         traceData = JSON.parse(b64Decoded);
       }
-      const traceID = traceData[traceIDHeader];
-      const parentID = traceData[parentIDHeader];
-      const sampledHeader = traceData[samplingPriorityHeader];
-
-      if (typeof traceID !== "string" || typeof parentID !== "string" || typeof sampledHeader !== "string") {
-        return;
-      }
-      const sampleMode = parseInt(sampledHeader, 10);
-
-      const trace = {
-        parentID,
-        sampleMode,
-        source: Source.Event,
-        traceID,
-      };
+      const trace = exportTraceData(traceData);
       logDebug(`extracted trace context from SNS event`, { trace, event });
       return trace;
     } catch (err) {
@@ -411,26 +342,7 @@ export function readTraceFromLambdaContext(context: any): TraceContext | undefin
     return;
   }
 
-  const traceID = traceData[traceIDHeader];
-  if (typeof traceID !== "string") {
-    return;
-  }
-  const parentID = traceData[parentIDHeader];
-  if (typeof parentID !== "string") {
-    return;
-  }
-  const sampledHeader = traceData[samplingPriorityHeader];
-  if (typeof sampledHeader !== "string") {
-    return;
-  }
-  const sampleMode = parseInt(sampledHeader, 10);
-
-  const trace = {
-    parentID,
-    sampleMode,
-    source: Source.Event,
-    traceID,
-  };
+  const trace = exportTraceData(traceData);
   logDebug(`extracted trace context from lambda context`, { trace, context });
   return trace;
 }
@@ -443,26 +355,7 @@ export function readTraceFromHTTPEvent(event: any): TraceContext | undefined {
     lowerCaseHeaders[key.toLowerCase()] = headers[key];
   }
 
-  const traceID = lowerCaseHeaders[traceIDHeader];
-  if (typeof traceID !== "string") {
-    return;
-  }
-  const parentID = lowerCaseHeaders[parentIDHeader];
-  if (typeof parentID !== "string") {
-    return;
-  }
-  const sampledHeader = lowerCaseHeaders[samplingPriorityHeader];
-  if (typeof sampledHeader !== "string") {
-    return;
-  }
-  const sampleMode = parseInt(sampledHeader, 10);
-
-  const trace = {
-    parentID,
-    sampleMode,
-    source: Source.Event,
-    traceID,
-  };
+  const trace = exportTraceData(lowerCaseHeaders);
 
   logDebug(`extracted trace context from http event`, { trace, event });
   return trace;
@@ -476,24 +369,7 @@ export function readTraceFromAuthorizerEvent(event: any): TraceContext | undefin
     logDebug(`unable to extract trace context from authorizer event`, { error });
     return;
   }
-  const traceID = traceData[traceIDHeader];
-  const parentID = traceData[parentIDHeader];
-  const sampledHeader = traceData[samplingPriorityHeader];
-
-  if (typeof traceID !== "string" || typeof parentID !== "string" || typeof sampledHeader !== "string") {
-    return;
-  }
-  const sampleMode = parseInt(sampledHeader, 10);
-
-  const data = {
-    parentID,
-    sampleMode,
-    source: Source.Event,
-    traceID,
-  };
-  console.log("okay returning data", data);
-
-  return data;
+  return exportTraceData(traceData);
 }
 
 export function readTraceFromEvent(event: any): TraceContext | undefined {
@@ -673,4 +549,23 @@ export function convertToAPMParentID(xrayParentID: string): string | undefined {
     return;
   }
   return hex.toString(10);
+}
+
+function exportTraceData(traceData: any): TraceContext | undefined {
+  const traceID = traceData[traceIDHeader];
+  const parentID = traceData[parentIDHeader];
+  const sampledHeader = traceData[samplingPriorityHeader];
+
+  if (typeof traceID !== "string" || typeof parentID !== "string" || typeof sampledHeader !== "string") {
+    return;
+  }
+
+  const sampleMode = parseInt(sampledHeader, 10);
+
+  return {
+    parentID,
+    sampleMode,
+    source: Source.Event,
+    traceID,
+  };
 }
