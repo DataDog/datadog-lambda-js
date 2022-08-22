@@ -1,7 +1,6 @@
 import { logDebug } from "../utils";
 import { SampleMode, Source } from "./constants";
 import { TraceContext } from "./context";
-import { SpanInferrer } from "./span-inferrer";
 import { TraceHeaders } from "./trace-context-service";
 
 export interface SpanContext {
@@ -93,13 +92,6 @@ export class TracerWrapper {
       source: Source.Event,
       traceID,
     };
-  }
-
-  public surrogateAuthorizerSpan(parentContext?: SpanContext): SpanContext | undefined {
-    if (!this.isTracerAvailable) {
-      return;
-    }
-    return this.currentSpan._createContext(parentContext);
   }
 
   public injectSpan(span: SpanContext): any {
