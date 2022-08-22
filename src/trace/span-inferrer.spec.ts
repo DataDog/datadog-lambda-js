@@ -9,6 +9,7 @@ const eventBridgeEvent = require("../../event_samples/eventbridge.json");
 const webSocketEvent = require("../../event_samples/api-gateway-wss.json");
 const apiGatewayV1 = require("../../event_samples/api-gateway-v1.json");
 const apiGatewayV2 = require("../../event_samples/api-gateway-v2.json");
+const apiGatewayTracedAuthorizer = require("../../event_samples/api-gateway-traced-authorizer.json");
 const s3Event = require("../../event_samples/s3.json");
 const functionUrlEvent = require("../../event_samples/lambda-function-urls.json");
 const mockWrapper = {
@@ -269,6 +270,66 @@ describe("SpanInferrer", () => {
         stage: "default",
       },
     });
+  });
+
+  it("creates an inferred span for API Gateway V1 event with traced authorizers", () => {
+    const mockFinish = () => undefined;
+    const mockWrapperWithFinish = {
+      startSpan: jest.fn(() => {
+        return {
+          finish: mockFinish,
+        };
+      }),
+    };
+
+    const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
+    inferrer.createInferredSpan(apiGatewayTracedAuthorizer, {} as any, {} as SpanContext);
+    expect(mockWrapperWithFinish.startSpan.mock.calls[0]).toEqual([
+      "aws.apigateway.authorizer",
+      {
+        childOf: {},
+        startTime: 1660939857052,
+        tags: {
+          _inferred_span: { synchronicity: "sync", tag_source: "self" },
+          apiid: "3gsxz7lha4",
+          domain_name: "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com",
+          endpoint: "/dev/hello",
+          "http.method": "POST",
+          "http.url": "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com/dev/hello",
+          operation_name: "aws.apigateway",
+          request_id: undefined,
+          "resource.name": "POST /hello",
+          resource_names: "POST /hello",
+          service: "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com",
+          "service.name": "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com",
+          "span.type": "http",
+          stage: "dev",
+        },
+      },
+    ]);
+    expect(mockWrapperWithFinish.startSpan.mock.calls[1]).toEqual([
+      "aws.apigateway",
+      {
+        childOf: { finish: mockFinish }, // Hack around jest mocks
+        startTime: undefined,
+        tags: {
+          _inferred_span: { synchronicity: "sync", tag_source: "self" },
+          apiid: "3gsxz7lha4",
+          domain_name: "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com",
+          endpoint: "/dev/hello",
+          "http.method": "POST",
+          "http.url": "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com/dev/hello",
+          operation_name: "aws.apigateway",
+          request_id: undefined,
+          "resource.name": "POST /hello",
+          resource_names: "POST /hello",
+          service: "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com",
+          "service.name": "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com",
+          "span.type": "http",
+          stage: "dev",
+        },
+      },
+    ]);
   });
 
   it("creates an inferred span for Lambda Function URL Events", () => {

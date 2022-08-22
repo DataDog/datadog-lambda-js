@@ -22,6 +22,7 @@ import {
   readTraceFromSQSEvent,
   readTraceFromHTTPEvent,
   readTraceFromLambdaContext,
+  readTraceFromAuthorizerEvent,
 } from "./context";
 
 let sentSegment: any;
@@ -218,6 +219,27 @@ describe("readTraceFromEvent", () => {
       sampleMode: SampleMode.AUTO_KEEP,
       traceID: "4555236104497098341",
       source: Source.Event,
+    });
+  });
+
+  it("can parse a traced authorizer source", () => {
+    const result = readTraceFromEvent({
+      requestContext: {
+        resourceId: "oozq9u",
+        authorizer: {
+          _datadog:
+            '{"x-datadog-trace-id":"2389589954026090296","x-datadog-parent-id":"2389589954026090296","x-datadog-sampling-priority":"1","x-datadog-parent-span-finish-time":1660939899233}',
+          principalId: "foo",
+          integrationLatency: 71,
+          preserve: "this key set by a customer",
+        },
+      },
+    });
+    expect(result).toEqual({
+      parentID: "2389589954026090296",
+      sampleMode: 1,
+      source: "event",
+      traceID: "2389589954026090296",
     });
   });
 

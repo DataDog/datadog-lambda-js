@@ -116,7 +116,7 @@ export class SpanInferrer {
         this.traceWrapper.startSpan("aws.apigateway.authorizer", upstreamSpanOptions),
         { isAsync: false },
       );
-      upstreamAuthorizerSpan.span.finish(event.requestContext.timeEpoch);
+      upstreamAuthorizerSpan.finish(event.requestContext.timeEpoch);
     }
     options.childOf = upstreamAuthorizerSpan ? upstreamAuthorizerSpan.span : parentSpanContext;
 
