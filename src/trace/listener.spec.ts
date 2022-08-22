@@ -1,8 +1,16 @@
 import { TraceExtractor, TraceListener } from "./listener";
-import { Source, ddtraceVersion } from "./constants";
+import {
+  Source,
+  ddtraceVersion,
+  parentIDHeader,
+  traceIDHeader,
+  samplingPriorityHeader,
+  parentSpanFinishTimeHeader,
+} from "./constants";
 import { datadogLambdaVersion } from "../constants";
 import { Context } from "aws-lambda";
 import { TraceHeaders } from "./trace-context-service";
+import { SpanWrapper } from "./span-wrapper";
 
 let mockWrap: jest.Mock<any, any>;
 let mockExtract: jest.Mock<any, any>;
@@ -25,6 +33,15 @@ jest.mock("./tracer-wrapper", () => {
 
     extract(event: any): any {
       return mockExtract(event);
+    }
+
+    injectSpan(span: any): any {
+      return {
+        [parentIDHeader]: span.toSpanId(),
+        [traceIDHeader]: span.toTraceId(),
+        [samplingPriorityHeader]: 1,
+        [parentSpanFinishTimeHeader]: 1661189936981,
+      };
     }
   }
   return {
@@ -278,6 +295,42 @@ describe("TraceListener", () => {
         type: "serverless",
       },
       unwrappedFunc,
+    );
+  });
+
+  it("injects authorizer context if it exists", async () => {
+    const listener = new TraceListener(defaultConfig);
+    mockTraceHeaders = {
+      "x-datadog-parent-id": "797643193680388251",
+      "x-datadog-sampling-priority": "2",
+      "x-datadog-trace-id": "4110911582297405551",
+      "x-datadog-parent-span-finish-time": "1661189936981",
+    };
+    mockTraceSource = Source.Event;
+    const inferredSpan = new SpanWrapper(
+      {
+        toSpanId: () => {
+          return "797643193680388251";
+        },
+        toTraceId: () => {
+          return "4110911582297405551";
+        },
+      },
+      { isAsync: true },
+    );
+    (listener as any).wrappedCurrentSpan = {
+      startTime: () => {
+        return 1661189936981;
+      },
+    } as any;
+
+    (listener as any).inferredSpan = inferredSpan;
+
+    const result: any = {};
+    listener.injectAuthorizerSpan(result);
+
+    expect(result.context._datadog).toBe(
+      '{"x-datadog-parent-id":"797643193680388251","x-datadog-trace-id":"4110911582297405551","x-datadog-sampling-priority":1,"x-datadog-parent-span-finish-time":1661189936981}',
     );
   });
 });

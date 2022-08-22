@@ -126,7 +126,6 @@ export class TraceListener {
     // Guard clause if something has gone horribly wrong
     // so we won't crash user code.
     if (!this.tracerWrapper.currentSpan) return false;
-
     this.wrappedCurrentSpan = new SpanWrapper(this.tracerWrapper.currentSpan, {});
     if (shouldTagPayload) {
       tagObject(this.tracerWrapper.currentSpan, "function.request", event);
