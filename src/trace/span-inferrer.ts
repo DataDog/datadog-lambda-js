@@ -12,7 +12,7 @@ import { SpanContext, SpanOptions, TracerWrapper } from "./tracer-wrapper";
 import { eventSources, parseEventSource } from "./trigger";
 import { SpanWrapper } from "./span-wrapper";
 import { parentSpanFinishTimeHeader } from "./constants";
-import { logDebug } from "utils";
+import { logDebug } from "../utils";
 
 export class SpanInferrer {
   traceWrapper: TracerWrapper;
