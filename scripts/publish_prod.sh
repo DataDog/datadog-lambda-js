@@ -91,4 +91,4 @@ echo "Now create a new release with the tag v${NEW_VERSION} created"
 echo "https://github.com/DataDog/datadog-lambda-js/releases/new?tag=v$NEW_VERSION&title=v$NEW_VERSION"
 
 # Open a PR to the documentation repo to automatically bump layer version
-VERSION=$VERSION LAYER=datadog-lambda-js ./scripts/create_documentation_pr.sh
+VERSION=$LAYER_VERSION LAYER=datadog-lambda-js ./scripts/create_documentation_pr.sh
