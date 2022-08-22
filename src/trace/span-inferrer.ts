@@ -12,6 +12,7 @@ import { SpanContext, SpanOptions, TracerWrapper } from "./tracer-wrapper";
 import { eventSources, parseEventSource } from "./trigger";
 import { SpanWrapper } from "./span-wrapper";
 import { parentSpanFinishTimeHeader } from "./constants";
+import { logDebug } from "utils";
 
 export class SpanInferrer {
   traceWrapper: TracerWrapper;
@@ -105,18 +106,22 @@ export class SpanInferrer {
     }
     let upstreamAuthorizerSpan: SpanWrapper | undefined;
     if (this.isTracedAuthorizerInvocation(event) && event.requestContext.authorizer.integrationLatency > 0) {
-      const parsedUpstreamContext = JSON.parse(event.requestContext.authorizer._datadog);
-      let upstreamSpanOptions: SpanOptions = {};
-      upstreamSpanOptions = {
-        startTime: parsedUpstreamContext[parentSpanFinishTimeHeader],
-        tags: { operation_name: "aws.apigateway.authorizer", ...options.tags },
-      };
-      upstreamSpanOptions.childOf = parentSpanContext;
-      upstreamAuthorizerSpan = new SpanWrapper(
-        this.traceWrapper.startSpan("aws.apigateway.authorizer", upstreamSpanOptions),
-        { isAsync: false },
-      );
-      upstreamAuthorizerSpan.finish(event.requestContext.timeEpoch);
+      try {
+        const parsedUpstreamContext = JSON.parse(event.requestContext.authorizer._datadog);
+        let upstreamSpanOptions: SpanOptions = {};
+        upstreamSpanOptions = {
+          startTime: parsedUpstreamContext[parentSpanFinishTimeHeader],
+          tags: { operation_name: "aws.apigateway.authorizer", ...options.tags },
+        };
+        upstreamSpanOptions.childOf = parentSpanContext;
+        upstreamAuthorizerSpan = new SpanWrapper(
+          this.traceWrapper.startSpan("aws.apigateway.authorizer", upstreamSpanOptions),
+          { isAsync: false },
+        );
+        upstreamAuthorizerSpan.finish(event.requestContext.timeEpoch);
+      } catch (error) {
+        logDebug("Error decoding authorizer span", error as Error);
+      }
     }
     options.childOf = upstreamAuthorizerSpan ? upstreamAuthorizerSpan.span : parentSpanContext;
 
