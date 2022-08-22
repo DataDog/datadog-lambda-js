@@ -129,8 +129,7 @@ export class SpanInferrer {
     const spanWrapperOptions = {
       isAsync: this.isApiGatewayAsync(event) === "async",
     };
-    const wrappedSpan = new SpanWrapper(this.traceWrapper.startSpan("aws.apigateway", options), spanWrapperOptions);
-    return wrappedSpan;
+    return new SpanWrapper(this.traceWrapper.startSpan("aws.apigateway", options), spanWrapperOptions);
   }
 
   createInferredSpanForLambdaUrl(event: any, context: Context | undefined): any {
