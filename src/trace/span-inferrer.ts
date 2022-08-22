@@ -11,7 +11,7 @@ import {
 import { SpanContext, SpanOptions, TracerWrapper } from "./tracer-wrapper";
 import { eventSources, parseEventSource } from "./trigger";
 import { SpanWrapper } from "./span-wrapper";
-import { logDebug, id } from "../utils";
+import { parentSpanFinishTimeHeader } from "./constants";
 
 export class SpanInferrer {
   traceWrapper: TracerWrapper;
@@ -108,7 +108,7 @@ export class SpanInferrer {
       const parsedUpstreamContext = JSON.parse(event.requestContext.authorizer._datadog);
       let upstreamSpanOptions: SpanOptions = {};
       upstreamSpanOptions = {
-        startTime: parsedUpstreamContext.parentSpanFinishTime,
+        startTime: parsedUpstreamContext[parentSpanFinishTimeHeader],
         tags: { operation_name: "aws.apigateway.authorizer", ...options.tags },
       };
       upstreamSpanOptions.childOf = parentSpanContext;

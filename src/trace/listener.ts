@@ -13,12 +13,11 @@ import { extractTriggerTags, extractHTTPStatusCodeTag } from "./trigger";
 import { logDebug, tagObject } from "../utils";
 import { didFunctionColdStart } from "../utils/cold-start";
 import { datadogLambdaVersion } from "../constants";
-import { Source, ddtraceVersion, parentIDHeader, traceIDHeader, samplingPriorityHeader, SampleMode } from "./constants";
+import { Source, ddtraceVersion, parentSpanFinishTimeHeader } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 import { SpanInferrer } from "./span-inferrer";
 import { SpanWrapper } from "./span-wrapper";
-import { incrementErrorsMetric, MetricsListener } from "../metrics";
 export type TraceExtractor = (event: any, context: Context) => TraceContext;
 
 export interface TraceConfig {
@@ -160,16 +159,14 @@ export class TraceListener {
   }
 
   injectAuthorizerSpan(result: any): any {
-    if (this.inferredSpan) {
-      const finishTime = this.inferredSpan.isAsync() ? this.wrappedCurrentSpan?.startTime() : Date.now();
-      if (!result.context) {
-        result.context = {};
-      }
-      result.context._datadog = JSON.stringify({
-        ...this.tracerWrapper.injectSpan(this.inferredSpan.span),
-        parentSpanFinishTime: finishTime,
-      });
+    const finishTime = this.inferredSpan?.isAsync() ? this.wrappedCurrentSpan?.startTime() : Date.now();
+    if (!result.context) {
+      result.context = {};
     }
+    result.context._datadog = JSON.stringify({
+      ...this.tracerWrapper.injectSpan(this.inferredSpan?.span || this.tracerWrapper.currentSpan),
+      [parentSpanFinishTimeHeader]: finishTime,
+    });
   }
 
   public async onCompleteInvocation(error?: any) {
