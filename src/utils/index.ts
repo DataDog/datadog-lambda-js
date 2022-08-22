@@ -4,4 +4,3 @@ export { Timer } from "./timer";
 export { logError, logDebug, Logger, setLogLevel, setLogger, LogLevel } from "./log";
 export { get, post } from "./request";
 export { tagObject } from "./tag-object";
-export { id } from "./id";
