@@ -158,10 +158,14 @@ export class TraceListener {
   }
 
   injectAuthorizerSpan(result: any): any {
+    // Token-based authorizers do not have inferred spans (as only the token is passed as the event payload)
+    // So in this case we use Now instead
     const finishTime = this.inferredSpan?.isAsync() ? this.wrappedCurrentSpan?.startTime() : Date.now();
     if (!result.context) {
       result.context = {};
     }
+    // We need to pass the parent span finish time
+    // to create the inferred span in the main function
     result.context._datadog = JSON.stringify({
       ...this.tracerWrapper.injectSpan(this.inferredSpan?.span || this.tracerWrapper.currentSpan),
       [parentSpanFinishTimeHeader]: finishTime,

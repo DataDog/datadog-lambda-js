@@ -56,7 +56,7 @@ export class SpanInferrer {
   }
 
   isTracedAuthorizerInvocation(event: any): boolean {
-    return event.requestContext?.authorizer?._datadog;
+    return event.requestContext?.authorizer?._datadog !== undefined;
   }
 
   createInferredSpanForApiGateway(
