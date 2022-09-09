@@ -76,7 +76,11 @@ if [ "$CONT" != "y" ]; then
 fi
 
 echo 'Publishing to NPM'
+if [ -d "./dist" ]; then
+    rm -rf ./dist
+fi
 yarn build
+cp ./dist/handler.cjs ./dist/handler.js
 yarn publish --new-version "$NEW_VERSION"
 
 echo
