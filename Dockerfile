@@ -16,7 +16,6 @@ RUN cp -r dist /nodejs/node_modules/datadog-lambda-js
 RUN cp ./src/runtime/module_importer.js /nodejs/node_modules/datadog-lambda-js/runtime
 
 RUN if [ "$image" = "node:12.13-alpine" ]; then cp ./src/handler.cjs /nodejs/node_modules/datadog-lambda-js/handler.js; else cp ./src/handler.mjs /nodejs/node_modules/datadog-lambda-js; fi
-RUN cp ./src/datadog.js /nodejs/datadog.js
 
 RUN rm -rf node_modules
 
