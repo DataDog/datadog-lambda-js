@@ -34,6 +34,7 @@ START
         "resource": "GET /{proxy+}",
         "error": 0,
         "meta": {
+          "_dd.p.dm": "-0",
           "runtime-id":"XXXX",
           "operation_name": "aws.apigateway",
           "resource_names": "GET /{proxy+}",
@@ -47,6 +48,7 @@ START
         },
         "metrics": {
           "_dd.agent_psr": 1,
+          "_dd.top_level": 1,
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
@@ -168,6 +170,7 @@ START
         "resource": "sns-lambda",
         "error": 0,
         "meta": {
+          "_dd.p.dm": "-0",
           "service": "sns",
           "runtime-id":"XXXX",
           "operation_name": "aws.sns",
@@ -185,6 +188,7 @@ START
         },
         "metrics": {
           "_dd.agent_psr": 1,
+          "_dd.top_level": 1,
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
@@ -284,6 +288,7 @@ START
         "resource": "my-queue",
         "error": 0,
         "meta": {
+          "_dd.p.dm": "-0",
           "service": "sqs",
           "runtime-id":"XXXX",
           "operation_name": "aws.sqs",
@@ -298,6 +303,7 @@ START
         },
         "metrics": {
           "_dd.agent_psr": 1,
+          "_dd.top_level": 1,
           "retry_count": 1,
           "_sampling_priority_v1": 1
         },

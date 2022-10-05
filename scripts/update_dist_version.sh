@@ -17,4 +17,5 @@ echo "$TRACE_CONSTANTS" |
 
 echo "Copying handler js files"
 cp src/handler.* dist/
+cp src/init.js dist/init.js
 cp src/runtime/module_importer.js dist/runtime/

@@ -1,18 +1,246 @@
 XXXX-XX-XX XX:XX:XX.XXX	ERROR	Uncaught Exception 	{"errorType":"Runtime.ImportModuleError","errorMessage":"Error: Cannot find module 'esm'\nRequire stack:\n- /opt/nodejs/node_modules/datadog-lambda-js/runtime/user-function.js\n- /opt/nodejs/node_modules/datadog-lambda-js/runtime/index.js\n- /opt/nodejs/node_modules/datadog-lambda-js/handler.js\n- /var/runtime/UserFunction.js\n- /var/runtime/index.js","stack":["Runtime.ImportModuleError: Error: Cannot find module 'esm'","Require stack:","- /opt/nodejs/node_modules/datadog-lambda-js/runtime/user-function.js","- /opt/nodejs/node_modules/datadog-lambda-js/runtime/index.js","- /opt/nodejs/node_modules/datadog-lambda-js/handler.js","- /var/runtime/UserFunction.js","- /var/runtime/index.js","    at ImportModuleError.ExtendedError [as constructor] (/opt/nodejs/node_modules/datadog-lambda-js/runtime/errors.js:XXX:XXX)","    at new ImportModuleError (/opt/nodejs/node_modules/datadog-lambda-js/runtime/errors.js:XXX:XXX)","    at _loadUserAppSync (/opt/nodejs/node_modules/datadog-lambda-js/runtime/user-function.js:XXX:XXX)","    at loadSync (/opt/nodejs/node_modules/datadog-lambda-js/runtime/user-function.js:XXX:XXX)","    at Object.<anonymous> (/opt/nodejs/node_modules/datadog-lambda-js/handler.js:XXX:XXX)","    at Module._compile (internal/modules/cjs/loader.js:XXX:XXX)","    at Object.Module._extensions..js (internal/modules/cjs/loader.js:XXX:XXX)","    at Module.load (internal/modules/cjs/loader.js:XXX:XXX)","    at Function.Module._load (internal/modules/cjs/loader.js:XXX:XXX)","    at Module.require (internal/modules/cjs/loader.js:XXX:XXX)"]}
+{
+  "traces": [
+    [
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "tcp.connect",
+        "resource": "127.0.0.1:9001",
+        "error": 0,
+        "meta": {
+          "_dd.p.dm": "-0",
+          "_dd.origin": "lambda",
+          "service": "integration-tests-js-XXXX-esm_node12",
+          "runtime-id":"XXXX",
+          "tcp.remote.host": "127.0.0.1",
+          "tcp.family": "IPv4",
+          "out.host": "127.0.0.1",
+          "span.kind": "client",
+          "tcp.local.address":"XXXX",
+          "language": "javascript"
+        },
+        "metrics": {
+          "_dd.agent_psr": 1,
+          "_dd.top_level": 1,
+          "_dd.measured": 1,
+          "tcp.remote.port": 9001,
+          "out.port": 9001,
+          "tcp.local.port":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "service": "integration-tests-js-XXXX-esm_node12"
+      }
+    ]
+  ]
+}
 START
 XXXX-XX-XX XX:XX:XX.XXX	ERROR	Uncaught Exception 	{"errorType":"Runtime.ImportModuleError","errorMessage":"Error: Cannot find module 'esm'\nRequire stack:\n- /opt/nodejs/node_modules/datadog-lambda-js/runtime/user-function.js\n- /opt/nodejs/node_modules/datadog-lambda-js/runtime/index.js\n- /opt/nodejs/node_modules/datadog-lambda-js/handler.js\n- /var/runtime/UserFunction.js\n- /var/runtime/index.js","stack":["Runtime.ImportModuleError: Error: Cannot find module 'esm'","Require stack:","- /opt/nodejs/node_modules/datadog-lambda-js/runtime/user-function.js","- /opt/nodejs/node_modules/datadog-lambda-js/runtime/index.js","- /opt/nodejs/node_modules/datadog-lambda-js/handler.js","- /var/runtime/UserFunction.js","- /var/runtime/index.js","    at ImportModuleError.ExtendedError [as constructor] (/opt/nodejs/node_modules/datadog-lambda-js/runtime/errors.js:XXX:XXX)","    at new ImportModuleError (/opt/nodejs/node_modules/datadog-lambda-js/runtime/errors.js:XXX:XXX)","    at _loadUserAppSync (/opt/nodejs/node_modules/datadog-lambda-js/runtime/user-function.js:XXX:XXX)","    at loadSync (/opt/nodejs/node_modules/datadog-lambda-js/runtime/user-function.js:XXX:XXX)","    at Object.<anonymous> (/opt/nodejs/node_modules/datadog-lambda-js/handler.js:XXX:XXX)","    at Module._compile (internal/modules/cjs/loader.js:XXX:XXX)","    at Object.Module._extensions..js (internal/modules/cjs/loader.js:XXX:XXX)","    at Module.load (internal/modules/cjs/loader.js:XXX:XXX)","    at Function.Module._load (internal/modules/cjs/loader.js:XXX:XXX)","    at Module.require (internal/modules/cjs/loader.js:XXX:XXX)"]}
+{
+  "traces": [
+    [
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "tcp.connect",
+        "resource": "127.0.0.1:9001",
+        "error": 0,
+        "meta": {
+          "_dd.p.dm": "-0",
+          "_dd.origin": "lambda",
+          "service": "integration-tests-js-XXXX-esm_node12",
+          "runtime-id":"XXXX",
+          "tcp.remote.host": "127.0.0.1",
+          "tcp.family": "IPv4",
+          "out.host": "127.0.0.1",
+          "span.kind": "client",
+          "tcp.local.address":"XXXX",
+          "language": "javascript"
+        },
+        "metrics": {
+          "_dd.agent_psr": 1,
+          "_dd.top_level": 1,
+          "_dd.measured": 1,
+          "tcp.remote.port": 9001,
+          "out.port": 9001,
+          "tcp.local.port":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "service": "integration-tests-js-XXXX-esm_node12"
+      }
+    ]
+  ]
+}
 END Duration: XXXX ms Memory Used: XXXX MB
 Unknown application error occurred
 Runtime.ImportModuleError
 START
 XXXX-XX-XX XX:XX:XX.XXX	ERROR	Uncaught Exception 	{"errorType":"Runtime.ImportModuleError","errorMessage":"Error: Cannot find module 'esm'\nRequire stack:\n- /opt/nodejs/node_modules/datadog-lambda-js/runtime/user-function.js\n- /opt/nodejs/node_modules/datadog-lambda-js/runtime/index.js\n- /opt/nodejs/node_modules/datadog-lambda-js/handler.js\n- /var/runtime/UserFunction.js\n- /var/runtime/index.js","stack":["Runtime.ImportModuleError: Error: Cannot find module 'esm'","Require stack:","- /opt/nodejs/node_modules/datadog-lambda-js/runtime/user-function.js","- /opt/nodejs/node_modules/datadog-lambda-js/runtime/index.js","- /opt/nodejs/node_modules/datadog-lambda-js/handler.js","- /var/runtime/UserFunction.js","- /var/runtime/index.js","    at ImportModuleError.ExtendedError [as constructor] (/opt/nodejs/node_modules/datadog-lambda-js/runtime/errors.js:XXX:XXX)","    at new ImportModuleError (/opt/nodejs/node_modules/datadog-lambda-js/runtime/errors.js:XXX:XXX)","    at _loadUserAppSync (/opt/nodejs/node_modules/datadog-lambda-js/runtime/user-function.js:XXX:XXX)","    at loadSync (/opt/nodejs/node_modules/datadog-lambda-js/runtime/user-function.js:XXX:XXX)","    at Object.<anonymous> (/opt/nodejs/node_modules/datadog-lambda-js/handler.js:XXX:XXX)","    at Module._compile (internal/modules/cjs/loader.js:XXX:XXX)","    at Object.Module._extensions..js (internal/modules/cjs/loader.js:XXX:XXX)","    at Module.load (internal/modules/cjs/loader.js:XXX:XXX)","    at Function.Module._load (internal/modules/cjs/loader.js:XXX:XXX)","    at Module.require (internal/modules/cjs/loader.js:XXX:XXX)"]}
+{
+  "traces": [
+    [
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "tcp.connect",
+        "resource": "127.0.0.1:9001",
+        "error": 0,
+        "meta": {
+          "_dd.p.dm": "-0",
+          "_dd.origin": "lambda",
+          "service": "integration-tests-js-XXXX-esm_node12",
+          "runtime-id":"XXXX",
+          "tcp.remote.host": "127.0.0.1",
+          "tcp.family": "IPv4",
+          "out.host": "127.0.0.1",
+          "span.kind": "client",
+          "tcp.local.address":"XXXX",
+          "language": "javascript"
+        },
+        "metrics": {
+          "_dd.agent_psr": 1,
+          "_dd.top_level": 1,
+          "_dd.measured": 1,
+          "tcp.remote.port": 9001,
+          "out.port": 9001,
+          "tcp.local.port":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "service": "integration-tests-js-XXXX-esm_node12"
+      }
+    ]
+  ]
+}
 END Duration: XXXX ms Memory Used: XXXX MB
 Unknown application error occurred
 Runtime.ImportModuleError
 XXXX-XX-XX XX:XX:XX.XXX	ERROR	Uncaught Exception 	{"errorType":"Runtime.ImportModuleError","errorMessage":"Error: Cannot find module 'esm'\nRequire stack:\n- /opt/nodejs/node_modules/datadog-lambda-js/runtime/user-function.js\n- /opt/nodejs/node_modules/datadog-lambda-js/runtime/index.js\n- /opt/nodejs/node_modules/datadog-lambda-js/handler.js\n- /var/runtime/UserFunction.js\n- /var/runtime/index.js","stack":["Runtime.ImportModuleError: Error: Cannot find module 'esm'","Require stack:","- /opt/nodejs/node_modules/datadog-lambda-js/runtime/user-function.js","- /opt/nodejs/node_modules/datadog-lambda-js/runtime/index.js","- /opt/nodejs/node_modules/datadog-lambda-js/handler.js","- /var/runtime/UserFunction.js","- /var/runtime/index.js","    at ImportModuleError.ExtendedError [as constructor] (/opt/nodejs/node_modules/datadog-lambda-js/runtime/errors.js:XXX:XXX)","    at new ImportModuleError (/opt/nodejs/node_modules/datadog-lambda-js/runtime/errors.js:XXX:XXX)","    at _loadUserAppSync (/opt/nodejs/node_modules/datadog-lambda-js/runtime/user-function.js:XXX:XXX)","    at loadSync (/opt/nodejs/node_modules/datadog-lambda-js/runtime/user-function.js:XXX:XXX)","    at Object.<anonymous> (/opt/nodejs/node_modules/datadog-lambda-js/handler.js:XXX:XXX)","    at Module._compile (internal/modules/cjs/loader.js:XXX:XXX)","    at Object.Module._extensions..js (internal/modules/cjs/loader.js:XXX:XXX)","    at Module.load (internal/modules/cjs/loader.js:XXX:XXX)","    at Function.Module._load (internal/modules/cjs/loader.js:XXX:XXX)","    at Module.require (internal/modules/cjs/loader.js:XXX:XXX)"]}
+{
+  "traces": [
+    [
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "tcp.connect",
+        "resource": "127.0.0.1:9001",
+        "error": 0,
+        "meta": {
+          "_dd.p.dm": "-0",
+          "_dd.origin": "lambda",
+          "service": "integration-tests-js-XXXX-esm_node12",
+          "runtime-id":"XXXX",
+          "tcp.remote.host": "127.0.0.1",
+          "tcp.family": "IPv4",
+          "out.host": "127.0.0.1",
+          "span.kind": "client",
+          "tcp.local.address":"XXXX",
+          "language": "javascript"
+        },
+        "metrics": {
+          "_dd.agent_psr": 1,
+          "_dd.top_level": 1,
+          "_dd.measured": 1,
+          "tcp.remote.port": 9001,
+          "out.port": 9001,
+          "tcp.local.port":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "service": "integration-tests-js-XXXX-esm_node12"
+      }
+    ]
+  ]
+}
 START
 XXXX-XX-XX XX:XX:XX.XXX	ERROR	Uncaught Exception 	{"errorType":"Runtime.ImportModuleError","errorMessage":"Error: Cannot find module 'esm'\nRequire stack:\n- /opt/nodejs/node_modules/datadog-lambda-js/runtime/user-function.js\n- /opt/nodejs/node_modules/datadog-lambda-js/runtime/index.js\n- /opt/nodejs/node_modules/datadog-lambda-js/handler.js\n- /var/runtime/UserFunction.js\n- /var/runtime/index.js","stack":["Runtime.ImportModuleError: Error: Cannot find module 'esm'","Require stack:","- /opt/nodejs/node_modules/datadog-lambda-js/runtime/user-function.js","- /opt/nodejs/node_modules/datadog-lambda-js/runtime/index.js","- /opt/nodejs/node_modules/datadog-lambda-js/handler.js","- /var/runtime/UserFunction.js","- /var/runtime/index.js","    at ImportModuleError.ExtendedError [as constructor] (/opt/nodejs/node_modules/datadog-lambda-js/runtime/errors.js:XXX:XXX)","    at new ImportModuleError (/opt/nodejs/node_modules/datadog-lambda-js/runtime/errors.js:XXX:XXX)","    at _loadUserAppSync (/opt/nodejs/node_modules/datadog-lambda-js/runtime/user-function.js:XXX:XXX)","    at loadSync (/opt/nodejs/node_modules/datadog-lambda-js/runtime/user-function.js:XXX:XXX)","    at Object.<anonymous> (/opt/nodejs/node_modules/datadog-lambda-js/handler.js:XXX:XXX)","    at Module._compile (internal/modules/cjs/loader.js:XXX:XXX)","    at Object.Module._extensions..js (internal/modules/cjs/loader.js:XXX:XXX)","    at Module.load (internal/modules/cjs/loader.js:XXX:XXX)","    at Function.Module._load (internal/modules/cjs/loader.js:XXX:XXX)","    at Module.require (internal/modules/cjs/loader.js:XXX:XXX)"]}
+{
+  "traces": [
+    [
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "tcp.connect",
+        "resource": "127.0.0.1:9001",
+        "error": 0,
+        "meta": {
+          "_dd.p.dm": "-0",
+          "_dd.origin": "lambda",
+          "service": "integration-tests-js-XXXX-esm_node12",
+          "runtime-id":"XXXX",
+          "tcp.remote.host": "127.0.0.1",
+          "tcp.family": "IPv4",
+          "out.host": "127.0.0.1",
+          "span.kind": "client",
+          "tcp.local.address":"XXXX",
+          "language": "javascript"
+        },
+        "metrics": {
+          "_dd.agent_psr": 1,
+          "_dd.top_level": 1,
+          "_dd.measured": 1,
+          "tcp.remote.port": 9001,
+          "out.port": 9001,
+          "tcp.local.port":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "service": "integration-tests-js-XXXX-esm_node12"
+      }
+    ]
+  ]
+}
 END Duration: XXXX ms Memory Used: XXXX MB
 Unknown application error occurred
 Runtime.ImportModuleError
 XXXX-XX-XX XX:XX:XX.XXX	ERROR	Uncaught Exception 	{"errorType":"Runtime.ImportModuleError","errorMessage":"Error: Cannot find module 'esm'\nRequire stack:\n- /opt/nodejs/node_modules/datadog-lambda-js/runtime/user-function.js\n- /opt/nodejs/node_modules/datadog-lambda-js/runtime/index.js\n- /opt/nodejs/node_modules/datadog-lambda-js/handler.js\n- /var/runtime/UserFunction.js\n- /var/runtime/index.js","stack":["Runtime.ImportModuleError: Error: Cannot find module 'esm'","Require stack:","- /opt/nodejs/node_modules/datadog-lambda-js/runtime/user-function.js","- /opt/nodejs/node_modules/datadog-lambda-js/runtime/index.js","- /opt/nodejs/node_modules/datadog-lambda-js/handler.js","- /var/runtime/UserFunction.js","- /var/runtime/index.js","    at ImportModuleError.ExtendedError [as constructor] (/opt/nodejs/node_modules/datadog-lambda-js/runtime/errors.js:XXX:XXX)","    at new ImportModuleError (/opt/nodejs/node_modules/datadog-lambda-js/runtime/errors.js:XXX:XXX)","    at _loadUserAppSync (/opt/nodejs/node_modules/datadog-lambda-js/runtime/user-function.js:XXX:XXX)","    at loadSync (/opt/nodejs/node_modules/datadog-lambda-js/runtime/user-function.js:XXX:XXX)","    at Object.<anonymous> (/opt/nodejs/node_modules/datadog-lambda-js/handler.js:XXX:XXX)","    at Module._compile (internal/modules/cjs/loader.js:XXX:XXX)","    at Object.Module._extensions..js (internal/modules/cjs/loader.js:XXX:XXX)","    at Module.load (internal/modules/cjs/loader.js:XXX:XXX)","    at Function.Module._load (internal/modules/cjs/loader.js:XXX:XXX)","    at Module.require (internal/modules/cjs/loader.js:XXX:XXX)"]}
+{
+  "traces": [
+    [
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "tcp.connect",
+        "resource": "127.0.0.1:9001",
+        "error": 0,
+        "meta": {
+          "_dd.p.dm": "-0",
+          "_dd.origin": "lambda",
+          "service": "integration-tests-js-XXXX-esm_node12",
+          "runtime-id":"XXXX",
+          "tcp.remote.host": "127.0.0.1",
+          "tcp.family": "IPv4",
+          "out.host": "127.0.0.1",
+          "span.kind": "client",
+          "tcp.local.address":"XXXX",
+          "language": "javascript"
+        },
+        "metrics": {
+          "_dd.agent_psr": 1,
+          "_dd.top_level": 1,
+          "_dd.measured": 1,
+          "tcp.remote.port": 9001,
+          "out.port": 9001,
+          "tcp.local.port":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "service": "integration-tests-js-XXXX-esm_node12"
+      }
+    ]
+  ]
+}
