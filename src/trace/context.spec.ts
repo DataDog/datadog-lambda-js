@@ -22,7 +22,6 @@ import {
   readTraceFromSQSEvent,
   readTraceFromHTTPEvent,
   readTraceFromLambdaContext,
-  readTraceFromAuthorizerEvent,
 } from "./context";
 
 let sentSegment: any;
@@ -223,7 +222,7 @@ describe("readTraceFromEvent", () => {
   });
 
   it("can parse a traced authorizer source", () => {
-    const result = readTraceFromEvent({
+    const result = readTraceFromHTTPEvent({
       requestContext: {
         resourceId: "oozq9u",
         authorizer: {
@@ -233,7 +232,10 @@ describe("readTraceFromEvent", () => {
           integrationLatency: 71,
           preserve: "this key set by a customer",
         },
+        stage: "dev",
       },
+      httpMethod: "GET",
+      resource: "/hello",
     });
     expect(result).toEqual({
       parentID: "2389589954026090296",

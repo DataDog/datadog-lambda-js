@@ -34,6 +34,7 @@ export const lambdaTaskRootEnvVar = "LAMBDA_TASK_ROOT";
 export const mergeXrayTracesEnvVar = "DD_MERGE_XRAY_TRACES";
 export const traceExtractorEnvVar = "DD_TRACE_EXTRACTOR";
 export const defaultSiteURL = "datadoghq.com";
+export const encodeAuthorizerContextEnvVar = "DD_ENCODE_AUTHORIZER_CONTEXT";
 
 interface GlobalConfig {
   /**
@@ -272,6 +273,11 @@ function getConfig(userConfig?: Partial<Config>): Config {
   if (userConfig === undefined || userConfig.createInferredSpan === undefined) {
     const result = getEnvValue(traceManagedServicesEnvVar, "true").toLowerCase();
     config.createInferredSpan = result === "true";
+  }
+
+  if (userConfig === undefined || userConfig.encodeAuthorizerContext === undefined) {
+    const result = getEnvValue(encodeAuthorizerContextEnvVar, "true").toLowerCase();
+    config.encodeAuthorizerContext = result === "true";
   }
 
   return config;

@@ -11,6 +11,7 @@ import { datadogLambdaVersion } from "../constants";
 import { Context } from "aws-lambda";
 import { TraceHeaders } from "./trace-context-service";
 import { SpanWrapper } from "./span-wrapper";
+import { eventSubTypes } from "./trigger";
 
 let mockWrap: jest.Mock<any, any>;
 let mockExtract: jest.Mock<any, any>;
@@ -327,7 +328,7 @@ describe("TraceListener", () => {
     (listener as any).inferredSpan = inferredSpan;
 
     const result: any = {};
-    listener.injectAuthorizerSpan(result);
+    listener.injectAuthorizerSpan(result, eventSubTypes.apiGatewayV1, {});
 
     expect(result.context._datadog).toBe(
       '{"x-datadog-parent-id":"797643193680388251","x-datadog-trace-id":"4110911582297405551","x-datadog-sampling-priority":1,"x-datadog-parent-span-finish-time":1661189936981}',

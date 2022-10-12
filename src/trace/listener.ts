@@ -8,12 +8,12 @@ import {
 } from "./context";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
-import { extractTriggerTags, extractHTTPStatusCodeTag } from "./trigger";
+import { extractTriggerTags, extractHTTPStatusCodeTag, eventSubTypes, parseEventSourceSubType } from "./trigger";
 
 import { logDebug, tagObject } from "../utils";
 import { didFunctionColdStart } from "../utils/cold-start";
 import { datadogLambdaVersion } from "../constants";
-import { Source, ddtraceVersion, parentSpanFinishTimeHeader } from "./constants";
+import { Source, ddtraceVersion, parentSpanFinishTimeHeader, authorizingRequestIdHeader } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 import { SpanInferrer } from "./span-inferrer";
@@ -134,7 +134,8 @@ export class TraceListener {
 
     // We're in an authorizer
     if (this.config.encodeAuthorizerContext && result?.principalId && result?.policyDocument) {
-      this.injectAuthorizerSpan(result);
+      const eventSourceSubType: eventSubTypes = parseEventSourceSubType(event);
+      this.injectAuthorizerSpan(result, eventSourceSubType, event);
     }
 
     if (this.triggerTags) {
@@ -157,7 +158,7 @@ export class TraceListener {
     return false;
   }
 
-  injectAuthorizerSpan(result: any): any {
+  injectAuthorizerSpan(result: any, eventSourceSubType: eventSubTypes, event: any): any {
     // Token-based authorizers do not have inferred spans (as only the token is passed as the event payload)
     // So in this case we use Now instead
     const finishTime = this.inferredSpan?.isAsync() ? this.wrappedCurrentSpan?.startTime() : Date.now();
@@ -166,10 +167,16 @@ export class TraceListener {
     }
     // We need to pass the parent span finish time
     // to create the inferred span in the main function
-    result.context._datadog = JSON.stringify({
+    const injectedHeaders = {
       ...this.tracerWrapper.injectSpan(this.inferredSpan?.span || this.tracerWrapper.currentSpan),
       [parentSpanFinishTimeHeader]: finishTime,
-    });
+    };
+    if (eventSourceSubType === eventSubTypes.apiGatewayV2) {
+      injectedHeaders[authorizingRequestIdHeader] = event.requestContext.requestId;
+      result.context._datadog = Buffer.from(JSON.stringify(injectedHeaders)).toString("base64");
+    } else {
+      result.context._datadog = JSON.stringify(injectedHeaders);
+    }
   }
 
   public async onCompleteInvocation(error?: any) {

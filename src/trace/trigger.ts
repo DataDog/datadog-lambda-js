@@ -92,7 +92,7 @@ function extractEventBridgeARN(event: EventBridgeEvent<any, any>) {
   return event.source;
 }
 
-export enum eventSources {
+export enum eventTypes {
   apiGateway = "api-gateway",
   applicationLoadBalancer = "application-load-balancer",
   cloudFront = "cloudfront",
@@ -108,6 +108,28 @@ export enum eventSources {
   sqs = "sqs",
 }
 
+export enum eventSubTypes {
+  apiGatewayV1 = "api-gateway-rest-api",
+  apiGatewayV2 = "api-gateway-http-api",
+  apiGatewayWebsocket = "api-gateway-websocket",
+  unknown = "unknown-sub-type",
+}
+
+export function parseEventSourceSubType(event: any): eventSubTypes {
+  if (eventType.isAPIGatewayEvent(event)) {
+    return eventSubTypes.apiGatewayV1;
+  }
+
+  if (eventType.isAPIGatewayEventV2(event)) {
+    return eventSubTypes.apiGatewayV2;
+  }
+
+  if (eventType.isAPIGatewayWebsocketEvent(event)) {
+    return eventSubTypes.apiGatewayWebsocket;
+  }
+
+  return eventSubTypes.unknown;
+}
 /**
  * parseEventSource parses the triggering event to determine the source
  * Possible Returns:
@@ -116,53 +138,53 @@ export enum eventSources {
  */
 export function parseEventSource(event: any) {
   if (eventType.isLambdaUrlEvent(event)) {
-    return eventSources.lambdaUrl;
+    return eventTypes.lambdaUrl;
   }
   if (
     eventType.isAPIGatewayEvent(event) ||
     eventType.isAPIGatewayEventV2(event) ||
     eventType.isAPIGatewayWebsocketEvent(event)
   ) {
-    return eventSources.apiGateway;
+    return eventTypes.apiGateway;
   }
   if (eventType.isALBEvent(event)) {
-    return eventSources.applicationLoadBalancer;
+    return eventTypes.applicationLoadBalancer;
   }
 
   if (eventType.isCloudWatchLogsEvent(event)) {
-    return eventSources.cloudWatchLogs;
+    return eventTypes.cloudWatchLogs;
   }
 
   if (eventType.isCloudWatchEvent(event)) {
-    return eventSources.cloudWatchEvents;
+    return eventTypes.cloudWatchEvents;
   }
 
   if (eventType.isCloudFrontRequestEvent(event)) {
-    return eventSources.cloudFront;
+    return eventTypes.cloudFront;
   }
 
   if (eventType.isDynamoDBStreamEvent(event)) {
-    return eventSources.dynamoDB;
+    return eventTypes.dynamoDB;
   }
 
   if (eventType.isKinesisStreamEvent(event)) {
-    return eventSources.kinesis;
+    return eventTypes.kinesis;
   }
 
   if (eventType.isS3Event(event)) {
-    return eventSources.s3;
+    return eventTypes.s3;
   }
 
   if (eventType.isSNSEvent(event)) {
-    return eventSources.sns;
+    return eventTypes.sns;
   }
 
   if (eventType.isSQSEvent(event)) {
-    return eventSources.sqs;
+    return eventTypes.sqs;
   }
 
   if (eventType.isEventBridgeEvent(event)) {
-    return eventSources.eventBridge;
+    return eventTypes.eventBridge;
   }
 }
 

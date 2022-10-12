@@ -26,6 +26,8 @@ import {
   xrayTraceEnvVar,
 } from "./constants";
 import { TraceExtractor } from "./listener";
+import { eventTypes, parseEventSource, parseEventSourceSubType, eventSubTypes } from "./trigger";
+import { authorizingRequestIdHeader } from "./constants";
 
 export interface XRayTraceHeader {
   traceID: string;
@@ -344,7 +346,42 @@ export function readTraceFromLambdaContext(context: any): TraceContext | undefin
   return trace;
 }
 
+export function getInjectedAuthorizerData(event: any, eventSourceSubType: eventSubTypes) {
+  const authorizerHeaders = event?.requestContext?.authorizer;
+  if (!authorizerHeaders) return null;
+
+  if (eventSourceSubType === eventSubTypes.apiGatewayV1 || eventSourceSubType === eventSubTypes.apiGatewayWebsocket) {
+    // use integrationLatency > 0 to tell it's not cached
+    if (authorizerHeaders.integrationLatency && authorizerHeaders.integrationLatency > 0) {
+      return JSON.parse(authorizerHeaders._datadog);
+    } else {
+      return null;
+    }
+  } else if (eventSourceSubType === eventSubTypes.apiGatewayV2) {
+    const injected_data = JSON.parse(Buffer.from(authorizerHeaders.lambda._datadog, "base64").toString());
+    // use the injected requestId to tell if it's the authorizing invocation (not cached)
+    if (event.requestContext.requestId === injected_data[authorizingRequestIdHeader]) {
+      return injected_data;
+    } else {
+      return null;
+    }
+  }
+  // unknown eventSubTypes
+  return null;
+}
+
 export function readTraceFromHTTPEvent(event: any): TraceContext | undefined {
+  // need to set the trace context if using authorizer lambda in authorizing (non-cached) cases
+  try {
+    const eventSourceSubType: eventSubTypes = parseEventSourceSubType(event);
+    const injectedAuthorizerData = getInjectedAuthorizerData(event, eventSourceSubType);
+    if (injectedAuthorizerData !== null) {
+      return exportTraceData(injectedAuthorizerData);
+    }
+  } catch (error) {
+    logDebug(`unable to extract trace context from authorizer event.`, { error });
+  }
+
   const headers = event.headers;
   const lowerCaseHeaders: { [key: string]: string } = {};
 
@@ -358,24 +395,9 @@ export function readTraceFromHTTPEvent(event: any): TraceContext | undefined {
   return trace;
 }
 
-export function readTraceFromAuthorizerEvent(event: any): TraceContext | undefined {
-  let traceData;
-  try {
-    traceData = JSON.parse(event.requestContext.authorizer._datadog);
-  } catch (error) {
-    logDebug(`unable to extract trace context from authorizer event`, { error });
-    return;
-  }
-  return exportTraceData(traceData);
-}
-
 export function readTraceFromEvent(event: any): TraceContext | undefined {
   if (!event || typeof event !== "object") {
     return;
-  }
-
-  if (event?.requestContext?.authorizer?._datadog && event.requestContext.authorizer.integrationLatency > 0) {
-    return readTraceFromAuthorizerEvent(event);
   }
 
   if (event.headers !== null && typeof event.headers === "object") {

@@ -9,7 +9,9 @@ const eventBridgeEvent = require("../../event_samples/eventbridge.json");
 const webSocketEvent = require("../../event_samples/api-gateway-wss.json");
 const apiGatewayV1 = require("../../event_samples/api-gateway-v1.json");
 const apiGatewayV2 = require("../../event_samples/api-gateway-v2.json");
-const apiGatewayTracedAuthorizer = require("../../event_samples/api-gateway-traced-authorizer.json");
+const apiGatewayTracedAuthorizerRequestV1 = require("../../event_samples/api-gateway-traced-authorizer-request-v1.json");
+const apiGatewayTracedAuthorizerTokenV1 = require("../../event_samples/api-gateway-traced-authorizer-token-v1.json");
+const apiGatewayTracedAuthorizerRequestV2 = require("../../event_samples/api-gateway-traced-authorizer-request-v2.json");
 const s3Event = require("../../event_samples/s3.json");
 const functionUrlEvent = require("../../event_samples/lambda-function-urls.json");
 const mockWrapper = {
@@ -272,66 +274,6 @@ describe("SpanInferrer", () => {
     });
   });
 
-  it("creates an inferred span for API Gateway V1 event with traced authorizers", () => {
-    const mockFinish = () => undefined;
-    const mockWrapperWithFinish = {
-      startSpan: jest.fn(() => {
-        return {
-          finish: mockFinish,
-        };
-      }),
-    };
-
-    const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
-    inferrer.createInferredSpan(apiGatewayTracedAuthorizer, {} as any, {} as SpanContext);
-    expect(mockWrapperWithFinish.startSpan.mock.calls[0]).toEqual([
-      "aws.apigateway.authorizer",
-      {
-        childOf: {},
-        startTime: 1660939857052,
-        tags: {
-          _inferred_span: { synchronicity: "sync", tag_source: "self" },
-          apiid: "3gsxz7lha4",
-          domain_name: "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com",
-          endpoint: "/dev/hello",
-          "http.method": "POST",
-          "http.url": "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com/dev/hello",
-          operation_name: "aws.apigateway",
-          request_id: undefined,
-          "resource.name": "POST /hello",
-          resource_names: "POST /hello",
-          service: "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com",
-          "service.name": "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com",
-          "span.type": "http",
-          stage: "dev",
-        },
-      },
-    ]);
-    expect(mockWrapperWithFinish.startSpan.mock.calls[1]).toEqual([
-      "aws.apigateway",
-      {
-        childOf: { finish: mockFinish }, // Hack around jest mocks
-        startTime: undefined,
-        tags: {
-          _inferred_span: { synchronicity: "sync", tag_source: "self" },
-          apiid: "3gsxz7lha4",
-          domain_name: "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com",
-          endpoint: "/dev/hello",
-          "http.method": "POST",
-          "http.url": "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com/dev/hello",
-          operation_name: "aws.apigateway",
-          request_id: undefined,
-          "resource.name": "POST /hello",
-          resource_names: "POST /hello",
-          service: "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com",
-          "service.name": "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com",
-          "span.type": "http",
-          stage: "dev",
-        },
-      },
-    ]);
-  });
-
   it("creates an inferred span for Lambda Function URL Events", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(functionUrlEvent, {} as any, {} as SpanContext);
@@ -379,5 +321,182 @@ describe("SpanInferrer", () => {
         "span.type": "web",
       },
     });
+  });
+});
+
+const mockFinish = () => undefined;
+
+describe("Authorizer Spans", () => {
+  const mockWrapperWithFinish = {
+    startSpan: jest.fn(() => {
+      return {
+        finish: mockFinish,
+      };
+    }),
+  };
+
+  beforeEach(() => {
+    mockWrapperWithFinish.startSpan = jest.fn(() => {
+      return {
+        finish: mockFinish,
+      };
+    });
+  });
+
+  afterEach(() => {
+    mockWrapperWithFinish.startSpan.mockReset();
+  });
+
+  it("creates an inferred span for API Gateway V1 event with traced authorizers [Request Type]", () => {
+    const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
+    inferrer.createInferredSpan(apiGatewayTracedAuthorizerRequestV1, {} as any, {} as SpanContext);
+    expect(mockWrapperWithFinish.startSpan.mock.calls[0]).toEqual([
+      "aws.apigateway.authorizer",
+      {
+        childOf: {},
+        startTime: 1660939857052,
+        tags: {
+          _inferred_span: { synchronicity: "sync", tag_source: "self" },
+          apiid: "3gsxz7lha4",
+          domain_name: "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com",
+          endpoint: "/dev/hello",
+          "http.method": "POST",
+          "http.url": "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com/dev/hello",
+          operation_name: "aws.apigateway",
+          request_id: undefined,
+          "resource.name": "POST /hello",
+          resource_names: "POST /hello",
+          service: "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com",
+          "service.name": "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com",
+          "span.type": "http",
+          stage: "dev",
+        },
+      },
+    ]);
+    expect(mockWrapperWithFinish.startSpan.mock.calls[1]).toEqual([
+      "aws.apigateway",
+      {
+        childOf: { finish: mockFinish }, // Hack around jest mocks
+        startTime: 1660939857075,
+        tags: {
+          _inferred_span: { synchronicity: "sync", tag_source: "self" },
+          apiid: "3gsxz7lha4",
+          domain_name: "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com",
+          endpoint: "/dev/hello",
+          "http.method": "POST",
+          "http.url": "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com/dev/hello",
+          operation_name: "aws.apigateway",
+          request_id: undefined,
+          "resource.name": "POST /hello",
+          resource_names: "POST /hello",
+          service: "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com",
+          "service.name": "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com",
+          "span.type": "http",
+          stage: "dev",
+        },
+      },
+    ]);
+  });
+
+  it("creates an inferred span for API Gateway V1 event with traced authorizers [Token Type]", () => {
+    const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
+    inferrer.createInferredSpan(apiGatewayTracedAuthorizerTokenV1, {} as any, {} as SpanContext);
+    expect(mockWrapperWithFinish.startSpan.mock.calls[0]).toEqual([
+      "aws.apigateway.authorizer",
+      {
+        childOf: {},
+        startTime: 1665601897050,
+        tags: {
+          _inferred_span: { synchronicity: "sync", tag_source: "self" },
+          apiid: "j3snk0ltd1",
+          domain_name: "j3snk0ltd1.execute-api.sa-east-1.amazonaws.com",
+          endpoint: "/dev/hi",
+          "http.method": "GET",
+          "http.url": "j3snk0ltd1.execute-api.sa-east-1.amazonaws.com/dev/hi",
+          operation_name: "aws.apigateway",
+          request_id: undefined,
+          "resource.name": "GET /hi",
+          resource_names: "GET /hi",
+          service: "j3snk0ltd1.execute-api.sa-east-1.amazonaws.com",
+          "service.name": "j3snk0ltd1.execute-api.sa-east-1.amazonaws.com",
+          "span.type": "http",
+          stage: "dev",
+        },
+      },
+    ]);
+    expect(mockWrapperWithFinish.startSpan.mock.calls[1]).toEqual([
+      "aws.apigateway",
+      {
+        childOf: { finish: mockFinish }, // Hack around jest mocks
+        startTime: 1665601897072,
+        tags: {
+          _inferred_span: { synchronicity: "sync", tag_source: "self" },
+          apiid: "j3snk0ltd1",
+          domain_name: "j3snk0ltd1.execute-api.sa-east-1.amazonaws.com",
+          endpoint: "/dev/hi",
+          "http.method": "GET",
+          "http.url": "j3snk0ltd1.execute-api.sa-east-1.amazonaws.com/dev/hi",
+          operation_name: "aws.apigateway",
+          request_id: undefined,
+          "resource.name": "GET /hi",
+          resource_names: "GET /hi",
+          service: "j3snk0ltd1.execute-api.sa-east-1.amazonaws.com",
+          "service.name": "j3snk0ltd1.execute-api.sa-east-1.amazonaws.com",
+          "span.type": "http",
+          stage: "dev",
+        },
+      },
+    ]);
+  });
+
+  it("creates an inferred span for API Gateway V2 event with traced authorizers [Request Type]", () => {
+    const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
+    inferrer.createInferredSpan(apiGatewayTracedAuthorizerRequestV2, {} as any, {} as SpanContext);
+    expect(mockWrapperWithFinish.startSpan.mock.calls[0]).toEqual([
+      "aws.apigateway.authorizer",
+      {
+        childOf: {},
+        startTime: 1665596771812,
+        tags: {
+          _inferred_span: { synchronicity: "sync", tag_source: "self" },
+          apiid: "l9flvsey83",
+          domain_name: "l9flvsey83.execute-api.sa-east-1.amazonaws.com",
+          endpoint: "/hello",
+          "http.method": "GET",
+          "http.url": "l9flvsey83.execute-api.sa-east-1.amazonaws.com/hello",
+          operation_name: "aws.apigateway",
+          request_id: undefined,
+          "resource.name": "GET /hello",
+          resource_names: "GET /hello",
+          service: "l9flvsey83.execute-api.sa-east-1.amazonaws.com",
+          "service.name": "l9flvsey83.execute-api.sa-east-1.amazonaws.com",
+          "span.type": "http",
+          stage: "$default",
+        },
+      },
+    ]);
+    expect(mockWrapperWithFinish.startSpan.mock.calls[1]).toEqual([
+      "aws.apigateway",
+      {
+        childOf: { finish: mockFinish }, // Hack around jest mocks
+        startTime: 1665596771812,
+        tags: {
+          _inferred_span: { synchronicity: "sync", tag_source: "self" },
+          apiid: "l9flvsey83",
+          domain_name: "l9flvsey83.execute-api.sa-east-1.amazonaws.com",
+          endpoint: "/hello",
+          "http.method": "GET",
+          "http.url": "l9flvsey83.execute-api.sa-east-1.amazonaws.com/hello",
+          operation_name: "aws.apigateway",
+          request_id: undefined,
+          "resource.name": "GET /hello",
+          resource_names: "GET /hello",
+          service: "l9flvsey83.execute-api.sa-east-1.amazonaws.com",
+          "service.name": "l9flvsey83.execute-api.sa-east-1.amazonaws.com",
+          "span.type": "http",
+          stage: "$default",
+        },
+      },
+    ]);
   });
 });
