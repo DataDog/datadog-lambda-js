@@ -328,7 +328,7 @@ describe("TraceListener", () => {
     (listener as any).inferredSpan = inferredSpan;
 
     const result: any = {};
-    listener.injectAuthorizerSpan(result, eventSubTypes.apiGatewayV1, {});
+    listener.injectAuthorizerSpan(result, eventSubTypes.apiGatewayV1, {}, 1661189936981);
 
     expect(result.context._datadog).toBe(
       '{"x-datadog-parent-id":"797643193680388251","x-datadog-trace-id":"4110911582297405551","x-datadog-sampling-priority":1,"x-datadog-parent-span-finish-time":1661189936981}',

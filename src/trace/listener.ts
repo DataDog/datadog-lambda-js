@@ -132,12 +132,6 @@ export class TraceListener {
       tagObject(this.tracerWrapper.currentSpan, "function.response", result);
     }
 
-    // We're in an authorizer
-    if (this.config.encodeAuthorizerContext && result?.principalId && result?.policyDocument) {
-      const eventSourceSubType: eventSubTypes = parseEventSourceSubType(event);
-      this.injectAuthorizerSpan(result, eventSourceSubType, event);
-    }
-
     if (this.triggerTags) {
       const statusCode = extractHTTPStatusCodeTag(this.triggerTags, result);
 
@@ -158,17 +152,14 @@ export class TraceListener {
     return false;
   }
 
-  injectAuthorizerSpan(result: any, eventSourceSubType: eventSubTypes, event: any): any {
-    // Token-based authorizers do not have inferred spans (as only the token is passed as the event payload)
-    // So in this case we use Now instead
-    const finishTime = this.inferredSpan?.isAsync() ? this.wrappedCurrentSpan?.startTime() : Date.now();
+  injectAuthorizerSpan(result: any, eventSourceSubType: eventSubTypes, event: any, finishTime: number): any {
     if (!result.context) {
       result.context = {};
     }
     // We need to pass the parent span finish time
     // to create the inferred span in the main function
     const injectedHeaders = {
-      ...this.tracerWrapper.injectSpan(this.inferredSpan?.span || this.tracerWrapper.currentSpan),
+      ...this.tracerWrapper.injectSpan(this.inferredSpan?.span || this.wrappedCurrentSpan?.span),
       [parentSpanFinishTimeHeader]: finishTime,
     };
     if (eventSourceSubType === eventSubTypes.apiGatewayV2) {
@@ -179,7 +170,7 @@ export class TraceListener {
     }
   }
 
-  public async onCompleteInvocation(error?: any) {
+  public async onCompleteInvocation(error?: any, result?: any, event?: any) {
     // Create a new dummy Datadog subsegment for function trigger tags so we
     // can attach them to X-Ray spans when hybrid tracing is used
     if (this.triggerTags) {
@@ -191,6 +182,7 @@ export class TraceListener {
       logDebug("Unpatching HTTP libraries");
       unpatchHttp();
     }
+    let finishTime = Date.now();
     if (this.inferredSpan) {
       logDebug("Finishing inferred span");
 
@@ -199,8 +191,13 @@ export class TraceListener {
         this.inferredSpan.setTag("error", error);
       }
 
-      const finishTime = this.inferredSpan.isAsync() ? this.wrappedCurrentSpan?.startTime() : Date.now();
+      finishTime = this.inferredSpan.isAsync() ? this.wrappedCurrentSpan?.startTime() || Date.now() : Date.now();
       this.inferredSpan.finish(finishTime);
+    }
+    // We're in an authorizer
+    if (this.config.encodeAuthorizerContext && result?.principalId && result?.policyDocument) {
+      const eventSourceSubType: eventSubTypes = parseEventSourceSubType(event);
+      this.injectAuthorizerSpan(result, eventSourceSubType, event, finishTime);
     }
   }
 
