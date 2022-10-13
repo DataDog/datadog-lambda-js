@@ -107,14 +107,14 @@ export class SpanInferrer {
       const parsedUpstreamContext = getInjectedAuthorizerData(event, eventSourceSubType);
 
       if (parsedUpstreamContext) {
-        let startTime: number, endTime: number;
         let upstreamSpanOptions: SpanOptions = {};
-        startTime = parsedUpstreamContext[parentSpanFinishTimeHeader];
+        const startTime = parsedUpstreamContext[parentSpanFinishTimeHeader];
         upstreamSpanOptions = {
-          startTime: startTime,
+          startTime,
           tags: { operation_name: "aws.apigateway.authorizer", ...options.tags },
         };
 
+        let endTime: number;
         // getting an approximated endTime
         if (
           (eventSourceSubType === eventSubTypes.apiGatewayV1 ||
@@ -123,7 +123,7 @@ export class SpanInferrer {
         ) {
           endTime = event.requestContext.requestTimeEpoch + event.requestContext.authorizer.integrationLatency;
         } else {
-          //else eventSourceSubType === eventSubTypes.apiGatewayV2
+          // else eventSourceSubType === eventSubTypes.apiGatewayV2
           endTime = startTime; // no integrationLatency info in this case
         }
 

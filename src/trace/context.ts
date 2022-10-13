@@ -358,10 +358,10 @@ export function getInjectedAuthorizerData(event: any, eventSourceSubType: eventS
       return null;
     }
   } else if (eventSourceSubType === eventSubTypes.apiGatewayV2) {
-    const injected_data = JSON.parse(Buffer.from(authorizerHeaders.lambda._datadog, "base64").toString());
+    const injectedData = JSON.parse(Buffer.from(authorizerHeaders.lambda._datadog, "base64").toString());
     // use the injected requestId to tell if it's the authorizing invocation (not cached)
-    if (event.requestContext.requestId === injected_data[authorizingRequestIdHeader]) {
-      return injected_data;
+    if (event.requestContext.requestId === injectedData[authorizingRequestIdHeader]) {
+      return injectedData;
     } else {
       return null;
     }
