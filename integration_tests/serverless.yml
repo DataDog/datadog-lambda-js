@@ -7,7 +7,6 @@ provider:
   environment:
     DD_INTEGRATION_TEST: true
     DD_API_KEY: ${env:DD_API_KEY}
-  lambdaHashingVersion: 20201221
   timeout: 15
   deploymentBucket:
     name: integration-tests-deployment-bucket
