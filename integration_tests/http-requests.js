@@ -13,7 +13,7 @@ async function handle(event, context) {
   }
 
   console.log(`Snapshot test http requests successfully made to URLs: ${urls}`);
-
+  console.log(`axios.VERSION: ${axios.VERSION}`);
   return responsePayload;
 }
 
