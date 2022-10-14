@@ -152,22 +152,16 @@ export class TraceListener {
     return false;
   }
 
-  injectAuthorizerSpan(result: any, eventSourceSubType: eventSubTypes, event: any, finishTime: number): any {
+  injectAuthorizerSpan(result: any, requestId: string, finishTime: number): any {
     if (!result.context) {
       result.context = {};
     }
-    // We need to pass the parent span finish time
-    // to create the inferred span in the main function
     const injectedHeaders = {
       ...this.tracerWrapper.injectSpan(this.inferredSpan?.span || this.wrappedCurrentSpan?.span),
-      [parentSpanFinishTimeHeader]: finishTime,
+      [parentSpanFinishTimeHeader]: finishTime, //  used as the start time in the authorizer span
+      [authorizingRequestIdHeader]: requestId, //  used to distinguish cached cases
     };
-    if (eventSourceSubType === eventSubTypes.apiGatewayV2) {
-      injectedHeaders[authorizingRequestIdHeader] = event.requestContext.requestId;
-      result.context._datadog = Buffer.from(JSON.stringify(injectedHeaders)).toString("base64");
-    } else {
-      result.context._datadog = JSON.stringify(injectedHeaders);
-    }
+    result.context._datadog = Buffer.from(JSON.stringify(injectedHeaders)).toString("base64");
   }
 
   public async onCompleteInvocation(error?: any, result?: any, event?: any) {
@@ -182,7 +176,7 @@ export class TraceListener {
       logDebug("Unpatching HTTP libraries");
       unpatchHttp();
     }
-    let finishTime = Date.now();
+    let finishTime;
     if (this.inferredSpan) {
       logDebug("Finishing inferred span");
 
@@ -194,10 +188,14 @@ export class TraceListener {
       finishTime = this.inferredSpan.isAsync() ? this.wrappedCurrentSpan?.startTime() || Date.now() : Date.now();
       this.inferredSpan.finish(finishTime);
     }
-    // We're in an authorizer
-    if (this.config.encodeAuthorizerContext && result?.principalId && result?.policyDocument) {
-      const eventSourceSubType: eventSubTypes = parseEventSourceSubType(event);
-      this.injectAuthorizerSpan(result, eventSourceSubType, event, finishTime);
+    if (
+      this.config.encodeAuthorizerContext &&
+      result?.principalId &&
+      result?.policyDocument &&
+      event?.requestContext?.requestId
+    ) {
+      // We're in an authorizer, pass on the trace context, requestId and finishTime to make the authorizer span
+      this.injectAuthorizerSpan(result, event.requestContext.requestId, finishTime || Date.now());
     }
   }
 

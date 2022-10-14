@@ -28,6 +28,7 @@ import {
 import { TraceExtractor } from "./listener";
 import { eventTypes, parseEventSource, parseEventSourceSubType, eventSubTypes } from "./trigger";
 import { authorizingRequestIdHeader } from "./constants";
+import { datadog } from "../index";
 
 export interface XRayTraceHeader {
   traceID: string;
@@ -349,25 +350,15 @@ export function readTraceFromLambdaContext(context: any): TraceContext | undefin
 export function getInjectedAuthorizerData(event: any, eventSourceSubType: eventSubTypes) {
   const authorizerHeaders = event?.requestContext?.authorizer;
   if (!authorizerHeaders) return null;
-
-  if (eventSourceSubType === eventSubTypes.apiGatewayV1 || eventSourceSubType === eventSubTypes.apiGatewayWebsocket) {
-    // use integrationLatency > 0 to tell it's not cached
-    if (authorizerHeaders.integrationLatency && authorizerHeaders.integrationLatency > 0) {
-      return JSON.parse(authorizerHeaders._datadog);
-    } else {
-      return null;
-    }
-  } else if (eventSourceSubType === eventSubTypes.apiGatewayV2) {
-    const injectedData = JSON.parse(Buffer.from(authorizerHeaders.lambda._datadog, "base64").toString());
-    // use the injected requestId to tell if it's the authorizing invocation (not cached)
-    if (event.requestContext.requestId === injectedData[authorizingRequestIdHeader]) {
-      return injectedData;
-    } else {
-      return null;
-    }
+  const rawDatadogData =
+    eventSourceSubType === eventSubTypes.apiGatewayV2 ? authorizerHeaders.lambda._datadog : authorizerHeaders._datadog;
+  const injectedData = JSON.parse(Buffer.from(rawDatadogData, "base64").toString());
+  // use the injected requestId to tell if it's the authorizing invocation (not cached)
+  if (event.requestContext.requestId === injectedData[authorizingRequestIdHeader]) {
+    return injectedData;
+  } else {
+    return null;
   }
-  // unknown eventSubTypes
-  return null;
 }
 
 export function readTraceFromHTTPEvent(event: any): TraceContext | undefined {

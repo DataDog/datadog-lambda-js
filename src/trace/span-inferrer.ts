@@ -116,15 +116,10 @@ export class SpanInferrer {
 
         let endTime: number;
         // getting an approximated endTime
-        if (
-          (eventSourceSubType === eventSubTypes.apiGatewayV1 ||
-            eventSourceSubType === eventSubTypes.apiGatewayWebsocket) &&
-          event.requestContext.authorizer.integrationLatency > 0
-        ) {
-          endTime = event.requestContext.requestTimeEpoch + event.requestContext.authorizer.integrationLatency;
+        if (eventSourceSubType === eventSubTypes.apiGatewayV2) {
+          endTime = startTime;
         } else {
-          // else eventSourceSubType === eventSubTypes.apiGatewayV2
-          endTime = startTime; // no integrationLatency info in this case
+          endTime = event.requestContext.requestTimeEpoch + event.requestContext.authorizer.integrationLatency;
         }
 
         upstreamSpanOptions.childOf = parentSpanContext;

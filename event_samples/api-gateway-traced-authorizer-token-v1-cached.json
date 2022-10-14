@@ -57,7 +57,7 @@
   "requestContext": {
     "resourceId": "4rscs9",
     "authorizer": {
-      "_datadog": "{\"x-datadog-trace-id\":\"70945830383240507\",\"x-datadog-parent-id\":\"70945830383240507\",\"x-datadog-sampling-priority\":\"1\",\"x-datadog-parent-span-finish-time\":1665601897050}",
+      "_datadog": "eyJ4LWRhdGFkb2ctdHJhY2UtaWQiOiI3MDk0NTgzMDM4MzI0MDUwNyIsIngtZGF0YWRvZy1wYXJlbnQtaWQiOiI3MDk0NTgzMDM4MzI0MDUwNyIsIngtZGF0YWRvZy1zYW1wbGluZy1wcmlvcml0eSI6IjEiLCJ4LWRhdGFkb2ctcGFyZW50LXNwYW4tZmluaXNoLXRpbWUiOjE2NjU2MDE4OTcwNTAsIngtZGF0YWRvZy1hdXRob3JpemluZy1yZXF1ZXN0aWQiOiJiZTZkZTY0OS1hMGQ5LTQ0NDgtOWViNC0wYjU1ZmIzMjY3ZGEifQ==",
       "scope": "this is just a string",
       "principalId": "foo",
       "integrationLatency": 0

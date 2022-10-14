@@ -328,10 +328,10 @@ describe("TraceListener", () => {
     (listener as any).inferredSpan = inferredSpan;
 
     const result: any = {};
-    listener.injectAuthorizerSpan(result, eventSubTypes.apiGatewayV1, {}, 1661189936981);
+    listener.injectAuthorizerSpan(result, "randomId", 1661189936981);
 
     expect(result.context._datadog).toBe(
-      '{"x-datadog-parent-id":"797643193680388251","x-datadog-trace-id":"4110911582297405551","x-datadog-sampling-priority":1,"x-datadog-parent-span-finish-time":1661189936981}',
+      "eyJ4LWRhdGFkb2ctcGFyZW50LWlkIjoiNzk3NjQzMTkzNjgwMzg4MjUxIiwieC1kYXRhZG9nLXRyYWNlLWlkIjoiNDExMDkxMTU4MjI5NzQwNTU1MSIsIngtZGF0YWRvZy1zYW1wbGluZy1wcmlvcml0eSI6MSwieC1kYXRhZG9nLXBhcmVudC1zcGFuLWZpbmlzaC10aW1lIjoxNjYxMTg5OTM2OTgxLCJ4LWRhdGFkb2ctYXV0aG9yaXppbmctcmVxdWVzdGlkIjoicmFuZG9tSWQifQ==",
     );
   });
 });

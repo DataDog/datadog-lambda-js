@@ -227,12 +227,13 @@ describe("readTraceFromEvent", () => {
         resourceId: "oozq9u",
         authorizer: {
           _datadog:
-            '{"x-datadog-trace-id":"2389589954026090296","x-datadog-parent-id":"2389589954026090296","x-datadog-sampling-priority":"1","x-datadog-parent-span-finish-time":1660939899233}',
+            "eyJ4LWRhdGFkb2ctdHJhY2UtaWQiOiIyMzg5NTg5OTU0MDI2MDkwMjk2IiwieC1kYXRhZG9nLXBhcmVudC1pZCI6IjIzODk1ODk5NTQwMjYwOTAyOTYiLCJ4LWRhdGFkb2ctc2FtcGxpbmctcHJpb3JpdHkiOiIxIiwieC1kYXRhZG9nLXBhcmVudC1zcGFuLWZpbmlzaC10aW1lIjoxNjYwOTM5ODk5MjMzLCJ4LWRhdGFkb2ctYXV0aG9yaXppbmctcmVxdWVzdGlkIjoicmFuZG9tLWlkIn0==",
           principalId: "foo",
           integrationLatency: 71,
           preserve: "this key set by a customer",
         },
         stage: "dev",
+        requestId: "random-id",
       },
       httpMethod: "GET",
       resource: "/hello",
