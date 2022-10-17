@@ -81,8 +81,8 @@ function remove_stack() {
         nodejs_version=$parameters_set[1]
         run_id=$parameters_set[2]
         echo "Removing stack for stage : ${!run_id}"
-        NODE_VERSION=${!nodejs_version} RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
-        serverless remove --stage ${!run_id}
+        echo "NODE_VERSION=${!nodejs_version} RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
+        serverless remove --stage ${!run_id}"
     done
 }
 
