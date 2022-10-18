@@ -1,4 +1,4 @@
-name: update-deps
+name: update-snapshots
 
 on:
   schedule:
