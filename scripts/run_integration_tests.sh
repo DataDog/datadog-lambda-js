@@ -35,7 +35,6 @@ node16=("nodejs16.x" "16.14" $(xxd -l 4 -c 4 -p < /dev/random))
 
 PARAMETERS_SETS=("node12" "node14" "node16")
 
-BUILD_LAYER_VERSION=''
 if [ -z "$RUNTIME_PARAM" ]; then
     echo "Node version not specified, running for all node versions."
 else
@@ -61,7 +60,11 @@ fi
 
 if [ -n "$BUILD_LAYERS" ]; then
     echo "Building layers that will be deployed with our test functions"
-    NODE_VERSION=${!BUILD_LAYER_VERSION} source $scripts_dir/build_layers.sh
+    if [ -n "$BUILD_LAYER_VERSION" ]; then
+        source $scripts_dir/build_layers.sh
+    else
+        NODE_VERSION=${!BUILD_LAYER_VERSION} source $scripts_dir/build_layers.sh
+    fi
 else
     echo "Not building layers, ensure they've already been built or re-run with 'BUILD_LAYERS=true DD_API_KEY=XXXX ./scripts/run_integration_tests.sh'"
 fi
