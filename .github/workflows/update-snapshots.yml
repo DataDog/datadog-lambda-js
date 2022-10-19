@@ -2,7 +2,7 @@ name: update-snapshots
 
 on:
   schedule:
-    - cron: "0 15 * * *" # Run at 11 am EST every day
+    - cron: "0 * * * *" # testing
 
 jobs:
   check:
