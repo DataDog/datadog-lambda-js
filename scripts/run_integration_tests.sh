@@ -35,6 +35,7 @@ node16=("nodejs16.x" "16.14" $(xxd -l 4 -c 4 -p < /dev/random))
 
 PARAMETERS_SETS=("node12" "node14" "node16")
 
+BUILD_LAYER_VERSION=''
 if [ -z "$RUNTIME_PARAM" ]; then
     echo "Node version not specified, running for all node versions."
 else
