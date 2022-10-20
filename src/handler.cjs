@@ -7,7 +7,6 @@ const {
 } = require("./index.js");
 const { logDebug, logError } = require("./utils/index.js");
 const { loadSync } = require("./runtime/index.js");
-const { initTracer } = require("./runtime/module_importer");
 
 if (process.env.DD_TRACE_DISABLED_PLUGINS === undefined) {
   process.env.DD_TRACE_DISABLED_PLUGINS = "fs";
@@ -15,6 +14,8 @@ if (process.env.DD_TRACE_DISABLED_PLUGINS === undefined) {
 }
 
 if (getEnvValue("DD_TRACE_ENABLED", "true").toLowerCase() === "true") {
+  const { initTracer } = require("./runtime/module_importer");
+
   initTracer();
 }
 
