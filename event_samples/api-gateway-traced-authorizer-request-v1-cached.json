@@ -16,7 +16,7 @@
     "Host": "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com",
     "Postman-Token": "62ccb3d9-a44f-427c-9952-418c0a2eb1c3",
     "User-Agent": "PostmanRuntime/7.29.0",
-    "Via": "1.1 xxx.cloudfront.net (CloudFront)",
+    "Via": "1.1 xxx (CloudFront)",
     "X-Amz-Cf-Id": "90JXZEr6stVabQV78Zwn5EADW0evkpWINdmt3jzkuHQh9KtqowKejw==",
     "X-Amzn-Trace-Id": "Root=1-62ffee4f-373bdfda15f09a065a39ac73",
     "X-Forwarded-For": "38.142.177.195, 64.252.135.71",
@@ -53,7 +53,7 @@
     "authorizer": {
       "_datadog": "eyJ4LWRhdGFkb2ctdHJhY2UtaWQiOiIyMDk1MzE5NzYxMDg0NzEwNzQ3IiwieC1kYXRhZG9nLXBhcmVudC1pZCI6IjIwOTUzMTk3NjEwODQ3MTA3NDciLCJ4LWRhdGFkb2ctc2FtcGxpbmctcHJpb3JpdHkiOiIxIiwieC1kYXRhZG9nLXBhcmVudC1zcGFuLWZpbmlzaC10aW1lIjoxNjYwOTM5ODU3MDUyLCJ4LWRhdGFkb2ctYXV0aG9yaXppbmctcmVxdWVzdGlkIjoiZjFmOGQ0NmQtZWY2Zi00NmFmLWEzZWQtN2EyMGEyNmUyNjUxIn0=",
       "principalId": "foo",
-      "integrationLatency": 1419,
+      "integrationLatency": 0,
       "preserve": "this key set by a customer"
     },
     "resourcePath": "/hello",
@@ -66,7 +66,7 @@
     "stage": "dev",
     "domainPrefix": "3gsxz7lha4",
     "requestTimeEpoch": 1660939855656,
-    "requestId": "f1f8d46d-ef6f-46af-a3ed-7a20a26e2651",
+    "requestId": "f1f8d46d-ef6f-46af-a3ed-7a20a26e2652",
     "identity": {
       "cognitoIdentityPoolId": null,
       "accountId": null,

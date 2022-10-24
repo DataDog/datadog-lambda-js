@@ -131,9 +131,8 @@ export class SpanInferrer {
         options.startTime = endTime;
       } else {
         if (
-          (eventSourceSubType === eventSubTypes.apiGatewayV1 ||
-            eventSourceSubType === eventSubTypes.apiGatewayWebsocket) &&
-          event.requestContext.authorizer.integrationLatency > 0
+          eventSourceSubType === eventSubTypes.apiGatewayV1 ||
+          eventSourceSubType === eventSubTypes.apiGatewayWebsocket
         ) {
           options.startTime = event.requestContext.requestTimeEpoch;
         } else {

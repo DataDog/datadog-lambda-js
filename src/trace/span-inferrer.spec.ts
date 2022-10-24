@@ -9,9 +9,14 @@ const eventBridgeEvent = require("../../event_samples/eventbridge.json");
 const webSocketEvent = require("../../event_samples/api-gateway-wss.json");
 const apiGatewayV1 = require("../../event_samples/api-gateway-v1.json");
 const apiGatewayV2 = require("../../event_samples/api-gateway-v2.json");
-const apiGatewayTracedAuthorizerRequestV1 = require("../../event_samples/api-gateway-traced-authorizer-request-v1.json");
-const apiGatewayTracedAuthorizerTokenV1 = require("../../event_samples/api-gateway-traced-authorizer-token-v1.json");
-const apiGatewayTracedAuthorizerRequestV2 = require("../../event_samples/api-gateway-traced-authorizer-request-v2.json");
+const apiGatewayV1RequestAuthorizer = require("../../event_samples/api-gateway-traced-authorizer-request-v1.json");
+const apiGatewayV1RequestAuthorizerCached = require("../../event_samples/api-gateway-traced-authorizer-request-v1-cached.json");
+const apiGatewayV1TokenAuthorizer = require("../../event_samples/api-gateway-traced-authorizer-token-v1.json");
+const apiGatewayV1TokenAuthorizerCached = require("../../event_samples/api-gateway-traced-authorizer-token-v1-cached.json");
+const apiGatewayV2RequestAuthorizer = require("../../event_samples/api-gateway-traced-authorizer-request-v2.json");
+const apiGatewayV2TokenAuthorizerCached = require("../../event_samples/api-gateway-traced-authorizer-request-v2-cached.json");
+const apiGatewayWSSRequestAuthorizerConnect = require("../../event_samples/api-gateway-traced-authorizer-request-websocket-connect.json");
+const apiGatewayWSSRequestAuthorizerMessage = require("../../event_samples/api-gateway-traced-authorizer-request-websocket-message.json");
 const s3Event = require("../../event_samples/s3.json");
 const functionUrlEvent = require("../../event_samples/lambda-function-urls.json");
 const mockWrapper = {
@@ -202,7 +207,7 @@ describe("SpanInferrer", () => {
 
     expect(mockWrapper.startSpan).toBeCalledWith("aws.apigateway", {
       childOf: {},
-      startTime: undefined,
+      startTime: 1642607783913,
       tags: {
         _inferred_span: { synchronicity: "sync", tag_source: "self" },
         apiid: "08se3mvh28",
@@ -228,7 +233,7 @@ describe("SpanInferrer", () => {
 
     expect(mockWrapper.startSpan).toBeCalledWith("aws.apigateway", {
       childOf: {},
-      startTime: undefined,
+      startTime: 1583349317135,
       tags: {
         _inferred_span: { synchronicity: "sync", tag_source: "self" },
         apiid: "id",
@@ -349,7 +354,7 @@ describe("Authorizer Spans", () => {
 
   it("creates an inferred span for API Gateway V1 event with traced authorizers [Request Type]", () => {
     const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
-    inferrer.createInferredSpan(apiGatewayTracedAuthorizerRequestV1, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(apiGatewayV1RequestAuthorizer, {} as any, {} as SpanContext);
     expect(mockWrapperWithFinish.startSpan.mock.calls[0]).toEqual([
       "aws.apigateway.authorizer",
       {
@@ -398,9 +403,37 @@ describe("Authorizer Spans", () => {
     ]);
   });
 
+  it("No inferred span for API Gateway V1 event with CACHED authorizers [Request Type]", () => {
+    const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
+    inferrer.createInferredSpan(apiGatewayV1RequestAuthorizerCached, {} as any, {} as SpanContext);
+    expect(mockWrapperWithFinish.startSpan.mock.calls[0]).toEqual([
+      "aws.apigateway",
+      {
+        childOf: {}, // Hack around jest mocks
+        startTime: 1660939855656,
+        tags: {
+          _inferred_span: { synchronicity: "sync", tag_source: "self" },
+          apiid: "3gsxz7lha4",
+          domain_name: "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com",
+          endpoint: "/dev/hello",
+          "http.method": "POST",
+          "http.url": "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com/dev/hello",
+          operation_name: "aws.apigateway",
+          request_id: undefined,
+          "resource.name": "POST /hello",
+          resource_names: "POST /hello",
+          service: "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com",
+          "service.name": "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com",
+          "span.type": "http",
+          stage: "dev",
+        },
+      },
+    ]);
+  });
+
   it("creates an inferred span for API Gateway V1 event with traced authorizers [Token Type]", () => {
     const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
-    inferrer.createInferredSpan(apiGatewayTracedAuthorizerTokenV1, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(apiGatewayV1TokenAuthorizer, {} as any, {} as SpanContext);
     expect(mockWrapperWithFinish.startSpan.mock.calls[0]).toEqual([
       "aws.apigateway.authorizer",
       {
@@ -449,9 +482,37 @@ describe("Authorizer Spans", () => {
     ]);
   });
 
+  it("No inferred span for API Gateway V1 event with CACHED authorizers [Token Type]", () => {
+    const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
+    inferrer.createInferredSpan(apiGatewayV1TokenAuthorizerCached, {} as any, {} as SpanContext);
+    expect(mockWrapperWithFinish.startSpan.mock.calls[0]).toEqual([
+      "aws.apigateway",
+      {
+        childOf: {}, // Hack around jest mocks
+        startTime: 1665601934812,
+        tags: {
+          _inferred_span: { synchronicity: "sync", tag_source: "self" },
+          apiid: "j3snk0ltd1",
+          domain_name: "j3snk0ltd1.execute-api.sa-east-1.amazonaws.com",
+          endpoint: "/dev/hi",
+          "http.method": "GET",
+          "http.url": "j3snk0ltd1.execute-api.sa-east-1.amazonaws.com/dev/hi",
+          operation_name: "aws.apigateway",
+          request_id: undefined,
+          "resource.name": "GET /hi",
+          resource_names: "GET /hi",
+          service: "j3snk0ltd1.execute-api.sa-east-1.amazonaws.com",
+          "service.name": "j3snk0ltd1.execute-api.sa-east-1.amazonaws.com",
+          "span.type": "http",
+          stage: "dev",
+        },
+      },
+    ]);
+  });
+
   it("creates an inferred span for API Gateway V2 event with traced authorizers [Request Type]", () => {
     const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
-    inferrer.createInferredSpan(apiGatewayTracedAuthorizerRequestV2, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(apiGatewayV2RequestAuthorizer, {} as any, {} as SpanContext);
     expect(mockWrapperWithFinish.startSpan.mock.calls[0]).toEqual([
       "aws.apigateway.authorizer",
       {
@@ -495,6 +556,113 @@ describe("Authorizer Spans", () => {
           "service.name": "l9flvsey83.execute-api.sa-east-1.amazonaws.com",
           "span.type": "http",
           stage: "$default",
+        },
+      },
+    ]);
+  });
+
+  it("No inferred span for API Gateway V2 event with CACHED authorizers [Request Type]", () => {
+    const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
+    inferrer.createInferredSpan(apiGatewayV2TokenAuthorizerCached, {} as any, {} as SpanContext);
+    expect(mockWrapperWithFinish.startSpan.mock.calls[0]).toEqual([
+      "aws.apigateway",
+      {
+        childOf: {},
+        startTime: 1665596856876,
+        tags: {
+          _inferred_span: { synchronicity: "sync", tag_source: "self" },
+          apiid: "l9flvsey83",
+          domain_name: "l9flvsey83.execute-api.sa-east-1.amazonaws.com",
+          endpoint: "/hello",
+          "http.method": "GET",
+          "http.url": "l9flvsey83.execute-api.sa-east-1.amazonaws.com/hello",
+          operation_name: "aws.apigateway",
+          request_id: undefined,
+          "resource.name": "GET /hello",
+          resource_names: "GET /hello",
+          service: "l9flvsey83.execute-api.sa-east-1.amazonaws.com",
+          "service.name": "l9flvsey83.execute-api.sa-east-1.amazonaws.com",
+          "span.type": "http",
+          stage: "$default",
+        },
+      },
+    ]);
+  });
+
+  it("creates an inferred span for API Gateway Websocket Connect event with traced authorizers [Request Type]", () => {
+    const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
+    inferrer.createInferredSpan(apiGatewayWSSRequestAuthorizerConnect, {} as any, {} as SpanContext);
+    expect(mockWrapperWithFinish.startSpan.mock.calls[0]).toEqual([
+      "aws.apigateway.authorizer",
+      {
+        childOf: {},
+        startTime: 1666633566931,
+        tags: {
+          _inferred_span: { synchronicity: "sync", tag_source: "self" },
+          apiid: "85fj5nw29d",
+          connection_id: "ahVWscZqmjQCI1w=",
+          endpoint: "$connect",
+          event_type: "CONNECT",
+          "http.url": "85fj5nw29d.execute-api.sa-east-1.amazonaws.com$connect",
+          message_direction: "IN",
+          operation_name: "aws.apigateway",
+          request_id: undefined,
+          "resource.name": "85fj5nw29d.execute-api.sa-east-1.amazonaws.com $connect",
+          resource_names: "85fj5nw29d.execute-api.sa-east-1.amazonaws.com $connect",
+          service: "85fj5nw29d.execute-api.sa-east-1.amazonaws.com",
+          "service.name": "85fj5nw29d.execute-api.sa-east-1.amazonaws.com",
+          "span.type": "http",
+        },
+      },
+    ]);
+    expect(mockWrapperWithFinish.startSpan.mock.calls[1]).toEqual([
+      "aws.apigateway",
+      {
+        childOf: { finish: mockFinish }, // Hack around jest mocks
+        startTime: 1666633566947,
+        tags: {
+          _inferred_span: { synchronicity: "sync", tag_source: "self" },
+          apiid: "85fj5nw29d",
+          connection_id: "ahVWscZqmjQCI1w=",
+          endpoint: "$connect",
+          event_type: "CONNECT",
+          "http.url": "85fj5nw29d.execute-api.sa-east-1.amazonaws.com$connect",
+          message_direction: "IN",
+          operation_name: "aws.apigateway",
+          request_id: undefined,
+          "resource.name": "85fj5nw29d.execute-api.sa-east-1.amazonaws.com $connect",
+          resource_names: "85fj5nw29d.execute-api.sa-east-1.amazonaws.com $connect",
+          service: "85fj5nw29d.execute-api.sa-east-1.amazonaws.com",
+          "service.name": "85fj5nw29d.execute-api.sa-east-1.amazonaws.com",
+          "span.type": "http",
+        },
+      },
+    ]);
+  });
+
+  it("No inferred span for API Gateway Websocket Message event with traced authorizers [Request Type]", () => {
+    const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
+    inferrer.createInferredSpan(apiGatewayWSSRequestAuthorizerMessage, {} as any, {} as SpanContext);
+    expect(mockWrapperWithFinish.startSpan.mock.calls[0]).toEqual([
+      "aws.apigateway",
+      {
+        childOf: {},
+        startTime: 1666633666203,
+        tags: {
+          _inferred_span: { synchronicity: "sync", tag_source: "self" },
+          apiid: "85fj5nw29d",
+          connection_id: "ahVWscZqmjQCI1w=",
+          endpoint: "hello",
+          event_type: "MESSAGE",
+          "http.url": "85fj5nw29d.execute-api.sa-east-1.amazonaws.comhello",
+          message_direction: "IN",
+          operation_name: "aws.apigateway",
+          request_id: undefined,
+          "resource.name": "85fj5nw29d.execute-api.sa-east-1.amazonaws.com hello",
+          resource_names: "85fj5nw29d.execute-api.sa-east-1.amazonaws.com hello",
+          service: "85fj5nw29d.execute-api.sa-east-1.amazonaws.com",
+          "service.name": "85fj5nw29d.execute-api.sa-east-1.amazonaws.com",
+          "span.type": "http",
         },
       },
     ]);

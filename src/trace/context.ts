@@ -352,6 +352,7 @@ export function getInjectedAuthorizerData(event: any, eventSourceSubType: eventS
   if (!authorizerHeaders) return null;
   const rawDatadogData =
     eventSourceSubType === eventSubTypes.apiGatewayV2 ? authorizerHeaders.lambda._datadog : authorizerHeaders._datadog;
+  if (!rawDatadogData) return null;
   const injectedData = JSON.parse(Buffer.from(rawDatadogData, "base64").toString());
   // use the injected requestId to tell if it's the authorizing invocation (not cached)
   if (event.requestContext.requestId === injectedData[authorizingRequestIdHeader]) {
