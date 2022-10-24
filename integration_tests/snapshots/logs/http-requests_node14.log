@@ -14,10 +14,10 @@ START
   ],
   "v": 1
 }
-HTTP GET https://ip-ranges.datadoghq.com/ Headers: ["Accept:application/json, text/plain, */*","User-Agent:axios/X.X.X","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
-HTTP GET https://ip-ranges.datadoghq.eu/ Headers: ["Accept:application/json, text/plain, */*","User-Agent:axios/X.X.X","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
+HTTP GET https://ip-ranges.datadoghq.com/ TraceHeaders: ["x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
+HTTP GET https://ip-ranges.datadoghq.eu/ TraceHeaders: ["x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
 XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Snapshot test http requests successfully made to URLs: https://ip-ranges.datadoghq.com,https://ip-ranges.datadoghq.eu
-HTTP POST https://api.datadoghq.com/api/v1/distribution_points?api_key=XXXX Headers: ["content-type:application/json","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
+HTTP POST https://api.datadoghq.com/api/v1/distribution_points?api_key=XXXX TraceHeaders: ["x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
 END Duration: XXXX ms (init: XXXX ms) Memory Used: XXXX MB
 START
 {
@@ -35,10 +35,10 @@ START
   ],
   "v": 1
 }
-HTTP GET https://ip-ranges.datadoghq.com/ Headers: ["Accept:application/json, text/plain, */*","User-Agent:axios/X.X.X","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
-HTTP GET https://ip-ranges.datadoghq.eu/ Headers: ["Accept:application/json, text/plain, */*","User-Agent:axios/X.X.X","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
+HTTP GET https://ip-ranges.datadoghq.com/ TraceHeaders: ["x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
+HTTP GET https://ip-ranges.datadoghq.eu/ TraceHeaders: ["x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
 XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Snapshot test http requests successfully made to URLs: https://ip-ranges.datadoghq.com,https://ip-ranges.datadoghq.eu
-HTTP POST https://api.datadoghq.com/api/v1/distribution_points?api_key=XXXX Headers: ["content-type:application/json","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
+HTTP POST https://api.datadoghq.com/api/v1/distribution_points?api_key=XXXX TraceHeaders: ["x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
 END Duration: XXXX ms Memory Used: XXXX MB
 START
 {
@@ -56,8 +56,8 @@ START
   ],
   "v": 1
 }
-HTTP GET https://ip-ranges.datadoghq.com/ Headers: ["Accept:application/json, text/plain, */*","User-Agent:axios/X.X.X","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
-HTTP GET https://ip-ranges.datadoghq.eu/ Headers: ["Accept:application/json, text/plain, */*","User-Agent:axios/X.X.X","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
+HTTP GET https://ip-ranges.datadoghq.com/ TraceHeaders: ["x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
+HTTP GET https://ip-ranges.datadoghq.eu/ TraceHeaders: ["x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
 XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Snapshot test http requests successfully made to URLs: https://ip-ranges.datadoghq.com,https://ip-ranges.datadoghq.eu
-HTTP POST https://api.datadoghq.com/api/v1/distribution_points?api_key=XXXX Headers: ["content-type:application/json","x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
+HTTP POST https://api.datadoghq.com/api/v1/distribution_points?api_key=XXXX TraceHeaders: ["x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
 END Duration: XXXX ms Memory Used: XXXX MB

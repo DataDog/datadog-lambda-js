@@ -3,7 +3,7 @@ import https from "https";
 import * as shimmer from "shimmer";
 import { parse, URL } from "url";
 
-import { TraceContextService } from "./trace-context-service";
+import { TraceContextService, TraceHeaders } from "./trace-context-service";
 
 type RequestCallback = (res: http.IncomingMessage) => void;
 
@@ -106,7 +106,7 @@ function getRequestOptionsWithTraceContext(
   // Logging all http requests during integration tests let's
   // us track traffic in our test snapshots
   if (isIntegrationTest()) {
-    _logHttpRequest(requestOpts);
+    _logHttpRequest(requestOpts, traceHeaders);
   }
   return requestOpts;
 }
@@ -125,13 +125,13 @@ function isIntegrationTest() {
  * HTTP GET https://ip-ranges.datadoghq.com/ Headers: ["x-datadog-parent-id:abc"] Data: {}
  * @param options The options for the HTTP request
  */
-function _logHttpRequest(options: http.RequestOptions) {
-  let headerMessage = "Headers: []";
+function _logHttpRequest(options: http.RequestOptions, traceHeaders: Partial<TraceHeaders>) {
+  let headerMessage = "TraceHeaders: []";
 
-  if (options.headers) {
-    const headerStrings = Object.entries(options.headers).map(([name, value]) => `${name}:${value}`);
+  if (traceHeaders) {
+    const headerStrings = Object.entries(traceHeaders).map(([name, value]) => `${name}:${value}`);
     headerStrings.sort();
-    headerMessage = `Headers: ${JSON.stringify(headerStrings)}`;
+    headerMessage = `TraceHeaders: ${JSON.stringify(headerStrings)}`;
   }
 
   const url = `${options.protocol}//${options.host || options.hostname}${options.path}`;
