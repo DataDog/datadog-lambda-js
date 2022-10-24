@@ -3,8 +3,21 @@ name: build
 on:
   push:
     branches:
-      - 'main'
+      - "main"
   pull_request:
+  workflow_dispatch:
+  inputs:
+    envToDeploy:
+      type: choice
+      description: Deploy to prod (all regions)?
+      required: true
+      options:
+        - sandbox (sa-east-1)
+        - prod (all regions)
+    mfaCode:
+      type: string
+      description: MFA Code
+      required: true
 
 jobs:
   lint:
@@ -97,9 +110,9 @@ jobs:
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v2
-        
+
       - name: Complete Buildx Setup
-        run:  docker run --privileged --rm tonistiigi/binfmt --install all
+        run: docker run --privileged --rm tonistiigi/binfmt --install all
 
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
@@ -146,3 +159,176 @@ jobs:
         env:
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
         run: ./scripts/send_status_metric.sh 1 $DD_API_KEY
+
+  auth:
+    runs-on: ubuntu-latest
+    steps:
+      - id: auth
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+        run: |
+          credentials=$(aws sts get-session-token --serial-number ${{ secrets.MFA_DEVICE_ARN }} --token-code ${{ inputs.mfaCode }})
+
+          AWS_ACCESS_KEY_ID=$(echo $credentials | jq -r .Credentials.AccessKeyId)
+          echo $AWS_ACCESS_KEY_ID | gpg --quiet --symmetric --cipher-algo AES256 --batch --yes --passphrase ${{ secrets.GPG_PASSPHRASE }} --output aws_access_key.gpg
+
+          AWS_SECRET_ACCESS_KEY=$(echo $credentials | jq -r .Credentials.SecretAccessKey)
+          echo $AWS_SECRET_ACCESS_KEY | gpg --quiet --symmetric --cipher-algo AES256 --batch --yes --passphrase ${{ secrets.GPG_PASSPHRASE }} --output aws_secret_access_key.gpg
+
+          AWS_SESSION_TOKEN=$(echo $credentials | jq -r .Credentials.SessionToken)
+          echo $AWS_SESSION_TOKEN | gpg --quiet --symmetric --cipher-algo AES256 --batch --yes --passphrase ${{ secrets.GPG_PASSPHRASE }} --output aws_session_token.gpg
+
+      - uses: actions/upload-artifact@v3.1.0
+        with:
+          name: aws_credentials
+          path: |
+            aws_access_key.gpg
+            aws_secret_access_key.gpg
+            aws_session_token.gpg
+
+  build-region-matrix:
+    if: ${{ inputs.envToDeploy == 'prod (all regions)' }}
+    needs: auth
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3.0.0
+        with:
+          name: aws_credentials
+      - id: set-matrix
+        env:
+          AWS_REGION: us-east-1
+        run: |
+          gpg --quiet --batch --yes --decrypt --passphrase=${{ secrets.GPG_PASSPHRASE }} --output aws_access_key.txt aws_access_key.gpg
+          AWS_ACCESS_KEY_ID=$(cat aws_access_key.txt)
+          echo "::add-mask::$AWS_ACCESS_KEY_ID"
+          export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+
+          gpg --quiet --batch --yes --decrypt --passphrase=${{ secrets.GPG_PASSPHRASE }} --output aws_secret_access_key.txt aws_secret_access_key.gpg
+          AWS_SECRET_ACCESS_KEY=$(cat aws_secret_access_key.txt)
+          echo "::add-mask::$AWS_SECRET_ACCESS_KEY"
+          export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+
+          gpg --quiet --batch --yes --decrypt --passphrase=${{ secrets.GPG_PASSPHRASE }} --output aws_session_token.txt aws_session_token.gpg
+          AWS_SESSION_TOKEN=$(cat aws_session_token.txt)
+          echo "::add-mask::$AWS_SESSION_TOKEN"
+          export AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
+
+          echo "::set-output name=aws_region_matrix::$(aws ec2 describe-regions | jq -c '[.Regions | .[] | .RegionName]')"
+    outputs:
+      aws_region_matrix: ${{ steps.set-matrix.outputs.aws_region_matrix }}
+
+  build-layer-matrix:
+    runs-on: ubuntu-latest
+    run: |
+      chmod +x ./scripts/build_layers.sh
+      echo "Building layers"
+      ./scripts/build_layers.sh
+
+      echo "::set-output name=layer::$(ls .layers | jq -R -s -c 'split("\n")[:-1]')"
+
+    outputs: ${{ steps.set-matrix.outputs.layer_matrix }}
+
+  deploy-production-layer:
+    if: ${{ inputs.envToDeploy == 'prod (all regions)' }}
+    needs:
+      - build-region-matrix
+      - auth
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        aws_region: ${{ fromJson(needs.build-matrix.outputs.aws_region_matrix) }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3.0.0
+        with:
+          name: aws_credentials
+      - name: build-layers
+        run: |
+          chmod +x ./scripts/build_layers.sh
+          ./scripts/build_layers.sh
+      - name: deploy
+        run: |
+          gpg --quiet --batch --yes --decrypt --passphrase=${{ secrets.GPG_PASSPHRASE }} --output aws_access_key.txt aws_access_key.gpg
+          AWS_ACCESS_KEY_ID=$(cat aws_access_key.txt)
+          echo "::add-mask::$AWS_ACCESS_KEY_ID"
+          export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+
+          gpg --quiet --batch --yes --decrypt --passphrase=${{ secrets.GPG_PASSPHRASE }} --output aws_secret_access_key.txt aws_secret_access_key.gpg
+          AWS_SECRET_ACCESS_KEY=$(cat aws_secret_access_key.txt)
+          echo "::add-mask::$AWS_SECRET_ACCESS_KEY"
+          export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+
+          gpg --quiet --batch --yes --decrypt --passphrase=${{ secrets.GPG_PASSPHRASE }} --output aws_session_token.txt aws_session_token.gpg
+          AWS_SESSION_TOKEN=$(cat aws_session_token.txt)
+          echo "::add-mask::$AWS_SESSION_TOKEN"
+          export AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
+
+          export AWS_REGION=${{ matrix.aws_region }}
+
+          echo "Building layers"
+
+
+          result=$(aws lambda publish-layer-version --layer-name maxday-test-from-github-action \
+          --description "test from github action" \
+          --zip-file "fileb://layer.zip" \
+          --region ${{ matrix.aws_region }})
+
+          layer_version=$(echo $result | jq .Version)
+
+          permission=$(aws lambda add-layer-version-permission --layer-name maxday-test-from-github-action \
+          --version-number $layer_version \
+          --statement-id "release-$layer_version" \
+          --action lambda:GetLayerVersion --principal "*" \
+          --region ${{ matrix.aws_region }})
+
+deploy-dev-layer:
+  if: ${{ inputs.envToDeploy == 'sandbox (sa-east-1)' }}
+  needs:
+    - auth
+    - build-layer-matrix
+  runs-on: ubuntu-latest
+  strategy:
+    matrix:
+      layer: ${{ fromJson(needs.build-matrix.outputs.layer_matrix) }}
+  steps:
+    - name: checkout
+      uses: actions/checkout@v3
+    - uses: actions/download-artifact@v3.0.0
+      with:
+        name: aws_credentials
+    - name: deploy
+      run: |
+        export AWS_REGION=sa-east1
+
+        NODE_VERSION=$(echo ${{ matrix.version }} | sed -r 's/^[^0-9]*([0-9]+).*$/\1/')
+
+        gpg --quiet --batch --yes --decrypt --passphrase=${{ secrets.GPG_PASSPHRASE }} --output aws_access_key.txt aws_access_key.gpg
+        AWS_ACCESS_KEY_ID=$(cat aws_access_key.txt)
+        echo "::add-mask::$AWS_ACCESS_KEY_ID"
+        export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+
+        gpg --quiet --batch --yes --decrypt --passphrase=${{ secrets.GPG_PASSPHRASE }} --output aws_secret_access_key.txt aws_secret_access_key.gpg
+        AWS_SECRET_ACCESS_KEY=$(cat aws_secret_access_key.txt)
+        echo "::add-mask::$AWS_SECRET_ACCESS_KEY"
+        export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+
+        gpg --quiet --batch --yes --decrypt --passphrase=${{ secrets.GPG_PASSPHRASE }} --output aws_session_token.txt aws_session_token.gpg
+        AWS_SESSION_TOKEN=$(cat aws_session_token.txt)
+        echo "::add-mask::$AWS_SESSION_TOKEN"
+        export AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
+
+        result=$(aws lambda publish-layer-version --layer-name ***NEED TO CHANGE*** \
+        --description "test from github action" \
+        --zip-file "fileb://layer.zip" \
+        --region sa-east-1)
+
+        layer_version=$(echo $result | jq .Version)
+
+        permission=$(aws lambda add-layer-version-permission --layer-name ***NEED TO CHANGE*** \
+        --version-number $layer_version \
+        --statement-id "release-$layer_version" \
+        --action lambda:GetLayerVersion --principal "*" \
+        --region sa-east-1)
