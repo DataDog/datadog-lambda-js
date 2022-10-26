@@ -26,7 +26,7 @@ export class SpanWrapper {
     if (this.span._duration && this.span._startTime) {
       return this.span._startTime + this.span._duration;
     }
-    throw "_endTime not defined";
+    throw new Error("_endTime not defined");
   }
 
   public finish(timestamp = Date.now()): void {
