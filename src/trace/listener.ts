@@ -159,8 +159,11 @@ export class TraceListener {
     const injectedHeaders = {
       ...this.tracerWrapper.injectSpan(this.inferredSpan?.span || this.wrappedCurrentSpan?.span),
       [parentSpanFinishTimeHeader]: finishTime, //  used as the start time in the authorizer span
-      [authorizingRequestIdHeader]: requestId, //  used to distinguish cached cases
     };
+    if (requestId) {
+      //  undefined in token-type authorizer
+      injectedHeaders[authorizingRequestIdHeader] = requestId;
+    }
     result.context._datadog = Buffer.from(JSON.stringify(injectedHeaders)).toString("base64");
   }
 
@@ -176,7 +179,7 @@ export class TraceListener {
       logDebug("Unpatching HTTP libraries");
       unpatchHttp();
     }
-    let finishTime;
+    let finishTime = Date.now();
     if (this.inferredSpan) {
       logDebug("Finishing inferred span");
 
@@ -184,18 +187,16 @@ export class TraceListener {
         logDebug("Setting error tag to inferred span");
         this.inferredSpan.setTag("error", error);
       }
-
-      finishTime = this.inferredSpan.isAsync() ? this.wrappedCurrentSpan?.startTime() || Date.now() : Date.now();
+      if (this.inferredSpan.isAsync()) {
+        finishTime = this.wrappedCurrentSpan?.startTime() || Date.now();
+      } else {
+        finishTime = Date.now();
+      }
       this.inferredSpan.finish(finishTime);
     }
-    if (
-      this.config.encodeAuthorizerContext &&
-      result?.principalId &&
-      result?.policyDocument &&
-      event?.requestContext?.requestId
-    ) {
+    if (this.config.encodeAuthorizerContext && result?.principalId && result?.policyDocument) {
       // We're in an authorizer, pass on the trace context, requestId and finishTime to make the authorizer span
-      this.injectAuthorizerSpan(result, event.requestContext.requestId, finishTime || Date.now());
+      this.injectAuthorizerSpan(result, event?.requestContext?.requestId, finishTime || Date.now());
     }
   }
 

@@ -355,7 +355,10 @@ export function getInjectedAuthorizerData(event: any, eventSourceSubType: eventS
   if (!rawDatadogData) return null;
   const injectedData = JSON.parse(Buffer.from(rawDatadogData, "base64").toString());
   // use the injected requestId to tell if it's the authorizing invocation (not cached)
-  if (event.requestContext.requestId === injectedData[authorizingRequestIdHeader]) {
+  if (
+    authorizerHeaders.integrationLatency > 0 ||
+    event.requestContext.requestId === injectedData[authorizingRequestIdHeader]
+  ) {
     return injectedData;
   } else {
     return null;
