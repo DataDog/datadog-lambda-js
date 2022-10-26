@@ -179,7 +179,7 @@ export class TraceListener {
       logDebug("Unpatching HTTP libraries");
       unpatchHttp();
     }
-    let finishTime = Date.now();
+    let finishTime = this.wrappedCurrentSpan?.endTime();
     if (this.inferredSpan) {
       logDebug("Finishing inferred span");
 
