@@ -253,6 +253,7 @@ START
 }
 END Duration: XXXX ms Memory Used: XXXX MB
 START
+END Duration: XXXX ms Memory Used: XXXX MB
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -367,4 +368,3 @@ START
     ]
   ]
 }
-END Duration: XXXX ms Memory Used: XXXX MB
