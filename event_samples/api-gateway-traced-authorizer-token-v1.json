@@ -57,7 +57,7 @@
   "requestContext": {
     "resourceId": "nwlcwu",
     "authorizer": {
-      "_datadog": "eyJ4LWRhdGFkb2ctdHJhY2UtaWQiOiI2OTY4Mjg0MDg3NjQ5NTc3MjAwIiwieC1kYXRhZG9nLXBhcmVudC1pZCI6IjY5NjgyODQwODc2NDk1NzcyMDAiLCJ4LWRhdGFkb2ctc2FtcGxpbmctcHJpb3JpdHkiOiIxIiwieC1kYXRhZG9nLXBhcmVudC1zcGFuLWZpbmlzaC10aW1lIjoxNjY2ODAzMTk2NzgwfQ==",
+      "_datadog": "eyJ4LWRhdGFkb2ctdHJhY2UtaWQiOiI2OTY4Mjg0MDg3NjQ5NTc3MjAwIiwieC1kYXRhZG9nLXBhcmVudC1pZCI6IjY5NjgyODQwODc2NDk1NzcyMDAiLCJ4LWRhdGFkb2ctc2FtcGxpbmctcHJpb3JpdHkiOiIxIiwieC1kYXRhZG9nLXBhcmVudC1zcGFuLWZpbmlzaC10aW1lIjoxNjY2ODAzMTk2NzgwMDAwMDAwfQ==",
       "scope": "this is just a string",
       "principalId": "foo",
       "integrationLatency": 1144

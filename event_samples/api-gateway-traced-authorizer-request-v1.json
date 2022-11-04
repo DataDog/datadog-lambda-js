@@ -51,7 +51,7 @@
   "requestContext": {
     "resourceId": "oozq9u",
     "authorizer": {
-      "_datadog": "eyJ4LWRhdGFkb2ctdHJhY2UtaWQiOiIyMDk1MzE5NzYxMDg0NzEwNzQ3IiwieC1kYXRhZG9nLXBhcmVudC1pZCI6IjIwOTUzMTk3NjEwODQ3MTA3NDciLCJ4LWRhdGFkb2ctc2FtcGxpbmctcHJpb3JpdHkiOiIxIiwieC1kYXRhZG9nLXBhcmVudC1zcGFuLWZpbmlzaC10aW1lIjoxNjYwOTM5ODU3MDUyLCJ4LWRhdGFkb2ctYXV0aG9yaXppbmctcmVxdWVzdGlkIjoiZjFmOGQ0NmQtZWY2Zi00NmFmLWEzZWQtN2EyMGEyNmUyNjUxIn0=",
+      "_datadog": "eyJ4LWRhdGFkb2ctdHJhY2UtaWQiOiIyMDk1MzE5NzYxMDg0NzEwNzQ3IiwieC1kYXRhZG9nLXBhcmVudC1pZCI6IjIwOTUzMTk3NjEwODQ3MTA3NDciLCJ4LWRhdGFkb2ctc2FtcGxpbmctcHJpb3JpdHkiOiIxIiwieC1kYXRhZG9nLXBhcmVudC1zcGFuLWZpbmlzaC10aW1lIjoxNjYwOTM5ODU3MDUyMDAwMDAwLCJ4LWRhdGFkb2ctYXV0aG9yaXppbmctcmVxdWVzdGlkIjoiZjFmOGQ0NmQtZWY2Zi00NmFmLWEzZWQtN2EyMGEyNmUyNjUxIn0=",
       "principalId": "foo",
       "integrationLatency": 1419,
       "preserve": "this key set by a customer"

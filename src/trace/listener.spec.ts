@@ -331,7 +331,7 @@ describe("TraceListener", () => {
     listener.injectAuthorizerSpan(result, "randomId", 1661189936981);
 
     expect(result.context._datadog).toBe(
-      "eyJ4LWRhdGFkb2ctcGFyZW50LWlkIjoiNzk3NjQzMTkzNjgwMzg4MjUxIiwieC1kYXRhZG9nLXRyYWNlLWlkIjoiNDExMDkxMTU4MjI5NzQwNTU1MSIsIngtZGF0YWRvZy1zYW1wbGluZy1wcmlvcml0eSI6MSwieC1kYXRhZG9nLXBhcmVudC1zcGFuLWZpbmlzaC10aW1lIjoxNjYxMTg5OTM2OTgxLCJ4LWRhdGFkb2ctYXV0aG9yaXppbmctcmVxdWVzdGlkIjoicmFuZG9tSWQifQ==",
+      "eyJ4LWRhdGFkb2ctcGFyZW50LWlkIjoiNzk3NjQzMTkzNjgwMzg4MjUxIiwieC1kYXRhZG9nLXRyYWNlLWlkIjoiNDExMDkxMTU4MjI5NzQwNTU1MSIsIngtZGF0YWRvZy1zYW1wbGluZy1wcmlvcml0eSI6MSwieC1kYXRhZG9nLXBhcmVudC1zcGFuLWZpbmlzaC10aW1lIjoxNjYxMTg5OTM2OTgxMDAwMDAwLCJ4LWRhdGFkb2ctYXV0aG9yaXppbmctcmVxdWVzdGlkIjoicmFuZG9tSWQifQ==",
     );
   });
 });

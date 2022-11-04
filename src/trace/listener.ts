@@ -158,7 +158,9 @@ export class TraceListener {
     }
     const injectedHeaders = {
       ...this.tracerWrapper.injectSpan(this.inferredSpan?.span || this.wrappedCurrentSpan?.span),
-      [parentSpanFinishTimeHeader]: finishTime, //  used as the start time in the authorizer span
+      [parentSpanFinishTimeHeader]: finishTime * 1e6,
+      // used as the start time in the authorizer span
+      // padding 1e6 in case this nodejs authorizer is used for a python main lambda function
     };
     if (requestId) {
       //  undefined in token-type authorizer

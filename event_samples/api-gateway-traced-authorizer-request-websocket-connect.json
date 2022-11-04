@@ -24,7 +24,7 @@
   "requestContext": {
     "routeKey": "$connect",
     "authorizer": {
-      "_datadog": "eyJ4LWRhdGFkb2ctdHJhY2UtaWQiOiI2NTQ1NDA2NzQ3NDUzNjg0NjAwIiwieC1kYXRhZG9nLXBhcmVudC1pZCI6IjY1NDU0MDY3NDc0NTM2ODQ2MDAiLCJ4LWRhdGFkb2ctc2FtcGxpbmctcHJpb3JpdHkiOiIxIiwieC1kYXRhZG9nLXBhcmVudC1zcGFuLWZpbmlzaC10aW1lIjoxNjY2NjMzNTY2OTMxLCJ4LWRhdGFkb2ctYXV0aG9yaXppbmctcmVxdWVzdGlkIjoiYWhWV3NIVkFtalFGcTZnPSJ9",
+      "_datadog": "eyJ4LWRhdGFkb2ctdHJhY2UtaWQiOiI2NTQ1NDA2NzQ3NDUzNjg0NjAwIiwieC1kYXRhZG9nLXBhcmVudC1pZCI6IjY1NDU0MDY3NDc0NTM2ODQ2MDAiLCJ4LWRhdGFkb2ctc2FtcGxpbmctcHJpb3JpdHkiOiIxIiwieC1kYXRhZG9nLXBhcmVudC1zcGFuLWZpbmlzaC10aW1lIjoxNjY2NjMzNTY2OTMxMDAwMDAwLCJ4LWRhdGFkb2ctYXV0aG9yaXppbmctcmVxdWVzdGlkIjoiYWhWV3NIVkFtalFGcTZnPSJ9",
       "scope": "this is just a string",
       "principalId": "foo",
       "integrationLatency": 1119

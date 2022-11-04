@@ -24,7 +24,7 @@
     "apiId": "l9flvsey83",
     "authorizer": {
       "lambda": {
-        "_datadog": "eyJ4LWRhdGFkb2ctdHJhY2UtaWQiOiIzNzI2NzU1MTU4Mjk1OTIxMDQiLCJ4LWRhdGFkb2ctcGFyZW50LWlkIjoiMzcyNjc1NTE1ODI5NTkyMTA0IiwieC1kYXRhZG9nLXNhbXBsaW5nLXByaW9yaXR5IjoiMSIsIngtZGF0YWRvZy1wYXJlbnQtc3Bhbi1maW5pc2gtdGltZSI6MTY2NTU5Njc3MTgxMiwieC1kYXRhZG9nLWF1dGhvcml6aW5nLXJlcXVlc3RpZCI6Ilo1eUhmaDVFR2pRRUpCZz0ifQ==",
+        "_datadog": "eyJ4LWRhdGFkb2ctdHJhY2UtaWQiOiIzNzI2NzU1MTU4Mjk1OTIxMDQiLCJ4LWRhdGFkb2ctcGFyZW50LWlkIjoiMzcyNjc1NTE1ODI5NTkyMTA0IiwieC1kYXRhZG9nLXNhbXBsaW5nLXByaW9yaXR5IjoiMSIsIngtZGF0YWRvZy1wYXJlbnQtc3Bhbi1maW5pc2gtdGltZSI6MTY2NTU5Njc3MTgxMjAwMDAwMCwieC1kYXRhZG9nLWF1dGhvcml6aW5nLXJlcXVlc3RpZCI6Ilo1eUhmaDVFR2pRRUpCZz0ifQ==",
         "scope": "this is just a string"
       }
     },

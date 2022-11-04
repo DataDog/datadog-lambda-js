@@ -108,7 +108,7 @@ export class SpanInferrer {
 
       if (parsedUpstreamContext) {
         let upstreamSpanOptions: SpanOptions = {};
-        const startTime = parsedUpstreamContext[parentSpanFinishTimeHeader];
+        const startTime = parsedUpstreamContext[parentSpanFinishTimeHeader] / 1e6;
         upstreamSpanOptions = {
           startTime,
           tags: { operation_name: "aws.apigateway.authorizer", ...options.tags },
