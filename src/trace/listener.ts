@@ -39,6 +39,10 @@ export interface TraceConfig {
    */
   encodeAuthorizerContext: boolean;
   /**
+   * Whether to decode trace context in authorizer metadata
+   */
+  decodeAuthorizerContext: boolean;
+  /**
    * Whether to automatically patch console.log with Datadog's tracing ids.
    */
   injectLogContext: boolean;
@@ -90,7 +94,12 @@ export class TraceListener {
     } else {
       logDebug("Not patching HTTP libraries", { autoPatchHTTP: this.config.autoPatchHTTP, tracerInitialized });
     }
-    const rootTraceHeaders = this.contextService.extractHeadersFromContext(event, context, this.config.traceExtractor);
+    const rootTraceHeaders = this.contextService.extractHeadersFromContext(
+      event,
+      context,
+      this.config.traceExtractor,
+      this.config.decodeAuthorizerContext,
+    );
     // The aws.lambda span needs to have a parented to the Datadog trace context from the
     // incoming event if available or the X-Ray trace context if hybrid tracing is enabled
     let parentSpanContext: SpanContext | undefined;
@@ -104,7 +113,12 @@ export class TraceListener {
       });
     }
     if (this.config.createInferredSpan) {
-      this.inferredSpan = this.inferrer.createInferredSpan(event, context, parentSpanContext);
+      this.inferredSpan = this.inferrer.createInferredSpan(
+        event,
+        context,
+        parentSpanContext,
+        this.config.encodeAuthorizerContext,
+      );
     }
     this.lambdaSpanParentContext = this.inferredSpan?.span || parentSpanContext;
     this.context = context;

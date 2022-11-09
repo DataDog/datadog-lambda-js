@@ -26,9 +26,8 @@ import {
   xrayTraceEnvVar,
 } from "./constants";
 import { TraceExtractor } from "./listener";
-import { eventTypes, parseEventSource, parseEventSourceSubType, eventSubTypes } from "./trigger";
+import { parseEventSourceSubType, eventSubTypes } from "./trigger";
 import { authorizingRequestIdHeader } from "./constants";
-import { datadog } from "../index";
 
 export interface XRayTraceHeader {
   traceID: string;
@@ -59,6 +58,7 @@ export function extractTraceContext(
   event: any,
   context: Context,
   extractor?: TraceExtractor,
+  decodeAuthorizerContext: boolean = true,
 ): TraceContext | undefined {
   let trace;
 
@@ -74,7 +74,7 @@ export function extractTraceContext(
   }
 
   if (!trace) {
-    trace = readTraceFromEvent(event);
+    trace = readTraceFromEvent(event, decodeAuthorizerContext);
   }
 
   if (!trace) {
@@ -202,7 +202,7 @@ export function sendXraySubsegment(segment: string) {
 
 export function readTraceFromAppSyncEvent(event: any): TraceContext | undefined {
   event.headers = event.request.headers;
-  return readTraceFromHTTPEvent(event);
+  return readTraceFromHTTPEvent(event, false);
 }
 
 export function readTraceFromSQSEvent(event: SQSEvent): TraceContext | undefined {
@@ -365,16 +365,18 @@ export function getInjectedAuthorizerData(event: any, eventSourceSubType: eventS
   }
 }
 
-export function readTraceFromHTTPEvent(event: any): TraceContext | undefined {
-  // need to set the trace context if using authorizer lambda in authorizing (non-cached) cases
-  try {
-    const eventSourceSubType: eventSubTypes = parseEventSourceSubType(event);
-    const injectedAuthorizerData = getInjectedAuthorizerData(event, eventSourceSubType);
-    if (injectedAuthorizerData !== null) {
-      return exportTraceData(injectedAuthorizerData);
+export function readTraceFromHTTPEvent(event: any, decodeAuthorizerContext: boolean = true): TraceContext | undefined {
+  if (decodeAuthorizerContext) {
+    // need to set the trace context if using authorizer lambda in authorizing (non-cached) cases
+    try {
+      const eventSourceSubType: eventSubTypes = parseEventSourceSubType(event);
+      const injectedAuthorizerData = getInjectedAuthorizerData(event, eventSourceSubType);
+      if (injectedAuthorizerData !== null) {
+        return exportTraceData(injectedAuthorizerData);
+      }
+    } catch (error) {
+      logDebug(`unable to extract trace context from authorizer event.`, { error });
     }
-  } catch (error) {
-    logDebug(`unable to extract trace context from authorizer event.`, { error });
   }
 
   const headers = event.headers;
@@ -390,13 +392,13 @@ export function readTraceFromHTTPEvent(event: any): TraceContext | undefined {
   return trace;
 }
 
-export function readTraceFromEvent(event: any): TraceContext | undefined {
+export function readTraceFromEvent(event: any, decodeAuthorizerContext: boolean = true): TraceContext | undefined {
   if (!event || typeof event !== "object") {
     return;
   }
 
   if (event.headers !== null && typeof event.headers === "object") {
-    return readTraceFromHTTPEvent(event);
+    return readTraceFromHTTPEvent(event, decodeAuthorizerContext);
   }
 
   if (isSNSEvent(event)) {
