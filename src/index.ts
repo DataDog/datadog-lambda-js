@@ -105,8 +105,6 @@ export function datadog<TEvent, TResult>(
     incrementErrorsMetric = errorFunc;
     incrementInvocationsMetric = invoFunc;
     metricsListener = new MetricsListener(new KMSService(), finalConfig);
-  } else {
-    console.log('[Amy:datadog-lambda-js] did not init metrics listener');
   }
 
   const traceListener = new TraceListener(finalConfig);
