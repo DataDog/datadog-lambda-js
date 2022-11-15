@@ -14,7 +14,7 @@ import {
   EventBridgeEvent,
 } from "aws-lambda";
 import * as eventType from "../utils/event-type-guards";
-import { logError } from "../utils";
+import { logDebug } from "../utils";
 import { gunzipSync } from "zlib";
 
 type LambdaURLEvent = {
@@ -303,7 +303,7 @@ export function extractTriggerTags(event: any, context: Context) {
     try {
       eventSourceARN = parseEventSourceARN(eventSource, event, context);
     } catch (error) {
-      logError(`failed to extract ${eventSource} arn from the event`, { error });
+      logDebug(`failed to extract ${eventSource} arn from the event`, { error });
     }
     if (eventSourceARN) {
       triggerTags["function_trigger.event_source_arn"] = eventSourceARN;
@@ -314,7 +314,7 @@ export function extractTriggerTags(event: any, context: Context) {
     try {
       triggerTags = { ...triggerTags, ...extractHTTPTags(event) };
     } catch (error) {
-      logError(`failed to extract http tags from ${eventSource} event`);
+      logDebug(`failed to extract http tags from ${eventSource} event`);
     }
   }
   return triggerTags;
