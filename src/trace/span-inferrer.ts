@@ -9,38 +9,48 @@ import {
   SQSEvent,
 } from "aws-lambda";
 import { SpanContext, SpanOptions, TracerWrapper } from "./tracer-wrapper";
-import { eventSources, parseEventSource } from "./trigger";
+import { eventSubTypes, eventTypes, parseEventSource, parseEventSourceSubType } from "./trigger";
 import { SpanWrapper } from "./span-wrapper";
+import { parentSpanFinishTimeHeader } from "./constants";
+import { logDebug } from "../utils";
+import { getInjectedAuthorizerData } from "./context";
+import { decodeAuthorizerContextEnvVar } from "../index";
+
 export class SpanInferrer {
   traceWrapper: TracerWrapper;
   constructor(traceWrapper: TracerWrapper) {
     this.traceWrapper = traceWrapper;
   }
 
-  public createInferredSpan(event: any, context: Context | undefined, parentSpanContext: SpanContext | undefined): any {
+  public createInferredSpan(
+    event: any,
+    context: Context | undefined,
+    parentSpanContext: SpanContext | undefined,
+    decodeAuthorizerContext: boolean = true,
+  ): any {
     const eventSource = parseEventSource(event);
-    if (eventSource === eventSources.lambdaUrl) {
+    if (eventSource === eventTypes.lambdaUrl) {
       return this.createInferredSpanForLambdaUrl(event, context);
     }
-    if (eventSource === eventSources.apiGateway) {
-      return this.createInferredSpanForApiGateway(event, context, parentSpanContext);
+    if (eventSource === eventTypes.apiGateway) {
+      return this.createInferredSpanForApiGateway(event, context, parentSpanContext, decodeAuthorizerContext);
     }
-    if (eventSource === eventSources.sns) {
+    if (eventSource === eventTypes.sns) {
       return this.createInferredSpanForSns(event, context, parentSpanContext);
     }
-    if (eventSource === eventSources.dynamoDB) {
+    if (eventSource === eventTypes.dynamoDB) {
       return this.createInferredSpanForDynamoDBStreamEvent(event, context, parentSpanContext);
     }
-    if (eventSource === eventSources.sqs) {
+    if (eventSource === eventTypes.sqs) {
       return this.createInferredSpanForSqs(event, context, parentSpanContext);
     }
-    if (eventSource === eventSources.kinesis) {
+    if (eventSource === eventTypes.kinesis) {
       return this.createInferredSpanForKinesis(event, context, parentSpanContext);
     }
-    if (eventSource === eventSources.s3) {
+    if (eventSource === eventTypes.s3) {
       return this.createInferredSpanForS3(event, context, parentSpanContext);
     }
-    if (eventSource === eventSources.eventBridge) {
+    if (eventSource === eventTypes.eventBridge) {
       return this.createInferredSpanForEventBridge(event, context, parentSpanContext);
     }
   }
@@ -56,6 +66,7 @@ export class SpanInferrer {
     event: any,
     context: Context | undefined,
     parentSpanContext: SpanContext | undefined,
+    decodeAuthorizerContext: boolean = true,
   ): SpanWrapper {
     const options: SpanOptions = {};
     const domain = event.requestContext.domainName;
@@ -97,10 +108,50 @@ export class SpanInferrer {
       options.tags.connection_id = event.requestContext.connectionId;
       options.tags.event_type = event.requestContext.eventType;
     }
-    if (parentSpanContext) {
-      options.childOf = parentSpanContext;
+    let upstreamAuthorizerSpan: SpanWrapper | undefined;
+    const eventSourceSubType: eventSubTypes = parseEventSourceSubType(event);
+    if (decodeAuthorizerContext) {
+      try {
+        const parsedUpstreamContext = getInjectedAuthorizerData(event, eventSourceSubType);
+        if (parsedUpstreamContext) {
+          let upstreamSpanOptions: SpanOptions = {};
+          const startTime = parsedUpstreamContext[parentSpanFinishTimeHeader] / 1e6;
+          // getting an approximated endTime
+          if (eventSourceSubType === eventSubTypes.apiGatewayV2) {
+            options.startTime = startTime; // not inserting authorizer span
+            options.tags.operation_name = "aws.httpapi";
+          } else {
+            upstreamSpanOptions = {
+              startTime,
+              childOf: parentSpanContext,
+              tags: { operation_name: "aws.apigateway.authorizer", ...options.tags },
+            };
+            upstreamAuthorizerSpan = new SpanWrapper(
+              this.traceWrapper.startSpan("aws.apigateway.authorizer", upstreamSpanOptions),
+              { isAsync: false },
+            );
+            const endTime = event.requestContext.requestTimeEpoch + event.requestContext.authorizer.integrationLatency;
+            upstreamAuthorizerSpan.finish(endTime);
+            options.startTime = endTime; // For the main function's inferred span
+          }
+        }
+      } catch (error) {
+        logDebug("Error decoding authorizer span", error as Error);
+      }
     }
-    options.startTime = event.requestContext.timeEpoch;
+
+    if (!options.startTime) {
+      if (
+        eventSourceSubType === eventSubTypes.apiGatewayV1 ||
+        eventSourceSubType === eventSubTypes.apiGatewayWebsocket
+      ) {
+        options.startTime = event.requestContext.requestTimeEpoch;
+      } else {
+        options.startTime = event.requestContext.timeEpoch;
+      }
+    }
+    options.childOf = upstreamAuthorizerSpan ? upstreamAuthorizerSpan.span : parentSpanContext;
+
     const spanWrapperOptions = {
       isAsync: this.isApiGatewayAsync(event) === "async",
     };

@@ -8,17 +8,16 @@ import {
 } from "./context";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
-import { extractTriggerTags, extractHTTPStatusCodeTag } from "./trigger";
+import { extractTriggerTags, extractHTTPStatusCodeTag, eventSubTypes, parseEventSourceSubType } from "./trigger";
 
 import { logDebug, tagObject } from "../utils";
 import { didFunctionColdStart } from "../utils/cold-start";
 import { datadogLambdaVersion } from "../constants";
-import { Source, ddtraceVersion } from "./constants";
+import { Source, ddtraceVersion, parentSpanFinishTimeHeader, authorizingRequestIdHeader } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 import { SpanInferrer } from "./span-inferrer";
 import { SpanWrapper } from "./span-wrapper";
-import { incrementErrorsMetric, MetricsListener } from "../metrics";
 export type TraceExtractor = (event: any, context: Context) => TraceContext;
 
 export interface TraceConfig {
@@ -35,6 +34,14 @@ export interface TraceConfig {
    * Whether to create inferred spans for managed services
    */
   createInferredSpan: boolean;
+  /**
+   * Whether to encode trace context in authorizer metadata
+   */
+  encodeAuthorizerContext: boolean;
+  /**
+   * Whether to decode trace context in authorizer metadata
+   */
+  decodeAuthorizerContext: boolean;
   /**
    * Whether to automatically patch console.log with Datadog's tracing ids.
    */
@@ -87,7 +94,12 @@ export class TraceListener {
     } else {
       logDebug("Not patching HTTP libraries", { autoPatchHTTP: this.config.autoPatchHTTP, tracerInitialized });
     }
-    const rootTraceHeaders = this.contextService.extractHeadersFromContext(event, context, this.config.traceExtractor);
+    const rootTraceHeaders = this.contextService.extractHeadersFromContext(
+      event,
+      context,
+      this.config.traceExtractor,
+      this.config.decodeAuthorizerContext,
+    );
     // The aws.lambda span needs to have a parented to the Datadog trace context from the
     // incoming event if available or the X-Ray trace context if hybrid tracing is enabled
     let parentSpanContext: SpanContext | undefined;
@@ -101,7 +113,12 @@ export class TraceListener {
       });
     }
     if (this.config.createInferredSpan) {
-      this.inferredSpan = this.inferrer.createInferredSpan(event, context, parentSpanContext);
+      this.inferredSpan = this.inferrer.createInferredSpan(
+        event,
+        context,
+        parentSpanContext,
+        this.config.encodeAuthorizerContext,
+      );
     }
     this.lambdaSpanParentContext = this.inferredSpan?.span || parentSpanContext;
     this.context = context;
@@ -123,7 +140,6 @@ export class TraceListener {
     // Guard clause if something has gone horribly wrong
     // so we won't crash user code.
     if (!this.tracerWrapper.currentSpan) return false;
-
     this.wrappedCurrentSpan = new SpanWrapper(this.tracerWrapper.currentSpan, {});
     if (shouldTagPayload) {
       tagObject(this.tracerWrapper.currentSpan, "function.request", event);
@@ -150,7 +166,24 @@ export class TraceListener {
     return false;
   }
 
-  public async onCompleteInvocation(error?: any) {
+  injectAuthorizerSpan(result: any, requestId: string, finishTime: number): any {
+    if (!result.context) {
+      result.context = {};
+    }
+    const injectedHeaders = {
+      ...this.tracerWrapper.injectSpan(this.inferredSpan?.span || this.wrappedCurrentSpan?.span),
+      [parentSpanFinishTimeHeader]: finishTime * 1e6,
+      // used as the start time in the authorizer span
+      // padding 1e6 in case this nodejs authorizer is used for a python main lambda function
+    };
+    if (requestId) {
+      //  undefined in token-type authorizer
+      injectedHeaders[authorizingRequestIdHeader] = requestId;
+    }
+    result.context._datadog = Buffer.from(JSON.stringify(injectedHeaders)).toString("base64");
+  }
+
+  public async onCompleteInvocation(error?: any, result?: any, event?: any) {
     // Create a new dummy Datadog subsegment for function trigger tags so we
     // can attach them to X-Ray spans when hybrid tracing is used
     if (this.triggerTags) {
@@ -162,6 +195,7 @@ export class TraceListener {
       logDebug("Unpatching HTTP libraries");
       unpatchHttp();
     }
+    let finishTime = this.wrappedCurrentSpan?.endTime();
     if (this.inferredSpan) {
       logDebug("Finishing inferred span");
 
@@ -169,9 +203,16 @@ export class TraceListener {
         logDebug("Setting error tag to inferred span");
         this.inferredSpan.setTag("error", error);
       }
-
-      const finishTime = this.inferredSpan.isAsync() ? this.wrappedCurrentSpan?.startTime() : Date.now();
+      if (this.inferredSpan.isAsync()) {
+        finishTime = this.wrappedCurrentSpan?.startTime() || Date.now();
+      } else {
+        finishTime = Date.now();
+      }
       this.inferredSpan.finish(finishTime);
+    }
+    if (this.config.encodeAuthorizerContext && result?.principalId && result?.policyDocument) {
+      // We're in an authorizer, pass on the trace context, requestId and finishTime to make the authorizer span
+      this.injectAuthorizerSpan(result, event?.requestContext?.requestId, finishTime || Date.now());
     }
   }
 

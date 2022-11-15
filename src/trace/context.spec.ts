@@ -221,6 +221,31 @@ describe("readTraceFromEvent", () => {
     });
   });
 
+  it("can parse a traced authorizer source", () => {
+    const result = readTraceFromHTTPEvent({
+      requestContext: {
+        resourceId: "oozq9u",
+        authorizer: {
+          _datadog:
+            "eyJ4LWRhdGFkb2ctdHJhY2UtaWQiOiIyMzg5NTg5OTU0MDI2MDkwMjk2IiwieC1kYXRhZG9nLXBhcmVudC1pZCI6IjIzODk1ODk5NTQwMjYwOTAyOTYiLCJ4LWRhdGFkb2ctc2FtcGxpbmctcHJpb3JpdHkiOiIxIiwieC1kYXRhZG9nLXBhcmVudC1zcGFuLWZpbmlzaC10aW1lIjoxNjYwOTM5ODk5MjMzLCJ4LWRhdGFkb2ctYXV0aG9yaXppbmctcmVxdWVzdGlkIjoicmFuZG9tLWlkIn0==",
+          principalId: "foo",
+          integrationLatency: 71,
+          preserve: "this key set by a customer",
+        },
+        stage: "dev",
+        requestId: "random-id",
+      },
+      httpMethod: "GET",
+      resource: "/hello",
+    });
+    expect(result).toEqual({
+      parentID: "2389589954026090296",
+      sampleMode: 1,
+      source: "event",
+      traceID: "2389589954026090296",
+    });
+  });
+
   it("can parse an SNS message source", () => {
     const result = readTraceFromEvent({
       Records: [

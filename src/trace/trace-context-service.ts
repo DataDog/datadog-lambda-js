@@ -25,8 +25,9 @@ export class TraceContextService {
     event: any,
     context: Context,
     extractor?: TraceExtractor,
+    decodeAuthorizerContext: boolean = true,
   ): Partial<TraceHeaders> | undefined {
-    this.rootTraceContext = extractTraceContext(event, context, extractor);
+    this.rootTraceContext = extractTraceContext(event, context, extractor, decodeAuthorizerContext);
     return this.currentTraceHeaders;
   }
 
