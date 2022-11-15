@@ -13,7 +13,8 @@ import {
   setLogger,
   setLogLevel,
 } from "./utils";
-import { extensionEnabled } from "./utils/extension-enabled";
+import { getExtensionPath } from "./utils/extension-path";
+import { existsSync } from "fs";
 
 export { TraceHeaders } from "./trace";
 
@@ -301,6 +302,8 @@ function isExtensionEnabled(): boolean {
   if (isExtension !== undefined) {
     return isExtension;
   }
-  isExtension = extensionEnabled();
+
+  const extensionPath = getExtensionPath();
+  isExtension = existsSync(extensionPath);
   return isExtension;
 }
