@@ -1,5 +1,4 @@
 import { Context, Handler } from "aws-lambda";
-import { existsSync } from "fs";
 import { MetricsConfig } from "./metrics";
 import type { MetricsListener as MetricsListenerType } from "./metrics";
 
@@ -14,6 +13,7 @@ import {
   setLogger,
   setLogLevel,
 } from "./utils";
+import { extensionEnabled } from "./utils/extension-enabled";
 
 export { TraceHeaders } from "./trace";
 
@@ -31,7 +31,6 @@ export const lambdaTaskRootEnvVar = "LAMBDA_TASK_ROOT";
 export const mergeXrayTracesEnvVar = "DD_MERGE_XRAY_TRACES";
 export const traceExtractorEnvVar = "DD_TRACE_EXTRACTOR";
 export const defaultSiteURL = "datadoghq.com";
-const EXTENSION_PATH = "/opt/extensions/datadog-agent";
 
 interface GlobalConfig {
   /**
@@ -154,7 +153,6 @@ export function datadog<TEvent, TResult>(
             finalConfig.captureLambdaPayload,
           );
           if (responseIs5xxError && !isExtensionEnabled()) {
-            // TODO [ASTUYVE] - verify this behavior is modeled in extension
             incrementErrorsMetric(metricsListener, context);
           }
         }
@@ -303,6 +301,6 @@ function isExtensionEnabled(): boolean {
   if (isExtension !== undefined) {
     return isExtension;
   }
-  isExtension = existsSync(EXTENSION_PATH);
+  isExtension = extensionEnabled();
   return isExtension;
 }
