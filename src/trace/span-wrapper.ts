@@ -20,7 +20,13 @@ export class SpanWrapper {
   }
 
   public endTime(): number {
-    return this.span._endTime;
+    if (this.span._endTime) {
+      return this.span._endTime;
+    }
+    if (this.span._duration && this.span._startTime) {
+      return this.span._startTime + this.span._duration;
+    }
+    throw new Error("_endTime not defined");
   }
 
   public finish(timestamp = Date.now()): void {

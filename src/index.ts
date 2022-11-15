@@ -32,6 +32,8 @@ export const lambdaTaskRootEnvVar = "LAMBDA_TASK_ROOT";
 export const mergeXrayTracesEnvVar = "DD_MERGE_XRAY_TRACES";
 export const traceExtractorEnvVar = "DD_TRACE_EXTRACTOR";
 export const defaultSiteURL = "datadoghq.com";
+export const encodeAuthorizerContextEnvVar = "DD_ENCODE_AUTHORIZER_CONTEXT";
+export const decodeAuthorizerContextEnvVar = "DD_DECODE_AUTHORIZER_CONTEXT";
 
 interface GlobalConfig {
   /**
@@ -62,6 +64,8 @@ export const defaultConfig: Config = {
   captureLambdaPayload: false,
   createInferredSpan: true,
   debugLogging: false,
+  encodeAuthorizerContext: true,
+  decodeAuthorizerContext: true,
   enhancedMetrics: true,
   forceWrap: false,
   injectLogContext: true,
@@ -168,7 +172,7 @@ export function datadog<TEvent, TResult>(
         incrementErrorsMetric(metricsListener, context);
       }
       await metricsListener.onCompleteInvocation();
-      await traceListener.onCompleteInvocation(error);
+      await traceListener.onCompleteInvocation(error, result, event);
     } catch (err) {
       if (err instanceof Error) {
         logDebug("Failed to complete listeners", err);
@@ -283,6 +287,16 @@ function getConfig(userConfig?: Partial<Config>): Config {
   if (userConfig === undefined || userConfig.createInferredSpan === undefined) {
     const result = getEnvValue(traceManagedServicesEnvVar, "true").toLowerCase();
     config.createInferredSpan = result === "true";
+  }
+
+  if (userConfig === undefined || userConfig.encodeAuthorizerContext === undefined) {
+    const result = getEnvValue(encodeAuthorizerContextEnvVar, "true").toLowerCase();
+    config.encodeAuthorizerContext = result === "true";
+  }
+
+  if (userConfig === undefined || userConfig.decodeAuthorizerContext === undefined) {
+    const result = getEnvValue(decodeAuthorizerContextEnvVar, "true").toLowerCase();
+    config.decodeAuthorizerContext = result === "true";
   }
 
   return config;
