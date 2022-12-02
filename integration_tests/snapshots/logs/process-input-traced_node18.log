@@ -3,7 +3,7 @@ START
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
   "t": [
-    "region:sa-east-1",
+    "region:eu-west-1",
     "account_id:XXXX",
     "functionname:integration-tests-js-XXXX-process-input-traced_node18",
     "resource:integration-tests-js-XXXX-process-input-traced_node18",
@@ -74,7 +74,7 @@ START
           "functionname": "integration-tests-js-XXXX-process-input-traced_node18",
           "datadog_lambda":"XXXX",
           "function_trigger.event_source": "api-gateway",
-          "function_trigger.event_source_arn": "arn:aws:apigateway:sa-east-1::/restapis/wt6mne2s9k/stages/test",
+          "function_trigger.event_source_arn": "arn:aws:apigateway:eu-west-1::/restapis/wt6mne2s9k/stages/test",
           "http.method": "GET",
           "api_gateway_request_id": "41b45ea3-70b5-11e6-b7bd-69b5aaebc7d9",
           "event_type": "APIGateway",
@@ -143,7 +143,7 @@ START
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
   "t": [
-    "region:sa-east-1",
+    "region:eu-west-1",
     "account_id:XXXX",
     "functionname:integration-tests-js-XXXX-process-input-traced_node18",
     "resource:integration-tests-js-XXXX-process-input-traced_node18",
@@ -264,7 +264,7 @@ START
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
   "t": [
-    "region:sa-east-1",
+    "region:eu-west-1",
     "account_id:XXXX",
     "functionname:integration-tests-js-XXXX-process-input-traced_node18",
     "resource:integration-tests-js-XXXX-process-input-traced_node18",

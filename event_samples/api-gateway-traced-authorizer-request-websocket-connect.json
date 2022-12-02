@@ -1,7 +1,7 @@
 {
   "headers": {
     "Auth": "secretT0k3n",
-    "Host": "85fj5nw29d.execute-api.sa-east-1.amazonaws.com",
+    "Host": "85fj5nw29d.execute-api.eu-west-1.amazonaws.com",
     "Sec-WebSocket-Extensions": "permessage-deflate; client_max_window_bits",
     "Sec-WebSocket-Key": "4v5yA3WKtAK6EK1KUvSxew==",
     "Sec-WebSocket-Version": "13",
@@ -12,7 +12,7 @@
   },
   "multiValueHeaders": {
     "Auth": ["secretT0k3n"],
-    "Host": ["85fj5nw29d.execute-api.sa-east-1.amazonaws.com"],
+    "Host": ["85fj5nw29d.execute-api.eu-west-1.amazonaws.com"],
     "Sec-WebSocket-Extensions": ["permessage-deflate; client_max_window_bits"],
     "Sec-WebSocket-Key": ["4v5yA3WKtAK6EK1KUvSxew=="],
     "Sec-WebSocket-Version": ["13"],
@@ -40,7 +40,7 @@
       "sourceIp": "24.193.182.233"
     },
     "requestId": "ahVWsHVAmjQFq6g=",
-    "domainName": "85fj5nw29d.execute-api.sa-east-1.amazonaws.com",
+    "domainName": "85fj5nw29d.execute-api.eu-west-1.amazonaws.com",
     "connectionId": "ahVWscZqmjQCI1w=",
     "apiId": "85fj5nw29d"
   },

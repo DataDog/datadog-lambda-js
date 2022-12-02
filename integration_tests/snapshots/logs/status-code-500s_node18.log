@@ -3,7 +3,7 @@ START
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
   "t": [
-    "region:sa-east-1",
+    "region:eu-west-1",
     "account_id:XXXX",
     "functionname:integration-tests-js-XXXX-status-code-500s_node18",
     "resource:integration-tests-js-XXXX-status-code-500s_node18",
@@ -18,7 +18,7 @@ START
   "e": XXXX,
   "m": "aws.lambda.enhanced.errors",
   "t": [
-    "region:sa-east-1",
+    "region:eu-west-1",
     "account_id:XXXX",
     "functionname:integration-tests-js-XXXX-status-code-500s_node18",
     "resource:integration-tests-js-XXXX-status-code-500s_node18",
@@ -80,7 +80,7 @@ START
           "functionname": "integration-tests-js-XXXX-status-code-500s_node18",
           "datadog_lambda":"XXXX",
           "function_trigger.event_source": "api-gateway",
-          "function_trigger.event_source_arn": "arn:aws:apigateway:sa-east-1::/restapis/wt6mne2s9k/stages/test",
+          "function_trigger.event_source_arn": "arn:aws:apigateway:eu-west-1::/restapis/wt6mne2s9k/stages/test",
           "http.method": "GET",
           "http.status_code": "500"
         },
@@ -103,7 +103,7 @@ START
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
   "t": [
-    "region:sa-east-1",
+    "region:eu-west-1",
     "account_id:XXXX",
     "functionname:integration-tests-js-XXXX-status-code-500s_node18",
     "resource:integration-tests-js-XXXX-status-code-500s_node18",
@@ -191,7 +191,7 @@ START
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
   "t": [
-    "region:sa-east-1",
+    "region:eu-west-1",
     "account_id:XXXX",
     "functionname:integration-tests-js-XXXX-status-code-500s_node18",
     "resource:integration-tests-js-XXXX-status-code-500s_node18",

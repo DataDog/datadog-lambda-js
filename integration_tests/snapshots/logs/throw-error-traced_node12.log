@@ -3,7 +3,7 @@ START
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
   "t": [
-    "region:sa-east-1",
+    "region:eu-west-1",
     "account_id:XXXX",
     "functionname:integration-tests-js-XXXX-throw-error-traced_node12",
     "resource:integration-tests-js-XXXX-throw-error-traced_node12",
@@ -18,7 +18,7 @@ START
   "e": XXXX,
   "m": "aws.lambda.enhanced.errors",
   "t": [
-    "region:sa-east-1",
+    "region:eu-west-1",
     "account_id:XXXX",
     "functionname:integration-tests-js-XXXX-throw-error-traced_node12",
     "resource:integration-tests-js-XXXX-throw-error-traced_node12",
@@ -36,7 +36,7 @@ START
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
   "t": [
-    "region:sa-east-1",
+    "region:eu-west-1",
     "account_id:XXXX",
     "functionname:integration-tests-js-XXXX-throw-error-traced_node12",
     "resource:integration-tests-js-XXXX-throw-error-traced_node12",
@@ -51,7 +51,7 @@ START
   "e": XXXX,
   "m": "aws.lambda.enhanced.errors",
   "t": [
-    "region:sa-east-1",
+    "region:eu-west-1",
     "account_id:XXXX",
     "functionname:integration-tests-js-XXXX-throw-error-traced_node12",
     "resource:integration-tests-js-XXXX-throw-error-traced_node12",
@@ -70,7 +70,7 @@ XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
   "t": [
-    "region:sa-east-1",
+    "region:eu-west-1",
     "account_id:XXXX",
     "functionname:integration-tests-js-XXXX-throw-error-traced_node12",
     "resource:integration-tests-js-XXXX-throw-error-traced_node12",
@@ -85,7 +85,7 @@ XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{
   "e": XXXX,
   "m": "aws.lambda.enhanced.errors",
   "t": [
-    "region:sa-east-1",
+    "region:eu-west-1",
     "account_id:XXXX",
     "functionname:integration-tests-js-XXXX-throw-error-traced_node12",
     "resource:integration-tests-js-XXXX-throw-error-traced_node12",
