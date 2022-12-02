@@ -3,7 +3,7 @@ START
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
   "t": [
-    "region:sa-east-1",
+    "region:eu-west-1",
     "account_id:XXXX",
     "functionname:integration-tests-js-XXXX-sync-metrics_node18",
     "resource:integration-tests-js-XXXX-sync-metrics_node18",
@@ -22,7 +22,7 @@ START
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
   "t": [
-    "region:sa-east-1",
+    "region:eu-west-1",
     "account_id:XXXX",
     "functionname:integration-tests-js-XXXX-sync-metrics_node18",
     "resource:integration-tests-js-XXXX-sync-metrics_node18",
@@ -41,7 +41,7 @@ START
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
   "t": [
-    "region:sa-east-1",
+    "region:eu-west-1",
     "account_id:XXXX",
     "functionname:integration-tests-js-XXXX-sync-metrics_node18",
     "resource:integration-tests-js-XXXX-sync-metrics_node18",

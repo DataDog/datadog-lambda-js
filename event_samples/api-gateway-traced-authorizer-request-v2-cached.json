@@ -10,7 +10,7 @@
     "authorizationtoken": "secretT0k3n",
     "cache-control": "no-cache",
     "content-length": "0",
-    "host": "l9flvsey83.execute-api.sa-east-1.amazonaws.com",
+    "host": "l9flvsey83.execute-api.eu-west-1.amazonaws.com",
     "postman-token": "e0a783f5-8f72-427f-99bb-81d28ac3b37b",
     "user-agent": "PostmanRuntime/7.29.2",
     "userid": "27",
@@ -28,7 +28,7 @@
         "scope": "this is just a string"
       }
     },
-    "domainName": "l9flvsey83.execute-api.sa-east-1.amazonaws.com",
+    "domainName": "l9flvsey83.execute-api.eu-west-1.amazonaws.com",
     "domainPrefix": "l9flvsey83",
     "http": {
       "method": "GET",

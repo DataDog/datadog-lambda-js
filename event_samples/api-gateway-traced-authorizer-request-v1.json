@@ -13,7 +13,7 @@
     "CloudFront-Is-Tablet-Viewer": "false",
     "CloudFront-Viewer-ASN": "174",
     "CloudFront-Viewer-Country": "US",
-    "Host": "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com",
+    "Host": "3gsxz7lha4.execute-api.eu-west-1.amazonaws.com",
     "Postman-Token": "62ccb3d9-a44f-427c-9952-418c0a2eb1c3",
     "User-Agent": "PostmanRuntime/7.29.0",
     "Via": "1.1 xxx.cloudfront.net (CloudFront)",
@@ -34,7 +34,7 @@
     "CloudFront-Is-Tablet-Viewer": ["false"],
     "CloudFront-Viewer-ASN": ["174"],
     "CloudFront-Viewer-Country": ["US"],
-    "Host": ["3gsxz7lha4.execute-api.sa-east-1.amazonaws.com"],
+    "Host": ["3gsxz7lha4.execute-api.eu-west-1.amazonaws.com"],
     "Postman-Token": ["62ccb3d9-a44f-427c-9952-418c0a2eb1c3"],
     "User-Agent": ["PostmanRuntime/7.29.0"],
     "Via": ["1.1 xxx.cloudfront.net (CloudFront)"],
@@ -81,7 +81,7 @@
       "userAgent": "PostmanRuntime/7.29.0",
       "user": null
     },
-    "domainName": "3gsxz7lha4.execute-api.sa-east-1.amazonaws.com",
+    "domainName": "3gsxz7lha4.execute-api.eu-west-1.amazonaws.com",
     "apiId": "3gsxz7lha4"
   },
   "body": null,
