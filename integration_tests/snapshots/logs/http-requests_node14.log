@@ -3,7 +3,7 @@ START
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
   "t": [
-    "region:sa-east-1",
+    "region:eu-west-1",
     "account_id:XXXX",
     "functionname:integration-tests-js-XXXX-http-requests_node14",
     "resource:integration-tests-js-XXXX-http-requests_node14",
@@ -24,7 +24,7 @@ START
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
   "t": [
-    "region:sa-east-1",
+    "region:eu-west-1",
     "account_id:XXXX",
     "functionname:integration-tests-js-XXXX-http-requests_node14",
     "resource:integration-tests-js-XXXX-http-requests_node14",
@@ -45,7 +45,7 @@ START
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
   "t": [
-    "region:sa-east-1",
+    "region:eu-west-1",
     "account_id:XXXX",
     "functionname:integration-tests-js-XXXX-http-requests_node14",
     "resource:integration-tests-js-XXXX-http-requests_node14",

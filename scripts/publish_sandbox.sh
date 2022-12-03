@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Usage: VERSION=5 aws-vault exec sandbox-account-admin -- publish_sandbox.sh
+# Usage: VERSION=5 aws-vault exec serverless-sandbox-account-admin -- publish_sandbox.sh
 set -e
 
 if [ -z "$VERSION" ]; then

@@ -2,9 +2,9 @@
 
 # Usage - run commands from repo root:
 # To check if new changes to the layer cause changes to any snapshots:
-#   BUILD_LAYERS=true DD_API_KEY=XXXX aws-vault exec sandbox-account-admin -- ./scripts/run_integration_tests
+#   BUILD_LAYERS=true DD_API_KEY=XXXX aws-vault exec serverless-sandbox-account-admin -- ./scripts/run_integration_tests
 # To regenerate snapshots:
-#   UPDATE_SNAPSHOTS=true DD_API_KEY=XXXX aws-vault exec sandbox-account-admin -- ./scripts/run_integration_tests
+#   UPDATE_SNAPSHOTS=true DD_API_KEY=XXXX aws-vault exec serverless-sandbox-account-admin -- ./scripts/run_integration_tests
 
 set -e
 
@@ -32,8 +32,9 @@ mismatch_found=false
 node12=("nodejs12.x" "12.13" $(xxd -l 4 -c 4 -p < /dev/random))
 node14=("nodejs14.x" "14.15" $(xxd -l 4 -c 4 -p < /dev/random))
 node16=("nodejs16.x" "16.14" $(xxd -l 4 -c 4 -p < /dev/random))
+node18=("nodejs18.x" "18.12" $(xxd -l 4 -c 4 -p < /dev/random))
 
-PARAMETERS_SETS=("node12" "node14" "node16")
+PARAMETERS_SETS=("node12" "node14" "node16" "node18")
 
 if [ -z "$RUNTIME_PARAM" ]; then
     echo "Node version not specified, running for all node versions."
