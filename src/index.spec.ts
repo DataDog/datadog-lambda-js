@@ -331,7 +331,7 @@ describe("datadog", () => {
 
     expect(mockedIncrementInvocations).toBeCalledTimes(1);
     expect(mockedIncrementInvocations).toBeCalledWith(expect.anything(), mockContext);
-    expect(logger.debug).toHaveBeenCalledTimes(9);
+    expect(logger.debug).toHaveBeenCalledTimes(11);
     expect(logger.debug).toHaveBeenLastCalledWith('{"status":"debug","message":"datadog:Unpatching HTTP libraries"}');
   });
 });
