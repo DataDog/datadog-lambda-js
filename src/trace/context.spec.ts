@@ -667,9 +667,12 @@ describe("readTraceFromLambdaContext", () => {
 });
 
 describe("readStepFunctionContextFromEvent", () => {
-  const stepFunctionEventWithoutInput = {
+  const stepFunctionEvent = {
     Execution: {
       Id: "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
+      Input: {
+        MyInput: "MyValue"
+      },
       Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
       RoleArn: "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
       StartTime: "2022-12-08T21:08:17.924Z",
@@ -685,31 +688,6 @@ describe("readStepFunctionContextFromEvent", () => {
     },
   } as const;
 
-  const stepFunctionEvent = {
-    ...stepFunctionEventWithoutInput,
-    Execution: {
-      ...stepFunctionEventWithoutInput.Execution,
-      Input: {
-        MyInput: "MyValue"
-      }
-    }
-  } as const;
-
-  it("reads a step function context from event without Execution.Input", () => {
-    const result = readStepFunctionContextFromEvent(stepFunctionEventWithoutInput);
-    expect(result).toEqual({
-      "step_function.execution_id": "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
-      "step_function.execution_input": null,
-      "step_function.execution_name": "85a9933e-9e11-83dc-6a61-b92367b6c3be",
-      "step_function.execution_role_arn": "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
-      "step_function.execution_start_time": "2022-12-08T21:08:17.924Z",
-      "step_function.state_entered_time": "2022-12-08T21:08:19.224Z",
-      "step_function.state_machine_arn": "arn:aws:states:sa-east-1:425362996713:stateMachine:logs-to-traces-sequential",
-      "step_function.state_machine_name": "my-state-machine",
-      "step_function.state_name": "step-one",
-      "step_function.state_retry_count": 2,
-    });
-  });
   it("reads a step function context from event with Execution.Input", () => {
     const result = readStepFunctionContextFromEvent(stepFunctionEvent);
     expect(result).toEqual({

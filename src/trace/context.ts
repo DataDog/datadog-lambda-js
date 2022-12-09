@@ -52,7 +52,7 @@ export interface TraceContext {
 export interface StepFunctionContext {
   "step_function.execution_name": string,
   "step_function.execution_id": string,
-  "step_function.execution_input": string | object,
+  "step_function.execution_input": object,
   "step_function.execution_role_arn": string,
   "step_function.execution_start_time": string,
   "step_function.state_machine_name": string;
@@ -565,7 +565,7 @@ export function readStepFunctionContextFromEvent(event: any): StepFunctionContex
   return {
     "step_function.execution_name": executionName,
     "step_function.execution_id": executionID,
-    "step_function.execution_input": executionInput ?? null,
+    "step_function.execution_input": executionInput ?? {},
     "step_function.execution_role_arn": executionRoleArn,
     "step_function.execution_start_time": executionStartTime,
     "step_function.state_entered_time": stateEnteredTime,
