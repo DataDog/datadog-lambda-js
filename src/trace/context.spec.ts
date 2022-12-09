@@ -671,7 +671,7 @@ describe("readStepFunctionContextFromEvent", () => {
     Execution: {
       Id: "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
       Input: {
-        MyInput: "MyValue"
+        MyInput: "MyValue",
       },
       Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
       RoleArn: "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
@@ -691,10 +691,12 @@ describe("readStepFunctionContextFromEvent", () => {
   it("reads a step function context from event with Execution.Input", () => {
     const result = readStepFunctionContextFromEvent(stepFunctionEvent);
     expect(result).toEqual({
-      "step_function.execution_id": "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
-      "step_function.execution_input": { "MyInput": "MyValue" },
+      "step_function.execution_id":
+        "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
+      "step_function.execution_input": { MyInput: "MyValue" },
       "step_function.execution_name": "85a9933e-9e11-83dc-6a61-b92367b6c3be",
-      "step_function.execution_role_arn": "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
+      "step_function.execution_role_arn":
+        "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
       "step_function.execution_start_time": "2022-12-08T21:08:17.924Z",
       "step_function.state_entered_time": "2022-12-08T21:08:19.224Z",
       "step_function.state_machine_arn": "arn:aws:states:sa-east-1:425362996713:stateMachine:logs-to-traces-sequential",
@@ -1071,25 +1073,25 @@ describe("extractTraceContext", () => {
 
   it("adds step function metadata to xray", () => {
     const stepFunctionEvent = {
-    Execution: {
-      Id: "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
-      Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
-      RoleArn: "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
-      StartTime: "2022-12-08T21:08:17.924Z",
-      Input: {
-        MyInput: "MyValue"
-      }
-    },
-    State: {
-      Name: "step-one",
-      EnteredTime: "2022-12-08T21:08:19.224Z",
-      RetryCount: 2,
-    },
-    StateMachine: {
-      Id: "arn:aws:states:sa-east-1:425362996713:stateMachine:logs-to-traces-sequential",
-      Name: "my-state-machine",
-    },
-  } as const;
+      Execution: {
+        Id: "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
+        Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
+        RoleArn: "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
+        StartTime: "2022-12-08T21:08:17.924Z",
+        Input: {
+          MyInput: "MyValue",
+        },
+      },
+      State: {
+        Name: "step-one",
+        EnteredTime: "2022-12-08T21:08:19.224Z",
+        RetryCount: 2,
+      },
+      StateMachine: {
+        Id: "arn:aws:states:sa-east-1:425362996713:stateMachine:logs-to-traces-sequential",
+        Name: "my-state-machine",
+      },
+    } as const;
 
     jest.spyOn(Date, "now").mockImplementation(() => 1487076708000);
     process.env[xrayTraceEnvVar] = "Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1";

@@ -1,15 +1,8 @@
-import {
-  Context,
-  EventBridgeEvent,
-  KinesisStreamEvent,
-  SNSEvent,
-  SNSMessage,
-  SQSEvent
-} from "aws-lambda";
-import {BigNumber} from "bignumber.js";
-import {randomBytes} from "crypto";
-import {createSocket, Socket} from "dgram";
-import {logDebug, logError} from "../utils";
+import { Context, EventBridgeEvent, KinesisStreamEvent, SNSEvent, SNSMessage, SQSEvent } from "aws-lambda";
+import { BigNumber } from "bignumber.js";
+import { randomBytes } from "crypto";
+import { createSocket, Socket } from "dgram";
+import { logDebug, logError } from "../utils";
 import {
   isAppSyncResolverEvent,
   isEventBridgeEvent,
@@ -33,8 +26,8 @@ import {
   xraySubsegmentNamespace,
   xrayTraceEnvVar,
 } from "./constants";
-import {TraceExtractor} from "./listener";
-import {eventSubTypes, parseEventSourceSubType} from "./trigger";
+import { TraceExtractor } from "./listener";
+import { eventSubTypes, parseEventSourceSubType } from "./trigger";
 
 export interface XRayTraceHeader {
   traceID: string;
@@ -50,11 +43,11 @@ export interface TraceContext {
 }
 
 export interface StepFunctionContext {
-  "step_function.execution_name": string,
-  "step_function.execution_id": string,
-  "step_function.execution_input": object,
-  "step_function.execution_role_arn": string,
-  "step_function.execution_start_time": string,
+  "step_function.execution_name": string;
+  "step_function.execution_id": string;
+  "step_function.execution_input": object;
+  "step_function.execution_role_arn": string;
+  "step_function.execution_start_time": string;
   "step_function.state_machine_name": string;
   "step_function.state_machine_arn": string;
   "step_function.state_entered_time": string;
@@ -505,60 +498,60 @@ export function readStepFunctionContextFromEvent(event: any): StepFunctionContex
   }
   const executionID = execution.Id;
   if (typeof executionID !== "string") {
-    logDebug("event.Execution.Id is not a string.")
+    logDebug("event.Execution.Id is not a string.");
     return;
   }
   const executionInput = execution.Input;
   const executionName = execution.Name;
   if (typeof executionName !== "string") {
-    logDebug("event.Execution.Name is not a string.")
+    logDebug("event.Execution.Name is not a string.");
     return;
   }
   const executionRoleArn = execution.RoleArn;
   if (typeof executionRoleArn !== "string") {
-    logDebug("event.Execution.RoleArn is not a string.")
+    logDebug("event.Execution.RoleArn is not a string.");
     return;
   }
   const executionStartTime = execution.StartTime;
   if (typeof executionStartTime !== "string") {
-    logDebug("event.Execution.StartTime is not a string.")
+    logDebug("event.Execution.StartTime is not a string.");
     return;
   }
 
   const state = event.State;
   if (typeof state !== "object") {
-    logDebug("event.State is not an object.")
+    logDebug("event.State is not an object.");
     return;
   }
   const stateRetryCount = state.RetryCount;
   if (typeof stateRetryCount !== "number") {
-    logDebug("event.State.RetryCount is not a string.")
+    logDebug("event.State.RetryCount is not a string.");
     return;
   }
   const stateEnteredTime = state.EnteredTime;
   if (typeof stateEnteredTime !== "string") {
-    logDebug("event.State.EnteredTime is not a string.")
+    logDebug("event.State.EnteredTime is not a string.");
     return;
   }
   const stateName = state.Name;
   if (typeof stateName !== "string") {
-    logDebug("event.State.Name is not a string.")
+    logDebug("event.State.Name is not a string.");
     return;
   }
 
   const stateMachine = event.StateMachine;
   if (typeof stateMachine !== "object") {
-    logDebug("event.StateMachine is not an object.")
+    logDebug("event.StateMachine is not an object.");
     return;
   }
   const stateMachineArn = stateMachine.Id;
   if (typeof stateMachineArn !== "string") {
-    logDebug("event.StateMachine.Id is not a string.")
+    logDebug("event.StateMachine.Id is not a string.");
     return;
   }
   const stateMachineName = stateMachine.Name;
   if (typeof stateMachineName !== "string") {
-    logDebug("event.StateMachine.Name is not a string.")
+    logDebug("event.StateMachine.Name is not a string.");
     return;
   }
 
@@ -572,7 +565,7 @@ export function readStepFunctionContextFromEvent(event: any): StepFunctionContex
     "step_function.state_machine_arn": stateMachineArn,
     "step_function.state_machine_name": stateMachineName,
     "step_function.state_name": stateName,
-    "step_function.state_retry_count": stateRetryCount
+    "step_function.state_retry_count": stateRetryCount,
   };
 }
 
