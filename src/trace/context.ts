@@ -12,6 +12,7 @@ import {
   isSQSEvent,
 } from "../utils/event-type-guards";
 import {
+  authorizingRequestIdHeader,
   awsXrayDaemonAddressEnvVar,
   parentIDHeader,
   SampleMode,
@@ -26,8 +27,7 @@ import {
   xrayTraceEnvVar,
 } from "./constants";
 import { TraceExtractor } from "./listener";
-import { parseEventSourceSubType, eventSubTypes } from "./trigger";
-import { authorizingRequestIdHeader } from "./constants";
+import { eventSubTypes, parseEventSourceSubType } from "./trigger";
 
 export interface XRayTraceHeader {
   traceID: string;
@@ -43,11 +43,16 @@ export interface TraceContext {
 }
 
 export interface StepFunctionContext {
-  "step_function.retry_count": number;
+  "step_function.execution_name": string;
   "step_function.execution_id": string;
+  "step_function.execution_input": object;
+  "step_function.execution_role_arn": string;
+  "step_function.execution_start_time": string;
   "step_function.state_machine_name": string;
   "step_function.state_machine_arn": string;
-  "step_function.step_name": string;
+  "step_function.state_entered_time": string;
+  "step_function.state_name": string;
+  "step_function.state_retry_count": number;
 }
 
 /**
@@ -485,50 +490,85 @@ export function readStepFunctionContextFromEvent(event: any): StepFunctionContex
   if (typeof event !== "object") {
     return;
   }
-  const { dd } = event;
-  if (typeof dd !== "object") {
-    return;
-  }
-  const execution = dd.Execution;
+
+  const execution = event.Execution;
   if (typeof execution !== "object") {
+    logDebug("event.Execution is not an object.");
     return;
   }
-  const executionID = execution.Name;
+  const executionID = execution.Id;
   if (typeof executionID !== "string") {
+    logDebug("event.Execution.Id is not a string.");
     return;
   }
-  const state = dd.State;
+  const executionInput = execution.Input;
+  const executionName = execution.Name;
+  if (typeof executionName !== "string") {
+    logDebug("event.Execution.Name is not a string.");
+    return;
+  }
+  const executionRoleArn = execution.RoleArn;
+  if (typeof executionRoleArn !== "string") {
+    logDebug("event.Execution.RoleArn is not a string.");
+    return;
+  }
+  const executionStartTime = execution.StartTime;
+  if (typeof executionStartTime !== "string") {
+    logDebug("event.Execution.StartTime is not a string.");
+    return;
+  }
+
+  const state = event.State;
   if (typeof state !== "object") {
+    logDebug("event.State is not an object.");
     return;
   }
-  const retryCount = state.RetryCount;
-  if (typeof retryCount !== "number") {
+  const stateRetryCount = state.RetryCount;
+  if (typeof stateRetryCount !== "number") {
+    logDebug("event.State.RetryCount is not a string.");
     return;
   }
-  const stepName = state.Name;
-  if (typeof stepName !== "string") {
+  const stateEnteredTime = state.EnteredTime;
+  if (typeof stateEnteredTime !== "string") {
+    logDebug("event.State.EnteredTime is not a string.");
     return;
   }
-  const stateMachine = dd.StateMachine;
+  const stateName = state.Name;
+  if (typeof stateName !== "string") {
+    logDebug("event.State.Name is not a string.");
+    return;
+  }
+
+  const stateMachine = event.StateMachine;
   if (typeof stateMachine !== "object") {
+    logDebug("event.StateMachine is not an object.");
     return;
   }
   const stateMachineArn = stateMachine.Id;
   if (typeof stateMachineArn !== "string") {
+    logDebug("event.StateMachine.Id is not a string.");
     return;
   }
   const stateMachineName = stateMachine.Name;
   if (typeof stateMachineName !== "string") {
+    logDebug("event.StateMachine.Name is not a string.");
     return;
   }
+
   return {
+    "step_function.execution_name": executionName,
     "step_function.execution_id": executionID,
-    "step_function.retry_count": retryCount,
+    "step_function.execution_input": executionInput ?? {},
+    "step_function.execution_role_arn": executionRoleArn,
+    "step_function.execution_start_time": executionStartTime,
+    "step_function.state_entered_time": stateEnteredTime,
     "step_function.state_machine_arn": stateMachineArn,
     "step_function.state_machine_name": stateMachineName,
-    "step_function.step_name": stepName,
+    "step_function.state_name": stateName,
+    "step_function.state_retry_count": stateRetryCount,
   };
 }
+
 export function convertToSampleMode(xraySampled: number): SampleMode {
   return xraySampled === 1 ? SampleMode.USER_KEEP : SampleMode.USER_REJECT;
 }
