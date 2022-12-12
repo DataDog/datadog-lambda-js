@@ -10,7 +10,7 @@ Datadog Lambda Library for Node.js (12.x, 14.x, 16.x, and 18.x) enables enhanced
 
 ## Installation
 
-Follow the [installation instructions](https://docs.datadoghq.com/serverless/installation/nodejs/), and view your function's enhanced metrics, traces and logs in Datadog.
+Follow the [installation instructions](https://docs.datadoghq.com/serverless/installation/nodejs/?tab=serverlessframework), and view your function's enhanced metrics, traces and logs in Datadog.
 
 ## Configuration
 
