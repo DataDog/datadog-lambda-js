@@ -668,30 +668,41 @@ describe("readTraceFromLambdaContext", () => {
 
 describe("readStepFunctionContextFromEvent", () => {
   const stepFunctionEvent = {
-    dd: {
-      Execution: {
-        Name: "fb7b1e15-e4a2-4cb2-963f-8f1fa4aec492",
-        StartTime: "2019-09-30T20:28:24.236Z",
+    Execution: {
+      Id: "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
+      Input: {
+        MyInput: "MyValue",
       },
-      State: {
-        Name: "step-one",
-        RetryCount: 2,
-      },
-      StateMachine: {
-        Id: "arn:aws:states:us-east-1:601427279990:stateMachine:HelloStepOneStepFunctionsStateMachine-z4T0mJveJ7pJ",
-        Name: "my-state-machine",
-      },
+      Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
+      RoleArn: "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
+      StartTime: "2022-12-08T21:08:17.924Z",
+    },
+    State: {
+      Name: "step-one",
+      EnteredTime: "2022-12-08T21:08:19.224Z",
+      RetryCount: 2,
+    },
+    StateMachine: {
+      Id: "arn:aws:states:sa-east-1:425362996713:stateMachine:logs-to-traces-sequential",
+      Name: "my-state-machine",
     },
   } as const;
-  it("reads a trace from an execution id", () => {
+
+  it("reads a step function context from event with Execution.Input", () => {
     const result = readStepFunctionContextFromEvent(stepFunctionEvent);
     expect(result).toEqual({
-      "step_function.execution_id": "fb7b1e15-e4a2-4cb2-963f-8f1fa4aec492",
-      "step_function.retry_count": 2,
-      "step_function.state_machine_arn":
-        "arn:aws:states:us-east-1:601427279990:stateMachine:HelloStepOneStepFunctionsStateMachine-z4T0mJveJ7pJ",
+      "step_function.execution_id":
+        "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
+      "step_function.execution_input": { MyInput: "MyValue" },
+      "step_function.execution_name": "85a9933e-9e11-83dc-6a61-b92367b6c3be",
+      "step_function.execution_role_arn":
+        "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
+      "step_function.execution_start_time": "2022-12-08T21:08:17.924Z",
+      "step_function.state_entered_time": "2022-12-08T21:08:19.224Z",
+      "step_function.state_machine_arn": "arn:aws:states:sa-east-1:425362996713:stateMachine:logs-to-traces-sequential",
       "step_function.state_machine_name": "my-state-machine",
-      "step_function.step_name": "step-one",
+      "step_function.state_name": "step-one",
+      "step_function.state_retry_count": 2,
     });
   });
   it("returns undefined when event isn't an object", () => {
@@ -711,7 +722,7 @@ describe("readStepFunctionContextFromEvent", () => {
   it("returns undefined when Execution is missing Name field", () => {
     const result = readStepFunctionContextFromEvent({
       dd: {
-        ...stepFunctionEvent.dd,
+        ...stepFunctionEvent,
         Execution: {},
       },
     });
@@ -720,7 +731,7 @@ describe("readStepFunctionContextFromEvent", () => {
   it("returns undefined when Name isn't a string", () => {
     const result = readStepFunctionContextFromEvent({
       dd: {
-        ...stepFunctionEvent.dd,
+        ...stepFunctionEvent,
         Execution: {
           Name: 12345,
         },
@@ -731,7 +742,7 @@ describe("readStepFunctionContextFromEvent", () => {
   it("returns undefined when State isn't defined", () => {
     const result = readStepFunctionContextFromEvent({
       dd: {
-        ...stepFunctionEvent.dd,
+        ...stepFunctionEvent,
         State: undefined,
       },
     });
@@ -740,9 +751,9 @@ describe("readStepFunctionContextFromEvent", () => {
   it("returns undefined when try retry count isn't a number", () => {
     const result = readStepFunctionContextFromEvent({
       dd: {
-        ...stepFunctionEvent.dd,
+        ...stepFunctionEvent,
         State: {
-          ...stepFunctionEvent.dd.State,
+          ...stepFunctionEvent.State,
           RetryCount: "1",
         },
       },
@@ -752,9 +763,9 @@ describe("readStepFunctionContextFromEvent", () => {
   it("returns undefined when try step name isn't a string", () => {
     const result = readStepFunctionContextFromEvent({
       dd: {
-        ...stepFunctionEvent.dd,
+        ...stepFunctionEvent,
         State: {
-          ...stepFunctionEvent.dd.State,
+          ...stepFunctionEvent.State,
           Name: 1,
         },
       },
@@ -764,7 +775,7 @@ describe("readStepFunctionContextFromEvent", () => {
   it("returns undefined when StateMachine is undefined", () => {
     const result = readStepFunctionContextFromEvent({
       dd: {
-        ...stepFunctionEvent.dd,
+        ...stepFunctionEvent,
         StateMachine: undefined,
       },
     });
@@ -773,9 +784,9 @@ describe("readStepFunctionContextFromEvent", () => {
   it("returns undefined when StateMachineId isn't a string", () => {
     const result = readStepFunctionContextFromEvent({
       dd: {
-        ...stepFunctionEvent.dd,
+        ...stepFunctionEvent,
         StateMachine: {
-          ...stepFunctionEvent.dd.StateMachine,
+          ...stepFunctionEvent.StateMachine,
           Id: 1,
         },
       },
@@ -785,9 +796,9 @@ describe("readStepFunctionContextFromEvent", () => {
   it("returns undefined when StateMachineName isn't a string", () => {
     const result = readStepFunctionContextFromEvent({
       dd: {
-        ...stepFunctionEvent.dd,
+        ...stepFunctionEvent,
         StateMachine: {
-          ...stepFunctionEvent.dd.StateMachine,
+          ...stepFunctionEvent.StateMachine,
           Name: 1,
         },
       },
@@ -1062,21 +1073,26 @@ describe("extractTraceContext", () => {
 
   it("adds step function metadata to xray", () => {
     const stepFunctionEvent = {
-      dd: {
-        Execution: {
-          Name: "fb7b1e15-e4a2-4cb2-963f-8f1fa4aec492",
-          StartTime: "2019-09-30T20:28:24.236Z",
-        },
-        State: {
-          Name: "step-one",
-          RetryCount: 2,
-        },
-        StateMachine: {
-          Id: "arn:aws:states:us-east-1:601427279990:stateMachine:HelloStepOneStepFunctionsStateMachine-z4T0mJveJ7pJ",
-          Name: "my-state-machine",
+      Execution: {
+        Id: "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
+        Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
+        RoleArn: "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
+        StartTime: "2022-12-08T21:08:17.924Z",
+        Input: {
+          MyInput: "MyValue",
         },
       },
+      State: {
+        Name: "step-one",
+        EnteredTime: "2022-12-08T21:08:19.224Z",
+        RetryCount: 2,
+      },
+      StateMachine: {
+        Id: "arn:aws:states:sa-east-1:425362996713:stateMachine:logs-to-traces-sequential",
+        Name: "my-state-machine",
+      },
     } as const;
+
     jest.spyOn(Date, "now").mockImplementation(() => 1487076708000);
     process.env[xrayTraceEnvVar] = "Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1";
     process.env[awsXrayDaemonAddressEnvVar] = "localhost:127.0.0.1:2000";
@@ -1089,7 +1105,7 @@ describe("extractTraceContext", () => {
     const sentMessage = sentSegment.toString();
     expect(sentMessage).toMatchInlineSnapshot(`
       "{\\"format\\": \\"json\\", \\"version\\": 1}
-      {\\"id\\":\\"11111\\",\\"trace_id\\":\\"1-5e272390-8c398be037738dc042009320\\",\\"parent_id\\":\\"94ae789b969f1cc5\\",\\"name\\":\\"datadog-metadata\\",\\"start_time\\":1487076708,\\"end_time\\":1487076708,\\"type\\":\\"subsegment\\",\\"metadata\\":{\\"datadog\\":{\\"root_span_metadata\\":{\\"step_function.execution_id\\":\\"fb7b1e15-e4a2-4cb2-963f-8f1fa4aec492\\",\\"step_function.retry_count\\":2,\\"step_function.state_machine_arn\\":\\"arn:aws:states:us-east-1:601427279990:stateMachine:HelloStepOneStepFunctionsStateMachine-z4T0mJveJ7pJ\\",\\"step_function.state_machine_name\\":\\"my-state-machine\\",\\"step_function.step_name\\":\\"step-one\\"}}}}"
+      {\\"id\\":\\"11111\\",\\"trace_id\\":\\"1-5e272390-8c398be037738dc042009320\\",\\"parent_id\\":\\"94ae789b969f1cc5\\",\\"name\\":\\"datadog-metadata\\",\\"start_time\\":1487076708,\\"end_time\\":1487076708,\\"type\\":\\"subsegment\\",\\"metadata\\":{\\"datadog\\":{\\"root_span_metadata\\":{\\"step_function.execution_name\\":\\"85a9933e-9e11-83dc-6a61-b92367b6c3be\\",\\"step_function.execution_id\\":\\"arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf\\",\\"step_function.execution_input\\":{\\"MyInput\\":\\"MyValue\\"},\\"step_function.execution_role_arn\\":\\"arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03\\",\\"step_function.execution_start_time\\":\\"2022-12-08T21:08:17.924Z\\",\\"step_function.state_entered_time\\":\\"2022-12-08T21:08:19.224Z\\",\\"step_function.state_machine_arn\\":\\"arn:aws:states:sa-east-1:425362996713:stateMachine:logs-to-traces-sequential\\",\\"step_function.state_machine_name\\":\\"my-state-machine\\",\\"step_function.state_name\\":\\"step-one\\",\\"step_function.state_retry_count\\":2}}}}"
     `);
   });
 });
