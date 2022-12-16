@@ -284,6 +284,7 @@ describe("SpanInferrer", () => {
     inferrer.createInferredSpan(functionUrlEvent, {} as any, {} as SpanContext);
 
     expect(mockWrapper.startSpan).toBeCalledWith("aws.lambda.url", {
+      childOf: {},
       startTime: 1637169449721,
       tags: {
         _inferred_span: {
