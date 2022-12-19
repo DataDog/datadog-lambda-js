@@ -30,7 +30,7 @@ export class SpanInferrer {
   ): any {
     const eventSource = parseEventSource(event);
     if (eventSource === eventTypes.lambdaUrl) {
-      return this.createInferredSpanForLambdaUrl(event, context);
+      return this.createInferredSpanForLambdaUrl(event, context, parentSpanContext);
     }
     if (eventSource === eventTypes.apiGateway) {
       return this.createInferredSpanForApiGateway(event, context, parentSpanContext, decodeAuthorizerContext);
@@ -158,7 +158,11 @@ export class SpanInferrer {
     return new SpanWrapper(this.traceWrapper.startSpan("aws.apigateway", options), spanWrapperOptions);
   }
 
-  createInferredSpanForLambdaUrl(event: any, context: Context | undefined): any {
+  createInferredSpanForLambdaUrl(
+    event: any,
+    context: Context | undefined,
+    parentSpanContext: SpanContext | undefined,
+  ): any {
     const options: SpanOptions = {};
     const domain = event.requestContext.domainName;
     const path = event.rawPath;
@@ -188,6 +192,9 @@ export class SpanInferrer {
     const spanWrapperOptions = {
       isAsync: false,
     };
+    if (parentSpanContext) {
+      options.childOf = parentSpanContext;
+    }
     return new SpanWrapper(this.traceWrapper.startSpan("aws.lambda.url", options), spanWrapperOptions);
   }
 
