@@ -13,8 +13,7 @@ import {
   setLogger,
   setLogLevel,
 } from "./utils";
-import { getExtensionPath } from "./utils/extension-path";
-import { existsSync } from "fs";
+import { isExtensionEnabled } from "./utils/extension-path";
 
 export { TraceHeaders } from "./trace";
 
@@ -77,7 +76,6 @@ export const defaultConfig: Config = {
 
 let currentMetricsListener: MetricsListenerType | undefined;
 let currentTraceListener: TraceListener | undefined;
-let isExtension: boolean;
 
 /**
  * Wraps your AWS lambda handler functions to add tracing/metrics support
@@ -99,7 +97,7 @@ export function datadog<TEvent, TResult>(
   let metricsListener: MetricsListenerType;
   let incrementErrorsMetric: any;
   let incrementInvocationsMetric: any;
-  if (!isExtensionEnabled()) {
+  if (isExtensionEnabled()) {
     const {
       MetricsListener,
       KMSService,
@@ -132,10 +130,12 @@ export function datadog<TEvent, TResult>(
     currentTraceListener = traceListener;
 
     try {
-      await traceListener.onStartInvocation(event, context);
-      await metricsListener.onStartInvocation(event);
-      if (finalConfig.enhancedMetrics && !isExtensionEnabled()) {
-        incrementInvocationsMetric(metricsListener, context);
+      await currentTraceListener.onStartInvocation(event, context);
+      if (currentMetricsListener) {
+        await currentMetricsListener.onStartInvocation(event);
+        if (finalConfig.enhancedMetrics && currentMetricsListener) {
+          incrementInvocationsMetric(currentMetricsListener, context);
+        }
       }
     } catch (err) {
       if (err instanceof Error) {
@@ -148,17 +148,19 @@ export function datadog<TEvent, TResult>(
     let error: any;
     let didThrow = false;
     try {
-      result = await traceListener.onWrap(async (localEvent: TEvent, localContext: Context) => {
+      result = await currentTraceListener.onWrap(async (localEvent: TEvent, localContext: Context) => {
         try {
           localResult = await promHandler(localEvent, localContext);
         } finally {
-          const responseIs5xxError = traceListener.onEndingInvocation(
-            localEvent,
-            localResult,
-            finalConfig.captureLambdaPayload,
-          );
-          if (responseIs5xxError && !isExtensionEnabled()) {
-            incrementErrorsMetric(metricsListener, context);
+          if (currentTraceListener) {
+            const responseIs5xxError = currentTraceListener.onEndingInvocation(
+              localEvent,
+              localResult,
+              finalConfig.captureLambdaPayload,
+            );
+            if (responseIs5xxError && currentMetricsListener) {
+              incrementErrorsMetric(currentMetricsListener, context);
+            }
           }
         }
         return localResult;
@@ -168,11 +170,11 @@ export function datadog<TEvent, TResult>(
       error = err;
     }
     try {
-      if (didThrow && finalConfig.enhancedMetrics && !isExtensionEnabled()) {
-        incrementErrorsMetric(metricsListener, context);
+      if (didThrow && finalConfig.enhancedMetrics && currentMetricsListener) {
+        incrementErrorsMetric(currentMetricsListener, context);
       }
-      await metricsListener.onCompleteInvocation();
-      await traceListener.onCompleteInvocation(error, result, event);
+      await currentMetricsListener.onCompleteInvocation();
+      await currentTraceListener.onCompleteInvocation(error, result, event);
     } catch (err) {
       if (err instanceof Error) {
         logDebug("Failed to complete listeners", err);
@@ -310,14 +312,4 @@ export function getEnvValue(key: string, defaultValue: string): string {
 function getRuntimeTag(): string {
   const version = process.version;
   return `dd_lambda_layer:datadog-node${version}`;
-}
-
-function isExtensionEnabled(): boolean {
-  if (isExtension !== undefined) {
-    return isExtension;
-  }
-
-  const extensionPath = getExtensionPath();
-  isExtension = existsSync(extensionPath);
-  return isExtension;
 }
