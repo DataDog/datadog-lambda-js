@@ -14,7 +14,7 @@ import { LogLevel, setLogLevel } from "./utils";
 import mock from "mock-fs";
 import * as extPath from "./utils/extension-path";
 
-jest.spyOn(extPath, "isExtensionEnabled").mockReturnValue(true);
+jest.spyOn(extPath, "isExtensionEnabled").mockReturnValue(false);
 jest.mock("./metrics/enhanced-metrics");
 
 const mockedIncrementErrors = incrementErrorsMetric as jest.Mock<typeof incrementErrorsMetric>;

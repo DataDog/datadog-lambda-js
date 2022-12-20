@@ -97,7 +97,7 @@ export function datadog<TEvent, TResult>(
   let metricsListener: MetricsListenerType;
   let incrementErrorsMetric: any;
   let incrementInvocationsMetric: any;
-  if (isExtensionEnabled()) {
+  if (!isExtensionEnabled()) {
     const {
       MetricsListener,
       KMSService,
