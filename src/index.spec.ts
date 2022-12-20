@@ -11,7 +11,6 @@ import {
 } from "./index";
 import { incrementErrorsMetric, incrementInvocationsMetric } from "./metrics/enhanced-metrics";
 import { LogLevel, setLogLevel } from "./utils";
-import mock from "mock-fs";
 
 jest.mock("./metrics/enhanced-metrics");
 
@@ -318,27 +317,6 @@ describe("datadog", () => {
 
     expect(mockedIncrementInvocations).toBeCalledTimes(0);
     expect(mockedIncrementErrors).toBeCalledTimes(0);
-  });
-
-  it("doesn't increment enhanced metrics when using extension", async () => {
-    process.env.DD_ENHANCED_METRICS = "false";
-    mock({
-      "/opt/extensions/datadog-agent": Buffer.from([0]),
-    });
-
-    const handlerError: Handler = (event, context, callback) => {
-      throw Error("Some error");
-    };
-
-    const wrappedHandler = datadog(handlerError, { forceWrap: true });
-
-    const result = wrappedHandler({}, mockContext, () => {});
-    await expect(result).rejects.toEqual(Error("Some error"));
-
-    expect(mockedIncrementInvocations).toBeCalledTimes(0);
-    expect(mockedIncrementErrors).toBeCalledTimes(0);
-
-    mock.restore();
   });
 
   it("use custom logger to log debug messages", async () => {
