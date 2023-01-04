@@ -1,6 +1,6 @@
-import {StepFunctionContext} from "./context";
-import {Md5} from 'ts-md5';
-import {SpanContext} from "./tracer-wrapper";
+import { StepFunctionContext } from "./context";
+import { Md5 } from "ts-md5";
+import { SpanContext } from "./tracer-wrapper";
 
 export function getStepFunctionsParentContext(stepFunctionContext: StepFunctionContext): SpanContext {
   return {
@@ -9,23 +9,24 @@ export function getStepFunctionsParentContext(stepFunctionContext: StepFunctionC
     },
     toSpanId() {
       return deterministicMd5Hash(
-        (stepFunctionContext["step_function.execution_id"]
-          + "#"
-          + stepFunctionContext["step_function.state_name"]
-          + "#"
-          + stepFunctionContext["step_function.state_entered_time"]));
+        stepFunctionContext["step_function.execution_id"] +
+          "#" +
+          stepFunctionContext["step_function.state_name"] +
+          "#" +
+          stepFunctionContext["step_function.state_entered_time"],
+      );
     },
-  }
+  };
 }
 
-export function hexToBinary(hex: string){
+export function hexToBinary(hex: string) {
   // convert hex to binary and padding with 0 in the front to fill 128 bits
-  return (parseInt(hex, 16).toString(2)).padStart(4, '0');
+  return parseInt(hex, 16).toString(2).padStart(4, "0");
 }
 
 export function deterministicMd5Hash(s: string): string {
   // Md5 here is not used as an encryption method but to generate a deterministic hash as the backend does
-  const hex =  Md5.hashStr(s);
+  const hex = Md5.hashStr(s);
 
   let binary = "";
   for (let i = 0; i < hex.length; i++) {
@@ -39,4 +40,3 @@ export function deterministicMd5Hash(s: string): string {
   }
   return res;
 }
-
