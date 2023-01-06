@@ -18,7 +18,6 @@ import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 import { SpanInferrer } from "./span-inferrer";
 import { SpanWrapper } from "./span-wrapper";
-import { getStepFunctionsParentContext } from "./step-functions-trace-context";
 export type TraceExtractor = (event: any, context: Context) => TraceContext;
 
 export interface TraceConfig {
@@ -125,9 +124,6 @@ export class TraceListener {
     this.context = context;
     this.triggerTags = extractTriggerTags(event, context);
     this.stepFunctionContext = readStepFunctionContextFromEvent(event);
-    if (this.stepFunctionContext && this.lambdaSpanParentContext !== undefined) {
-      this.lambdaSpanParentContext = getStepFunctionsParentContext(this.stepFunctionContext);
-    }
   }
 
   /**
