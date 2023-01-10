@@ -150,11 +150,15 @@ export function extractTraceContext(
         logError("couldn't add trace context to xray metadata", error as Error);
       }
     }
+    return trace;
+  } else {
     // do not send step functions context to xray
     if (stepFuncContext) {
       trace = readTraceFromStepFunctionsContext(stepFuncContext);
+      if (trace !== undefined) {
+        return trace;
+      }
     }
-    return trace;
   }
   return readTraceContextFromXray();
 }

@@ -25,6 +25,8 @@ import {
   hexToBinary,
   deterministicMd5HashInBinary,
   deterministicMd5HashToBigIntString,
+  readTraceFromStepFunctionsContext,
+  StepFunctionContext,
 } from "./context";
 
 let sentSegment: any;
@@ -1053,6 +1055,38 @@ describe("extractTraceContext", () => {
     );
 
     expect(sentSegment).toBeUndefined();
+  });
+
+  it("returns trace read from step functions event with the extractor as the highest priority", () => {
+    const stepFunctionEvent = {
+      MyInput: "MyValue",
+      Execution: {
+        Id: "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
+        Input: {
+          MyInput: "MyValue",
+        },
+        Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
+        RoleArn: "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
+        StartTime: "2022-12-08T21:08:17.924Z",
+      },
+      State: {
+        Name: "step-one",
+        EnteredTime: "2022-12-08T21:08:19.224Z",
+        RetryCount: 2,
+      },
+      StateMachine: {
+        Id: "arn:aws:states:sa-east-1:425362996713:stateMachine:logs-to-traces-sequential",
+        Name: "my-state-machine",
+      },
+    };
+
+    const result = extractTraceContext(stepFunctionEvent, {} as Context, undefined);
+    expect(result).toEqual({
+      parentID: "4602916161841036335",
+      sampleMode: 1,
+      traceID: "947965466153612645",
+      source: "event",
+    });
   });
 
   it("skips adding datadog metadata to x-ray when x-ray trace isn't sampled", () => {
