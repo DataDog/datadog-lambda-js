@@ -138,6 +138,12 @@ export function extractTraceContext(
         logError("couldn't add step function metadata to xray", error as Error);
       }
     }
+    if (trace === undefined) {
+      trace = readTraceFromStepFunctionsContext(stepFuncContext);
+      if (trace !== undefined) {
+        return trace;
+      }
+    }
   }
 
   if (trace !== undefined) {
@@ -151,14 +157,6 @@ export function extractTraceContext(
       }
     }
     return trace;
-  } else {
-    // do not send step functions context to xray
-    if (stepFuncContext) {
-      trace = readTraceFromStepFunctionsContext(stepFuncContext);
-      if (trace !== undefined) {
-        return trace;
-      }
-    }
   }
   return readTraceContextFromXray();
 }
