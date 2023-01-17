@@ -15,9 +15,10 @@ import { didFunctionColdStart } from "../utils/cold-start";
 import { datadogLambdaVersion } from "../constants";
 import { Source, ddtraceVersion, parentSpanFinishTimeHeader, authorizingRequestIdHeader } from "./constants";
 import { patchConsole } from "./patch-console";
-import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
+import { SpanContext, SpanOptions, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 import { SpanInferrer } from "./span-inferrer";
 import { SpanWrapper } from "./span-wrapper";
+import { RequireNode, getTraceTree } from "../runtime/index";
 export type TraceExtractor = (event: any, context: Context) => TraceContext;
 
 export interface TraceConfig {
@@ -120,10 +121,56 @@ export class TraceListener {
         this.config.encodeAuthorizerContext,
       );
     }
+
     this.lambdaSpanParentContext = this.inferredSpan?.span || parentSpanContext;
     this.context = context;
     this.triggerTags = extractTriggerTags(event, context);
     this.stepFunctionContext = readStepFunctionContextFromEvent(event);
+  }
+
+  private createColdStartSpan(startTime: number, parentSpan: SpanWrapper | undefined): SpanWrapper {
+    const options: SpanOptions = {
+      tags: {
+        service: "aws.lambda",
+        operation_name: "aws.lambda.require",
+        resource_names: this.context?.functionName?.toLowerCase(),
+        "resource.name": this.context?.functionName?.toLowerCase(),
+      },
+      startTime: startTime,
+    };
+    if (parentSpan) {
+      options.childOf = parentSpan.span;
+    } else {
+      options.childOf = this.wrappedCurrentSpan?.span;
+    }
+    const newSpan = new SpanWrapper(this.tracerWrapper.startSpan("aws.lambda.load", options), {});
+    newSpan.finish(this.wrappedCurrentSpan?.startTime());
+    return newSpan;
+  }
+
+  private traceTree(reqNode: RequireNode, parentSpan: SpanWrapper | undefined): void {
+    if (reqNode.endTime - reqNode.startTime <= 3) {
+      return;
+    }
+    const options: SpanOptions = {
+      tags: {
+        service: "aws.lambda",
+        operation_name: "aws.lambda.require",
+        resource_names: reqNode.id,
+        "resource.name": reqNode.id,
+      },
+      startTime: reqNode.startTime,
+    };
+    if (parentSpan) {
+      options.childOf = parentSpan.span;
+    }
+    const newSpan = new SpanWrapper(this.tracerWrapper.startSpan("aws.lambda.require", options), {});
+    if (reqNode.endTime - reqNode.startTime > 3) {
+      for (let node of reqNode.children || []) {
+        this.traceTree(node, newSpan);
+      }
+    }
+    newSpan?.finish(reqNode.endTime);
   }
 
   /**
@@ -145,7 +192,15 @@ export class TraceListener {
       tagObject(this.tracerWrapper.currentSpan, "function.request", event);
       tagObject(this.tracerWrapper.currentSpan, "function.response", result);
     }
-
+    const coldStartNodes = getTraceTree();
+    if (coldStartNodes.length > 0 && didFunctionColdStart()) {
+      const coldStartSpanStartTime =
+        coldStartNodes.length > 0 ? coldStartNodes[0]?.startTime : this.wrappedCurrentSpan?.startTime();
+      const coldStartSpan = this.createColdStartSpan(coldStartSpanStartTime, this.inferredSpan);
+      for (let coldStartNode of coldStartNodes) {
+        this.traceTree(coldStartNode as RequireNode, coldStartSpan);
+      }
+    }
     if (this.triggerTags) {
       const statusCode = extractHTTPStatusCodeTag(this.triggerTags, result);
 
