@@ -1147,84 +1147,27 @@ describe("extractTraceContext", () => {
   });
 });
 
-describe("test_hexToBinary", () => {
-  it("test hex 0 to binary", () => {
-    const actual = hexToBinary("0");
-    expect(actual).toEqual("0000");
-  });
-
-  it("test hex 1 to binary", () => {
-    const actual = hexToBinary("1");
-    expect(actual).toEqual("0001");
-  });
-
-  it("test hex 2 to binary", () => {
-    const actual = hexToBinary("2");
-    expect(actual).toEqual("0010");
-  });
-
-  it("test hex 3 to binary", () => {
-    const actual = hexToBinary("3");
-    expect(actual).toEqual("0011");
-  });
-
-  it("test hex 4 to binary", () => {
-    const actual = hexToBinary("4");
-    expect(actual).toEqual("0100");
-  });
-
-  it("test hex 5 to binary", () => {
-    const actual = hexToBinary("5");
-    expect(actual).toEqual("0101");
-  });
-  it("test hex 6 to binary", () => {
-    const actual = hexToBinary("6");
-    expect(actual).toEqual("0110");
-  });
-
-  it("test hex 7 to binary", () => {
-    const actual = hexToBinary("7");
-    expect(actual).toEqual("0111");
-  });
-
-  it("test hex 8 to binary", () => {
-    const actual = hexToBinary("8");
-    expect(actual).toEqual("1000");
-  });
-
-  it("test hex 9 to binary", () => {
-    const actual = hexToBinary("9");
-    expect(actual).toEqual("1001");
-  });
-
-  it("test hex a to binary", () => {
-    const actual = hexToBinary("a");
-    expect(actual).toEqual("1010");
-  });
-
-  it("test hex b to binary", () => {
-    const actual = hexToBinary("b");
-    expect(actual).toEqual("1011");
-  });
-
-  it("test hex c to binary", () => {
-    const actual = hexToBinary("c");
-    expect(actual).toEqual("1100");
-  });
-
-  it("test hex d to binary", () => {
-    const actual = hexToBinary("d");
-    expect(actual).toEqual("1101");
-  });
-
-  it("test hex e to binary", () => {
-    const actual = hexToBinary("e");
-    expect(actual).toEqual("1110");
-  });
-
-  it("test hex f to binary", () => {
-    const actual = hexToBinary("f");
-    expect(actual).toEqual("1111");
+describe.each(
+  [
+    ["0", "0000"],
+    ["1", "0001"],
+    ["2", "0010"],
+    ["3", "0011"],
+    ["4", "0100"],
+    ["5", "0101"],
+    ["6", "0110"],
+    ["7", "0111"],
+    ["8", "1000"],
+    ["9", "1001"],
+    ["a", "1010"],
+    ["b", "1011"],
+    ["c", "1100"],
+    ["d", "1101"],
+    ["e", "1110"],
+    ["f", "1111"],
+  ]) (`test hexToBinary`, (hex, expected) => {
+    test(`${hex} to binary returns ${expected}`, () => {
+    expect(hexToBinary(hex)).toBe(expected);
   });
 });
 

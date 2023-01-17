@@ -77,7 +77,7 @@ export function hexToBinary(hex: string) {
 }
 
 export function deterministicMd5HashInBinary(s: string): string {
-  // Md5 here is not used as an encryption method but to generate a deterministic hash as the backend does
+  // Md5 here is used here because we don't need a cryptographically secure hashing method but to generate the same trace/span ids as the backend does
   const hex = Md5.hashStr(s);
 
   let binary = "";
