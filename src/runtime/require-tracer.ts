@@ -2,12 +2,14 @@ const dc = require('diagnostics_channel')
 
 export class RequireNode {
   public id: string
+  public filename: string
   public startTime: number
   public endTime: number
   public children: RequireNode[]
 
-  constructor(id: string, startTime: number) {
+  constructor(id: string, filename: string, startTime: number) {
     this.id = id
+    this.filename = filename
     this.startTime = startTime
     this.endTime = startTime
     this.children = []
@@ -26,7 +28,7 @@ const requireStack: RequireNode[] = []
 const pushNode = (data: any) => {
   const startTime = Date.now()
 
-  const reqNode = new RequireNode(data.request, startTime)
+  const reqNode = new RequireNode(data.request, data.filename, startTime)
   const maybeParent = requireStack[requireStack.length - 1]
 
   if (maybeParent) {
