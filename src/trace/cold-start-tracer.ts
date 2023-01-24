@@ -7,7 +7,7 @@ export interface ColdStartTracerConfig {
   parentSpan?: SpanWrapper;
   lambdaFunctionName?: string;
   coldStartSpanFinishTime: number; // Equivalent to the Lambda Span Start Time
-  minDuration?: number;
+  minDuration: number;
 }
 
 export class ColdStartTracer {
@@ -22,7 +22,7 @@ export class ColdStartTracer {
     this.parentSpan = coldStartTracerConfig.parentSpan;
     this.lambdaFunctionName = coldStartTracerConfig.lambdaFunctionName;
     this.coldStartSpanFinishTime = coldStartTracerConfig.coldStartSpanFinishTime;
-    this.minDuration = coldStartTracerConfig.minDuration || 3;
+    this.minDuration = coldStartTracerConfig.minDuration;
   }
 
   trace(rootNodes: RequireNode[]) {

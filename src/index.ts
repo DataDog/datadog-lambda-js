@@ -37,6 +37,8 @@ export const traceExtractorEnvVar = "DD_TRACE_EXTRACTOR";
 export const defaultSiteURL = "datadoghq.com";
 export const encodeAuthorizerContextEnvVar = "DD_ENCODE_AUTHORIZER_CONTEXT";
 export const decodeAuthorizerContextEnvVar = "DD_DECODE_AUTHORIZER_CONTEXT";
+export const coldStartTracingEnvVar = "DD_COLD_START_TRACING";
+export const minColdStartTraceDurationEnvVar = "DD_MIN_COLD_START_DURATION";
 
 interface GlobalConfig {
   /**
@@ -76,12 +78,13 @@ export const defaultConfig: Config = {
   mergeDatadogXrayTraces: false,
   shouldRetryMetrics: false,
   siteURL: "",
+  minColdStartTraceDuration: 3
 } as const;
 
 let currentMetricsListener: MetricsListener | undefined;
 let currentTraceListener: TraceListener | undefined;
 
-if (!process.env.DD_DISABLE_COLD_START_TRACING) {
+if (getEnvValue(coldStartTracingEnvVar, "true")) {
   subscribeToDC();
 }
 /**
@@ -289,6 +292,10 @@ function getConfig(userConfig?: Partial<Config>): Config {
   if (userConfig === undefined || userConfig.decodeAuthorizerContext === undefined) {
     const result = getEnvValue(decodeAuthorizerContextEnvVar, "true").toLowerCase();
     config.decodeAuthorizerContext = result === "true";
+  }
+
+  if (userConfig === undefined || userConfig.minColdStartTraceDuration === undefined) {
+    config.minColdStartTraceDuration = Number(getEnvValue(minColdStartTraceDurationEnvVar, '3'))
   }
 
   return config;

@@ -60,7 +60,7 @@ export interface TraceConfig {
   /**
    * Minimum duration dependency to trace
    */
-  coldStartTraceMinDuration?: number;
+  minColdStartTraceDuration: number;
 }
 
 export class TraceListener {
@@ -73,7 +73,6 @@ export class TraceListener {
   private wrappedCurrentSpan?: SpanWrapper;
   private triggerTags?: { [key: string]: string };
   private lambdaSpanParentContext?: SpanContext;
-  private coldStartTraceMinDuration?: number;
 
   public get currentTraceHeaders() {
     return this.contextService.currentTraceHeaders;
@@ -160,7 +159,7 @@ export class TraceListener {
         coldStartSpanFinishTime: this.wrappedCurrentSpan?.startTime(),
         parentSpan: this.inferredSpan || this.wrappedCurrentSpan,
         lambdaFunctionName: this.context?.functionName,
-        minDuration: this.coldStartTraceMinDuration,
+        minDuration: this.config.minColdStartTraceDuration,
       };
       const coldStartTracer = new ColdStartTracer(coldStartConfig);
       coldStartTracer.trace(coldStartNodes);
