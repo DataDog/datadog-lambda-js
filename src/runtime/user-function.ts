@@ -18,8 +18,7 @@ import {
   MalformedHandlerName,
   ImportModuleError,
   UserCodeSyntaxError,
-} from "./errors.js";
-import { logDebug } from "../utils/log.js";
+} from "./errors";
 
 const module_importer = require("./module_importer");
 const FUNCTION_EXPR = /^([^.]*)\.(.*)$/;

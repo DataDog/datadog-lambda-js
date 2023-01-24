@@ -9,6 +9,7 @@ import {
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
 import { extractTriggerTags, extractHTTPStatusCodeTag, eventSubTypes, parseEventSourceSubType } from "./trigger";
+import { ColdStartTracerConfig, ColdStartTracer } from "./cold-start-tracer";
 
 import { logDebug, tagObject } from "../utils";
 import { didFunctionColdStart } from "../utils/cold-start";
@@ -56,6 +57,10 @@ export interface TraceConfig {
    * Custom trace extractor function
    */
   traceExtractor?: TraceExtractor;
+  /**
+   * Minimum duration dependency to trace
+   */
+  coldStartTraceMinDuration?: number;
 }
 
 export class TraceListener {
@@ -68,6 +73,7 @@ export class TraceListener {
   private wrappedCurrentSpan?: SpanWrapper;
   private triggerTags?: { [key: string]: string };
   private lambdaSpanParentContext?: SpanContext;
+  private coldStartTraceMinDuration?: number;
 
   public get currentTraceHeaders() {
     return this.contextService.currentTraceHeaders;
@@ -128,51 +134,6 @@ export class TraceListener {
     this.stepFunctionContext = readStepFunctionContextFromEvent(event);
   }
 
-  private createColdStartSpan(startTime: number, parentSpan: SpanWrapper | undefined): SpanWrapper {
-    const options: SpanOptions = {
-      tags: {
-        service: "aws.lambda",
-        operation_name: "aws.lambda.require",
-        resource_names: this.context?.functionName?.toLowerCase(),
-        "resource.name": this.context?.functionName?.toLowerCase(),
-      },
-      startTime: startTime,
-    };
-    if (parentSpan) {
-      options.childOf = parentSpan.span;
-    } else {
-      options.childOf = this.wrappedCurrentSpan?.span;
-    }
-    const newSpan = new SpanWrapper(this.tracerWrapper.startSpan("aws.lambda.load", options), {});
-    newSpan.finish(this.wrappedCurrentSpan?.startTime());
-    return newSpan;
-  }
-
-  private traceTree(reqNode: RequireNode, parentSpan: SpanWrapper | undefined): void {
-    if (reqNode.endTime - reqNode.startTime <= 3) {
-      return;
-    }
-    const options: SpanOptions = {
-      tags: {
-        service: "aws.lambda",
-        operation_name: "aws.lambda.require",
-        resource_names: reqNode.id,
-        "resource.name": reqNode.id,
-      },
-      startTime: reqNode.startTime,
-    };
-    if (parentSpan) {
-      options.childOf = parentSpan.span;
-    }
-    const newSpan = new SpanWrapper(this.tracerWrapper.startSpan("aws.lambda.require", options), {});
-    if (reqNode.endTime - reqNode.startTime > 3) {
-      for (let node of reqNode.children || []) {
-        this.traceTree(node, newSpan);
-      }
-    }
-    newSpan?.finish(reqNode.endTime);
-  }
-
   /**
    * onEndingInvocation runs after the user function has returned
    * but before the wrapped function has returned
@@ -194,12 +155,15 @@ export class TraceListener {
     }
     const coldStartNodes = getTraceTree();
     if (coldStartNodes.length > 0 && didFunctionColdStart()) {
-      const coldStartSpanStartTime =
-        coldStartNodes.length > 0 ? coldStartNodes[0]?.startTime : this.wrappedCurrentSpan?.startTime();
-      const coldStartSpan = this.createColdStartSpan(coldStartSpanStartTime, this.inferredSpan);
-      for (let coldStartNode of coldStartNodes) {
-        this.traceTree(coldStartNode as RequireNode, coldStartSpan);
-      }
+      const coldStartConfig: ColdStartTracerConfig = {
+        tracerWrapper: this.tracerWrapper,
+        coldStartSpanFinishTime: this.wrappedCurrentSpan?.startTime(),
+        parentSpan: this.inferredSpan || this.wrappedCurrentSpan,
+        lambdaFunctionName: this.context?.functionName,
+        minDuration: this.coldStartTraceMinDuration,
+      };
+      const coldStartTracer = new ColdStartTracer(coldStartConfig);
+      coldStartTracer.trace(coldStartNodes);
     }
     if (this.triggerTags) {
       const statusCode = extractHTTPStatusCodeTag(this.triggerTags, result);
