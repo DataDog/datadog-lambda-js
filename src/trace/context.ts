@@ -28,6 +28,7 @@ import {
 } from "./constants";
 import { TraceExtractor } from "./listener";
 import { eventSubTypes, parseEventSourceSubType } from "./trigger";
+import { Md5 } from "ts-md5";
 
 export interface XRayTraceHeader {
   traceID: string;
@@ -53,6 +54,48 @@ export interface StepFunctionContext {
   "step_function.state_entered_time": string;
   "step_function.state_name": string;
   "step_function.state_retry_count": number;
+}
+
+export function readTraceFromStepFunctionsContext(stepFunctionContext: StepFunctionContext): TraceContext | undefined {
+  return {
+    traceID: deterministicMd5HashToBigIntString(stepFunctionContext["step_function.execution_id"]),
+    parentID: deterministicMd5HashToBigIntString(
+      stepFunctionContext["step_function.execution_id"] +
+        "#" +
+        stepFunctionContext["step_function.state_name"] +
+        "#" +
+        stepFunctionContext["step_function.state_entered_time"],
+    ),
+    sampleMode: SampleMode.AUTO_KEEP.valueOf(),
+    source: Source.Event,
+  };
+}
+
+export function hexToBinary(hex: string) {
+  // convert hex to binary and padding with 0 in the front to fill 128 bits
+  return parseInt(hex, 16).toString(2).padStart(4, "0");
+}
+
+export function deterministicMd5HashInBinary(s: string): string {
+  // Md5 here is used here because we don't need a cryptographically secure hashing method but to generate the same trace/span ids as the backend does
+  const hex = Md5.hashStr(s);
+
+  let binary = "";
+  for (let i = 0; i < hex.length; i++) {
+    const ch = hex.charAt(i);
+    binary = binary + hexToBinary(ch);
+  }
+
+  const res = "0" + binary.substring(1, 64);
+  if (res === "0".repeat(64)) {
+    return "1";
+  }
+  return res;
+}
+
+export function deterministicMd5HashToBigIntString(s: string): string {
+  const binaryString = deterministicMd5HashInBinary(s);
+  return BigInt("0b" + binaryString).toString();
 }
 
 /**
@@ -93,6 +136,12 @@ export function extractTraceContext(
     } catch (error) {
       if (error instanceof Error) {
         logError("couldn't add step function metadata to xray", error as Error);
+      }
+    }
+    if (trace === undefined) {
+      trace = readTraceFromStepFunctionsContext(stepFuncContext);
+      if (trace !== undefined) {
+        return trace;
       }
     }
   }

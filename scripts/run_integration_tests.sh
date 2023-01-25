@@ -219,7 +219,9 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
                 # Normalize lookup resource
                 perl -p -e "s/(\"resource\":\"169.)[0-9\.]+/\1X.X.X/g" |
                 # Normalize Axios version
-                perl -p -e "s/User-Agent:axios\/\d+\.\d+\.\d+/User-Agent:axios\/X\.X\.X/g"
+                perl -p -e "s/User-Agent:axios\/\d+\.\d+\.\d+/User-Agent:axios\/X\.X\.X/g" |
+                # Remove init start line
+                perl -p -e "s/INIT_START.*//g"
         )
 
         if [ ! -f $function_snapshot_path ]; then
