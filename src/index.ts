@@ -78,7 +78,7 @@ export const defaultConfig: Config = {
   mergeDatadogXrayTraces: false,
   shouldRetryMetrics: false,
   siteURL: "",
-  minColdStartTraceDuration: 3
+  minColdStartTraceDuration: 3,
 } as const;
 
 let currentMetricsListener: MetricsListener | undefined;
@@ -295,7 +295,7 @@ function getConfig(userConfig?: Partial<Config>): Config {
   }
 
   if (userConfig === undefined || userConfig.minColdStartTraceDuration === undefined) {
-    config.minColdStartTraceDuration = Number(getEnvValue(minColdStartTraceDurationEnvVar, '3'))
+    config.minColdStartTraceDuration = Number(getEnvValue(minColdStartTraceDurationEnvVar, "3"));
   }
 
   return config;
