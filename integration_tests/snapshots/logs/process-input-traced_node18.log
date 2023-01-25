@@ -140,6 +140,29 @@ START
         "start":XXXX,
         "duration":XXXX,
         "service": "integration-tests-js-XXXX-process-input-traced_node18"
+      },
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "aws.lambda.load",
+        "resource": "integration-tests-js-XXXX-process-input-traced_node18",
+        "error": 0,
+        "meta": {
+          "service": "aws.lambda",
+          "version": "1.0.0",
+          "runtime-id":"XXXX",
+          "operation_name": "aws.lambda.require",
+          "resource_names": "integration-tests-js-XXXX-process-input-traced_node18",
+          "language": "javascript"
+        },
+        "metrics": {
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "service": "integration-tests-js-XXXX-process-input-traced_node18"
       }
     ]
   ]
