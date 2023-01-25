@@ -71,7 +71,7 @@ describe("ColdStartTracer", () => {
       lambdaFunctionName: "my-function-name",
       coldStartSpanFinishTime: 500,
       minDuration: 1,
-      ignoreLibs: '',
+      ignoreLibs: "",
     };
     const coldStartTracer = new ColdStartTracer(coldStartConfig);
     coldStartTracer.trace(requireNodes);
@@ -161,7 +161,7 @@ describe("ColdStartTracer", () => {
       lambdaFunctionName: "my-function-name",
       coldStartSpanFinishTime: 500,
       minDuration: 1,
-      ignoreLibs: 'myChildModule,myCoreModule',
+      ignoreLibs: "myChildModule,myCoreModule",
     };
     const coldStartTracer = new ColdStartTracer(coldStartConfig);
     coldStartTracer.trace(requireNodes);

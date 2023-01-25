@@ -8,7 +8,7 @@ export interface ColdStartTracerConfig {
   lambdaFunctionName?: string;
   coldStartSpanFinishTime: number; // Equivalent to the Lambda Span Start Time
   minDuration: number;
-  ignoreLibs: string
+  ignoreLibs: string;
 }
 
 export class ColdStartTracer {
@@ -25,7 +25,7 @@ export class ColdStartTracer {
     this.lambdaFunctionName = coldStartTracerConfig.lambdaFunctionName;
     this.coldStartSpanFinishTime = coldStartTracerConfig.coldStartSpanFinishTime;
     this.minDuration = coldStartTracerConfig.minDuration;
-    this.ignoreLibs = coldStartTracerConfig.ignoreLibs.split(',');
+    this.ignoreLibs = coldStartTracerConfig.ignoreLibs.split(",");
   }
 
   trace(rootNodes: RequireNode[]) {

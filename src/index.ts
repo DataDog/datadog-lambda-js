@@ -301,7 +301,7 @@ function getConfig(userConfig?: Partial<Config>): Config {
   }
 
   if (userConfig === undefined || userConfig.minColdStartTraceDuration === undefined) {
-    config.coldStartTraceSkipLib = getEnvValue(coldStartTraceSkipLibEnvVar, './opentracing/tracer');
+    config.coldStartTraceSkipLib = getEnvValue(coldStartTraceSkipLibEnvVar, "./opentracing/tracer");
   }
 
   return config;

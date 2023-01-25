@@ -62,8 +62,8 @@ export interface TraceConfig {
    */
   minColdStartTraceDuration: number;
   /**
-  * Libraries to ignore from cold start traces
-  */
+   * Libraries to ignore from cold start traces
+   */
   coldStartTraceSkipLib: string;
 }
 
