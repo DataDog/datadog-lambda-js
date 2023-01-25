@@ -43,6 +43,8 @@ RUN rm -rf /nodejs/node_modules/@datadog/pprof
 RUN rm -rf /nodejs/node_modules/hdr-histogram-js/build
 RUN rm -rf /nodejs/node_modules/protobufjs/dist
 RUN rm -rf /nodejs/node_modules/protobufjs/cli
+RUN rm -rf /nodejs/node_modules/@datadog/native-iast-taint-tracking
+RUN rm -rf /nodejs/node_modules/@datadog/native-iast-rewriter
 RUN find /nodejs/node_modules -name "*.d.ts" -delete
 RUN find /nodejs/node_modules -name "*.js.map" -delete
 RUN find /nodejs/node_modules -name "*.ts.map" -delete
