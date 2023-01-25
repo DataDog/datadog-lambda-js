@@ -52,11 +52,13 @@ START
           "_inferred_span.synchronicity": "sync",
           "http.method": "GET",
           "stage": "test",
-          "http.status_code": "500"
+          "http.status_code": "500",
+          "language": "javascript"
         },
         "metrics": {
           "_dd.agent_psr": 1,
           "_dd.top_level": 1,
+          "process_id":XXXX,
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
@@ -83,11 +85,13 @@ START
           "function_trigger.event_source": "api-gateway",
           "function_trigger.event_source_arn": "arn:aws:apigateway:eu-west-1::/restapis/wt6mne2s9k/stages/test",
           "http.method": "GET",
-          "http.status_code": "500"
+          "http.status_code": "500",
+          "language": "javascript"
         },
         "metrics": {
           "cold_start": 1,
           "_dd.measured": 1,
+          "process_id":XXXX,
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
@@ -146,6 +150,7 @@ START
         "metrics": {
           "_dd.agent_psr": 1,
           "_dd.top_level": 1,
+          "process_id":XXXX,
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
@@ -171,11 +176,13 @@ START
           "functionname": "integration-tests-js-XXXX-status-code-500s_node16",
           "datadog_lambda":"XXXX",
           "function_trigger.event_source": "sns",
-          "function_trigger.event_source_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda"
+          "function_trigger.event_source_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda",
+          "language": "javascript"
         },
         "metrics": {
           "cold_start": 0,
           "_dd.measured": 1,
+          "process_id":XXXX,
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
@@ -226,12 +233,14 @@ START
           "queuename": "my-queue",
           "event_source_arn": "arn:aws:sqs:us-east-2:123456789012:my-queue",
           "receipt_handle": "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
-          "sender_id": "AIDAIENQZJOLO23YVJ4VO"
+          "sender_id": "AIDAIENQZJOLO23YVJ4VO",
+          "language": "javascript"
         },
         "metrics": {
           "_dd.agent_psr": 1,
           "_dd.top_level": 1,
           "retry_count": 1,
+          "process_id":XXXX,
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
@@ -257,11 +266,13 @@ START
           "functionname": "integration-tests-js-XXXX-status-code-500s_node16",
           "datadog_lambda":"XXXX",
           "function_trigger.event_source": "sqs",
-          "function_trigger.event_source_arn": "arn:aws:sqs:us-east-2:123456789012:my-queue"
+          "function_trigger.event_source_arn": "arn:aws:sqs:us-east-2:123456789012:my-queue",
+          "language": "javascript"
         },
         "metrics": {
           "cold_start": 0,
           "_dd.measured": 1,
+          "process_id":XXXX,
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
