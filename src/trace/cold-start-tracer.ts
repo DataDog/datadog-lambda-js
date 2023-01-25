@@ -28,7 +28,7 @@ export class ColdStartTracer {
   trace(rootNodes: RequireNode[]) {
     const coldStartSpanStartTime = rootNodes[0]?.startTime;
     const coldStartSpan = this.createColdStartSpan(coldStartSpanStartTime, this.parentSpan);
-    for (let coldStartNode of rootNodes) {
+    for (const coldStartNode of rootNodes) {
       this.traceTree(coldStartNode, coldStartSpan);
     }
   }
@@ -41,7 +41,7 @@ export class ColdStartTracer {
         resource_names: this.lambdaFunctionName,
         "resource.name": this.lambdaFunctionName,
       },
-      startTime: startTime,
+      startTime,
     };
     if (parentSpan) {
       options.childOf = parentSpan.span;
@@ -86,7 +86,7 @@ export class ColdStartTracer {
     );
     newSpan?.finish(reqNode.endTime);
     if (reqNode.endTime - reqNode.startTime > this.minDuration) {
-      for (let node of reqNode.children || []) {
+      for (const node of reqNode.children || []) {
         this.traceTree(node, newSpan);
       }
     }
