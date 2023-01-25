@@ -7,6 +7,7 @@ import {
   MetricsListener,
 } from "./metrics";
 import { TraceConfig, TraceHeaders, TraceListener } from "./trace";
+import { subscribeToDC } from "./runtime";
 import {
   logDebug,
   logError,
@@ -36,6 +37,9 @@ export const traceExtractorEnvVar = "DD_TRACE_EXTRACTOR";
 export const defaultSiteURL = "datadoghq.com";
 export const encodeAuthorizerContextEnvVar = "DD_ENCODE_AUTHORIZER_CONTEXT";
 export const decodeAuthorizerContextEnvVar = "DD_DECODE_AUTHORIZER_CONTEXT";
+export const coldStartTracingEnvVar = "DD_COLD_START_TRACING";
+export const minColdStartTraceDurationEnvVar = "DD_MIN_COLD_START_DURATION";
+export const coldStartTraceSkipLibEnvVar = "DD_COLD_START_TRACE_SKIP_LIB";
 
 interface GlobalConfig {
   /**
@@ -75,11 +79,16 @@ export const defaultConfig: Config = {
   mergeDatadogXrayTraces: false,
   shouldRetryMetrics: false,
   siteURL: "",
+  minColdStartTraceDuration: 3,
+  coldStartTraceSkipLib: "",
 } as const;
 
 let currentMetricsListener: MetricsListener | undefined;
 let currentTraceListener: TraceListener | undefined;
 
+if (getEnvValue(coldStartTracingEnvVar, "true")) {
+  subscribeToDC();
+}
 /**
  * Wraps your AWS lambda handler functions to add tracing/metrics support
  * @param handler A lambda handler function.
@@ -120,7 +129,7 @@ export function datadog<TEvent, TResult>(
     currentTraceListener = traceListener;
 
     try {
-      await traceListener.onStartInvocation(event, context);
+      traceListener.onStartInvocation(event, context);
       await metricsListener.onStartInvocation(event);
       if (finalConfig.enhancedMetrics) {
         incrementInvocationsMetric(metricsListener, context);
@@ -285,6 +294,14 @@ function getConfig(userConfig?: Partial<Config>): Config {
   if (userConfig === undefined || userConfig.decodeAuthorizerContext === undefined) {
     const result = getEnvValue(decodeAuthorizerContextEnvVar, "true").toLowerCase();
     config.decodeAuthorizerContext = result === "true";
+  }
+
+  if (userConfig === undefined || userConfig.minColdStartTraceDuration === undefined) {
+    config.minColdStartTraceDuration = Number(getEnvValue(minColdStartTraceDurationEnvVar, "3"));
+  }
+
+  if (userConfig === undefined || userConfig.minColdStartTraceDuration === undefined) {
+    config.coldStartTraceSkipLib = getEnvValue(coldStartTraceSkipLibEnvVar, "./opentracing/tracer");
   }
 
   return config;

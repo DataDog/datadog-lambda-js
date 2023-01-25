@@ -8,7 +8,8 @@ import {
 } from "./context";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
-import { extractTriggerTags, extractHTTPStatusCodeTag, eventSubTypes, parseEventSourceSubType } from "./trigger";
+import { extractTriggerTags, extractHTTPStatusCodeTag } from "./trigger";
+import { ColdStartTracerConfig, ColdStartTracer } from "./cold-start-tracer";
 
 import { logDebug, tagObject } from "../utils";
 import { didFunctionColdStart } from "../utils/cold-start";
@@ -18,6 +19,7 @@ import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 import { SpanInferrer } from "./span-inferrer";
 import { SpanWrapper } from "./span-wrapper";
+import { getTraceTree } from "../runtime/index";
 export type TraceExtractor = (event: any, context: Context) => TraceContext;
 
 export interface TraceConfig {
@@ -55,6 +57,14 @@ export interface TraceConfig {
    * Custom trace extractor function
    */
   traceExtractor?: TraceExtractor;
+  /**
+   * Minimum duration dependency to trace
+   */
+  minColdStartTraceDuration: number;
+  /**
+   * Libraries to ignore from cold start traces
+   */
+  coldStartTraceSkipLib: string;
 }
 
 export class TraceListener {
@@ -120,6 +130,7 @@ export class TraceListener {
         this.config.encodeAuthorizerContext,
       );
     }
+
     this.lambdaSpanParentContext = this.inferredSpan?.span || parentSpanContext;
     this.context = context;
     this.triggerTags = extractTriggerTags(event, context);
@@ -145,7 +156,19 @@ export class TraceListener {
       tagObject(this.tracerWrapper.currentSpan, "function.request", event);
       tagObject(this.tracerWrapper.currentSpan, "function.response", result);
     }
-
+    const coldStartNodes = getTraceTree();
+    if (coldStartNodes.length > 0 && didFunctionColdStart()) {
+      const coldStartConfig: ColdStartTracerConfig = {
+        tracerWrapper: this.tracerWrapper,
+        coldStartSpanFinishTime: this.wrappedCurrentSpan?.startTime(),
+        parentSpan: this.inferredSpan || this.wrappedCurrentSpan,
+        lambdaFunctionName: this.context?.functionName,
+        minDuration: this.config.minColdStartTraceDuration,
+        ignoreLibs: this.config.coldStartTraceSkipLib,
+      };
+      const coldStartTracer = new ColdStartTracer(coldStartConfig);
+      coldStartTracer.trace(coldStartNodes);
+    }
     if (this.triggerTags) {
       const statusCode = extractHTTPStatusCodeTag(this.triggerTags, result);
 
