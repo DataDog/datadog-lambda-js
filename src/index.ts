@@ -39,6 +39,7 @@ export const encodeAuthorizerContextEnvVar = "DD_ENCODE_AUTHORIZER_CONTEXT";
 export const decodeAuthorizerContextEnvVar = "DD_DECODE_AUTHORIZER_CONTEXT";
 export const coldStartTracingEnvVar = "DD_COLD_START_TRACING";
 export const minColdStartTraceDurationEnvVar = "DD_MIN_COLD_START_DURATION";
+export const coldStartTraceSkipLibEnvVar = "DD_COLD_START_TRACE_SKIP_LIB";
 
 interface GlobalConfig {
   /**
@@ -79,6 +80,7 @@ export const defaultConfig: Config = {
   shouldRetryMetrics: false,
   siteURL: "",
   minColdStartTraceDuration: 3,
+  coldStartTraceSkipLib: "",
 } as const;
 
 let currentMetricsListener: MetricsListener | undefined;
@@ -296,6 +298,10 @@ function getConfig(userConfig?: Partial<Config>): Config {
 
   if (userConfig === undefined || userConfig.minColdStartTraceDuration === undefined) {
     config.minColdStartTraceDuration = Number(getEnvValue(minColdStartTraceDurationEnvVar, "3"));
+  }
+
+  if (userConfig === undefined || userConfig.minColdStartTraceDuration === undefined) {
+    config.coldStartTraceSkipLib = getEnvValue(coldStartTraceSkipLibEnvVar, './opentracing/tracer');
   }
 
   return config;

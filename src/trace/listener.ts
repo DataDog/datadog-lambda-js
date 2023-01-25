@@ -8,7 +8,7 @@ import {
 } from "./context";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
-import { extractTriggerTags, extractHTTPStatusCodeTag, eventSubTypes, parseEventSourceSubType } from "./trigger";
+import { extractTriggerTags, extractHTTPStatusCodeTag } from "./trigger";
 import { ColdStartTracerConfig, ColdStartTracer } from "./cold-start-tracer";
 
 import { logDebug, tagObject } from "../utils";
@@ -16,10 +16,10 @@ import { didFunctionColdStart } from "../utils/cold-start";
 import { datadogLambdaVersion } from "../constants";
 import { Source, ddtraceVersion, parentSpanFinishTimeHeader, authorizingRequestIdHeader } from "./constants";
 import { patchConsole } from "./patch-console";
-import { SpanContext, SpanOptions, TraceOptions, TracerWrapper } from "./tracer-wrapper";
+import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 import { SpanInferrer } from "./span-inferrer";
 import { SpanWrapper } from "./span-wrapper";
-import { RequireNode, getTraceTree } from "../runtime/index";
+import { getTraceTree } from "../runtime/index";
 export type TraceExtractor = (event: any, context: Context) => TraceContext;
 
 export interface TraceConfig {
@@ -61,6 +61,10 @@ export interface TraceConfig {
    * Minimum duration dependency to trace
    */
   minColdStartTraceDuration: number;
+  /**
+  * Libraries to ignore from cold start traces
+  */
+  coldStartTraceSkipLib: string;
 }
 
 export class TraceListener {
@@ -160,6 +164,7 @@ export class TraceListener {
         parentSpan: this.inferredSpan || this.wrappedCurrentSpan,
         lambdaFunctionName: this.context?.functionName,
         minDuration: this.config.minColdStartTraceDuration,
+        ignoreLibs: this.config.coldStartTraceSkipLib,
       };
       const coldStartTracer = new ColdStartTracer(coldStartConfig);
       coldStartTracer.trace(coldStartNodes);

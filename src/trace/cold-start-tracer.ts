@@ -8,6 +8,7 @@ export interface ColdStartTracerConfig {
   lambdaFunctionName?: string;
   coldStartSpanFinishTime: number; // Equivalent to the Lambda Span Start Time
   minDuration: number;
+  ignoreLibs: string
 }
 
 export class ColdStartTracer {
@@ -16,6 +17,7 @@ export class ColdStartTracer {
   private lambdaFunctionName?: string;
   private coldStartSpanFinishTime: number;
   private minDuration: number;
+  private ignoreLibs: string[];
 
   constructor(coldStartTracerConfig: ColdStartTracerConfig) {
     this.tracerWrapper = coldStartTracerConfig.tracerWrapper;
@@ -23,6 +25,7 @@ export class ColdStartTracer {
     this.lambdaFunctionName = coldStartTracerConfig.lambdaFunctionName;
     this.coldStartSpanFinishTime = coldStartTracerConfig.coldStartSpanFinishTime;
     this.minDuration = coldStartTracerConfig.minDuration;
+    this.ignoreLibs = coldStartTracerConfig.ignoreLibs.split(',');
   }
 
   trace(rootNodes: RequireNode[]) {
@@ -67,6 +70,11 @@ export class ColdStartTracer {
     if (reqNode.endTime - reqNode.startTime < this.minDuration) {
       return;
     }
+
+    if (this.ignoreLibs.includes(reqNode.id)) {
+      return;
+    }
+
     const options: SpanOptions = {
       tags: {
         service: "aws.lambda",

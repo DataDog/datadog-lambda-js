@@ -82,6 +82,7 @@ describe("TraceListener", () => {
     mergeDatadogXrayTraces: false,
     injectLogContext: false,
     minColdStartTraceDuration: 3,
+    coldStartTraceSkipLib: ''
   };
   const context = {
     invokedFunctionArn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
