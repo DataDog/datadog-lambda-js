@@ -92,11 +92,11 @@ export class ColdStartTracer {
       this.tracerWrapper.startSpan(this.coldStartSpanOperationName(reqNode.filename), options),
       {},
     );
-    newSpan?.finish(reqNode.endTime);
     if (reqNode.endTime - reqNode.startTime > this.minDuration) {
       for (const node of reqNode.children || []) {
         this.traceTree(node, newSpan);
       }
     }
+    newSpan?.finish(reqNode.endTime);
   }
 }
