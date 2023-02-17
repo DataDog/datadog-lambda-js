@@ -739,10 +739,15 @@
   dependencies:
     nock "*"
 
-"@types/node@*", "@types/node@>=12", "@types/node@>=13.7.0":
+"@types/node@*", "@types/node@>=13.7.0":
   version "18.13.0"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-18.13.0.tgz#0400d1e6ce87e9d3032c19eb6c58205b0d3f7850"
   integrity sha512-gC3TazRzGoOnoKAhUx+Q0t8S9Tzs74z7m0ipwGpSqQrleP14hKxP4/JUeEQcD3W1/aIpnWl8pHowI7WokuZpXg==
+
+"@types/node@<18.13":
+  version "18.11.19"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.11.19.tgz#35e26df9ec441ab99d73e99e9aca82935eea216d"
+  integrity sha512-YUgMWAQBWLObABqrvx8qKO1enAvBUdjZOAWQ5grBAkp5LQv45jBvYKZ3oFS9iKRCQyFjqw6iuEa1vmFqtxYLZw==
 
 "@types/node@^15.6.1":
   version "15.14.9"
@@ -1213,10 +1218,10 @@ data-urls@^2.0.0:
     whatwg-mimetype "^2.3.0"
     whatwg-url "^8.0.0"
 
-dd-trace@^2.25.1:
-  version "2.26.2"
-  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-2.26.2.tgz#9b44e304c59a6de59eabb673421ac54e83907184"
-  integrity sha512-gmFxgbpzeBVVH75qM3rRABaa7wnSIRJ7n2fZMGexv9bZeLK7EuE06hoyoRHZaG2ymD0Ow1PjSlmULJTcGX5LSA==
+dd-trace@^2.27.0:
+  version "2.27.0"
+  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-2.27.0.tgz#e2fbd53cedf634be4a53f32f929922f8af2f3bec"
+  integrity sha512-qEcunQmYVrFBtU3d3QYkYrM+lwQaoDCWq1OC9QgssSm1Ik3AsL/sU4yIez2DflckNp/GVlc92nWATx5ZnWQA9w==
   dependencies:
     "@datadog/native-appsec" "2.0.0"
     "@datadog/native-iast-rewriter" "1.1.2"
@@ -1224,7 +1229,7 @@ dd-trace@^2.25.1:
     "@datadog/native-metrics" "^1.5.0"
     "@datadog/pprof" "^1.1.1"
     "@datadog/sketches-js" "^2.1.0"
-    "@types/node" ">=12"
+    "@types/node" "<18.13"
     crypto-randomuuid "^1.0.0"
     diagnostics_channel "^1.1.0"
     ignore "^5.2.0"
