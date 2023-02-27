@@ -35,7 +35,7 @@ echo "Ensure you have access to the datadog NPM service account"
 yarn login
 
 echo "Ensure you have access to the AWS GovCloud account"
-saml2aws login -a govcloud-us1-fed-human-engineering
+ddsaml2aws login -a govcloud-us1-fed-human-engineering
 AWS_PROFILE=govcloud-us1-fed-human-engineering aws sts get-caller-identity
 
 echo "Ensure you have access to the production AWS account"
@@ -66,7 +66,7 @@ echo "Publishing layers to commercial AWS regions"
 VERSION=$LAYER_VERSION aws-vault exec prod-engineering --no-session -- ./scripts/publish_layers.sh
 
 echo "Publishing layers to GovCloud AWS regions"
-saml2aws login -a govcloud-us1-fed-human-engineering
+ddsaml2aws login -a govcloud-us1-fed-human-engineering
 VERSION=$LAYER_VERSION AWS_PROFILE=govcloud-us1-fed-human-engineering ./scripts/publish_layers.sh
 
 read -p "Ready to publish $NEW_VERSION to NPM (y/n)?" CONT
