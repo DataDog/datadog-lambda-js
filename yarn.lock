@@ -741,9 +741,9 @@
     nock "*"
 
 "@types/node@*", "@types/node@>=13.7.0":
-  version "18.14.2"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.14.2.tgz#c076ed1d7b6095078ad3cf21dfeea951842778b1"
-  integrity sha512-1uEQxww3DaghA0RxqHx0O0ppVlo43pJhepY51OxuQIKHpjbnYLA7vcdwioNPzIqmC2u3I/dmylcqjlh0e7AyUA==
+  version "18.14.4"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.14.4.tgz#0e64ec0b35a772e1e3d849f9a0ff61782d0cb647"
+  integrity sha512-VhCw7I7qO2X49+jaKcAUwi3rR+hbxT5VcYF493+Z5kMLI0DL568b7JI4IDJaxWFH0D/xwmGJNoXisyX+w7GH/g==
 
 "@types/node@<18.13":
   version "18.11.19"
@@ -893,9 +893,9 @@ available-typed-arrays@^1.0.5:
   integrity sha512-DMD0KiN46eipeziST1LPP/STfDU0sufISXmjSgvVsoU2tqxctQeASejWcfNtxYKqETM1UxQ8sp2OrSBWpHY6sw==
 
 aws-sdk@*:
-  version "2.1323.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1323.0.tgz#ee27583ae502ce37fa644657f3d90a02ce468f2c"
-  integrity sha512-GoLwk2SuG9A6eWgc1mGmm548dklheDmkeptHRw2RhCvq2GZqlc4AzStFUjUURy4O4NQmd2ZiQIoeseue4RwurA==
+  version "2.1326.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1326.0.tgz#91da60f08d10e4e1db0640c97bc7d2298fde8f17"
+  integrity sha512-LSGiO4RSooupHnkvYbPOuOYqwAxmcnYinwIxBz4P1YI8ulhZZ/pypOj/HKqC629UyhY1ndSMtlM1l56U74UclA==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
@@ -1323,9 +1323,9 @@ domexception@^2.0.1:
     webidl-conversions "^5.0.0"
 
 electron-to-chromium@^1.4.284:
-  version "1.4.311"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.311.tgz#953bc9a4767f5ce8ec125f9a1ad8e00e8f67e479"
-  integrity sha512-RoDlZufvrtr2Nx3Yx5MB8jX3aHIxm8nRWPJm3yVvyHmyKaRvn90RjzB6hNnt0AkhS3IInJdyRfQb4mWhPvUjVw==
+  version "1.4.315"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.315.tgz#b60a6676b3a1db332cfc8919118344aa06b9ac99"
+  integrity sha512-ndBQYz3Eyy3rASjjQ9poMJGoAlsZ/aZnq6GBsGL4w/4sWIAwiUHVSsMuADbxa8WJw7pZ0oxLpGbtoDt4vRTdCg==
 
 emittery@^0.8.1:
   version "0.8.1"
@@ -2398,9 +2398,9 @@ lru-cache@^6.0.0:
     yallist "^4.0.0"
 
 lru-cache@^7.14.0:
-  version "7.17.0"
-  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-7.17.0.tgz#00c7ba5919e5ea7c69ff94ddabbf32cb09ab805c"
-  integrity sha512-zSxlVVwOabhVyTi6E8gYv2cr6bXK+8ifYz5/uyJb9feXX6NACVDwY4p5Ut3WC3Ivo/QhpARHU3iujx2xGAYHbQ==
+  version "7.18.1"
+  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-7.18.1.tgz#4716408dec51d5d0104732647f584d1f6738b109"
+  integrity sha512-8/HcIENyQnfUTCDizRu9rrDyG6XG/21M4X7/YEGZeD76ZJilFPAUVb/2zysFf7VVO1LEjCDFyHp8pMMvozIrvg==
 
 make-dir@^3.0.0:
   version "3.1.0"
