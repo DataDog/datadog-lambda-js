@@ -86,9 +86,10 @@ export const defaultConfig: Config = {
 let currentMetricsListener: MetricsListener | undefined;
 let currentTraceListener: TraceListener | undefined;
 
-if (getEnvValue(coldStartTracingEnvVar, "true")) {
+if (getEnvValue(coldStartTracingEnvVar, "true").toLowerCase() === "true") {
   subscribeToDC();
 }
+
 /**
  * Wraps your AWS lambda handler functions to add tracing/metrics support
  * @param handler A lambda handler function.
