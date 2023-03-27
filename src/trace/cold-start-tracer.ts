@@ -6,7 +6,6 @@ export interface ColdStartTracerConfig {
   tracerWrapper: TracerWrapper;
   parentSpan?: SpanWrapper;
   lambdaFunctionName?: string;
-  coldStartSpanFinishTime: number; // Equivalent to the Lambda Span Start Time
   minDuration: number;
   ignoreLibs: string;
 }
@@ -15,7 +14,6 @@ export class ColdStartTracer {
   private tracerWrapper: TracerWrapper;
   private parentSpan?: SpanWrapper;
   private lambdaFunctionName?: string;
-  private coldStartSpanFinishTime: number;
   private minDuration: number;
   private ignoreLibs: string[];
 
@@ -23,20 +21,20 @@ export class ColdStartTracer {
     this.tracerWrapper = coldStartTracerConfig.tracerWrapper;
     this.parentSpan = coldStartTracerConfig.parentSpan;
     this.lambdaFunctionName = coldStartTracerConfig.lambdaFunctionName;
-    this.coldStartSpanFinishTime = coldStartTracerConfig.coldStartSpanFinishTime;
     this.minDuration = coldStartTracerConfig.minDuration;
     this.ignoreLibs = coldStartTracerConfig.ignoreLibs.split(",");
   }
 
   trace(rootNodes: RequireNode[]) {
     const coldStartSpanStartTime = rootNodes[0]?.startTime;
-    const coldStartSpan = this.createColdStartSpan(coldStartSpanStartTime, this.parentSpan);
+    const coldStartSpanEndTime = rootNodes[rootNodes.length - 1 ]?.endTime;
+    const coldStartSpan = this.createColdStartSpan(coldStartSpanStartTime, coldStartSpanEndTime, this.parentSpan);
     for (const coldStartNode of rootNodes) {
       this.traceTree(coldStartNode, coldStartSpan);
     }
   }
 
-  private createColdStartSpan(startTime: number, parentSpan: SpanWrapper | undefined): SpanWrapper {
+  private createColdStartSpan(startTime: number, endTime: number, parentSpan: SpanWrapper | undefined): SpanWrapper {
     const options: SpanOptions = {
       tags: {
         service: "aws.lambda",
@@ -50,7 +48,7 @@ export class ColdStartTracer {
       options.childOf = parentSpan.span;
     }
     const newSpan = new SpanWrapper(this.tracerWrapper.startSpan("aws.lambda.load", options), {});
-    newSpan.finish(this.coldStartSpanFinishTime);
+    newSpan.finish(endTime);
     return newSpan;
   }
 
