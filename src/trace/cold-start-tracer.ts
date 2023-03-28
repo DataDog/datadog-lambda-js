@@ -27,7 +27,7 @@ export class ColdStartTracer {
 
   trace(rootNodes: RequireNode[]) {
     const coldStartSpanStartTime = rootNodes[0]?.startTime;
-    const coldStartSpanEndTime = rootNodes[rootNodes.length - 1 ]?.endTime;
+    const coldStartSpanEndTime = rootNodes[rootNodes.length - 1]?.endTime;
     const coldStartSpan = this.createColdStartSpan(coldStartSpanStartTime, coldStartSpanEndTime, this.parentSpan);
     for (const coldStartNode of rootNodes) {
       this.traceTree(coldStartNode, coldStartSpan);
