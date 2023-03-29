@@ -69,6 +69,7 @@ describe("ColdStartTracer", () => {
         name: "my-lambda-span",
       } as any as SpanWrapper,
       lambdaFunctionName: "my-function-name",
+      currentSpanStartTime: 500,
       minDuration: 1,
       ignoreLibs: "",
     };
@@ -158,6 +159,7 @@ describe("ColdStartTracer", () => {
         name: "my-lambda-span",
       } as any as SpanWrapper,
       lambdaFunctionName: "my-function-name",
+      currentSpanStartTime: 500,
       minDuration: 1,
       ignoreLibs: "myChildModule,myCoreModule",
     };

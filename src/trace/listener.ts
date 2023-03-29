@@ -162,6 +162,7 @@ export class TraceListener {
         tracerWrapper: this.tracerWrapper,
         parentSpan: this.inferredSpan || this.wrappedCurrentSpan,
         lambdaFunctionName: this.context?.functionName,
+        currentSpanStartTime: this.wrappedCurrentSpan?.startTime(),
         minDuration: this.config.minColdStartTraceDuration,
         ignoreLibs: this.config.coldStartTraceSkipLib,
       };
