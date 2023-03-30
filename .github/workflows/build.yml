@@ -84,7 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        runtime-param: [12, 14, 16, 18]
+        runtime-param: [14, 16, 18]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
