@@ -299,17 +299,17 @@
   dependencies:
     node-gyp-build "^3.9.0"
 
-"@datadog/native-iast-rewriter@1.1.2":
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/@datadog/native-iast-rewriter/-/native-iast-rewriter-1.1.2.tgz#793cbf92d218ec80d645be0830023656b81018ea"
-  integrity sha512-pigRfRtAjZjMjqIXyXb98S4aDnuHz/EmqpoxAajFZsNjBLM87YonwSY5zoBdCsOyA46ddKOJRoCQd5ZalpOFMQ==
+"@datadog/native-iast-rewriter@2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@datadog/native-iast-rewriter/-/native-iast-rewriter-2.0.1.tgz#dc4a23796870f2d840053ae879c61547eda6bb89"
+  integrity sha512-Mm+FG3XxEbPrAfJQPOMHts7iZZXRvg9gnGeeFRGkyirmRcQcOpZO4wFe/8K61DUVa5pXpgAJQ2ZkBGYF1O9STg==
   dependencies:
     node-gyp-build "^4.5.0"
 
-"@datadog/native-iast-taint-tracking@1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@datadog/native-iast-taint-tracking/-/native-iast-taint-tracking-1.1.0.tgz#8f7d0016157b32dbf5c01b15b8afb1c4286b4a18"
-  integrity sha512-TOrngpt6Qh52zWFOz1CkFXw0g43rnuUziFBtIMUsOLGzSHr9wdnTnE6HAyuvKy3f3ecAoZESlMfilGRKP93hXQ==
+"@datadog/native-iast-taint-tracking@1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@datadog/native-iast-taint-tracking/-/native-iast-taint-tracking-1.1.1.tgz#cbeace022b6c1f3a0a40dc0000cc40079c6d4895"
+  integrity sha512-VkESVYpVlLHqw38UHqqEYsJaJTp3+JpKIJhfB9nlQO13dYBc3Sgq/QJZNdPViU73SVsCJtuw4D0SXRyjTXP1IA==
   dependencies:
     node-gyp-build "^3.9.0"
 
@@ -320,17 +320,16 @@
   dependencies:
     node-gyp-build "^3.9.0"
 
-"@datadog/pprof@^1.1.1":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@datadog/pprof/-/pprof-1.1.1.tgz#17e86035140523ac3a96f3662e5dd29822042d61"
-  integrity sha512-5lYXUpikQhrJwzODtJ7aFM0oKmPccISnTCecuWhjxIj4/7UJv0DamkLak634bgEW+kiChgkKFDapHSesuXRDXQ==
+"@datadog/pprof@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@datadog/pprof/-/pprof-2.1.0.tgz#acc8a7a2a74442cfd725abc620a5f8505dbe1807"
+  integrity sha512-nHZ16CuwKfscNF2PKAEPMqdn5AsxHmvurwiFmPd65VoDXKWLX2Ourj/izgL/HJ4Q5LZS/yiV4lsM4d7Xwmw0zQ==
   dependencies:
     delay "^5.0.0"
-    findit2 "^2.2.3"
     node-gyp-build "^3.9.0"
     p-limit "^3.1.0"
     pify "^5.0.0"
-    protobufjs "^7.0.0"
+    pprof-format "^2.0.6"
     source-map "^0.7.3"
     split "^1.0.1"
 
@@ -744,11 +743,6 @@
   version "18.14.5"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-18.14.5.tgz#4a13a6445862159303fc38586598a9396fc408b3"
   integrity sha512-CRT4tMK/DHYhw1fcCEBwME9CSaZNclxfzVMe7GsO6ULSwsttbj70wSiX6rZdIjGblu93sTJxLdhNIT85KKI7Qw==
-
-"@types/node@<18.13":
-  version "18.11.19"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.11.19.tgz#35e26df9ec441ab99d73e99e9aca82935eea216d"
-  integrity sha512-YUgMWAQBWLObABqrvx8qKO1enAvBUdjZOAWQ5grBAkp5LQv45jBvYKZ3oFS9iKRCQyFjqw6iuEa1vmFqtxYLZw==
 
 "@types/node@^15.6.1":
   version "15.14.9"
@@ -1219,18 +1213,17 @@ data-urls@^2.0.0:
     whatwg-mimetype "^2.3.0"
     whatwg-url "^8.0.0"
 
-dd-trace@^2.27.0:
-  version "2.27.1"
-  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-2.27.1.tgz#5d3f66893e126d8d1fa837e4e0a36c06430afab1"
-  integrity sha512-TCg17UIkxkphub47jT9BOdIZnHhRT6nzF0BXd4GibI2ZNEQP15WIE4CWFdmXBOkF9Ja83OZj/5gGomYBZKjjwg==
+dd-trace@^3.16.0:
+  version "3.16.0"
+  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-3.16.0.tgz#baa76f9cfe047f16a995ace3d515d21d81944ed6"
+  integrity sha512-ogRsTotTF/dMzGVrULzEPShCf9MP6aHxNS5LQS0igvx7I/gJof0MTCXNGDhLY8X3KYRczolTkYTcJ3S4siiyGg==
   dependencies:
     "@datadog/native-appsec" "2.0.0"
-    "@datadog/native-iast-rewriter" "1.1.2"
-    "@datadog/native-iast-taint-tracking" "1.1.0"
+    "@datadog/native-iast-rewriter" "2.0.1"
+    "@datadog/native-iast-taint-tracking" "1.1.1"
     "@datadog/native-metrics" "^1.5.0"
-    "@datadog/pprof" "^1.1.1"
+    "@datadog/pprof" "^2.1.0"
     "@datadog/sketches-js" "^2.1.0"
-    "@types/node" "<18.13"
     crypto-randomuuid "^1.0.0"
     diagnostics_channel "^1.1.0"
     ignore "^5.2.0"
@@ -1462,11 +1455,6 @@ find-up@^4.0.0, find-up@^4.1.0:
   dependencies:
     locate-path "^5.0.0"
     path-exists "^4.0.0"
-
-findit2@^2.2.3:
-  version "2.2.3"
-  resolved "https://registry.yarnpkg.com/findit2/-/findit2-2.2.3.tgz#58a466697df8a6205cdfdbf395536b8bd777a5f6"
-  integrity sha512-lg/Moejf4qXovVutL0Lz4IsaPoNYMuxt4PA0nGqFxnJ1CTTGGlEO2wKgoDpwknhvZ8k4Q2F+eesgkLbG2Mxfog==
 
 for-each@^0.3.3:
   version "0.3.3"
@@ -2686,6 +2674,11 @@ pkg-dir@^4.2.0:
   dependencies:
     find-up "^4.0.0"
 
+pprof-format@^2.0.6:
+  version "2.0.7"
+  resolved "https://registry.yarnpkg.com/pprof-format/-/pprof-format-2.0.7.tgz#526e4361f8b37d16b2ec4bb0696b5292de5046a4"
+  integrity sha512-1qWaGAzwMpaXJP9opRa23nPnt2Egi7RMNoNBptEE/XwHbcn4fC2b/4U4bKc5arkGkIh2ZabpF2bEb+c5GNHEKA==
+
 prelude-ls@~1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/prelude-ls/-/prelude-ls-1.1.2.tgz#21932a549f5e52ffd9a827f570e04be62a97da54"
@@ -2736,7 +2729,7 @@ propagate@^2.0.0:
   resolved "https://registry.yarnpkg.com/propagate/-/propagate-2.0.1.tgz#40cdedab18085c792334e64f0ac17256d38f9a45"
   integrity sha512-vGrhOavPSTz4QVNuBNdcNXePNdNMaO1xj9yBeH1ScQPjk/rhg9sSlCXPhMkFuaNNW/syTvYqsnbIJxMBfRbbag==
 
-protobufjs@^7.0.0, protobufjs@^7.1.2:
+protobufjs@^7.1.2:
   version "7.2.2"
   resolved "https://registry.yarnpkg.com/protobufjs/-/protobufjs-7.2.2.tgz#2af401d8c547b9476fb37ffc65782cf302342ca3"
   integrity sha512-++PrQIjrom+bFDPpfmqXfAGSQs40116JRrqqyf53dymUMvvb5d/LMRyicRoF1AUKoXVS1/IgJXlEgcpr4gTF3Q==
