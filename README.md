@@ -6,7 +6,7 @@
 [![Slack](https://chat.datadoghq.com/badge.svg?bg=632CA6)](https://chat.datadoghq.com/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](https://github.com/DataDog/datadog-lambda-js/blob/main/LICENSE)
 
-Datadog Lambda Library for Node.js (12.x, 14.x, 16.x, and 18.x) enables enhanced Lambda metrics, distributed tracing, and custom metric submission from AWS Lambda functions.
+Datadog Lambda Library for Node.js (14.x, 16.x, and 18.x) enables enhanced Lambda metrics, distributed tracing, and custom metric submission from AWS Lambda functions.
 
 ## Installation
 
@@ -33,6 +33,10 @@ The first 5.x.x version was released with Lambda Layer version `69`.
 ### 6.x.x
 
 The 6.x.x release introduces support for the node 16 runtime and esm modules. 
+
+### 7.x.x
+
+The 7.x.x release drops support for Node12, and upgrades dd-trace-js to version 3.x
 
 #### Breaking Changes
 If you are using node 12 and installing the NPM module instead of the layer, redirecting your handler to the path `node_modules/datadog-lambda-js/dist/handler.handler` will no longer work. The path should be updated to `node_modules/datadog-lambda-js/dist/handler.handler.cjs`. This won't affect users of node 14, 16, or users of node 12 with the lambda layer.
