@@ -89,8 +89,7 @@ START
         "metrics": {
           "cold_start": 1,
           "_dd.measured": 1,
-          "process_id":XXXX,
-          "_sampling_priority_v1": 1
+          "process_id":XXXX
         },
         "start":XXXX,
         "duration":XXXX,
@@ -112,8 +111,7 @@ START
           "language": "javascript"
         },
         "metrics": {
-          "process_id":XXXX,
-          "_sampling_priority_v1": 1
+          "process_id":XXXX
         },
         "start":XXXX,
         "duration":XXXX,
@@ -200,8 +198,7 @@ START
         "metrics": {
           "cold_start": 0,
           "_dd.measured": 1,
-          "process_id":XXXX,
-          "_sampling_priority_v1": 1
+          "process_id":XXXX
         },
         "start":XXXX,
         "duration":XXXX,
@@ -213,7 +210,6 @@ START
 }
 END Duration: XXXX ms Memory Used: XXXX MB
 START
-END Duration: XXXX ms Memory Used: XXXX MB
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -289,8 +285,7 @@ END Duration: XXXX ms Memory Used: XXXX MB
         "metrics": {
           "cold_start": 0,
           "_dd.measured": 1,
-          "process_id":XXXX,
-          "_sampling_priority_v1": 1
+          "process_id":XXXX
         },
         "start":XXXX,
         "duration":XXXX,
@@ -300,3 +295,4 @@ END Duration: XXXX ms Memory Used: XXXX MB
     ]
   ]
 }
+END Duration: XXXX ms Memory Used: XXXX MB
