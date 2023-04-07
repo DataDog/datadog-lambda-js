@@ -11,6 +11,8 @@ import {
 } from "./index";
 import { incrementErrorsMetric, incrementInvocationsMetric } from "./metrics/enhanced-metrics";
 import { LogLevel, setLogLevel } from "./utils";
+import { HANDLER_STREAMING, STREAM_RESPONSE } from "./constants";
+import { PassThrough } from "stream";
 
 jest.mock("./metrics/enhanced-metrics");
 
@@ -333,5 +335,26 @@ describe("datadog", () => {
     expect(mockedIncrementInvocations).toBeCalledWith(expect.anything(), mockContext);
     expect(logger.debug).toHaveBeenCalledTimes(11);
     expect(logger.debug).toHaveBeenLastCalledWith('{"status":"debug","message":"datadog:Unpatching HTTP libraries"}');
+  });
+
+  it("adds stream symbol to function when handler is stream response type", async () => {
+    const handler: any = async (event: any, responseStream: any, context: Context) => {};
+
+    handler[HANDLER_STREAMING] = STREAM_RESPONSE;
+
+    const wrapped = datadog(handler);
+    const mockReadable = new PassThrough();
+    await wrapped({}, mockReadable, mockContext);
+
+    expect(wrapped[HANDLER_STREAMING]).toBe(STREAM_RESPONSE);
+  });
+
+  it("doesnt add stream symbol to function when handler is buffered type", async () => {
+    const handler: any = async (event: any, context: Context) => {};
+
+    const wrapped = datadog(handler);
+    await wrapped({}, mockContext);
+
+    expect(wrapped[HANDLER_STREAMING]).toBe(undefined);
   });
 });
