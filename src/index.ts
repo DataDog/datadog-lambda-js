@@ -43,7 +43,6 @@ export const coldStartTracingEnvVar = "DD_COLD_START_TRACING";
 export const minColdStartTraceDurationEnvVar = "DD_MIN_COLD_START_DURATION";
 export const coldStartTraceSkipLibEnvVar = "DD_COLD_START_TRACE_SKIP_LIB";
 
-
 interface GlobalConfig {
   /**
    * Whether to log extra information.
@@ -163,11 +162,16 @@ export function datadog<TEvent, TResult>(
         } = extractArgs(isResponseStreamFunction, ...localArgs);
 
         if (isResponseStreamFunction) {
-          responseStream.once('drain', () => {
+          responseStream.once("drain", () => {
             const firstDrainTime = new Date();
             const timeToFirstByte = firstDrainTime.getTime() - startTime.getTime();
-            metricsListener.sendDistributionMetric('aws.lambda.enhanced.time_to_first_byte', timeToFirstByte, true, ...getEnhancedMetricTags(context))
-          })
+            metricsListener.sendDistributionMetric(
+              "aws.lambda.enhanced.time_to_first_byte",
+              timeToFirstByte,
+              true,
+              ...getEnhancedMetricTags(context),
+            );
+          });
         }
 
         try {
