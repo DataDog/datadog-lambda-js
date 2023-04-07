@@ -147,12 +147,12 @@ export class TraceListener {
    * @param result
    * @param shouldTagPayload
    */
-  public onEndingInvocation(event: any, result: any, shouldTagPayload = false): boolean {
+  public onEndingInvocation(event: any, result: any, isResponseStreamFunction: boolean): boolean {
     // Guard clause if something has gone horribly wrong
     // so we won't crash user code.
     if (!this.tracerWrapper.currentSpan) return false;
     this.wrappedCurrentSpan = new SpanWrapper(this.tracerWrapper.currentSpan, {});
-    if (shouldTagPayload) {
+    if (this.config.captureLambdaPayload) {
       tagObject(this.tracerWrapper.currentSpan, "function.request", event);
       tagObject(this.tracerWrapper.currentSpan, "function.response", result);
     }
@@ -170,7 +170,7 @@ export class TraceListener {
       coldStartTracer.trace(coldStartNodes);
     }
     if (this.triggerTags) {
-      const statusCode = extractHTTPStatusCodeTag(this.triggerTags, result);
+      const statusCode = extractHTTPStatusCodeTag(this.triggerTags, result, isResponseStreamFunction);
 
       // Store the status tag in the listener to send to Xray on invocation completion
       this.triggerTags["http.status_code"] = statusCode!;

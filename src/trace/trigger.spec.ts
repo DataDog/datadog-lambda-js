@@ -109,7 +109,7 @@ describe("parseEventSource", () => {
     },
   ];
 
-  const responses = [
+  const bufferedResponses = [
     {
       responseBody: {
         statusCode: 200,
@@ -127,6 +127,27 @@ describe("parseEventSource", () => {
     {
       responseBody: undefined,
       expectedStatusCode: "502",
+    },
+  ];
+
+  const streamingResponses = [
+    {
+      responseBody: {
+        statusCode: 200,
+        body: '"Hello from Lambda!"',
+      },
+      expectedStatusCode: "200",
+    },
+    {
+      responseBody: {
+        statusCode: 404,
+        body: '"NOT FOUND"',
+      },
+      expectedStatusCode: "404",
+    },
+    {
+      responseBody: undefined,
+      expectedStatusCode: "200",
     },
   ];
 
@@ -148,13 +169,38 @@ describe("parseEventSource", () => {
     }
   });
 
-  it("extracts the status code if API Gateway or ALB, otherwise do nothing", () => {
+  it("extracts the status code if API Gateway, ALB, or Function URL, otherwise do nothing, for buffered functions", () => {
+    for (const event of events) {
+      const eventData = JSON.parse(readFileSync(`./event_samples/${event.file}`, "utf8"));
+      const triggerTags = extractTriggerTags(eventData, mockContext);
+      const isResponseStreamingFunction = false;
+      for (const response of bufferedResponses) {
+        const statusCode = extractHTTPStatusCodeTag(triggerTags, response.responseBody, isResponseStreamingFunction);
+        // We should always return a status code for API Gateway, ALB, and Lambda Function URL
+        if (
+          [
+            "api-gateway-v1.json",
+            "api-gateway-v2.json",
+            "application-load-balancer.json",
+            "lambda-function-urls.json",
+          ].includes(event.file)
+        ) {
+          expect(statusCode).toEqual(response.expectedStatusCode);
+        } else {
+          expect(statusCode).toBeUndefined();
+        }
+      }
+    }
+  });
+
+  it("extracts the status code if API Gateway, ALB, or Function URL, otherwise do nothing, for streaming functions", () => {
     for (let event of events) {
       const eventData = JSON.parse(readFileSync(`./event_samples/${event.file}`, "utf8"));
       const triggerTags = extractTriggerTags(eventData, mockContext);
-      for (let response of responses) {
-        const statusCode = extractHTTPStatusCodeTag(triggerTags, response.responseBody);
-        // We should always return a status code for API Gateway and ALB
+      const isResponseStreamingFunction = true;
+      for (const response of streamingResponses) {
+        const statusCode = extractHTTPStatusCodeTag(triggerTags, response.responseBody, isResponseStreamingFunction);
+        // We should always return a status code for API Gateway, ALB, and Lambda Function URL
         if (
           [
             "api-gateway-v1.json",
