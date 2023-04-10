@@ -1,4 +1,5 @@
 import { Context, Handler } from "aws-lambda";
+import { HANDLER_STREAMING, STREAM_RESPONSE } from "./constants";
 import {
   incrementErrorsMetric,
   incrementInvocationsMetric,
@@ -18,6 +19,7 @@ import {
   setLogger,
   setLogLevel,
 } from "./utils";
+import { getEnhancedMetricTags } from "./metrics/enhanced-metrics";
 
 export { TraceHeaders } from "./trace";
 
@@ -97,15 +99,15 @@ if (getEnvValue(coldStartTracingEnvVar, "true").toLowerCase() === "true") {
  * @returns A wrapped handler function.
  *
  * ```javascript
- * import { datadog } from 'datadog-lambda-layer';
+ * import { datadog } from 'datadog-lambda-js';
  * function yourHandler(event) {}
  * exports.yourHandler = datadog(yourHandler);
  * ```
  */
 export function datadog<TEvent, TResult>(
-  handler: Handler<TEvent, TResult>,
+  handler: Handler<TEvent, TResult> | any,
   config?: Partial<Config>,
-): Handler<TEvent, TResult> {
+): Handler<TEvent, TResult> | any {
   const finalConfig = getConfig(config);
   const metricsListener = new MetricsListener(new KMSService(), finalConfig);
 
@@ -122,9 +124,15 @@ export function datadog<TEvent, TResult>(
     setLogger(finalConfig.logger);
   }
 
-  const promHandler = promisifiedHandler(handler);
-  const wrappedFunc = async (event: TEvent, context: Context) => {
+  const isResponseStreamFunction =
+    handler[HANDLER_STREAMING] !== undefined && handler[HANDLER_STREAMING] === STREAM_RESPONSE;
+  const promHandler: any = promisifiedHandler(handler);
+
+  let wrappedFunc: any;
+  wrappedFunc = async (...args: any[]) => {
+    const { event, context, responseStream } = extractArgs(isResponseStreamFunction, ...args);
     setColdStart();
+    const startTime = new Date();
 
     currentMetricsListener = metricsListener;
     currentTraceListener = traceListener;
@@ -146,21 +154,46 @@ export function datadog<TEvent, TResult>(
     let error: any;
     let didThrow = false;
     try {
-      result = await traceListener.onWrap(async (localEvent: TEvent, localContext: Context) => {
+      const traceListenerOnWrap = async (...localArgs: any[]) => {
+        const {
+          event: localEvent,
+          context: localContext,
+          responseStream: localResponseStream,
+        } = extractArgs(isResponseStreamFunction, ...localArgs);
+
+        if (isResponseStreamFunction) {
+          responseStream.once("drain", () => {
+            const firstDrainTime = new Date();
+            const timeToFirstByte = firstDrainTime.getTime() - startTime.getTime();
+            metricsListener.sendDistributionMetric(
+              "aws.lambda.enhanced.time_to_first_byte",
+              timeToFirstByte,
+              true,
+              ...getEnhancedMetricTags(context),
+            );
+          });
+        }
+
         try {
-          localResult = await promHandler(localEvent, localContext);
+          localResult = isResponseStreamFunction
+            ? await promHandler(localEvent, localResponseStream, localContext)
+            : await promHandler(localEvent, localContext);
         } finally {
           const responseIs5xxError = traceListener.onEndingInvocation(
             localEvent,
             localResult,
-            finalConfig.captureLambdaPayload,
+            isResponseStreamFunction,
           );
           if (responseIs5xxError) {
             incrementErrorsMetric(metricsListener, context);
           }
         }
         return localResult;
-      })(event, context);
+      };
+
+      result = isResponseStreamFunction
+        ? await traceListener.onWrap(traceListenerOnWrap)(event, responseStream, context)
+        : await traceListener.onWrap(traceListenerOnWrap)(event, context);
     } catch (err) {
       didThrow = true;
       error = err;
@@ -186,7 +219,25 @@ export function datadog<TEvent, TResult>(
   };
 
   (wrappedFunc as any)[_ddWrappedKey] = true;
+
+  if (isResponseStreamFunction) {
+    (wrappedFunc as any)[HANDLER_STREAMING] = STREAM_RESPONSE;
+  }
+
   return wrappedFunc;
+}
+
+/**
+ *
+ * @param isResponseStreamFunction A boolean determining if a Lambda Function is Response Stream.
+ * @param args Spread arguments of a Lambda Function.
+ * @returns An object containing the context and the event of a Lambda Function.
+ */
+export function extractArgs<TEvent>(isResponseStreamFunction: boolean, ...args: any[]) {
+  const context: Context = isResponseStreamFunction ? args[2] : args.length > 0 ? (args[1] as Context) : {};
+  const event: TEvent = args[0];
+  const responseStream: any = isResponseStreamFunction ? args[1] : undefined;
+  return { context, event, responseStream };
 }
 
 /**

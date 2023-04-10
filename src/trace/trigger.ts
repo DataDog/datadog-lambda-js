@@ -344,11 +344,12 @@ export function extractTriggerTags(event: any, context: Context) {
 
 /**
  * extractHTTPStatusCode extracts a status code from the response if the Lambda was triggered
- * by API Gateway or ALB
+ * by API Gateway, ALB, or Lambda Function URL
  */
 export function extractHTTPStatusCodeTag(
   triggerTags: { [key: string]: string } | undefined,
   result: any,
+  isResponseStreamFunction: boolean,
 ): string | undefined {
   let eventSource: string | undefined;
   triggerTags ? (eventSource = triggerTags["function_trigger.event_source"]) : (eventSource = undefined);
@@ -357,8 +358,10 @@ export function extractHTTPStatusCodeTag(
   }
 
   const resultStatusCode = result?.statusCode;
-  // Return a 502 status if no response is found
-  if (result === undefined) {
+  // Return a 502 status if no response is found in
+  // any buffered function. Streaming functions returning
+  // undefined results will be marked as 200.
+  if (result === undefined && !isResponseStreamFunction) {
     return "502";
   } else if (resultStatusCode) {
     // Type check the statusCode if available

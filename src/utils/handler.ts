@@ -1,5 +1,6 @@
 import { Callback, Context, Handler } from "aws-lambda";
 import { logError } from "./log";
+import { HANDLER_STREAMING, STREAM_RESPONSE } from "../constants";
 
 export type OnWrapFunc<T = (...args: any[]) => any> = (fn: T) => T;
 
@@ -26,7 +27,7 @@ export function wrap<TEvent, TResult>(
     let result: TResult | undefined;
 
     let handlerError: Error | undefined;
-    let wrappedHandler = promHandler;
+    let wrappedHandler = promHandler as any;
     // Try to apply onWrap to the handler, and if it fails, fall back to the original
     // handler.
     try {
@@ -63,7 +64,17 @@ export function wrap<TEvent, TResult>(
   };
 }
 
-export function promisifiedHandler<TEvent, TResult>(handler: Handler<TEvent, TResult>) {
+export function promisifiedHandler<TEvent, TResult>(handler: Handler<TEvent, TResult> | any) {
+  // Response Stream Lambda function.
+  if (handler[HANDLER_STREAMING] !== undefined && handler[HANDLER_STREAMING] === STREAM_RESPONSE) {
+    return (event: any, responseStream: any, context: Context) => {
+      // This handler will always be a promise.
+      const promise = handler(event, responseStream, context) as Promise<unknown>;
+      return promise;
+    };
+  }
+
+  // Buffered Lambda function.
   return (event: TEvent, context: Context) => {
     // Lambda functions in node complete in one of two possible ways.
     // 1. By calling the "callback" function with a result.
