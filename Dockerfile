@@ -43,7 +43,6 @@ RUN rm -rf /nodejs/node_modules/hdr-histogram-js/build
 RUN rm -rf /nodejs/node_modules/protobufjs/dist
 RUN rm -rf /nodejs/node_modules/protobufjs/cli
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/linux-arm
-RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/linuxmusl-x64
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/darwin-arm64
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/darwin-x64
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/win32-ia32
