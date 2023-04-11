@@ -38,8 +38,12 @@ The 6.x.x release introduces support for the node 16 runtime and esm modules.
 
 The 7.x.x release drops support for Node12, and upgrades dd-trace-js to version 3.x
 
-#### Breaking Changes
-If you are using node 12 and installing the NPM module instead of the layer, redirecting your handler to the path `node_modules/datadog-lambda-js/dist/handler.handler` will no longer work. The path should be updated to `node_modules/datadog-lambda-js/dist/handler.handler.cjs`. This won't affect users of node 14, 16, or users of node 12 with the lambda layer.
+There is a full migration guide available [here](https://github.com/DataDog/dd-trace-js/blob/master/MIGRATING.md).
+Some changes are more likely to impact Serverless users:
+- `HTTP Operation Name Changed`. HTTP requests will no longer appear as a separate client under `*-http-client`, which polluted the APM service catalog.
+- `tracer.currentSpan()` has been deprecated for a long time, and is now removed.
+- `tracer.bindEmitter()` is similarly removed after being deprecated.
+- It is no longer possible to [bind promises or event emitters with tracer.scope().bind(...)](https://github.com/DataDog/dd-trace-js/blob/master/MIGRATING.md#scope-binding-for-promises-and-event-emitters)
 
 ## Opening Issues
 
