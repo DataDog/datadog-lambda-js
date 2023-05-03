@@ -22,11 +22,11 @@ describe("tagObject", () => {
         keyOne: "foobar",
         myObject: {
           anotherKey: ["array", "of", "values"],
-          nestedBoolean: false
+          nestedBoolean: false,
         },
         val: null,
         number: 1,
-        aBoolean: true
+        aBoolean: true,
       },
     });
     expect(setTag.mock.calls).toEqual([
