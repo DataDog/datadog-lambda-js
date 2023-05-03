@@ -138,7 +138,7 @@ export function datadog<TEvent, TResult>(
     currentTraceListener = traceListener;
 
     try {
-      traceListener.onStartInvocation(event, context);
+      await traceListener.onStartInvocation(event, context);
       await metricsListener.onStartInvocation(event);
       if (finalConfig.enhancedMetrics) {
         incrementInvocationsMetric(metricsListener, context);

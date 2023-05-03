@@ -20,7 +20,7 @@ import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 import { SpanInferrer } from "./span-inferrer";
 import { SpanWrapper } from "./span-wrapper";
 import { getTraceTree } from "../runtime/index";
-export type TraceExtractor = (event: any, context: Context) => TraceContext;
+export type TraceExtractor = (event: any, context: Context) => Promise<TraceContext> | TraceContext;
 
 export interface TraceConfig {
   /**
@@ -88,7 +88,7 @@ export class TraceListener {
     this.inferrer = new SpanInferrer(this.tracerWrapper);
   }
 
-  public onStartInvocation(event: any, context: Context) {
+  public async onStartInvocation(event: any, context: Context) {
     const tracerInitialized = this.tracerWrapper.isTracerAvailable;
     if (this.config.injectLogContext) {
       patchConsole(console, this.contextService);
@@ -104,7 +104,7 @@ export class TraceListener {
     } else {
       logDebug("Not patching HTTP libraries", { autoPatchHTTP: this.config.autoPatchHTTP, tracerInitialized });
     }
-    const rootTraceHeaders = this.contextService.extractHeadersFromContext(
+    const rootTraceHeaders = await this.contextService.extractHeadersFromContext(
       event,
       context,
       this.config.traceExtractor,

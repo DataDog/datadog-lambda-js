@@ -21,13 +21,13 @@ export class TraceContextService {
 
   constructor(private tracerWrapper: TracerWrapper) {}
 
-  extractHeadersFromContext(
+  async extractHeadersFromContext(
     event: any,
     context: Context,
     extractor?: TraceExtractor,
     decodeAuthorizerContext: boolean = true,
-  ): Partial<TraceHeaders> | undefined {
-    this.rootTraceContext = extractTraceContext(event, context, extractor, decodeAuthorizerContext);
+  ): Promise<Partial<TraceHeaders> | undefined> {
+    this.rootTraceContext = await extractTraceContext(event, context, extractor, decodeAuthorizerContext);
     return this.currentTraceHeaders;
   }
 
