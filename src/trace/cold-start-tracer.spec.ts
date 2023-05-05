@@ -2,9 +2,12 @@ import { RequireNode } from "../runtime/require-tracer";
 import { ColdStartTracerConfig, ColdStartTracer } from "./cold-start-tracer";
 import { TracerWrapper, SpanOptions } from "./tracer-wrapper";
 import { SpanWrapper } from "./span-wrapper";
+import { loadTracer } from "../runtime/module_importer.js";
 
 let mockStartSpan: jest.Mock<any, any>;
 let mockFinishSpan: jest.Mock<any, any>;
+
+const tracer = loadTracer();
 
 jest.mock("./tracer-wrapper", () => {
   mockFinishSpan = jest.fn();
@@ -63,7 +66,7 @@ describe("ColdStartTracer", () => {
       } as any as RequireNode,
     ];
     const coldStartConfig: ColdStartTracerConfig = {
-      tracerWrapper: new TracerWrapper(),
+      tracerWrapper: new TracerWrapper(tracer),
       parentSpan: {
         span: {},
         name: "my-lambda-span",
@@ -154,7 +157,7 @@ describe("ColdStartTracer", () => {
       } as any as RequireNode,
     ];
     const coldStartConfig: ColdStartTracerConfig = {
-      tracerWrapper: new TracerWrapper(),
+      tracerWrapper: new TracerWrapper(tracer),
       parentSpan: {
         span: {},
         name: "my-lambda-span",

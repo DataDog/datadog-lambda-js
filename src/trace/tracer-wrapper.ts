@@ -2,6 +2,7 @@ import { logDebug } from "../utils";
 import { SampleMode, Source } from "./constants";
 import { TraceContext } from "./context";
 import { TraceHeaders } from "./trace-context-service";
+import { Tracer } from "dd-trace";
 
 export interface SpanContext {
   toTraceId(): string;
@@ -24,24 +25,28 @@ export interface TraceOptions {
   childOf?: SpanContext;
 }
 
+export function initTracer(tracer: Tracer): Tracer {
+  tracer.init({
+    tags: {
+      "_dd.origin": "lambda",
+    },
+  });
+  logDebug("automatically initialized dd-trace");
+
+  // Configure the tracer to ignore HTTP calls made from the Lambda Library to the Extension
+  tracer.use("http", {
+    blocklist: /:8124\/lambda/,
+  });
+  return tracer;
+}
+
 // TraceWrapper is used to remove dd-trace as a hard dependency from the npm package.
 // This lets a customer bring their own version of the tracer.
 export class TracerWrapper {
-  private tracer: any;
+  private readonly tracer: any;
 
-  constructor() {
-    try {
-      // Try and use the same version of the tracing library the user has installed.
-      // This handles edge cases where two versions of dd-trace are installed, one in the layer
-      // and one in the user's code.
-      const path = require.resolve("dd-trace", { paths: ["/var/task/node_modules", ...module.paths] });
-      this.tracer = require(path);
-      return;
-    } catch (err) {
-      if (err instanceof Object || err instanceof Error) {
-        logDebug("Couldn't require dd-trace from main", err);
-      }
-    }
+  constructor(tracer: Tracer) {
+    this.tracer = tracer;
   }
 
   public get isTracerAvailable(): boolean {

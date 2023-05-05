@@ -7,15 +7,17 @@ const {
 } = require("./index.js");
 const { logDebug, logError } = require("./utils/index.js");
 const { loadSync } = require("./runtime/index.js");
-const { initTracer } = require("./runtime/module_importer");
+const { loadTracer } = require("./runtime/module_importer.js");
+const { initTracer } = require("./trace/index.js");
 
 if (process.env.DD_TRACE_DISABLED_PLUGINS === undefined) {
   process.env.DD_TRACE_DISABLED_PLUGINS = "fs";
   logDebug("disabled the dd-trace plugin 'fs'");
 }
 
+const tracer = loadTracer();
 if (getEnvValue("DD_TRACE_ENABLED", "true").toLowerCase() === "true") {
-  initTracer();
+  initTracer(tracer);
 }
 
 const taskRootEnv = getEnvValue(lambdaTaskRootEnvVar, "");
@@ -32,4 +34,4 @@ if (extractorEnv) {
   }
 }
 
-exports.handler = datadog(loadSync(taskRootEnv, handlerEnv), { traceExtractor });
+exports.handler = datadog(loadSync(taskRootEnv, handlerEnv), tracer, { traceExtractor });

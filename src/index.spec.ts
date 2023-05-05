@@ -13,6 +13,7 @@ import { incrementErrorsMetric, incrementInvocationsMetric } from "./metrics/enh
 import { LogLevel, setLogLevel } from "./utils";
 import { HANDLER_STREAMING, STREAM_RESPONSE } from "./constants";
 import { PassThrough } from "stream";
+import { loadTracer } from "./runtime/module_importer.js";
 
 jest.mock("./metrics/enhanced-metrics");
 
@@ -27,6 +28,8 @@ const mockContext = {
 // const MockedListener = OriginalListenerModule.MetricsListener as jest.Mocked<
 //   typeof OriginalListenerModule.MetricsListener
 // >;
+
+const tracer = loadTracer();
 
 describe("datadog", () => {
   let traceId: string | undefined;
@@ -60,7 +63,7 @@ describe("datadog", () => {
 
   it("patches http request when autoPatch enabled", async () => {
     nock("http://www.example.com").get("/").reply(200, {});
-    const wrapped = datadog(handler, { forceWrap: true });
+    const wrapped = datadog(handler, tracer, { forceWrap: true });
     await wrapped(
       {
         headers: {
@@ -81,7 +84,7 @@ describe("datadog", () => {
   });
   it("doesn't patch http requests when autoPatch is disabled", async () => {
     nock("http://www.example.com").get("/").reply(200, {});
-    const wrapped = datadog(handler, { autoPatchHTTP: false, forceWrap: true });
+    const wrapped = datadog(handler, tracer, { autoPatchHTTP: false, forceWrap: true });
     await wrapped(
       {
         headers: {
@@ -115,6 +118,7 @@ describe("datadog", () => {
         sendDistributionMetric("my-dist", 100, "first-tag", "second-tag");
         return "";
       },
+      tracer,
       { forceWrap: true },
     );
     await wrapped({}, {} as any, () => {});
@@ -137,6 +141,7 @@ describe("datadog", () => {
         sendDistributionMetric("my-dist", 100, "first-tag", "second-tag");
         return "";
       },
+      tracer,
       { apiKey, forceWrap: true },
     );
     await wrapped({}, {} as any, () => {});
@@ -159,6 +164,7 @@ describe("datadog", () => {
         sendDistributionMetric("my-dist", 100, "first-tag", "second-tag");
         return "";
       },
+      tracer,
       { apiKey, forceWrap: true },
     );
     await wrapped({}, {} as any, () => {});
@@ -181,6 +187,7 @@ describe("datadog", () => {
         sendDistributionMetricWithDate("my-dist", 100, new Date(), "first-tag", "second-tag");
         return "";
       },
+      tracer,
       { apiKey, forceWrap: true },
     );
     await wrapped({}, {} as any, () => {});
@@ -203,6 +210,7 @@ describe("datadog", () => {
         traceHeaders = getTraceHeaders();
         return "";
       },
+      tracer,
       { forceWrap: true },
     );
     await wrapped(event, {} as any, () => {});
@@ -228,6 +236,7 @@ describe("datadog", () => {
         console.log("Hello");
         return "";
       },
+      tracer,
       { injectLogContext: true, forceWrap: true },
     );
 
@@ -252,6 +261,7 @@ describe("datadog", () => {
         console.log("Hello");
         return "";
       },
+      tracer,
       { forceWrap: true },
     );
 
@@ -260,7 +270,7 @@ describe("datadog", () => {
   });
 
   it("increments invocations for each function call", async () => {
-    const wrapped = datadog(handler, { forceWrap: true });
+    const wrapped = datadog(handler, tracer, { forceWrap: true });
 
     await wrapped({}, mockContext, () => {});
 
@@ -279,7 +289,7 @@ describe("datadog", () => {
       throw Error("Some error");
     };
 
-    const wrappedHandler = datadog(handlerError, { forceWrap: true });
+    const wrappedHandler = datadog(handlerError, tracer, { forceWrap: true });
 
     const result = wrappedHandler({}, mockContext, () => {});
     await expect(result).rejects.toEqual(Error("Some error"));
@@ -296,7 +306,7 @@ describe("datadog", () => {
       throw Error("Some error");
     };
 
-    const wrappedHandler = datadog(handlerError, { enhancedMetrics: false, forceWrap: true });
+    const wrappedHandler = datadog(handlerError, tracer, { enhancedMetrics: false, forceWrap: true });
 
     const result = wrappedHandler({}, mockContext, () => {});
     await expect(result).rejects.toEqual(Error("Some error"));
@@ -312,7 +322,7 @@ describe("datadog", () => {
       throw Error("Some error");
     };
 
-    const wrappedHandler = datadog(handlerError, { forceWrap: true });
+    const wrappedHandler = datadog(handlerError, tracer, { forceWrap: true });
 
     const result = wrappedHandler({}, mockContext, () => {});
     await expect(result).rejects.toEqual(Error("Some error"));
@@ -327,7 +337,7 @@ describe("datadog", () => {
       error: jest.fn(),
     };
 
-    const wrapped = datadog(handler, { forceWrap: true, logger: logger, debugLogging: true });
+    const wrapped = datadog(handler, tracer, { forceWrap: true, logger: logger, debugLogging: true });
 
     await wrapped({}, mockContext, () => {});
 
@@ -342,7 +352,7 @@ describe("datadog", () => {
 
     handler[HANDLER_STREAMING] = STREAM_RESPONSE;
 
-    const wrapped = datadog(handler);
+    const wrapped = datadog(handler, tracer);
     const mockReadable = new PassThrough();
     await wrapped({}, mockReadable, mockContext);
 
@@ -352,7 +362,7 @@ describe("datadog", () => {
   it("doesnt add stream symbol to function when handler is buffered type", async () => {
     const handler: any = async (event: any, context: Context) => {};
 
-    const wrapped = datadog(handler);
+    const wrapped = datadog(handler, tracer);
     await wrapped({}, mockContext);
 
     expect(wrapped[HANDLER_STREAMING]).toBe(undefined);

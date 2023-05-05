@@ -20,6 +20,7 @@ import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 import { SpanInferrer } from "./span-inferrer";
 import { SpanWrapper } from "./span-wrapper";
 import { getTraceTree, clearTraceTree } from "../runtime/index";
+import { Tracer } from "dd-trace";
 export type TraceExtractor = (event: any, context: Context) => Promise<TraceContext> | TraceContext;
 
 export interface TraceConfig {
@@ -82,8 +83,8 @@ export class TraceListener {
     return this.contextService.currentTraceHeaders;
   }
 
-  constructor(private config: TraceConfig) {
-    this.tracerWrapper = new TracerWrapper();
+  constructor(private readonly tracer: Tracer, private config: TraceConfig) {
+    this.tracerWrapper = new TracerWrapper(tracer);
     this.contextService = new TraceContextService(this.tracerWrapper);
     this.inferrer = new SpanInferrer(this.tracerWrapper);
   }

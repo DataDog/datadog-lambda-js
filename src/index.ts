@@ -20,8 +20,9 @@ import {
   setLogLevel,
 } from "./utils";
 import { getEnhancedMetricTags } from "./metrics/enhanced-metrics";
+import { Tracer } from "dd-trace";
 
-export { TraceHeaders } from "./trace";
+export { TraceHeaders, initTracer } from "./trace";
 
 export const apiKeyEnvVar = "DD_API_KEY";
 export const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
@@ -95,6 +96,7 @@ if (getEnvValue(coldStartTracingEnvVar, "true").toLowerCase() === "true") {
 /**
  * Wraps your AWS lambda handler functions to add tracing/metrics support
  * @param handler A lambda handler function.
+ * @param tracer The tracer to be used.
  * @param config Configuration options for datadog.
  * @returns A wrapped handler function.
  *
@@ -106,12 +108,13 @@ if (getEnvValue(coldStartTracingEnvVar, "true").toLowerCase() === "true") {
  */
 export function datadog<TEvent, TResult>(
   handler: Handler<TEvent, TResult> | any,
+  tracer: Tracer,
   config?: Partial<Config>,
 ): Handler<TEvent, TResult> | any {
   const finalConfig = getConfig(config);
   const metricsListener = new MetricsListener(new KMSService(), finalConfig);
 
-  const traceListener = new TraceListener(finalConfig);
+  const traceListener = new TraceListener(tracer, finalConfig);
 
   // Only wrap the handler once unless forced
   const _ddWrappedKey = "_ddWrapped";

@@ -1,5 +1,6 @@
 import { TracerWrapper } from "./tracer-wrapper";
 import { Source, SampleMode } from "./constants";
+import { loadTracer } from "../runtime/module_importer.js";
 
 let mockNoTracer = false;
 let mockTracerInitialised = false;
@@ -35,27 +36,32 @@ describe("TracerWrapper", () => {
     delete process.env["AWS_LAMBDA_FUNCTION_NAME"];
   });
   it("isTracerAvailable should return true when dd-trace is present and initialised", () => {
-    const wrapper = new TracerWrapper();
+    const tracer = loadTracer();
+    const wrapper = new TracerWrapper(tracer);
     expect(wrapper.isTracerAvailable).toBeTruthy();
   });
   it("isTracerAvailable should return false when dd-trace is present and uninitialised", () => {
     mockNoTracer = false;
     mockTracerInitialised = false;
-    const wrapper = new TracerWrapper();
+    const tracer = loadTracer();
+    const wrapper = new TracerWrapper(tracer);
     expect(wrapper.isTracerAvailable).toBeFalsy();
   });
   it("isTracerAvailable should return false when dd-trace is absent", () => {
     mockNoTracer = true;
-    const wrapper = new TracerWrapper();
+    const tracer = loadTracer();
+    const wrapper = new TracerWrapper(tracer);
     expect(wrapper.isTracerAvailable).toBeFalsy();
   });
   it("should extract span context when dd-trace is present", () => {
-    const wrapper = new TracerWrapper();
+    const tracer = loadTracer();
+    const wrapper = new TracerWrapper(tracer);
     expect(wrapper.extract({})).toBe(mockSpanContext);
   });
   it("shouldn't extract span context when dd-trace is absent", () => {
     mockNoTracer = true;
-    const wrapper = new TracerWrapper();
+    const tracer = loadTracer();
+    const wrapper = new TracerWrapper(tracer);
     expect(wrapper.extract({})).toBeNull();
   });
 
@@ -69,7 +75,8 @@ describe("TracerWrapper", () => {
         toTraceId: () => traceID,
       }),
     };
-    const wrapper = new TracerWrapper();
+    const tracer = loadTracer();
+    const wrapper = new TracerWrapper(tracer);
     const traceContext = wrapper.traceContext();
     expect(traceContext).toEqual({
       parentID: spanID,
@@ -79,7 +86,8 @@ describe("TracerWrapper", () => {
     });
   });
   it("should return undefined when no span is available", () => {
-    const wrapper = new TracerWrapper();
+    const tracer = loadTracer();
+    const wrapper = new TracerWrapper(tracer);
     const traceContext = wrapper.traceContext();
     expect(traceContext).toBeUndefined();
   });
