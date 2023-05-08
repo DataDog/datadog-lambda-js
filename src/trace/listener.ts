@@ -256,7 +256,7 @@ export class TraceListener {
         dd_trace: ddtraceVersion,
       };
       if (isProactiveInitialization()) {
-        options.tags["proactive_initialization"] = true;
+        options.tags.proactive_initialization = true;
       }
       if (
         (this.contextService.traceSource === Source.Xray && this.config.mergeDatadogXrayTraces) ||
