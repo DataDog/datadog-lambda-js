@@ -106,7 +106,7 @@ describe("TraceListener", () => {
 
   it("wraps dd-trace span around invocation", async () => {
     const listener = new TraceListener(defaultConfig);
-    listener.onStartInvocation({}, context as any);
+    await listener.onStartInvocation({}, context as any);
     const unwrappedFunc = () => {};
     const wrappedFunc = listener.onWrap(unwrappedFunc);
     wrappedFunc();
@@ -141,7 +141,7 @@ describe("TraceListener", () => {
       "x-datadog-trace-id": "4110911582297405551",
     };
     mockTraceSource = Source.Event;
-    listener.onStartInvocation({}, context as any);
+    await listener.onStartInvocation({}, context as any);
     const unwrappedFunc = () => {};
     const wrappedFunc = listener.onWrap(unwrappedFunc);
     wrappedFunc();
@@ -179,7 +179,7 @@ describe("TraceListener", () => {
     };
     mockTraceSource = Source.Xray;
 
-    listener.onStartInvocation({}, context as any);
+    await listener.onStartInvocation({}, context as any);
     const unwrappedFunc = () => {};
     const wrappedFunc = listener.onWrap(unwrappedFunc);
     wrappedFunc();
@@ -215,7 +215,7 @@ describe("TraceListener", () => {
     };
     mockTraceSource = Source.Xray;
 
-    listener.onStartInvocation({}, context as any);
+    await listener.onStartInvocation({}, context as any);
     const unwrappedFunc = () => {};
     const wrappedFunc = listener.onWrap(unwrappedFunc);
     wrappedFunc();
@@ -246,7 +246,7 @@ describe("TraceListener", () => {
 
   it("wraps dd-trace span around invocation, with function alias", async () => {
     const listener = new TraceListener(defaultConfig);
-    listener.onStartInvocation({}, contextWithFunctionAlias as any);
+    await listener.onStartInvocation({}, contextWithFunctionAlias as any);
     const unwrappedFunc = () => {};
     const wrappedFunc = listener.onWrap(unwrappedFunc);
     wrappedFunc();
@@ -275,7 +275,7 @@ describe("TraceListener", () => {
 
   it("wraps dd-trace span around invocation, with function version", async () => {
     const listener = new TraceListener(defaultConfig);
-    listener.onStartInvocation({}, contextWithFunctionVersion as any);
+    await listener.onStartInvocation({}, contextWithFunctionVersion as any);
     const unwrappedFunc = () => {};
     const wrappedFunc = listener.onWrap(unwrappedFunc);
     wrappedFunc();
