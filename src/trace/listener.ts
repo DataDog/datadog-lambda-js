@@ -12,7 +12,7 @@ import { extractTriggerTags, extractHTTPStatusCodeTag } from "./trigger";
 import { ColdStartTracerConfig, ColdStartTracer } from "./cold-start-tracer";
 
 import { logDebug, tagObject } from "../utils";
-import { didFunctionColdStart } from "../utils/cold-start";
+import { didFunctionColdStart, isProactiveInitialization } from "../utils/cold-start";
 import { datadogLambdaVersion } from "../constants";
 import { Source, ddtraceVersion, parentSpanFinishTimeHeader, authorizingRequestIdHeader } from "./constants";
 import { patchConsole } from "./patch-console";
@@ -157,7 +157,7 @@ export class TraceListener {
       tagObject(this.tracerWrapper.currentSpan, "function.response", result);
     }
     const coldStartNodes = getTraceTree();
-    if (coldStartNodes.length > 0 && didFunctionColdStart()) {
+    if (coldStartNodes.length > 0 && (didFunctionColdStart() || isProactiveInitialization())) {
       const coldStartConfig: ColdStartTracerConfig = {
         tracerWrapper: this.tracerWrapper,
         parentSpan: this.inferredSpan || this.wrappedCurrentSpan,
@@ -255,6 +255,9 @@ export class TraceListener {
         datadog_lambda: datadogLambdaVersion,
         dd_trace: ddtraceVersion,
       };
+      if (isProactiveInitialization()) {
+        options.tags["proactive_initialization"] = true;
+      }
       if (
         (this.contextService.traceSource === Source.Xray && this.config.mergeDatadogXrayTraces) ||
         this.contextService.traceSource === Source.Event
