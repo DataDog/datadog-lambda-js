@@ -10,9 +10,9 @@ let isColdStartSet = false;
  * For subsequent executions isColdStartSet will be true and functionDidColdStart will be false
  */
 export function setSandboxInit(initTime: number, invocationStartTime: number) {
-  if (!isColdStartSet && (invocationStartTime - initTime) > 10_000) {
-    proactiveInitialization =  true
-    functionDidColdStart = false
+  if (!isColdStartSet && invocationStartTime - initTime > 10_000) {
+    proactiveInitialization = true;
+    functionDidColdStart = false;
   } else {
     functionDidColdStart = !isColdStartSet;
     proactiveInitialization = false;
@@ -34,7 +34,7 @@ export function getSandboxInitTags(): string[] {
     tags.push("proactive_initialization:true");
   }
 
-  return tags
+  return tags;
 }
 
 // For testing, reset the globals to their original values

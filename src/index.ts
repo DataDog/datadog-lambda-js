@@ -92,7 +92,7 @@ if (getEnvValue(coldStartTracingEnvVar, "true").toLowerCase() === "true") {
   subscribeToDC();
 }
 
-const initTime = Date.now()
+const initTime = Date.now();
 
 /**
  * Wraps your AWS lambda handler functions to add tracing/metrics support
@@ -134,7 +134,7 @@ export function datadog<TEvent, TResult>(
   wrappedFunc = async (...args: any[]) => {
     const { event, context, responseStream } = extractArgs(isResponseStreamFunction, ...args);
     const startTime = new Date();
-    setSandboxInit(initTime, startTime.getTime())
+    setSandboxInit(initTime, startTime.getTime());
 
     currentMetricsListener = metricsListener;
     currentTraceListener = traceListener;
