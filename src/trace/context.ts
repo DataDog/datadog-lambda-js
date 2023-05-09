@@ -102,17 +102,17 @@ export function deterministicMd5HashToBigIntString(s: string): string {
  * Reads the trace context from either an incoming lambda event, or the current xray segment.
  * @param event An incoming lambda event. This must have incoming trace headers in order to be read.
  */
-export function extractTraceContext(
+export async function extractTraceContext(
   event: any,
   context: Context,
   extractor?: TraceExtractor,
   decodeAuthorizerContext: boolean = true,
-): TraceContext | undefined {
+): Promise<TraceContext | undefined> {
   let trace;
 
   if (extractor) {
     try {
-      trace = extractor(event, context);
+      trace = await extractor(event, context);
       logDebug(`extracted trace context from the custom extractor`, { trace });
     } catch (error) {
       if (error instanceof Error) {
