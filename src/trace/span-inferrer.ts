@@ -89,6 +89,7 @@ export class SpanInferrer {
       "span.type": "http",
       "resource.name": resourceName,
       "service.name": domain,
+      "peer.service": context?.functionName,
       apiid: event.requestContext.apiId,
       service: domain,
       _inferred_span: {
@@ -183,6 +184,7 @@ export class SpanInferrer {
       "span.type": "http",
       "resource.name": resourceName,
       "service.name": domain,
+      "peer.service": context?.functionName,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "sync",
@@ -217,6 +219,7 @@ export class SpanInferrer {
       "span.type": "web",
       "resource.name": resourceName,
       service: "aws.dynamodb",
+      "peer.service": context?.functionName,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -261,6 +264,7 @@ export class SpanInferrer {
       "span.type": "sns",
       "resource.name": resourceName,
       service: "sns",
+      "peer.service": context?.functionName,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -297,6 +301,7 @@ export class SpanInferrer {
       "span.type": "sns",
       "resource.name": resourceName,
       service: "sns",
+      "peer.service": context?.functionName,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -340,6 +345,7 @@ export class SpanInferrer {
       "span.type": "web",
       "resource.name": resourceName,
       "service.name": resourceName,
+      "peer.service": context?.functionName,
       service: "sqs",
       _inferred_span: {
         tag_source: "self",
@@ -401,6 +407,7 @@ export class SpanInferrer {
       "span.type": "web",
       "resource.name": streamName,
       service: "kinesis",
+      "peer.service": context?.functionName,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -446,6 +453,7 @@ export class SpanInferrer {
       "span.type": "web",
       "resource.name": bucketName,
       service: "s3",
+      "peer.service": context?.functionName,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -481,6 +489,7 @@ export class SpanInferrer {
       "span.type": "web",
       "resource.name": source,
       service: "eventbridge",
+      "peer.service": context?.functionName,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",

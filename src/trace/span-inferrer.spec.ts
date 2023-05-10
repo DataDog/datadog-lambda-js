@@ -1,3 +1,4 @@
+import { Context } from "aws-lambda";
 import { SpanInferrer } from "./span-inferrer";
 import { SpanContext, TracerWrapper } from "./tracer-wrapper";
 const snssqsEvent = require("../../event_samples/snssqs.json");
@@ -22,6 +23,10 @@ const functionUrlEvent = require("../../event_samples/lambda-function-urls.json"
 const mockWrapper = {
   startSpan: jest.fn(),
 };
+const mockContext = {
+  functionName: "mock-lambda",
+  awsRequestId: "mock-request-id" 
+} as any as Context;
 
 describe("SpanInferrer", () => {
   beforeEach(() => {
@@ -30,7 +35,7 @@ describe("SpanInferrer", () => {
 
   it("creates an inferred span for sns events", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
-    inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(snsEvent, mockContext, {} as SpanContext);
 
     expect(mockWrapper.startSpan).toBeCalledWith("aws.sns", {
       childOf: {},
@@ -40,7 +45,8 @@ describe("SpanInferrer", () => {
         event_subscription_arn: "arn:aws:sns:us-east-1:123456789012:ExampleTopic",
         message_id: "95df01b4-ee98-5cb9-9903-4c221d41eb5e",
         operation_name: "aws.sns",
-        request_id: undefined,
+        "peer.service": "mock-lambda",
+        request_id: "mock-request-id",
         "resource.name": "ExampleTopic",
         resource_names: "ExampleTopic",
         service: "sns",
@@ -55,7 +61,7 @@ describe("SpanInferrer", () => {
 
   it("creates an inferred span for sqs events", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
-    inferrer.createInferredSpan(sqsEvent, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(sqsEvent, mockContext, {} as SpanContext);
 
     expect(mockWrapper.startSpan).toBeCalledWith("aws.sqs", {
       childOf: {},
@@ -64,9 +70,10 @@ describe("SpanInferrer", () => {
         _inferred_span: { synchronicity: "async", tag_source: "self" },
         event_source_arn: "arn:aws:sqs:us-east-1:123456789012:MyQueue",
         operation_name: "aws.sqs",
+        "peer.service": "mock-lambda",
         queuename: "MyQueue",
         receipt_handle: "MessageReceiptHandle",
-        request_id: undefined,
+        request_id: "mock-request-id",
         "resource.name": "MyQueue",
         resource_names: "MyQueue",
         retry_count: 1,
@@ -80,7 +87,7 @@ describe("SpanInferrer", () => {
 
   it("creates an inferred span for ddb events", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
-    inferrer.createInferredSpan(ddbEvent, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(ddbEvent, mockContext, {} as SpanContext);
 
     expect(mockWrapper.startSpan).toBeCalledWith("aws.dynamodb", {
       childOf: {},
@@ -94,7 +101,8 @@ describe("SpanInferrer", () => {
           "arn:aws:dynamodb:us-east-1:123456789012:table/ExampleTableWithStream/stream/2015-06-27T00:48:05.899",
         event_version: "1.1",
         operation_name: "aws.dynamodb",
-        request_id: undefined,
+        "peer.service": "mock-lambda",
+        request_id: "mock-request-id",
         "resource.name": "INSERT ExampleTableWithStream",
         resource_names: "INSERT ExampleTableWithStream",
         service: "aws.dynamodb",
@@ -107,7 +115,7 @@ describe("SpanInferrer", () => {
 
   it("creates an inferred span for kinesis events", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
-    inferrer.createInferredSpan(kinesisEvent, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(kinesisEvent, mockContext, {} as SpanContext);
 
     expect(mockWrapper.startSpan).toBeCalledWith("aws.kinesis", {
       childOf: {},
@@ -119,8 +127,9 @@ describe("SpanInferrer", () => {
         event_source_arn: "arn:aws:kinesis:EXAMPLE",
         event_version: "1.0",
         operation_name: "aws.kinesis",
+        "peer.service": "mock-lambda",
         partition_key: "cdbfd750-cec0-4f0f-a4b0-82ae6152c7fb",
-        request_id: undefined,
+        request_id: "mock-request-id",
         "resource.name": "EXAMPLE",
         resource_names: "EXAMPLE",
         service: "kinesis",
@@ -133,7 +142,7 @@ describe("SpanInferrer", () => {
 
   it("creates an inferred span for sns sqs events", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
-    inferrer.createInferredSpan(snssqsEvent, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(snssqsEvent, mockContext, {} as SpanContext);
 
     expect(mockWrapper.startSpan.mock.calls).toEqual([
       [
@@ -145,6 +154,7 @@ describe("SpanInferrer", () => {
             _inferred_span: { synchronicity: "async", tag_source: "self" },
             message_id: "0a0ab23e-4861-5447-82b7-e8094ff3e332",
             operation_name: "aws.sns",
+            "peer.service": "mock-lambda",
             "resource.name": "js-library-test-dev-demoTopic-15WGUVRCBMPAA",
             resource_names: "js-library-test-dev-demoTopic-15WGUVRCBMPAA",
             service: "sns",
@@ -165,10 +175,11 @@ describe("SpanInferrer", () => {
             _inferred_span: { synchronicity: "async", tag_source: "self" },
             event_source_arn: "arn:aws:sqs:eu-west-1:601427279990:aj-js-library-test-dev-demo-queue",
             operation_name: "aws.sqs",
+            "peer.service": "mock-lambda",
             queuename: "aj-js-library-test-dev-demo-queue",
             receipt_handle:
               "AQEBER6aRkfG8092GvkL7FRwCwbQ7LLDW9Tlk/CembqHe+suS2kfFxXiukomvaIN61QoyQMoRgWuV52SDkiQno2u+5hP64BDbmw+e/KR9ayvIfHJ3M6RfyQLaWNWm3hDFBCKTnBMVIxtdx0N9epZZewyokjKcrNYtmCghFgTCvZzsQkowi5rnoHAVHJ3je1c3bDnQ1KLrZFgajDnootYXDwEPuMq5FIxrf4EzTe0S7S+rnRm+GaQfeBLBVAY6dASL9usV3/AFRqDtaI7GKI+0F2NCgLlqj49VlPRz4ldhkGknYlKTZTluAqALWLJS62/J1GQo53Cs3nneJcmu5ajB2zzmhhRXoXINEkLhCD5ujZfcsw9H4xqW69Or4ECvlqx14bUU2rtMIW0QM2p7pEeXnyocymQv6m1te113eYWTVmaJ4I=",
-            request_id: undefined,
+            request_id: "mock-request-id",
             "resource.name": "aj-js-library-test-dev-demo-queue",
             resource_names: "aj-js-library-test-dev-demo-queue",
             retry_count: 1,
@@ -184,7 +195,7 @@ describe("SpanInferrer", () => {
 
   it("creates an inferred span for eventbridge events", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
-    inferrer.createInferredSpan(eventBridgeEvent, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(eventBridgeEvent, mockContext, {} as SpanContext);
 
     expect(mockWrapper.startSpan).toBeCalledWith("aws.eventbridge", {
       childOf: {},
@@ -192,7 +203,8 @@ describe("SpanInferrer", () => {
       tags: {
         _inferred_span: { synchronicity: "async", tag_source: "self" },
         operation_name: "aws.eventbridge",
-        request_id: undefined,
+        "peer.service": "mock-lambda",
+        request_id: "mock-request-id",
         "resource.name": "my.event",
         resource_names: "my.event",
         service: "eventbridge",
@@ -203,7 +215,7 @@ describe("SpanInferrer", () => {
 
   it("creates an inferred span for websocket events", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
-    inferrer.createInferredSpan(webSocketEvent, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(webSocketEvent, mockContext, {} as SpanContext);
 
     expect(mockWrapper.startSpan).toBeCalledWith("aws.apigateway", {
       childOf: {},
@@ -217,7 +229,8 @@ describe("SpanInferrer", () => {
         "http.url": "08se3mvh28.execute-api.eu-west-1.amazonaws.com$connect",
         message_direction: "IN",
         operation_name: "aws.apigateway",
-        request_id: undefined,
+        "peer.service": "mock-lambda",
+        request_id: "mock-request-id",
         "resource.name": "08se3mvh28.execute-api.eu-west-1.amazonaws.com $connect",
         resource_names: "08se3mvh28.execute-api.eu-west-1.amazonaws.com $connect",
         service: "08se3mvh28.execute-api.eu-west-1.amazonaws.com",
@@ -229,7 +242,7 @@ describe("SpanInferrer", () => {
 
   it("creates an inferred span for API Gateway V1 events", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
-    inferrer.createInferredSpan(apiGatewayV1, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(apiGatewayV1, mockContext, {} as SpanContext);
 
     expect(mockWrapper.startSpan).toBeCalledWith("aws.apigateway", {
       childOf: {},
@@ -241,7 +254,8 @@ describe("SpanInferrer", () => {
         "http.url": "id.execute-api.us-east-1.amazonaws.com/my/path",
         domain_name: "id.execute-api.us-east-1.amazonaws.com",
         operation_name: "aws.apigateway",
-        request_id: undefined,
+        "peer.service": "mock-lambda",
+        request_id: "mock-request-id",
         "http.method": "GET",
         "resource.name": "GET /path",
         resource_names: "GET /path",
@@ -255,7 +269,7 @@ describe("SpanInferrer", () => {
 
   it("creates an inferred span for API Gateway V2 events", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
-    inferrer.createInferredSpan(apiGatewayV2, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(apiGatewayV2, mockContext, {} as SpanContext);
 
     expect(mockWrapper.startSpan).toBeCalledWith("aws.apigateway", {
       childOf: {},
@@ -267,7 +281,8 @@ describe("SpanInferrer", () => {
         "http.url": "r3pmxmplak.execute-api.us-east-2.amazonaws.com/default/nodejs-apig-function-1G3XMPLZXVXYI",
         domain_name: "r3pmxmplak.execute-api.us-east-2.amazonaws.com",
         operation_name: "aws.apigateway",
-        request_id: undefined,
+        "peer.service": "mock-lambda",
+        request_id: "mock-request-id",
         "http.method": "GET",
         "resource.name": "GET /default/nodejs-apig-function-1G3XMPLZXVXYI",
         resource_names: "GET /default/nodejs-apig-function-1G3XMPLZXVXYI",
@@ -281,7 +296,7 @@ describe("SpanInferrer", () => {
 
   it("creates an inferred span for Lambda Function URL Events", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
-    inferrer.createInferredSpan(functionUrlEvent, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(functionUrlEvent, mockContext, {} as SpanContext);
 
     expect(mockWrapper.startSpan).toBeCalledWith("aws.lambda.url", {
       childOf: {},
@@ -295,7 +310,8 @@ describe("SpanInferrer", () => {
         "http.method": "GET",
         "http.url": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com/",
         operation_name: "aws.lambda.url",
-        request_id: undefined,
+        "peer.service": "mock-lambda",
+        request_id: "mock-request-id",
         "resource.name": "GET /",
         resource_names: "GET /",
         "service.name": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com",
@@ -306,7 +322,7 @@ describe("SpanInferrer", () => {
 
   it("creates an inferred span for s3 events", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
-    inferrer.createInferredSpan(s3Event, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(s3Event, mockContext, {} as SpanContext);
 
     expect(mockWrapper.startSpan).toBeCalledWith("aws.s3", {
       childOf: {},
@@ -320,7 +336,8 @@ describe("SpanInferrer", () => {
         object_key: "test/key",
         object_size: 1024,
         operation_name: "aws.s3",
-        request_id: undefined,
+        "peer.service": "mock-lambda",
+        request_id: "mock-request-id",
         "resource.name": "example-bucket",
         resource_names: "example-bucket",
         service: "s3",
@@ -355,7 +372,7 @@ describe("Authorizer Spans", () => {
 
   it("creates an inferred span for API Gateway V1 event with traced authorizers [Request Type]", () => {
     const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
-    inferrer.createInferredSpan(apiGatewayV1RequestAuthorizer, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(apiGatewayV1RequestAuthorizer, mockContext, {} as SpanContext);
     expect(mockWrapperWithFinish.startSpan.mock.calls[0]).toEqual([
       "aws.apigateway.authorizer",
       {
@@ -369,7 +386,8 @@ describe("Authorizer Spans", () => {
           "http.method": "POST",
           "http.url": "3gsxz7lha4.execute-api.eu-west-1.amazonaws.com/dev/hello",
           operation_name: "aws.apigateway",
-          request_id: undefined,
+          "peer.service": "mock-lambda",
+          request_id: "mock-request-id",
           "resource.name": "POST /hello",
           resource_names: "POST /hello",
           service: "3gsxz7lha4.execute-api.eu-west-1.amazonaws.com",
@@ -392,7 +410,8 @@ describe("Authorizer Spans", () => {
           "http.method": "POST",
           "http.url": "3gsxz7lha4.execute-api.eu-west-1.amazonaws.com/dev/hello",
           operation_name: "aws.apigateway",
-          request_id: undefined,
+          "peer.service": "mock-lambda",
+          request_id: "mock-request-id",
           "resource.name": "POST /hello",
           resource_names: "POST /hello",
           service: "3gsxz7lha4.execute-api.eu-west-1.amazonaws.com",
@@ -406,7 +425,7 @@ describe("Authorizer Spans", () => {
 
   it("No inferred span for API Gateway V1 event with CACHED authorizers [Request Type]", () => {
     const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
-    inferrer.createInferredSpan(apiGatewayV1RequestAuthorizerCached, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(apiGatewayV1RequestAuthorizerCached, mockContext, {} as SpanContext);
     expect(mockWrapperWithFinish.startSpan.mock.calls[0]).toEqual([
       "aws.apigateway",
       {
@@ -420,7 +439,8 @@ describe("Authorizer Spans", () => {
           "http.method": "POST",
           "http.url": "3gsxz7lha4.execute-api.eu-west-1.amazonaws.com/dev/hello",
           operation_name: "aws.apigateway",
-          request_id: undefined,
+          "peer.service": "mock-lambda",
+          request_id: "mock-request-id",
           "resource.name": "POST /hello",
           resource_names: "POST /hello",
           service: "3gsxz7lha4.execute-api.eu-west-1.amazonaws.com",
@@ -434,7 +454,7 @@ describe("Authorizer Spans", () => {
 
   it("creates an inferred span for API Gateway V1 event with traced authorizers [Token Type]", () => {
     const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
-    inferrer.createInferredSpan(apiGatewayV1TokenAuthorizer, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(apiGatewayV1TokenAuthorizer, mockContext, {} as SpanContext);
     expect(mockWrapperWithFinish.startSpan.mock.calls[0]).toEqual([
       "aws.apigateway.authorizer",
       {
@@ -448,7 +468,8 @@ describe("Authorizer Spans", () => {
           "http.method": "GET",
           "http.url": "4dyr9xqip7.execute-api.eu-west-1.amazonaws.com/dev/hi",
           operation_name: "aws.apigateway",
-          request_id: undefined,
+          "peer.service": "mock-lambda",
+        request_id: "mock-request-id",
           "resource.name": "GET /hi",
           resource_names: "GET /hi",
           service: "4dyr9xqip7.execute-api.eu-west-1.amazonaws.com",
@@ -471,7 +492,8 @@ describe("Authorizer Spans", () => {
           "http.method": "GET",
           "http.url": "4dyr9xqip7.execute-api.eu-west-1.amazonaws.com/dev/hi",
           operation_name: "aws.apigateway",
-          request_id: undefined,
+          "peer.service": "mock-lambda",
+          request_id: "mock-request-id",
           "resource.name": "GET /hi",
           resource_names: "GET /hi",
           service: "4dyr9xqip7.execute-api.eu-west-1.amazonaws.com",
@@ -485,7 +507,7 @@ describe("Authorizer Spans", () => {
 
   it("No inferred span for API Gateway V1 event with CACHED authorizers [Token Type]", () => {
     const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
-    inferrer.createInferredSpan(apiGatewayV1TokenAuthorizerCached, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(apiGatewayV1TokenAuthorizerCached, mockContext, {} as SpanContext);
     expect(mockWrapperWithFinish.startSpan.mock.calls[0]).toEqual([
       "aws.apigateway",
       {
@@ -499,7 +521,8 @@ describe("Authorizer Spans", () => {
           "http.method": "GET",
           "http.url": "4dyr9xqip7.execute-api.eu-west-1.amazonaws.com/dev/hi",
           operation_name: "aws.apigateway",
-          request_id: undefined,
+          "peer.service": "mock-lambda",
+          request_id: "mock-request-id",
           "resource.name": "GET /hi",
           resource_names: "GET /hi",
           service: "4dyr9xqip7.execute-api.eu-west-1.amazonaws.com",
@@ -513,7 +536,7 @@ describe("Authorizer Spans", () => {
 
   it("connects the inferred span for API Gateway V2 event with traced authorizers [Request Type]", () => {
     const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
-    inferrer.createInferredSpan(apiGatewayV2RequestAuthorizer, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(apiGatewayV2RequestAuthorizer, mockContext, {} as SpanContext);
     expect(mockWrapperWithFinish.startSpan.mock.calls[0]).toEqual([
       "aws.apigateway",
       {
@@ -527,7 +550,8 @@ describe("Authorizer Spans", () => {
           "http.method": "GET",
           "http.url": "l9flvsey83.execute-api.eu-west-1.amazonaws.com/hello",
           operation_name: "aws.httpapi",
-          request_id: undefined,
+          "peer.service": "mock-lambda",
+          request_id: "mock-request-id",
           "resource.name": "GET /hello",
           resource_names: "GET /hello",
           service: "l9flvsey83.execute-api.eu-west-1.amazonaws.com",
@@ -541,7 +565,7 @@ describe("Authorizer Spans", () => {
 
   it("No inferred span for API Gateway V2 event with CACHED authorizers [Request Type]", () => {
     const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
-    inferrer.createInferredSpan(apiGatewayV2TokenAuthorizerCached, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(apiGatewayV2TokenAuthorizerCached, mockContext, {} as SpanContext);
     expect(mockWrapperWithFinish.startSpan.mock.calls[0]).toEqual([
       "aws.apigateway",
       {
@@ -555,7 +579,8 @@ describe("Authorizer Spans", () => {
           "http.method": "GET",
           "http.url": "l9flvsey83.execute-api.eu-west-1.amazonaws.com/hello",
           operation_name: "aws.apigateway",
-          request_id: undefined,
+          "peer.service": "mock-lambda",
+          request_id: "mock-request-id",
           "resource.name": "GET /hello",
           resource_names: "GET /hello",
           service: "l9flvsey83.execute-api.eu-west-1.amazonaws.com",
@@ -569,7 +594,7 @@ describe("Authorizer Spans", () => {
 
   it("creates an inferred span for API Gateway Websocket Connect event with traced authorizers [Request Type]", () => {
     const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
-    inferrer.createInferredSpan(apiGatewayWSSRequestAuthorizerConnect, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(apiGatewayWSSRequestAuthorizerConnect, mockContext, {} as SpanContext);
     expect(mockWrapperWithFinish.startSpan.mock.calls[0]).toEqual([
       "aws.apigateway.authorizer",
       {
@@ -584,7 +609,8 @@ describe("Authorizer Spans", () => {
           "http.url": "85fj5nw29d.execute-api.eu-west-1.amazonaws.com$connect",
           message_direction: "IN",
           operation_name: "aws.apigateway",
-          request_id: undefined,
+          "peer.service": "mock-lambda",
+          request_id: "mock-request-id",
           "resource.name": "85fj5nw29d.execute-api.eu-west-1.amazonaws.com $connect",
           resource_names: "85fj5nw29d.execute-api.eu-west-1.amazonaws.com $connect",
           service: "85fj5nw29d.execute-api.eu-west-1.amazonaws.com",
@@ -607,7 +633,8 @@ describe("Authorizer Spans", () => {
           "http.url": "85fj5nw29d.execute-api.eu-west-1.amazonaws.com$connect",
           message_direction: "IN",
           operation_name: "aws.apigateway",
-          request_id: undefined,
+          "peer.service": "mock-lambda",
+          request_id: "mock-request-id",
           "resource.name": "85fj5nw29d.execute-api.eu-west-1.amazonaws.com $connect",
           resource_names: "85fj5nw29d.execute-api.eu-west-1.amazonaws.com $connect",
           service: "85fj5nw29d.execute-api.eu-west-1.amazonaws.com",
@@ -620,7 +647,7 @@ describe("Authorizer Spans", () => {
 
   it("No inferred span for API Gateway Websocket Message event with traced authorizers [Request Type]", () => {
     const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
-    inferrer.createInferredSpan(apiGatewayWSSRequestAuthorizerMessage, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(apiGatewayWSSRequestAuthorizerMessage, mockContext, {} as SpanContext);
     expect(mockWrapperWithFinish.startSpan.mock.calls[0]).toEqual([
       "aws.apigateway",
       {
@@ -635,7 +662,8 @@ describe("Authorizer Spans", () => {
           "http.url": "85fj5nw29d.execute-api.eu-west-1.amazonaws.comhello",
           message_direction: "IN",
           operation_name: "aws.apigateway",
-          request_id: undefined,
+          "peer.service": "mock-lambda",
+          request_id: "mock-request-id",
           "resource.name": "85fj5nw29d.execute-api.eu-west-1.amazonaws.com hello",
           resource_names: "85fj5nw29d.execute-api.eu-west-1.amazonaws.com hello",
           service: "85fj5nw29d.execute-api.eu-west-1.amazonaws.com",
