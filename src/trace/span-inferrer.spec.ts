@@ -25,7 +25,7 @@ const mockWrapper = {
 };
 const mockContext = {
   functionName: "mock-lambda",
-  awsRequestId: "mock-request-id" 
+  awsRequestId: "mock-request-id",
 } as any as Context;
 
 describe("SpanInferrer", () => {
@@ -469,7 +469,7 @@ describe("Authorizer Spans", () => {
           "http.url": "4dyr9xqip7.execute-api.eu-west-1.amazonaws.com/dev/hi",
           operation_name: "aws.apigateway",
           "peer.service": "mock-lambda",
-        request_id: "mock-request-id",
+          request_id: "mock-request-id",
           "resource.name": "GET /hi",
           resource_names: "GET /hi",
           service: "4dyr9xqip7.execute-api.eu-west-1.amazonaws.com",
