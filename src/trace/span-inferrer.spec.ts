@@ -414,10 +414,10 @@ describe("SpanInferrer", () => {
   it("remaps API Gateway inferred span service name based on DD_SERVICE_MAPPING", () => {
     // Set the environment variable
     process.env.DD_SERVICE_MAPPING = "api_gateway:new-name";
-  
+
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(webSocketEvent, {} as any, {} as SpanContext);
-  
+
     expect(mockWrapper.startSpan).toBeCalledWith("aws.apigateway", {
       childOf: {},
       startTime: 1642607783913,
@@ -438,7 +438,7 @@ describe("SpanInferrer", () => {
         "span.type": "http",
       },
     });
-  });  
+  });
 
   it("creates an inferred span for API Gateway V1 events", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
@@ -511,7 +511,7 @@ describe("SpanInferrer", () => {
         request_id: undefined,
         "resource.name": "GET /",
         resource_names: "GET /",
-        "service": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com",
+        service: "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com",
         "service.name": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com",
         "span.type": "http",
       },
@@ -521,7 +521,7 @@ describe("SpanInferrer", () => {
   it("remaps Lambda URL inferred span service name based on DD_SERVICE_MAPPING", () => {
     // Set the environment variable
     process.env.DD_SERVICE_MAPPING = "lambda_url:new-name";
-    
+
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(functionUrlEvent, {} as any, {} as SpanContext);
 
@@ -541,7 +541,7 @@ describe("SpanInferrer", () => {
         "resource.name": "GET /",
         resource_names: "GET /",
         "service.name": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com",
-        "service": "new-name",
+        service: "new-name",
         "span.type": "http",
       },
     });
