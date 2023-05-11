@@ -18,8 +18,10 @@ import { decodeAuthorizerContextEnvVar } from "../index";
 
 export class SpanInferrer {
   traceWrapper: TracerWrapper;
+  serviceMapping: Record<string, string>;
   constructor(traceWrapper: TracerWrapper) {
     this.traceWrapper = traceWrapper;
+    this.serviceMapping = this.getServiceMapping();
   }
 
   public createInferredSpan(
@@ -62,6 +64,20 @@ export class SpanInferrer {
     return "sync";
   }
 
+  getServiceMapping(): Record<string, string> {
+    const serviceMapping = process.env.DD_SERVICE_MAPPING || "";
+    const mapping: Record<string, string> = {};
+
+    serviceMapping.split(",").forEach((entry) => {
+      const [key, value] = entry.split(":");
+      if (key && value) {
+        mapping[key.trim()] = value.trim();
+      }
+    });
+
+    return mapping;
+  }
+
   createInferredSpanForApiGateway(
     event: any,
     context: Context | undefined,
@@ -80,6 +96,8 @@ export class SpanInferrer {
       method = event.requestContext.http.method;
     }
     const resourceName = [method || domain, resourcePath].join(" ");
+    const serviceName = this.serviceMapping.api_gateway || domain;
+
     options.tags = {
       operation_name: "aws.apigateway",
       "http.url": domain + path,
@@ -90,7 +108,7 @@ export class SpanInferrer {
       "resource.name": resourceName,
       "service.name": domain,
       apiid: event.requestContext.apiId,
-      service: domain,
+      service: serviceName,
       _inferred_span: {
         tag_source: "self",
         synchronicity: this.isApiGatewayAsync(event),
@@ -173,6 +191,7 @@ export class SpanInferrer {
       method = event.requestContext.http.method;
     }
     const resourceName = [method || domain, path].join(" ");
+    const serviceName = this.serviceMapping.lambda_url || domain;
     options.tags = {
       operation_name: "aws.lambda.url",
       "http.url": domain + path,
@@ -183,6 +202,7 @@ export class SpanInferrer {
       "span.type": "http",
       "resource.name": resourceName,
       "service.name": domain,
+      service: serviceName,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "sync",
@@ -209,6 +229,7 @@ export class SpanInferrer {
     const { eventSourceARN, eventName, eventVersion, eventID, dynamodb } = referenceRecord;
     const [tableArn, tableName] = eventSourceARN?.split("/") || [undefined, undefined];
     const resourceName = `${eventName} ${tableName}`;
+    const serviceName = this.serviceMapping.dynamodb || "aws.dynamodb";
     options.tags = {
       operation_name: "aws.dynamodb",
       tablename: tableName,
@@ -216,7 +237,7 @@ export class SpanInferrer {
       request_id: context?.awsRequestId,
       "span.type": "web",
       "resource.name": resourceName,
-      service: "aws.dynamodb",
+      service: serviceName,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -254,13 +275,14 @@ export class SpanInferrer {
     } = referenceRecord;
     const topicName = TopicArn?.split(":").pop();
     const resourceName = topicName;
+    const serviceName = this.serviceMapping.sns || "sns";
     options.tags = {
       operation_name: "aws.sns",
       resource_names: resourceName,
       request_id: context?.awsRequestId,
       "span.type": "sns",
       "resource.name": resourceName,
-      service: "sns",
+      service: serviceName,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -291,12 +313,13 @@ export class SpanInferrer {
     const { TopicArn, Timestamp, Type, Subject, MessageId } = event;
     const topicName = TopicArn?.split(":").pop();
     const resourceName = topicName;
+    const serviceName = this.serviceMapping.sns || "sns";
     options.tags = {
       operation_name: "aws.sns",
       resource_names: resourceName,
       "span.type": "sns",
       "resource.name": resourceName,
-      service: "sns",
+      service: serviceName,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -333,6 +356,8 @@ export class SpanInferrer {
     } = referenceRecord;
     const queueName = eventSourceARN?.split(":").pop();
     const resourceName = queueName;
+    const serviceName = this.serviceMapping.sqs || "sqs";
+
     options.tags = {
       operation_name: "aws.sqs",
       resource_names: resourceName,
@@ -340,7 +365,7 @@ export class SpanInferrer {
       "span.type": "web",
       "resource.name": resourceName,
       "service.name": resourceName,
-      service: "sqs",
+      service: serviceName,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -394,13 +419,14 @@ export class SpanInferrer {
     } = referenceRecord;
     const streamName = eventSourceARN?.split(":").pop();
     const shardId = eventID.split(":").pop();
+    const serviceName = this.serviceMapping.kinesis || "kinesis";
     options.tags = {
       operation_name: "aws.kinesis",
       resource_names: streamName,
       request_id: context?.awsRequestId,
       "span.type": "web",
       "resource.name": streamName,
-      service: "kinesis",
+      service: serviceName,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -439,13 +465,14 @@ export class SpanInferrer {
       eventTime,
       eventName,
     } = referenceRecord;
+    const serviceName = this.serviceMapping.s3 || "s3";
     options.tags = {
       operation_name: "aws.s3",
       resource_names: bucketName,
       request_id: context?.awsRequestId,
       "span.type": "web",
       "resource.name": bucketName,
-      service: "s3",
+      service: serviceName,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -474,13 +501,14 @@ export class SpanInferrer {
   ): SpanWrapper {
     const options: SpanOptions = {};
     const { time, source } = event as EventBridgeEvent<any, any>;
+    const serviceName = this.serviceMapping.eventbridge || "eventbridge";
     options.tags = {
       operation_name: "aws.eventbridge",
       resource_names: source,
       request_id: context?.awsRequestId,
       "span.type": "web",
       "resource.name": source,
-      service: "eventbridge",
+      service: serviceName,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
