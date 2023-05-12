@@ -65,16 +65,16 @@ export class SpanInferrer {
   static getServiceMapping(serviceName: string): string | undefined {
     const serviceMapping = process.env.DD_SERVICE_MAPPING || "";
     const mapping: Record<string, string> = {};
-  
+
     serviceMapping.split(",").forEach((entry) => {
       const [key, value] = entry.split(":");
       if (key && value) {
         mapping[key.trim()] = value.trim();
       }
     });
-  
+
     return mapping[serviceName];
-  }  
+  }
 
   createInferredSpanForApiGateway(
     event: any,
