@@ -11,15 +11,17 @@ import {
 import { SpanContext, SpanOptions, TracerWrapper } from "./tracer-wrapper";
 import { eventSubTypes, eventTypes, parseEventSource, parseEventSourceSubType } from "./trigger";
 import { SpanWrapper } from "./span-wrapper";
-import { parentSpanFinishTimeHeader } from "./constants";
+import { DD_SERVICE_ENV_VAR, parentSpanFinishTimeHeader } from "./constants";
 import { logDebug } from "../utils";
 import { getInjectedAuthorizerData } from "./context";
 import { decodeAuthorizerContextEnvVar } from "../index";
 
 export class SpanInferrer {
   traceWrapper: TracerWrapper;
+  service?: string;
   constructor(traceWrapper: TracerWrapper) {
     this.traceWrapper = traceWrapper;
+    this.service = process.env[DD_SERVICE_ENV_VAR];
   }
 
   public createInferredSpan(
@@ -89,7 +91,7 @@ export class SpanInferrer {
       "span.type": "http",
       "resource.name": resourceName,
       "service.name": domain,
-      "peer.service": context?.functionName,
+      "peer.service": this.service,
       apiid: event.requestContext.apiId,
       service: domain,
       _inferred_span: {
@@ -184,7 +186,7 @@ export class SpanInferrer {
       "span.type": "http",
       "resource.name": resourceName,
       "service.name": domain,
-      "peer.service": context?.functionName,
+      "peer.service": this.service,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "sync",
@@ -219,7 +221,7 @@ export class SpanInferrer {
       "span.type": "web",
       "resource.name": resourceName,
       service: "aws.dynamodb",
-      "peer.service": context?.functionName,
+      "peer.service": this.service,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -264,7 +266,7 @@ export class SpanInferrer {
       "span.type": "sns",
       "resource.name": resourceName,
       service: "sns",
-      "peer.service": context?.functionName,
+      "peer.service": this.service,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -301,7 +303,7 @@ export class SpanInferrer {
       "span.type": "sns",
       "resource.name": resourceName,
       service: "sns",
-      "peer.service": context?.functionName,
+      "peer.service": this.service,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -345,7 +347,7 @@ export class SpanInferrer {
       "span.type": "web",
       "resource.name": resourceName,
       "service.name": resourceName,
-      "peer.service": context?.functionName,
+      "peer.service": this.service,
       service: "sqs",
       _inferred_span: {
         tag_source: "self",
@@ -407,7 +409,7 @@ export class SpanInferrer {
       "span.type": "web",
       "resource.name": streamName,
       service: "kinesis",
-      "peer.service": context?.functionName,
+      "peer.service": this.service,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -453,7 +455,7 @@ export class SpanInferrer {
       "span.type": "web",
       "resource.name": bucketName,
       service: "s3",
-      "peer.service": context?.functionName,
+      "peer.service": this.service,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -489,7 +491,7 @@ export class SpanInferrer {
       "span.type": "web",
       "resource.name": source,
       service: "eventbridge",
-      "peer.service": context?.functionName,
+      "peer.service": this.service,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
