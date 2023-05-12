@@ -41,7 +41,6 @@ START
           "operation_name": "aws.apigateway",
           "resource_names": "GET /{proxy+}",
           "request_id":"XXXX",
-          "peer.service": "integration-tests-js-XXXX-process-input-traced_node16",
           "apiid":"XXXX",
           "_inferred_span.tag_source": "self",
           "_inferred_span.synchronicity": "sync",
@@ -208,7 +207,6 @@ START
           "operation_name": "aws.sns",
           "resource_names": "sns-lambda",
           "request_id":"XXXX",
-          "peer.service": "integration-tests-js-XXXX-process-input-traced_node16",
           "_inferred_span.tag_source": "self",
           "_inferred_span.synchronicity": "async",
           "type": "Notification",
@@ -305,7 +303,6 @@ START
   ],
   "v": 1
 }
-END Duration: XXXX ms Memory Used: XXXX MB
 {
   "e": XXXX,
   "m": "serverless.integration_test.execution",
@@ -333,7 +330,6 @@ END Duration: XXXX ms Memory Used: XXXX MB
           "operation_name": "aws.sqs",
           "resource_names": "my-queue",
           "request_id":"XXXX",
-          "peer.service": "integration-tests-js-XXXX-process-input-traced_node16",
           "_inferred_span.tag_source": "self",
           "_inferred_span.synchronicity": "async",
           "queuename": "my-queue",
@@ -412,3 +408,4 @@ END Duration: XXXX ms Memory Used: XXXX MB
     ]
   ]
 }
+END Duration: XXXX ms Memory Used: XXXX MB
