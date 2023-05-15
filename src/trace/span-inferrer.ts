@@ -256,7 +256,7 @@ export class SpanInferrer {
 
     // If neither mapping is found, default to "aws.dynamodb"
     const serviceName = tableArnMapping || dynamoDbMapping || "aws.dynamodb";
-    //const serviceName = SpanInferrer.getServiceMapping("dynamodb") || "aws.dynamodb";
+    // const serviceName = SpanInferrer.getServiceMapping("dynamodb") || "aws.dynamodb";
     options.tags = {
       operation_name: "aws.dynamodb",
       tablename: tableName,
@@ -308,7 +308,7 @@ export class SpanInferrer {
 
     // If neither mapping is found, default to the sns name
     const serviceName = topicMapping || snsMapping || "sns";
-    //const serviceName = SpanInferrer.getServiceMapping("sns") || "sns";
+    // const serviceName = SpanInferrer.getServiceMapping("sns") || "sns";
     options.tags = {
       operation_name: "aws.sns",
       resource_names: resourceName,
@@ -334,7 +334,7 @@ export class SpanInferrer {
     const spanWrapperOptions = {
       isAsync: true,
     };
-    //what is this aws.sns value in startSpan??
+    // what is this aws.sns value in startSpan??
     return new SpanWrapper(this.traceWrapper.startSpan("aws.sns", options), spanWrapperOptions);
   }
 
@@ -353,7 +353,7 @@ export class SpanInferrer {
 
     // If neither mapping is found, default to the sns name
     const serviceName = topicMapping || snsMapping || "sns";
-    //const serviceName = SpanInferrer.getServiceMapping("sns") || "sns";
+    // const serviceName = SpanInferrer.getServiceMapping("sns") || "sns";
     options.tags = {
       operation_name: "aws.sns",
       resource_names: resourceName,
@@ -402,7 +402,7 @@ export class SpanInferrer {
 
     // If neither mapping is found, default to the sns name
     const serviceName = queueMapping || sqsMapping || "sqs";
-    //const serviceName = SpanInferrer.getServiceMapping("sqs") || "sqs";
+    // const serviceName = SpanInferrer.getServiceMapping("sqs") || "sqs";
 
     options.tags = {
       operation_name: "aws.sqs",
@@ -470,7 +470,7 @@ export class SpanInferrer {
 
     // If neither mapping is found, default to the sns name
     const serviceName = streamNameMapping || kinesisMapping || "kinesis";
-    //const serviceName = SpanInferrer.getServiceMapping("kinesis") || "kinesis";
+    // const serviceName = SpanInferrer.getServiceMapping("kinesis") || "kinesis";
     options.tags = {
       operation_name: "aws.kinesis",
       resource_names: streamName,
@@ -522,7 +522,7 @@ export class SpanInferrer {
 
     // If neither mapping is found, default to the sns name
     const serviceName = bucketNameMapping || s3Mapping || "s3";
-    //const serviceName = SpanInferrer.getServiceMapping("s3") || "s3";
+    // const serviceName = SpanInferrer.getServiceMapping("s3") || "s3";
     options.tags = {
       operation_name: "aws.s3",
       resource_names: bucketName,
@@ -564,7 +564,7 @@ export class SpanInferrer {
 
     // If neither mapping is found, default to the eventbridge name
     const serviceName = sourceMapping || eventBridgeMapping || "eventbridge";
-    //const serviceName = SpanInferrer.getServiceMapping("eventbridge") || "eventbridge";
+    // const serviceName = SpanInferrer.getServiceMapping("eventbridge") || "eventbridge";
     options.tags = {
       operation_name: "aws.eventbridge",
       resource_names: source,

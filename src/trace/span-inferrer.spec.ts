@@ -67,7 +67,7 @@ describe("SpanInferrer", () => {
     modifiedSnsEvent.Records[0].EventSubscriptionArn = "arn:aws:sns:us-east-1:123456789012:DifferentTopic";
     inferrer.createInferredSpan(modifiedSnsEvent, {} as any, {} as SpanContext);
 
-    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1,"aws.sns", {
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1, "aws.sns", {
       childOf: {},
       startTime: 1643039127968,
       tags: {
@@ -86,7 +86,7 @@ describe("SpanInferrer", () => {
         type: "Notification",
       },
     });
-    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2,"aws.sns", {
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2, "aws.sns", {
       childOf: {},
       startTime: 1643039127968,
       tags: {
@@ -118,7 +118,7 @@ describe("SpanInferrer", () => {
     modifiedSnsEvent.Records[0].Sns.TopicArn = "arn:aws:sns:us-east-1:123456789012:DifferentTopic";
     inferrer.createInferredSpan(modifiedSnsEvent, {} as any, {} as SpanContext);
 
-    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1,"aws.sns", {
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1, "aws.sns", {
       childOf: {},
       startTime: 1643039127968,
       tags: {
@@ -137,7 +137,7 @@ describe("SpanInferrer", () => {
         type: "Notification",
       },
     });
-    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2,"aws.sns", {
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2, "aws.sns", {
       childOf: {},
       startTime: 1643039127968,
       tags: {
@@ -193,7 +193,7 @@ describe("SpanInferrer", () => {
     modifiedDdbEvent.Records[0].eventSourceARN = "arn:aws:sqs:us-east-1:123456789012:DifferentQueue";
     inferrer.createInferredSpan(modifiedDdbEvent, {} as any, {} as SpanContext);
 
-    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1,"aws.sqs", {
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1, "aws.sqs", {
       childOf: {},
       startTime: 1523232000000,
       tags: {
@@ -212,7 +212,7 @@ describe("SpanInferrer", () => {
         "span.type": "web",
       },
     });
-    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2,"aws.sqs", {
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2, "aws.sqs", {
       childOf: {},
       startTime: 1523232000000,
       tags: {
@@ -243,7 +243,7 @@ describe("SpanInferrer", () => {
     modifiedDdbEvent.Records[0].eventSourceARN = "arn:aws:sqs:us-east-1:123456789012:DifferentQueue";
     inferrer.createInferredSpan(modifiedDdbEvent, {} as any, {} as SpanContext);
 
-    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1,"aws.sqs", {
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1, "aws.sqs", {
       childOf: {},
       startTime: 1523232000000,
       tags: {
@@ -262,7 +262,7 @@ describe("SpanInferrer", () => {
         "span.type": "web",
       },
     });
-    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2,"aws.sqs", {
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2, "aws.sqs", {
       childOf: {},
       startTime: 1523232000000,
       tags: {
@@ -317,10 +317,11 @@ describe("SpanInferrer", () => {
     inferrer.createInferredSpan(ddbEvent, {} as any, {} as SpanContext);
 
     let modifiedDdbEvent = JSON.parse(JSON.stringify(ddbEvent));
-    modifiedDdbEvent.Records[0].eventSourceARN = "arn:aws:dynamodb:us-east-1:123456789012:table/DifferentTableWithStream/stream/2015-06-27T00:48:05.899";
+    modifiedDdbEvent.Records[0].eventSourceARN =
+      "arn:aws:dynamodb:us-east-1:123456789012:table/DifferentTableWithStream/stream/2015-06-27T00:48:05.899";
     inferrer.createInferredSpan(modifiedDdbEvent, {} as any, {} as SpanContext);
 
-    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1,"aws.dynamodb", {
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1, "aws.dynamodb", {
       childOf: {},
       startTime: 1428537600000,
       tags: {
@@ -341,7 +342,7 @@ describe("SpanInferrer", () => {
         stream_view_type: "NEW_AND_OLD_IMAGES",
       },
     });
-    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2,"aws.dynamodb", {
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2, "aws.dynamodb", {
       childOf: {},
       startTime: 1428537600000,
       tags: {
@@ -372,10 +373,11 @@ describe("SpanInferrer", () => {
     inferrer.createInferredSpan(ddbEvent, {} as any, {} as SpanContext);
 
     let modifiedDdbEvent = JSON.parse(JSON.stringify(ddbEvent));
-    modifiedDdbEvent.Records[0].eventSourceARN = "arn:aws:dynamodb:us-east-1:123456789012:table/DifferentTableWithStream/stream/2015-06-27T00:48:05.899";
+    modifiedDdbEvent.Records[0].eventSourceARN =
+      "arn:aws:dynamodb:us-east-1:123456789012:table/DifferentTableWithStream/stream/2015-06-27T00:48:05.899";
     inferrer.createInferredSpan(modifiedDdbEvent, {} as any, {} as SpanContext);
 
-    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1,"aws.dynamodb", {
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1, "aws.dynamodb", {
       childOf: {},
       startTime: 1428537600000,
       tags: {
@@ -396,7 +398,7 @@ describe("SpanInferrer", () => {
         stream_view_type: "NEW_AND_OLD_IMAGES",
       },
     });
-    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2,"aws.dynamodb", {
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2, "aws.dynamodb", {
       childOf: {},
       startTime: 1428537600000,
       tags: {
@@ -684,7 +686,6 @@ describe("SpanInferrer", () => {
     modifiedDdbEvent.source = "my.different.event";
     inferrer.createInferredSpan(modifiedDdbEvent, {} as any, {} as SpanContext);
 
-
     expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1, "aws.eventbridge", {
       childOf: {},
       startTime: 1643040010000,
@@ -723,7 +724,6 @@ describe("SpanInferrer", () => {
     let modifiedDdbEvent = JSON.parse(JSON.stringify(eventBridgeEvent));
     modifiedDdbEvent.source = "my.different.event";
     inferrer.createInferredSpan(modifiedDdbEvent, {} as any, {} as SpanContext);
-
 
     expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1, "aws.eventbridge", {
       childOf: {},
@@ -789,8 +789,7 @@ describe("SpanInferrer", () => {
     inferrer.createInferredSpan(apiGatewayV2, {} as any, {} as SpanContext);
     expect(mockWrapper.startSpan).toHaveBeenCalledTimes(2);
 
-
-    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1,"aws.apigateway", {
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1, "aws.apigateway", {
       childOf: {},
       startTime: 1642607783913,
       tags: {
@@ -835,15 +834,15 @@ describe("SpanInferrer", () => {
 
   it("remaps specific API Gateway inferred span service names based on DD_SERVICE_MAPPING and leaves others alone", () => {
     // Set the environment variable that depicts test outcome, i.e. the result of service tag
-    process.env.DD_SERVICE_MAPPING = "08se3mvh28.execute-api.eu-west-1.amazonaws.com|new-name,wrong_service|will_be_ignored";
+    process.env.DD_SERVICE_MAPPING =
+      "08se3mvh28.execute-api.eu-west-1.amazonaws.com|new-name,wrong_service|will_be_ignored";
 
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(webSocketEvent, {} as any, {} as SpanContext);
     inferrer.createInferredSpan(apiGatewayV2, {} as any, {} as SpanContext);
     expect(mockWrapper.startSpan).toHaveBeenCalledTimes(2);
 
-
-    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1,"aws.apigateway", {
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1, "aws.apigateway", {
       childOf: {},
       startTime: 1642607783913,
       tags: {
@@ -974,7 +973,7 @@ describe("SpanInferrer", () => {
     modifiedFunctionUrlEvent.requestContext.domainName = "foobar.lambda-url.eu-south-1.amazonaws.com";
     inferrer.createInferredSpan(modifiedFunctionUrlEvent, {} as any, {} as SpanContext);
 
-    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1,"aws.lambda.url", {
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1, "aws.lambda.url", {
       childOf: {},
       startTime: 1637169449721,
       tags: {
@@ -995,7 +994,7 @@ describe("SpanInferrer", () => {
       },
     });
 
-    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2,"aws.lambda.url", {
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2, "aws.lambda.url", {
       childOf: {},
       startTime: 1637169449721,
       tags: {
@@ -1027,7 +1026,7 @@ describe("SpanInferrer", () => {
     modifiedFunctionUrlEvent.requestContext.domainName = "foobar.lambda-url.eu-south-1.amazonaws.com";
     inferrer.createInferredSpan(modifiedFunctionUrlEvent, {} as any, {} as SpanContext);
 
-    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1,"aws.lambda.url", {
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1, "aws.lambda.url", {
       childOf: {},
       startTime: 1637169449721,
       tags: {
@@ -1048,7 +1047,7 @@ describe("SpanInferrer", () => {
       },
     });
 
-    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2,"aws.lambda.url", {
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2, "aws.lambda.url", {
       childOf: {},
       startTime: 1637169449721,
       tags: {
@@ -1064,7 +1063,7 @@ describe("SpanInferrer", () => {
         "resource.name": "GET /",
         resource_names: "GET /",
         "service.name": "foobar.lambda-url.eu-south-1.amazonaws.com",
-        service: "foobar.lambda-url.eu-south-1.amazonaws.com",//left alone
+        service: "foobar.lambda-url.eu-south-1.amazonaws.com", //left alone
         "span.type": "http",
       },
     });
