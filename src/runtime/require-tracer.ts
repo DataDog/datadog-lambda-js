@@ -22,7 +22,7 @@ export class RequireNode {
 
 const moduleLoadStartChannel = dc.channel('dd-trace:moduleLoadStart')
 const moduleLoadEndChannel = dc.channel('dd-trace:moduleLoadEnd')
-const rootNodes: RequireNode[] = []
+let rootNodes: RequireNode[] = []
 
 const requireStack: RequireNode[] = []
 const pushNode = (data: any) => {
@@ -55,4 +55,8 @@ export const subscribeToDC = () => {
 
 export const getTraceTree = (): RequireNode[] => {
   return rootNodes
+}
+
+export const clearTraceTree = () => {
+  rootNodes = []
 }

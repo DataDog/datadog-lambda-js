@@ -9,6 +9,7 @@ export interface ColdStartTracerConfig {
   currentSpanStartTime: number;
   minDuration: number;
   ignoreLibs: string;
+  isColdStart: boolean;
 }
 
 export class ColdStartTracer {
@@ -18,6 +19,7 @@ export class ColdStartTracer {
   private currentSpanStartTime: number;
   private minDuration: number;
   private ignoreLibs: string[];
+  private isColdStart: boolean;
 
   constructor(coldStartTracerConfig: ColdStartTracerConfig) {
     this.tracerWrapper = coldStartTracerConfig.tracerWrapper;
@@ -26,14 +28,21 @@ export class ColdStartTracer {
     this.currentSpanStartTime = coldStartTracerConfig.currentSpanStartTime;
     this.minDuration = coldStartTracerConfig.minDuration;
     this.ignoreLibs = coldStartTracerConfig.ignoreLibs.split(",");
+    this.isColdStart = coldStartTracerConfig.isColdStart;
   }
 
   trace(rootNodes: RequireNode[]) {
     const coldStartSpanStartTime = rootNodes[0]?.startTime;
     const coldStartSpanEndTime = Math.min(rootNodes[rootNodes.length - 1]?.endTime, this.currentSpanStartTime);
-    const coldStartSpan = this.createColdStartSpan(coldStartSpanStartTime, coldStartSpanEndTime, this.parentSpan);
+    let targetParentSpan: SpanWrapper | undefined;
+    if (this.isColdStart) {
+      const coldStartSpan = this.createColdStartSpan(coldStartSpanStartTime, coldStartSpanEndTime, this.parentSpan);
+      targetParentSpan = coldStartSpan;
+    } else {
+      targetParentSpan = this.parentSpan;
+    }
     for (const coldStartNode of rootNodes) {
-      this.traceTree(coldStartNode, coldStartSpan);
+      this.traceTree(coldStartNode, targetParentSpan);
     }
   }
 
