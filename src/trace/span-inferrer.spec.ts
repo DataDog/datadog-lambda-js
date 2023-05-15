@@ -57,12 +57,17 @@ describe("SpanInferrer", () => {
     });
   });
 
-  it("remaps SNS inferred span service name based on DD_SERVICE_MAPPING", () => {
-    process.env.DD_SERVICE_MAPPING = "sns:new-name";
+  it("remaps all SNS inferred span service name based on DD_SERVICE_MAPPING", () => {
+    // Set the environment variable that depicts test outcome, i.e. the result of service tag
+    process.env.DD_SERVICE_MAPPING = "sns|new-name";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
 
-    expect(mockWrapper.startSpan).toBeCalledWith("aws.sns", {
+    let modifiedSnsEvent = JSON.parse(JSON.stringify(snsEvent));
+    modifiedSnsEvent.Records[0].EventSubscriptionArn = "arn:aws:sns:us-east-1:123456789012:DifferentTopic";
+    inferrer.createInferredSpan(modifiedSnsEvent, {} as any, {} as SpanContext);
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1,"aws.sns", {
       childOf: {},
       startTime: 1643039127968,
       tags: {
@@ -78,6 +83,76 @@ describe("SpanInferrer", () => {
         subject: "example subject",
         topic_arn: "arn:aws:sns:us-east-1:123456789012:ExampleTopic",
         topicname: "ExampleTopic",
+        type: "Notification",
+      },
+    });
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2,"aws.sns", {
+      childOf: {},
+      startTime: 1643039127968,
+      tags: {
+        _inferred_span: { synchronicity: "async", tag_source: "self" },
+        event_subscription_arn: "arn:aws:sns:us-east-1:123456789012:DifferentTopic",
+        message_id: "95df01b4-ee98-5cb9-9903-4c221d41eb5e",
+        operation_name: "aws.sns",
+        request_id: undefined,
+        "resource.name": "ExampleTopic",
+        resource_names: "ExampleTopic",
+        service: "new-name",
+        "span.type": "sns",
+        subject: "example subject",
+        topic_arn: "arn:aws:sns:us-east-1:123456789012:ExampleTopic",
+        topicname: "ExampleTopic",
+        type: "Notification",
+      },
+    });
+  });
+
+  it("remaps specific SNS inferred span service name based on DD_SERVICE_MAPPING topicname", () => {
+    // Set the environment variable that depicts test outcome, i.e. the result of service tag
+    process.env.DD_SERVICE_MAPPING = "arn:aws:sns:us-east-1:123456789012:DifferentTopic|new-name";
+    console.log(process.env.DD_SERVICE_MAPPING);
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
+
+    let modifiedSnsEvent = JSON.parse(JSON.stringify(snsEvent));
+    modifiedSnsEvent.Records[0].Sns.TopicArn = "arn:aws:sns:us-east-1:123456789012:DifferentTopic";
+    inferrer.createInferredSpan(modifiedSnsEvent, {} as any, {} as SpanContext);
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1,"aws.sns", {
+      childOf: {},
+      startTime: 1643039127968,
+      tags: {
+        _inferred_span: { synchronicity: "async", tag_source: "self" },
+        event_subscription_arn: "arn:aws:sns:us-east-1:123456789012:ExampleTopic",
+        message_id: "95df01b4-ee98-5cb9-9903-4c221d41eb5e",
+        operation_name: "aws.sns",
+        request_id: undefined,
+        "resource.name": "ExampleTopic",
+        resource_names: "ExampleTopic",
+        service: "sns",
+        "span.type": "sns",
+        subject: "example subject",
+        topic_arn: "arn:aws:sns:us-east-1:123456789012:ExampleTopic",
+        topicname: "ExampleTopic",
+        type: "Notification",
+      },
+    });
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2,"aws.sns", {
+      childOf: {},
+      startTime: 1643039127968,
+      tags: {
+        _inferred_span: { synchronicity: "async", tag_source: "self" },
+        event_subscription_arn: "arn:aws:sns:us-east-1:123456789012:ExampleTopic",
+        message_id: "95df01b4-ee98-5cb9-9903-4c221d41eb5e",
+        operation_name: "aws.sns",
+        request_id: undefined,
+        "resource.name": "DifferentTopic",
+        resource_names: "DifferentTopic",
+        service: "new-name",
+        "span.type": "sns",
+        subject: "example subject",
+        topic_arn: "arn:aws:sns:us-east-1:123456789012:DifferentTopic",
+        topicname: "DifferentTopic",
         type: "Notification",
       },
     });
@@ -108,12 +183,17 @@ describe("SpanInferrer", () => {
     });
   });
 
-  it("remaps SQS inferred span service name based on DD_SERVICE_MAPPING", () => {
-    process.env.DD_SERVICE_MAPPING = "sqs:new-name";
+  it("remaps all SQS inferred span service name based on DD_SERVICE_MAPPING", () => {
+    // Set the environment variable that depicts test outcome, i.e. the result of service tag
+    process.env.DD_SERVICE_MAPPING = "sqs|new-name";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(sqsEvent, {} as any, {} as SpanContext);
 
-    expect(mockWrapper.startSpan).toBeCalledWith("aws.sqs", {
+    let modifiedDdbEvent = JSON.parse(JSON.stringify(sqsEvent));
+    modifiedDdbEvent.Records[0].eventSourceARN = "arn:aws:sqs:us-east-1:123456789012:DifferentQueue";
+    inferrer.createInferredSpan(modifiedDdbEvent, {} as any, {} as SpanContext);
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1,"aws.sqs", {
       childOf: {},
       startTime: 1523232000000,
       tags: {
@@ -129,6 +209,75 @@ describe("SpanInferrer", () => {
         sender_id: "123456789012",
         service: "new-name",
         "service.name": "MyQueue",
+        "span.type": "web",
+      },
+    });
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2,"aws.sqs", {
+      childOf: {},
+      startTime: 1523232000000,
+      tags: {
+        _inferred_span: { synchronicity: "async", tag_source: "self" },
+        event_source_arn: "arn:aws:sqs:us-east-1:123456789012:DifferentQueue",
+        operation_name: "aws.sqs",
+        queuename: "DifferentQueue",
+        receipt_handle: "MessageReceiptHandle",
+        request_id: undefined,
+        "resource.name": "DifferentQueue",
+        resource_names: "DifferentQueue",
+        retry_count: 1,
+        sender_id: "123456789012",
+        service: "new-name",
+        "service.name": "DifferentQueue",
+        "span.type": "web",
+      },
+    });
+  });
+
+  it("remaps specific SQS inferred span service name based on DD_SERVICE_MAPPING", () => {
+    // Set the environment variable that depicts test outcome, i.e. the result of service tag
+    process.env.DD_SERVICE_MAPPING = "arn:aws:sqs:us-east-1:123456789012:MyQueue|new-name";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(sqsEvent, {} as any, {} as SpanContext);
+
+    let modifiedDdbEvent = JSON.parse(JSON.stringify(sqsEvent));
+    modifiedDdbEvent.Records[0].eventSourceARN = "arn:aws:sqs:us-east-1:123456789012:DifferentQueue";
+    inferrer.createInferredSpan(modifiedDdbEvent, {} as any, {} as SpanContext);
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1,"aws.sqs", {
+      childOf: {},
+      startTime: 1523232000000,
+      tags: {
+        _inferred_span: { synchronicity: "async", tag_source: "self" },
+        event_source_arn: "arn:aws:sqs:us-east-1:123456789012:MyQueue",
+        operation_name: "aws.sqs",
+        queuename: "MyQueue",
+        receipt_handle: "MessageReceiptHandle",
+        request_id: undefined,
+        "resource.name": "MyQueue",
+        resource_names: "MyQueue",
+        retry_count: 1,
+        sender_id: "123456789012",
+        service: "new-name",
+        "service.name": "MyQueue",
+        "span.type": "web",
+      },
+    });
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2,"aws.sqs", {
+      childOf: {},
+      startTime: 1523232000000,
+      tags: {
+        _inferred_span: { synchronicity: "async", tag_source: "self" },
+        event_source_arn: "arn:aws:sqs:us-east-1:123456789012:DifferentQueue",
+        operation_name: "aws.sqs",
+        queuename: "DifferentQueue",
+        receipt_handle: "MessageReceiptHandle",
+        request_id: undefined,
+        "resource.name": "DifferentQueue",
+        resource_names: "DifferentQueue",
+        retry_count: 1,
+        sender_id: "123456789012",
+        service: "sqs", //unchanged
+        "service.name": "DifferentQueue",
         "span.type": "web",
       },
     });
@@ -161,13 +310,17 @@ describe("SpanInferrer", () => {
     });
   });
 
-  it("remaps ddb inferred span service name based on DD_SERVICE_MAPPING", () => {
-    process.env.DD_SERVICE_MAPPING = "dynamodb:new-name";
-
+  it("remaps all ddb inferred span service name based on DD_SERVICE_MAPPING", () => {
+    // Set the environment variable that depicts test outcome, i.e. the result of service tag
+    process.env.DD_SERVICE_MAPPING = "dynamodb|new-name";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(ddbEvent, {} as any, {} as SpanContext);
 
-    expect(mockWrapper.startSpan).toBeCalledWith("aws.dynamodb", {
+    let modifiedDdbEvent = JSON.parse(JSON.stringify(ddbEvent));
+    modifiedDdbEvent.Records[0].eventSourceARN = "arn:aws:dynamodb:us-east-1:123456789012:table/DifferentTableWithStream/stream/2015-06-27T00:48:05.899";
+    inferrer.createInferredSpan(modifiedDdbEvent, {} as any, {} as SpanContext);
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1,"aws.dynamodb", {
       childOf: {},
       startTime: 1428537600000,
       tags: {
@@ -183,6 +336,82 @@ describe("SpanInferrer", () => {
         "resource.name": "INSERT ExampleTableWithStream",
         resource_names: "INSERT ExampleTableWithStream",
         service: "new-name",
+        size_bytes: 26,
+        "span.type": "web",
+        stream_view_type: "NEW_AND_OLD_IMAGES",
+      },
+    });
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2,"aws.dynamodb", {
+      childOf: {},
+      startTime: 1428537600000,
+      tags: {
+        _inferred_span: { synchronicity: "async", tag_source: "self" },
+        tablename: "DifferentTableWithStream",
+        event_id: "c4ca4238a0b923820dcc509a6f75849b",
+        event_name: "INSERT",
+        event_source_arn:
+          "arn:aws:dynamodb:us-east-1:123456789012:table/DifferentTableWithStream/stream/2015-06-27T00:48:05.899",
+        event_version: "1.1",
+        operation_name: "aws.dynamodb",
+        request_id: undefined,
+        "resource.name": "INSERT DifferentTableWithStream",
+        resource_names: "INSERT DifferentTableWithStream",
+        service: "new-name",
+        size_bytes: 26,
+        "span.type": "web",
+        stream_view_type: "NEW_AND_OLD_IMAGES",
+      },
+    });
+  });
+
+  it("remaps specific ddb inferred span service name based on DD_SERVICE_MAPPING", () => {
+    // Set the environment variable that depicts test outcome, i.e. the result of service tag
+    process.env.DD_SERVICE_MAPPING = "arn:aws:dynamodb:us-east-1:123456789012:table/ExampleTableWithStream|new-name";
+
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(ddbEvent, {} as any, {} as SpanContext);
+
+    let modifiedDdbEvent = JSON.parse(JSON.stringify(ddbEvent));
+    modifiedDdbEvent.Records[0].eventSourceARN = "arn:aws:dynamodb:us-east-1:123456789012:table/DifferentTableWithStream/stream/2015-06-27T00:48:05.899";
+    inferrer.createInferredSpan(modifiedDdbEvent, {} as any, {} as SpanContext);
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1,"aws.dynamodb", {
+      childOf: {},
+      startTime: 1428537600000,
+      tags: {
+        _inferred_span: { synchronicity: "async", tag_source: "self" },
+        tablename: "ExampleTableWithStream",
+        event_id: "c4ca4238a0b923820dcc509a6f75849b",
+        event_name: "INSERT",
+        event_source_arn:
+          "arn:aws:dynamodb:us-east-1:123456789012:table/ExampleTableWithStream/stream/2015-06-27T00:48:05.899",
+        event_version: "1.1",
+        operation_name: "aws.dynamodb",
+        request_id: undefined,
+        "resource.name": "INSERT ExampleTableWithStream",
+        resource_names: "INSERT ExampleTableWithStream",
+        service: "new-name",
+        size_bytes: 26,
+        "span.type": "web",
+        stream_view_type: "NEW_AND_OLD_IMAGES",
+      },
+    });
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2,"aws.dynamodb", {
+      childOf: {},
+      startTime: 1428537600000,
+      tags: {
+        _inferred_span: { synchronicity: "async", tag_source: "self" },
+        tablename: "DifferentTableWithStream",
+        event_id: "c4ca4238a0b923820dcc509a6f75849b",
+        event_name: "INSERT",
+        event_source_arn:
+          "arn:aws:dynamodb:us-east-1:123456789012:table/DifferentTableWithStream/stream/2015-06-27T00:48:05.899",
+        event_version: "1.1",
+        operation_name: "aws.dynamodb",
+        request_id: undefined,
+        "resource.name": "INSERT DifferentTableWithStream",
+        resource_names: "INSERT DifferentTableWithStream",
+        service: "aws.dynamodb", //left alone
         size_bytes: 26,
         "span.type": "web",
         stream_view_type: "NEW_AND_OLD_IMAGES",
@@ -216,12 +445,17 @@ describe("SpanInferrer", () => {
     });
   });
 
-  it("remaps kinesis inferred span service name based on DD_SERVICE_MAPPING", () => {
-    process.env.DD_SERVICE_MAPPING = "kinesis:new-name";
+  it("remaps all kinesis inferred span service name based on DD_SERVICE_MAPPING", () => {
+    // Set the environment variable that depicts test outcome, i.e. the result of service tag
+    process.env.DD_SERVICE_MAPPING = "kinesis|new-name";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(kinesisEvent, {} as any, {} as SpanContext);
 
-    expect(mockWrapper.startSpan).toBeCalledWith("aws.kinesis", {
+    let modifiedKinesisEvent = JSON.parse(JSON.stringify(kinesisEvent));
+    modifiedKinesisEvent.Records[0].eventSourceARN = "arn:aws:kinesis:DIFFERENT_EXAMPLE";
+    inferrer.createInferredSpan(modifiedKinesisEvent, {} as any, {} as SpanContext);
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1, "aws.kinesis", {
       childOf: {},
       startTime: 1642518727248,
       tags: {
@@ -239,6 +473,80 @@ describe("SpanInferrer", () => {
         shardid: "49545115243490985018280067714973144582180062593244200961",
         "span.type": "web",
         streamname: "EXAMPLE",
+      },
+    });
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2, "aws.kinesis", {
+      childOf: {},
+      startTime: 1642518727248,
+      tags: {
+        _inferred_span: { synchronicity: "async", tag_source: "self" },
+        event_id: "shardId-000000000000:49545115243490985018280067714973144582180062593244200961",
+        event_name: "aws:kinesis:record",
+        event_source_arn: "arn:aws:kinesis:DIFFERENT_EXAMPLE",
+        event_version: "1.0",
+        operation_name: "aws.kinesis",
+        partition_key: "cdbfd750-cec0-4f0f-a4b0-82ae6152c7fb",
+        request_id: undefined,
+        "resource.name": "DIFFERENT_EXAMPLE",
+        resource_names: "DIFFERENT_EXAMPLE",
+        service: "new-name",
+        shardid: "49545115243490985018280067714973144582180062593244200961",
+        "span.type": "web",
+        streamname: "DIFFERENT_EXAMPLE",
+      },
+    });
+  });
+
+  it("remaps specific kinesis inferred span service name based on DD_SERVICE_MAPPING", () => {
+    // Set the environment variable that depicts test outcome, i.e. the result of service tag
+    process.env.DD_SERVICE_MAPPING = "arn:aws:kinesis:EXAMPLE|new-name";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(kinesisEvent, {} as any, {} as SpanContext);
+
+    let modifiedKinesisEvent = JSON.parse(JSON.stringify(kinesisEvent));
+    modifiedKinesisEvent.Records[0].eventSourceARN = "arn:aws:kinesis:DIFFERENT_EXAMPLE";
+    inferrer.createInferredSpan(modifiedKinesisEvent, {} as any, {} as SpanContext);
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1, "aws.kinesis", {
+      childOf: {},
+      startTime: 1642518727248,
+      tags: {
+        _inferred_span: { synchronicity: "async", tag_source: "self" },
+        event_id: "shardId-000000000000:49545115243490985018280067714973144582180062593244200961",
+        event_name: "aws:kinesis:record",
+        event_source_arn: "arn:aws:kinesis:EXAMPLE",
+        event_version: "1.0",
+        operation_name: "aws.kinesis",
+        partition_key: "cdbfd750-cec0-4f0f-a4b0-82ae6152c7fb",
+        request_id: undefined,
+        "resource.name": "EXAMPLE",
+        resource_names: "EXAMPLE",
+        service: "new-name",
+        shardid: "49545115243490985018280067714973144582180062593244200961",
+        "span.type": "web",
+        streamname: "EXAMPLE",
+      },
+    });
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2, "aws.kinesis", {
+      childOf: {},
+      startTime: 1642518727248,
+      tags: {
+        _inferred_span: { synchronicity: "async", tag_source: "self" },
+        event_id: "shardId-000000000000:49545115243490985018280067714973144582180062593244200961",
+        event_name: "aws:kinesis:record",
+        event_source_arn: "arn:aws:kinesis:DIFFERENT_EXAMPLE",
+        event_version: "1.0",
+        operation_name: "aws.kinesis",
+        partition_key: "cdbfd750-cec0-4f0f-a4b0-82ae6152c7fb",
+        request_id: undefined,
+        "resource.name": "DIFFERENT_EXAMPLE",
+        resource_names: "DIFFERENT_EXAMPLE",
+        service: "kinesis",
+        shardid: "49545115243490985018280067714973144582180062593244200961",
+        "span.type": "web",
+        streamname: "DIFFERENT_EXAMPLE",
       },
     });
   });
@@ -295,7 +603,8 @@ describe("SpanInferrer", () => {
   });
 
   it("remaps sns sqs inferred spans service names based on DD_SERVICE_MAPPING", () => {
-    process.env.DD_SERVICE_MAPPING = "sns:new-sns-name,sqs:new-sqs-name";
+    // Set the environment variable that depicts test outcome, i.e. the result of service tag
+    process.env.DD_SERVICE_MAPPING = "sns|new-sns-name,sqs|new-sqs-name";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(snssqsEvent, {} as any, {} as SpanContext);
 
@@ -365,12 +674,18 @@ describe("SpanInferrer", () => {
     });
   });
 
-  it("remaps eventbridge inferred span service name based on DD_SERVICE_MAPPING", () => {
-    process.env.DD_SERVICE_MAPPING = "eventbridge:new-name";
+  it("remaps all eventbridge inferred span service name based on DD_SERVICE_MAPPING", () => {
+    // Set the environment variable that depicts test outcome, i.e. the result of service tag
+    process.env.DD_SERVICE_MAPPING = "eventbridge|new-name";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(eventBridgeEvent, {} as any, {} as SpanContext);
 
-    expect(mockWrapper.startSpan).toBeCalledWith("aws.eventbridge", {
+    let modifiedDdbEvent = JSON.parse(JSON.stringify(eventBridgeEvent));
+    modifiedDdbEvent.source = "my.different.event";
+    inferrer.createInferredSpan(modifiedDdbEvent, {} as any, {} as SpanContext);
+
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1, "aws.eventbridge", {
       childOf: {},
       startTime: 1643040010000,
       tags: {
@@ -380,6 +695,60 @@ describe("SpanInferrer", () => {
         "resource.name": "my.event",
         resource_names: "my.event",
         service: "new-name",
+        "span.type": "web",
+      },
+    });
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2, "aws.eventbridge", {
+      childOf: {},
+      startTime: 1643040010000,
+      tags: {
+        _inferred_span: { synchronicity: "async", tag_source: "self" },
+        operation_name: "aws.eventbridge",
+        request_id: undefined,
+        "resource.name": "my.different.event",
+        resource_names: "my.different.event",
+        service: "new-name",
+        "span.type": "web",
+      },
+    });
+  });
+
+  it("remaps specific eventbridge inferred span service name based on DD_SERVICE_MAPPING", () => {
+    // Set the environment variable that depicts test outcome, i.e. the result of service tag
+    process.env.DD_SERVICE_MAPPING = "my.event|new-name";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(eventBridgeEvent, {} as any, {} as SpanContext);
+
+    let modifiedDdbEvent = JSON.parse(JSON.stringify(eventBridgeEvent));
+    modifiedDdbEvent.source = "my.different.event";
+    inferrer.createInferredSpan(modifiedDdbEvent, {} as any, {} as SpanContext);
+
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1, "aws.eventbridge", {
+      childOf: {},
+      startTime: 1643040010000,
+      tags: {
+        _inferred_span: { synchronicity: "async", tag_source: "self" },
+        operation_name: "aws.eventbridge",
+        request_id: undefined,
+        "resource.name": "my.event",
+        resource_names: "my.event",
+        service: "new-name",
+        "span.type": "web",
+      },
+    });
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2, "aws.eventbridge", {
+      childOf: {},
+      startTime: 1643040010000,
+      tags: {
+        _inferred_span: { synchronicity: "async", tag_source: "self" },
+        operation_name: "aws.eventbridge",
+        request_id: undefined,
+        "resource.name": "my.different.event",
+        resource_names: "my.different.event",
+        service: "eventbridge",
         "span.type": "web",
       },
     });
@@ -411,14 +780,17 @@ describe("SpanInferrer", () => {
     });
   });
 
-  it("remaps API Gateway inferred span service name based on DD_SERVICE_MAPPING", () => {
-    // Set the environment variable
-    process.env.DD_SERVICE_MAPPING = "api_gateway:new-name";
+  it("remaps all API Gateway inferred span service names based on DD_SERVICE_MAPPING", () => {
+    // Set the environment variable that depicts test outcome, i.e. the result of service tag
+    process.env.DD_SERVICE_MAPPING = "api_gateway|new-name";
 
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(webSocketEvent, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(apiGatewayV2, {} as any, {} as SpanContext);
+    expect(mockWrapper.startSpan).toHaveBeenCalledTimes(2);
 
-    expect(mockWrapper.startSpan).toBeCalledWith("aws.apigateway", {
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1,"aws.apigateway", {
       childOf: {},
       startTime: 1642607783913,
       tags: {
@@ -436,6 +808,80 @@ describe("SpanInferrer", () => {
         service: "new-name", // Updated to the value from DD_SERVICE_MAPPING
         "service.name": "08se3mvh28.execute-api.eu-west-1.amazonaws.com",
         "span.type": "http",
+      },
+    });
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2, "aws.apigateway", {
+      childOf: {},
+      startTime: 1583817383220,
+      tags: {
+        _inferred_span: { synchronicity: "sync", tag_source: "self" },
+        apiid: "r3pmxmplak",
+        endpoint: "/default/nodejs-apig-function-1G3XMPLZXVXYI",
+        "http.url": "r3pmxmplak.execute-api.us-east-2.amazonaws.com/default/nodejs-apig-function-1G3XMPLZXVXYI",
+        domain_name: "r3pmxmplak.execute-api.us-east-2.amazonaws.com",
+        operation_name: "aws.apigateway",
+        request_id: undefined,
+        "http.method": "GET",
+        "resource.name": "GET /default/nodejs-apig-function-1G3XMPLZXVXYI",
+        resource_names: "GET /default/nodejs-apig-function-1G3XMPLZXVXYI",
+        service: "new-name",
+        "service.name": "r3pmxmplak.execute-api.us-east-2.amazonaws.com",
+        "span.type": "http",
+        stage: "default",
+      },
+    });
+  });
+
+  it("remaps specific API Gateway inferred span service names based on DD_SERVICE_MAPPING and leaves others alone", () => {
+    // Set the environment variable that depicts test outcome, i.e. the result of service tag
+    process.env.DD_SERVICE_MAPPING = "08se3mvh28.execute-api.eu-west-1.amazonaws.com|new-name,wrong_service|will_be_ignored";
+
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(webSocketEvent, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(apiGatewayV2, {} as any, {} as SpanContext);
+    expect(mockWrapper.startSpan).toHaveBeenCalledTimes(2);
+
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1,"aws.apigateway", {
+      childOf: {},
+      startTime: 1642607783913,
+      tags: {
+        _inferred_span: { synchronicity: "sync", tag_source: "self" },
+        apiid: "08se3mvh28",
+        connection_id: "MM0qReAFGjQCE-w=",
+        endpoint: "$connect",
+        event_type: "CONNECT",
+        "http.url": "08se3mvh28.execute-api.eu-west-1.amazonaws.com$connect",
+        message_direction: "IN",
+        operation_name: "aws.apigateway",
+        request_id: undefined,
+        "resource.name": "08se3mvh28.execute-api.eu-west-1.amazonaws.com $connect",
+        resource_names: "08se3mvh28.execute-api.eu-west-1.amazonaws.com $connect",
+        service: "new-name", // Updated to the value from DD_SERVICE_MAPPING
+        "service.name": "08se3mvh28.execute-api.eu-west-1.amazonaws.com",
+        "span.type": "http",
+      },
+    });
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2, "aws.apigateway", {
+      childOf: {},
+      startTime: 1583817383220,
+      tags: {
+        _inferred_span: { synchronicity: "sync", tag_source: "self" },
+        apiid: "r3pmxmplak",
+        endpoint: "/default/nodejs-apig-function-1G3XMPLZXVXYI",
+        "http.url": "r3pmxmplak.execute-api.us-east-2.amazonaws.com/default/nodejs-apig-function-1G3XMPLZXVXYI",
+        domain_name: "r3pmxmplak.execute-api.us-east-2.amazonaws.com",
+        operation_name: "aws.apigateway",
+        request_id: undefined,
+        "http.method": "GET",
+        "resource.name": "GET /default/nodejs-apig-function-1G3XMPLZXVXYI",
+        resource_names: "GET /default/nodejs-apig-function-1G3XMPLZXVXYI",
+        service: "r3pmxmplak.execute-api.us-east-2.amazonaws.com", //left alone
+        "service.name": "r3pmxmplak.execute-api.us-east-2.amazonaws.com",
+        "span.type": "http",
+        stage: "default",
       },
     });
   });
@@ -518,14 +964,17 @@ describe("SpanInferrer", () => {
     });
   });
 
-  it("remaps Lambda URL inferred span service name based on DD_SERVICE_MAPPING", () => {
-    // Set the environment variable
-    process.env.DD_SERVICE_MAPPING = "lambda_url:new-name";
+  it("remaps all Lambda URL inferred span service name based on DD_SERVICE_MAPPING", () => {
+    // Set the environment variable that depicts test outcome, i.e. the result of service tag
+    process.env.DD_SERVICE_MAPPING = "lambda_url|new-name";
 
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(functionUrlEvent, {} as any, {} as SpanContext);
+    let modifiedFunctionUrlEvent = JSON.parse(JSON.stringify(functionUrlEvent));
+    modifiedFunctionUrlEvent.requestContext.domainName = "foobar.lambda-url.eu-south-1.amazonaws.com";
+    inferrer.createInferredSpan(modifiedFunctionUrlEvent, {} as any, {} as SpanContext);
 
-    expect(mockWrapper.startSpan).toBeCalledWith("aws.lambda.url", {
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1,"aws.lambda.url", {
       childOf: {},
       startTime: 1637169449721,
       tags: {
@@ -542,6 +991,80 @@ describe("SpanInferrer", () => {
         resource_names: "GET /",
         "service.name": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com",
         service: "new-name",
+        "span.type": "http",
+      },
+    });
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2,"aws.lambda.url", {
+      childOf: {},
+      startTime: 1637169449721,
+      tags: {
+        _inferred_span: {
+          synchronicity: "sync",
+          tag_source: "self",
+        },
+        endpoint: "/",
+        "http.method": "GET",
+        "http.url": "foobar.lambda-url.eu-south-1.amazonaws.com/",
+        operation_name: "aws.lambda.url",
+        request_id: undefined,
+        "resource.name": "GET /",
+        resource_names: "GET /",
+        "service.name": "foobar.lambda-url.eu-south-1.amazonaws.com",
+        service: "new-name",
+        "span.type": "http",
+      },
+    });
+  });
+
+  it("remaps specific Lambda URL inferred span service name based on DD_SERVICE_MAPPING and leaves others alone", () => {
+    // Set the environment variable that depicts test outcome, i.e. the result of service tag
+    process.env.DD_SERVICE_MAPPING = "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com|new-name";
+
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(functionUrlEvent, {} as any, {} as SpanContext);
+    let modifiedFunctionUrlEvent = JSON.parse(JSON.stringify(functionUrlEvent));
+    modifiedFunctionUrlEvent.requestContext.domainName = "foobar.lambda-url.eu-south-1.amazonaws.com";
+    inferrer.createInferredSpan(modifiedFunctionUrlEvent, {} as any, {} as SpanContext);
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1,"aws.lambda.url", {
+      childOf: {},
+      startTime: 1637169449721,
+      tags: {
+        _inferred_span: {
+          synchronicity: "sync",
+          tag_source: "self",
+        },
+        endpoint: "/",
+        "http.method": "GET",
+        "http.url": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com/",
+        operation_name: "aws.lambda.url",
+        request_id: undefined,
+        "resource.name": "GET /",
+        resource_names: "GET /",
+        "service.name": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com",
+        service: "new-name", //changed
+        "span.type": "http",
+      },
+    });
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2,"aws.lambda.url", {
+      childOf: {},
+      startTime: 1637169449721,
+      tags: {
+        _inferred_span: {
+          synchronicity: "sync",
+          tag_source: "self",
+        },
+        endpoint: "/",
+        "http.method": "GET",
+        "http.url": "foobar.lambda-url.eu-south-1.amazonaws.com/",
+        operation_name: "aws.lambda.url",
+        request_id: undefined,
+        "resource.name": "GET /",
+        resource_names: "GET /",
+        "service.name": "foobar.lambda-url.eu-south-1.amazonaws.com",
+        service: "foobar.lambda-url.eu-south-1.amazonaws.com",//left alone
         "span.type": "http",
       },
     });
@@ -572,13 +1095,18 @@ describe("SpanInferrer", () => {
     });
   });
 
-  it("remaps S3 inferred span service name based on DD_SERVICE_MAPPING", () => {
-    // Set the environment variable
-    process.env.DD_SERVICE_MAPPING = "s3:new-name";
+  it("remaps all S3 inferred span service name based on DD_SERVICE_MAPPING", () => {
+    // Set the environment variable that depicts test outcome, i.e. the result of service tag
+    process.env.DD_SERVICE_MAPPING = "s3|new-name";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(s3Event, {} as any, {} as SpanContext);
 
-    expect(mockWrapper.startSpan).toBeCalledWith("aws.s3", {
+    let modifiedS3Event = JSON.parse(JSON.stringify(s3Event));
+    modifiedS3Event.Records[0].s3.bucket.arn = "arn:aws:s3:::different-example-bucket";
+    modifiedS3Event.Records[0].s3.bucket.name = "different-example-bucket";
+    inferrer.createInferredSpan(modifiedS3Event, {} as any, {} as SpanContext);
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1, "aws.s3", {
       childOf: {},
       startTime: 0,
       tags: {
@@ -594,6 +1122,78 @@ describe("SpanInferrer", () => {
         "resource.name": "example-bucket",
         resource_names: "example-bucket",
         service: "new-name",
+        "span.type": "web",
+      },
+    });
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2, "aws.s3", {
+      childOf: {},
+      startTime: 0,
+      tags: {
+        _inferred_span: { synchronicity: "async", tag_source: "self" },
+        bucket_arn: "arn:aws:s3:::different-example-bucket",
+        bucketname: "different-example-bucket",
+        event_name: "ObjectCreated:Put",
+        object_etag: "0123456789abcdef0123456789abcdef",
+        object_key: "test/key",
+        object_size: 1024,
+        operation_name: "aws.s3",
+        request_id: undefined,
+        "resource.name": "different-example-bucket",
+        resource_names: "different-example-bucket",
+        service: "new-name",
+        "span.type": "web",
+      },
+    });
+  });
+
+  it("remaps specific S3 inferred span service name based on DD_SERVICE_MAPPING", () => {
+    // Set the environment variable that depicts test outcome, i.e. the result of service tag
+    process.env.DD_SERVICE_MAPPING = "arn:aws:s3:::example-bucket|new-name";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(s3Event, {} as any, {} as SpanContext);
+
+    let modifiedS3Event = JSON.parse(JSON.stringify(s3Event));
+    modifiedS3Event.Records[0].s3.bucket.arn = "arn:aws:s3:::different-example-bucket";
+    modifiedS3Event.Records[0].s3.bucket.name = "different-example-bucket";
+    inferrer.createInferredSpan(modifiedS3Event, {} as any, {} as SpanContext);
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1, "aws.s3", {
+      childOf: {},
+      startTime: 0,
+      tags: {
+        _inferred_span: { synchronicity: "async", tag_source: "self" },
+        bucket_arn: "arn:aws:s3:::example-bucket",
+        bucketname: "example-bucket",
+        event_name: "ObjectCreated:Put",
+        object_etag: "0123456789abcdef0123456789abcdef",
+        object_key: "test/key",
+        object_size: 1024,
+        operation_name: "aws.s3",
+        request_id: undefined,
+        "resource.name": "example-bucket",
+        resource_names: "example-bucket",
+        service: "new-name",
+        "span.type": "web",
+      },
+    });
+
+    expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(2, "aws.s3", {
+      childOf: {},
+      startTime: 0,
+      tags: {
+        _inferred_span: { synchronicity: "async", tag_source: "self" },
+        bucket_arn: "arn:aws:s3:::different-example-bucket",
+        bucketname: "different-example-bucket",
+        event_name: "ObjectCreated:Put",
+        object_etag: "0123456789abcdef0123456789abcdef",
+        object_key: "test/key",
+        object_size: 1024,
+        operation_name: "aws.s3",
+        request_id: undefined,
+        "resource.name": "different-example-bucket",
+        resource_names: "different-example-bucket",
+        service: "s3",
         "span.type": "web",
       },
     });
