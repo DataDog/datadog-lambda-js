@@ -98,8 +98,8 @@ export class SpanInferrer {
     // Allows the customer to have more fine grained control
     const domainMapping = SpanInferrer.getServiceMapping(String(domain));
 
-    // If the domain mapping is not found, attempt to get the service mapping for 'api_gateway'
-    const apiGatewayMapping = domainMapping ? null : SpanInferrer.getServiceMapping("api_gateway");
+    // If the domain mapping is not found, attempt to get the service mapping for 'lambda_api_gateway'
+    const apiGatewayMapping = domainMapping ? null : SpanInferrer.getServiceMapping("lambda_api_gateway");
 
     // If neither mapping is found, default to the domain name
     const serviceName = domainMapping || apiGatewayMapping || domain;
@@ -201,7 +201,7 @@ export class SpanInferrer {
     // Allows the customer to have more fine grained control
     const domainMapping = SpanInferrer.getServiceMapping(String(domain));
 
-    // If the domain mapping is not found, attempt to get the service mapping for 'api_gateway'
+    // If the domain mapping is not found, attempt to get the service mapping for 'lambda_url'
     const lambdUrlMapping = domainMapping ? null : SpanInferrer.getServiceMapping("lambda_url");
 
     // If neither mapping is found, default to the domain name
@@ -252,7 +252,7 @@ export class SpanInferrer {
     const tableArnMapping = SpanInferrer.getServiceMapping(String(fullTableArn));
 
     // If the domain mapping is not found, attempt to get the service mapping for 'dynamodb'
-    const dynamoDbMapping = tableArnMapping ? null : SpanInferrer.getServiceMapping("dynamodb");
+    const dynamoDbMapping = tableArnMapping ? null : SpanInferrer.getServiceMapping("lambda_dynamodb");
 
     // If neither mapping is found, default to "aws.dynamodb"
     const serviceName = tableArnMapping || dynamoDbMapping || "aws.dynamodb";
@@ -303,8 +303,8 @@ export class SpanInferrer {
     const topicName = TopicArn?.split(":").pop();
     const resourceName = topicName;
     const topicMapping = SpanInferrer.getServiceMapping(String(TopicArn));
-    // If the domain mapping is not found, attempt to get the service mapping for 'api_gateway'
-    const snsMapping = topicMapping ? null : SpanInferrer.getServiceMapping("sns");
+    // If the topic mapping is not found, attempt to get the service mapping for 'sns'
+    const snsMapping = topicMapping ? null : SpanInferrer.getServiceMapping("lambda_sns");
 
     // If neither mapping is found, default to the sns name
     const serviceName = topicMapping || snsMapping || "sns";
@@ -348,8 +348,8 @@ export class SpanInferrer {
     const topicName = TopicArn?.split(":").pop();
     const resourceName = topicName;
     const topicMapping = SpanInferrer.getServiceMapping(String(TopicArn));
-    // If the domain mapping is not found, attempt to get the service mapping for 'api_gateway'
-    const snsMapping = topicMapping ? null : SpanInferrer.getServiceMapping("sns");
+    // If the domain mapping is not found, attempt to get the service mapping for 'sns'
+    const snsMapping = topicMapping ? null : SpanInferrer.getServiceMapping("lambda_sns");
 
     // If neither mapping is found, default to the sns name
     const serviceName = topicMapping || snsMapping || "sns";
@@ -397,8 +397,8 @@ export class SpanInferrer {
     const queueName = eventSourceARN?.split(":").pop();
     const resourceName = queueName;
     const queueMapping = SpanInferrer.getServiceMapping(String(eventSourceARN));
-    // If the domain mapping is not found, attempt to get the service mapping for 'api_gateway'
-    const sqsMapping = queueMapping ? null : SpanInferrer.getServiceMapping("sqs");
+    // If the domain mapping is not found, attempt to get the service mapping for 'sqs'
+    const sqsMapping = queueMapping ? null : SpanInferrer.getServiceMapping("lambda_sqs");
 
     // If neither mapping is found, default to the sns name
     const serviceName = queueMapping || sqsMapping || "sqs";
@@ -466,7 +466,7 @@ export class SpanInferrer {
     const streamName = eventSourceARN?.split(":").pop();
     const shardId = eventID.split(":").pop();
     const streamNameMapping = SpanInferrer.getServiceMapping(String(eventSourceARN));
-    const kinesisMapping = streamNameMapping ? null : SpanInferrer.getServiceMapping("kinesis");
+    const kinesisMapping = streamNameMapping ? null : SpanInferrer.getServiceMapping("lambda_kinesis");
 
     // If neither mapping is found, default to the sns name
     const serviceName = streamNameMapping || kinesisMapping || "kinesis";
@@ -517,8 +517,8 @@ export class SpanInferrer {
       eventName,
     } = referenceRecord;
     const bucketNameMapping = SpanInferrer.getServiceMapping(String(arn));
-    // If the domain mapping is not found, attempt to get the service mapping for 'api_gateway'
-    const s3Mapping = bucketNameMapping ? null : SpanInferrer.getServiceMapping("s3");
+    // If the domain mapping is not found, attempt to get the service mapping for 's3'
+    const s3Mapping = bucketNameMapping ? null : SpanInferrer.getServiceMapping("lambda_s3");
 
     // If neither mapping is found, default to the sns name
     const serviceName = bucketNameMapping || s3Mapping || "s3";
@@ -559,8 +559,8 @@ export class SpanInferrer {
     const options: SpanOptions = {};
     const { time, source } = event as EventBridgeEvent<any, any>;
     const sourceMapping = SpanInferrer.getServiceMapping(String(source));
-    // If the domain mapping is not found, attempt to get the service mapping for 'api_gateway'
-    const eventBridgeMapping = sourceMapping ? null : SpanInferrer.getServiceMapping("eventbridge");
+    // If the domain mapping is not found, attempt to get the service mapping for 'eventbridge'
+    const eventBridgeMapping = sourceMapping ? null : SpanInferrer.getServiceMapping("lambda_eventbridge");
 
     // If neither mapping is found, default to the eventbridge name
     const serviceName = sourceMapping || eventBridgeMapping || "eventbridge";
