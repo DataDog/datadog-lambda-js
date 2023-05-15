@@ -37,9 +37,9 @@ export class ColdStartTracer {
     let targetParentSpan: SpanWrapper | undefined;
     if (this.isColdStart) {
       const coldStartSpan = this.createColdStartSpan(coldStartSpanStartTime, coldStartSpanEndTime, this.parentSpan);
-      targetParentSpan = coldStartSpan
+      targetParentSpan = coldStartSpan;
     } else {
-      targetParentSpan = this.parentSpan
+      targetParentSpan = this.parentSpan;
     }
     for (const coldStartNode of rootNodes) {
       this.traceTree(coldStartNode, targetParentSpan);

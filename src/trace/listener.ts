@@ -160,16 +160,16 @@ export class TraceListener {
     if (coldStartNodes.length > 0) {
       const coldStartConfig: ColdStartTracerConfig = {
         tracerWrapper: this.tracerWrapper,
-        parentSpan: didFunctionColdStart()? this.inferredSpan || this.wrappedCurrentSpan : this.wrappedCurrentSpan,
+        parentSpan: didFunctionColdStart() ? this.inferredSpan || this.wrappedCurrentSpan : this.wrappedCurrentSpan,
         lambdaFunctionName: this.context?.functionName,
         currentSpanStartTime: this.wrappedCurrentSpan?.startTime(),
         minDuration: this.config.minColdStartTraceDuration,
         ignoreLibs: this.config.coldStartTraceSkipLib,
-        isColdStart: didFunctionColdStart()
+        isColdStart: didFunctionColdStart(),
       };
       const coldStartTracer = new ColdStartTracer(coldStartConfig);
       coldStartTracer.trace(coldStartNodes);
-      clearTraceTree()
+      clearTraceTree();
     }
     if (this.triggerTags) {
       const statusCode = extractHTTPStatusCodeTag(this.triggerTags, result, isResponseStreamFunction);

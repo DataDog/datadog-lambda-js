@@ -72,7 +72,7 @@ describe("ColdStartTracer", () => {
       currentSpanStartTime: 500,
       minDuration: 1,
       ignoreLibs: "",
-      isColdStart: true
+      isColdStart: true,
     };
     const coldStartTracer = new ColdStartTracer(coldStartConfig);
     coldStartTracer.trace(requireNodes);
@@ -163,7 +163,7 @@ describe("ColdStartTracer", () => {
       currentSpanStartTime: 500,
       minDuration: 1,
       ignoreLibs: "myChildModule,myCoreModule",
-      isColdStart: true
+      isColdStart: true,
     };
     const coldStartTracer = new ColdStartTracer(coldStartConfig);
     coldStartTracer.trace(requireNodes);
@@ -235,7 +235,7 @@ describe("ColdStartTracer", () => {
       currentSpanStartTime: 500,
       minDuration: 1,
       ignoreLibs: "",
-      isColdStart: false 
+      isColdStart: false,
     };
     const coldStartTracer = new ColdStartTracer(coldStartConfig);
     coldStartTracer.trace(requireNodes);
