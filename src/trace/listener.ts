@@ -160,11 +160,12 @@ export class TraceListener {
     if (coldStartNodes.length > 0) {
       const coldStartConfig: ColdStartTracerConfig = {
         tracerWrapper: this.tracerWrapper,
-        parentSpan: this.inferredSpan || this.wrappedCurrentSpan,
+        parentSpan: didFunctionColdStart()? this.inferredSpan || this.wrappedCurrentSpan : this.wrappedCurrentSpan,
         lambdaFunctionName: this.context?.functionName,
         currentSpanStartTime: this.wrappedCurrentSpan?.startTime(),
         minDuration: this.config.minColdStartTraceDuration,
         ignoreLibs: this.config.coldStartTraceSkipLib,
+        isColdStart: didFunctionColdStart()
       };
       const coldStartTracer = new ColdStartTracer(coldStartConfig);
       coldStartTracer.trace(coldStartNodes);
