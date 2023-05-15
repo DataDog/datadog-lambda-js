@@ -19,7 +19,7 @@ import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 import { SpanInferrer } from "./span-inferrer";
 import { SpanWrapper } from "./span-wrapper";
-import { getTraceTree } from "../runtime/index";
+import { getTraceTree, clearTraceTree } from "../runtime/index";
 export type TraceExtractor = (event: any, context: Context) => Promise<TraceContext> | TraceContext;
 
 export interface TraceConfig {
@@ -157,17 +157,19 @@ export class TraceListener {
       tagObject(this.tracerWrapper.currentSpan, "function.response", result);
     }
     const coldStartNodes = getTraceTree();
-    if (coldStartNodes.length > 0 && (didFunctionColdStart() || isProactiveInitialization())) {
+    if (coldStartNodes.length > 0) {
       const coldStartConfig: ColdStartTracerConfig = {
         tracerWrapper: this.tracerWrapper,
-        parentSpan: this.inferredSpan || this.wrappedCurrentSpan,
+        parentSpan: didFunctionColdStart() || isProactiveInitialization() ? this.inferredSpan || this.wrappedCurrentSpan : this.wrappedCurrentSpan,
         lambdaFunctionName: this.context?.functionName,
         currentSpanStartTime: this.wrappedCurrentSpan?.startTime(),
         minDuration: this.config.minColdStartTraceDuration,
         ignoreLibs: this.config.coldStartTraceSkipLib,
+        isColdStart: didFunctionColdStart() || isProactiveInitialization(),
       };
       const coldStartTracer = new ColdStartTracer(coldStartConfig);
       coldStartTracer.trace(coldStartNodes);
+      clearTraceTree();
     }
     if (this.triggerTags) {
       const statusCode = extractHTTPStatusCodeTag(this.triggerTags, result, isResponseStreamFunction);
