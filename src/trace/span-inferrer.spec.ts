@@ -59,7 +59,7 @@ describe("SpanInferrer", () => {
 
   it("remaps all SNS inferred span service name based on DD_SERVICE_MAPPING", () => {
     // Set the environment variable that depicts test outcome, i.e. the result of service tag
-    process.env.DD_SERVICE_MAPPING = "lambda_sns|new-name";
+    process.env.DD_SERVICE_MAPPING = "lambda_sns:new-name";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
 
@@ -109,7 +109,7 @@ describe("SpanInferrer", () => {
 
   it("remaps specific SNS inferred span service name based on DD_SERVICE_MAPPING topicname", () => {
     // Set the environment variable that depicts test outcome, i.e. the result of service tag
-    process.env.DD_SERVICE_MAPPING = "arn:aws:sns:us-east-1:123456789012:DifferentTopic|new-name";
+    process.env.DD_SERVICE_MAPPING = "DifferentTopic:new-name";
     console.log(process.env.DD_SERVICE_MAPPING);
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
@@ -185,7 +185,7 @@ describe("SpanInferrer", () => {
 
   it("remaps all SQS inferred span service name based on DD_SERVICE_MAPPING", () => {
     // Set the environment variable that depicts test outcome, i.e. the result of service tag
-    process.env.DD_SERVICE_MAPPING = "lambda_sqs|new-name";
+    process.env.DD_SERVICE_MAPPING = "lambda_sqs:new-name";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(sqsEvent, {} as any, {} as SpanContext);
 
@@ -235,7 +235,7 @@ describe("SpanInferrer", () => {
 
   it("remaps specific SQS inferred span service name based on DD_SERVICE_MAPPING", () => {
     // Set the environment variable that depicts test outcome, i.e. the result of service tag
-    process.env.DD_SERVICE_MAPPING = "arn:aws:sqs:us-east-1:123456789012:MyQueue|new-name";
+    process.env.DD_SERVICE_MAPPING = "MyQueue:new-name";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(sqsEvent, {} as any, {} as SpanContext);
 
@@ -312,7 +312,7 @@ describe("SpanInferrer", () => {
 
   it("remaps all ddb inferred span service name based on DD_SERVICE_MAPPING", () => {
     // Set the environment variable that depicts test outcome, i.e. the result of service tag
-    process.env.DD_SERVICE_MAPPING = "lambda_dynamodb|new-name";
+    process.env.DD_SERVICE_MAPPING = "lambda_dynamodb:new-name";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(ddbEvent, {} as any, {} as SpanContext);
 
@@ -367,7 +367,7 @@ describe("SpanInferrer", () => {
 
   it("remaps specific ddb inferred span service name based on DD_SERVICE_MAPPING", () => {
     // Set the environment variable that depicts test outcome, i.e. the result of service tag
-    process.env.DD_SERVICE_MAPPING = "arn:aws:dynamodb:us-east-1:123456789012:table/ExampleTableWithStream|new-name";
+    process.env.DD_SERVICE_MAPPING = "ExampleTableWithStream:new-name";
 
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(ddbEvent, {} as any, {} as SpanContext);
@@ -449,7 +449,7 @@ describe("SpanInferrer", () => {
 
   it("remaps all kinesis inferred span service name based on DD_SERVICE_MAPPING", () => {
     // Set the environment variable that depicts test outcome, i.e. the result of service tag
-    process.env.DD_SERVICE_MAPPING = "lambda_kinesis|new-name";
+    process.env.DD_SERVICE_MAPPING = "lambda_kinesis:new-name";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(kinesisEvent, {} as any, {} as SpanContext);
 
@@ -502,7 +502,7 @@ describe("SpanInferrer", () => {
 
   it("remaps specific kinesis inferred span service name based on DD_SERVICE_MAPPING", () => {
     // Set the environment variable that depicts test outcome, i.e. the result of service tag
-    process.env.DD_SERVICE_MAPPING = "arn:aws:kinesis:EXAMPLE|new-name";
+    process.env.DD_SERVICE_MAPPING = "EXAMPLE:new-name";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(kinesisEvent, {} as any, {} as SpanContext);
 
@@ -606,7 +606,7 @@ describe("SpanInferrer", () => {
 
   it("remaps sns sqs inferred spans service names based on DD_SERVICE_MAPPING", () => {
     // Set the environment variable that depicts test outcome, i.e. the result of service tag
-    process.env.DD_SERVICE_MAPPING = "lambda_sns|new-sns-name,lambda_sqs|new-sqs-name";
+    process.env.DD_SERVICE_MAPPING = "lambda_sns:new-sns-name,lambda_sqs:new-sqs-name";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(snssqsEvent, {} as any, {} as SpanContext);
 
@@ -678,7 +678,7 @@ describe("SpanInferrer", () => {
 
   it("remaps all eventbridge inferred span service name based on DD_SERVICE_MAPPING", () => {
     // Set the environment variable that depicts test outcome, i.e. the result of service tag
-    process.env.DD_SERVICE_MAPPING = "lambda_eventbridge|new-name";
+    process.env.DD_SERVICE_MAPPING = "lambda_eventbridge:new-name";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(eventBridgeEvent, {} as any, {} as SpanContext);
 
@@ -717,7 +717,7 @@ describe("SpanInferrer", () => {
 
   it("remaps specific eventbridge inferred span service name based on DD_SERVICE_MAPPING", () => {
     // Set the environment variable that depicts test outcome, i.e. the result of service tag
-    process.env.DD_SERVICE_MAPPING = "my.event|new-name";
+    process.env.DD_SERVICE_MAPPING = "my.event:new-name";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(eventBridgeEvent, {} as any, {} as SpanContext);
 
@@ -782,7 +782,7 @@ describe("SpanInferrer", () => {
 
   it("remaps all API Gateway inferred span service names based on DD_SERVICE_MAPPING", () => {
     // Set the environment variable that depicts test outcome, i.e. the result of service tag
-    process.env.DD_SERVICE_MAPPING = "lambda_api_gateway|new-name";
+    process.env.DD_SERVICE_MAPPING = "lambda_api_gateway:new-name";
 
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(webSocketEvent, {} as any, {} as SpanContext);
@@ -835,7 +835,7 @@ describe("SpanInferrer", () => {
   it("remaps specific API Gateway inferred span service names based on DD_SERVICE_MAPPING and leaves others alone", () => {
     // Set the environment variable that depicts test outcome, i.e. the result of service tag
     process.env.DD_SERVICE_MAPPING =
-      "08se3mvh28.execute-api.eu-west-1.amazonaws.com|new-name,wrong_service|will_be_ignored";
+      "08se3mvh28:new-name,wrong_service:will_be_ignored";
 
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(webSocketEvent, {} as any, {} as SpanContext);
@@ -965,7 +965,7 @@ describe("SpanInferrer", () => {
 
   it("remaps all Lambda URL inferred span service name based on DD_SERVICE_MAPPING", () => {
     // Set the environment variable that depicts test outcome, i.e. the result of service tag
-    process.env.DD_SERVICE_MAPPING = "lambda_url|new-name";
+    process.env.DD_SERVICE_MAPPING = "lambda_url:new-name";
 
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(functionUrlEvent, {} as any, {} as SpanContext);
@@ -1018,12 +1018,12 @@ describe("SpanInferrer", () => {
 
   it("remaps specific Lambda URL inferred span service name based on DD_SERVICE_MAPPING and leaves others alone", () => {
     // Set the environment variable that depicts test outcome, i.e. the result of service tag
-    process.env.DD_SERVICE_MAPPING = "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com|new-name";
+    process.env.DD_SERVICE_MAPPING = "a8hyhsshac:new-name";
 
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(functionUrlEvent, {} as any, {} as SpanContext);
     let modifiedFunctionUrlEvent = JSON.parse(JSON.stringify(functionUrlEvent));
-    modifiedFunctionUrlEvent.requestContext.domainName = "foobar.lambda-url.eu-south-1.amazonaws.com";
+    modifiedFunctionUrlEvent.requestContext.apiId = "different";
     inferrer.createInferredSpan(modifiedFunctionUrlEvent, {} as any, {} as SpanContext);
 
     expect(mockWrapper.startSpan).toHaveBeenNthCalledWith(1, "aws.lambda.url", {
@@ -1057,13 +1057,13 @@ describe("SpanInferrer", () => {
         },
         endpoint: "/",
         "http.method": "GET",
-        "http.url": "foobar.lambda-url.eu-south-1.amazonaws.com/",
+        "http.url": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com/",
         operation_name: "aws.lambda.url",
         request_id: undefined,
         "resource.name": "GET /",
         resource_names: "GET /",
-        "service.name": "foobar.lambda-url.eu-south-1.amazonaws.com",
-        service: "foobar.lambda-url.eu-south-1.amazonaws.com", //left alone
+        "service.name": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com",
+        service: "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com", //left alone
         "span.type": "http",
       },
     });
@@ -1096,7 +1096,7 @@ describe("SpanInferrer", () => {
 
   it("remaps all S3 inferred span service name based on DD_SERVICE_MAPPING", () => {
     // Set the environment variable that depicts test outcome, i.e. the result of service tag
-    process.env.DD_SERVICE_MAPPING = "lambda_s3|new-name";
+    process.env.DD_SERVICE_MAPPING = "lambda_s3:new-name";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(s3Event, {} as any, {} as SpanContext);
 
@@ -1148,7 +1148,7 @@ describe("SpanInferrer", () => {
 
   it("remaps specific S3 inferred span service name based on DD_SERVICE_MAPPING", () => {
     // Set the environment variable that depicts test outcome, i.e. the result of service tag
-    process.env.DD_SERVICE_MAPPING = "arn:aws:s3:::example-bucket|new-name";
+    process.env.DD_SERVICE_MAPPING = "example-bucket:new-name";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(s3Event, {} as any, {} as SpanContext);
 
