@@ -834,8 +834,7 @@ describe("SpanInferrer", () => {
 
   it("remaps specific API Gateway inferred span service names based on DD_SERVICE_MAPPING and leaves others alone", () => {
     // Set the environment variable that depicts test outcome, i.e. the result of service tag
-    process.env.DD_SERVICE_MAPPING =
-      "08se3mvh28:new-name,wrong_service:will_be_ignored";
+    process.env.DD_SERVICE_MAPPING = "08se3mvh28:new-name,wrong_service:will_be_ignored";
 
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(webSocketEvent, {} as any, {} as SpanContext);

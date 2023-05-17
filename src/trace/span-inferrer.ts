@@ -76,7 +76,6 @@ export class SpanInferrer {
     return mapping[serviceName];
   }
 
-
   createInferredSpanForApiGateway(
     event: any,
     context: Context | undefined,
@@ -395,7 +394,7 @@ export class SpanInferrer {
     const sqsMapping = queueMapping ? null : SpanInferrer.getServiceMapping("lambda_sqs");
 
     // If neither mapping is found, default to the sqs name
-    const serviceName = queueMapping || sqsMapping || "sqs"
+    const serviceName = queueMapping || sqsMapping || "sqs";
     options.tags = {
       operation_name: "aws.sqs",
       resource_names: resourceName,
