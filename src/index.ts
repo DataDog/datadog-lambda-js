@@ -15,7 +15,7 @@ import {
   Logger,
   LogLevel,
   promisifiedHandler,
-  setColdStart,
+  setSandboxInit,
   setLogger,
   setLogLevel,
 } from "./utils";
@@ -92,6 +92,8 @@ if (getEnvValue(coldStartTracingEnvVar, "true").toLowerCase() === "true") {
   subscribeToDC();
 }
 
+const initTime = Date.now();
+
 /**
  * Wraps your AWS lambda handler functions to add tracing/metrics support
  * @param handler A lambda handler function.
@@ -131,8 +133,8 @@ export function datadog<TEvent, TResult>(
   let wrappedFunc: any;
   wrappedFunc = async (...args: any[]) => {
     const { event, context, responseStream } = extractArgs(isResponseStreamFunction, ...args);
-    setColdStart();
     const startTime = new Date();
+    setSandboxInit(initTime, startTime.getTime());
 
     currentMetricsListener = metricsListener;
     currentTraceListener = traceListener;

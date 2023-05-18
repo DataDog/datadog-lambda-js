@@ -3,7 +3,7 @@ import { sendDistributionMetric } from "../index";
 
 import { Context } from "aws-lambda";
 import { parseTagsFromARN } from "../utils/arn";
-import { getColdStartTag } from "../utils/cold-start";
+import { getSandboxInitTags } from "../utils/cold-start";
 import { getProcessVersion } from "../utils/process-version";
 import { writeMetricToStdout } from "./metric-log";
 import { MetricsListener } from "./listener";
@@ -54,7 +54,7 @@ export function getEnhancedMetricTags(context: Context): string[] {
   if (context.invokedFunctionArn) {
     arnTags = parseTagsFromARN(context.invokedFunctionArn, context.functionVersion);
   }
-  const tags = [...arnTags, getColdStartTag(), `memorysize:${context.memoryLimitInMB}`, getVersionTag()];
+  const tags = [...arnTags, ...getSandboxInitTags(), `memorysize:${context.memoryLimitInMB}`, getVersionTag()];
 
   const runtimeTag = getRuntimeTag();
   if (runtimeTag) {
