@@ -39,6 +39,7 @@ START
           "version": "1.0.0",
           "runtime-id":"XXXX",
           "operation_name": "aws.apigateway",
+          "http.url": "undefined",
           "resource_names": "GET /{proxy+}",
           "request_id":"XXXX",
           "apiid":"XXXX",
