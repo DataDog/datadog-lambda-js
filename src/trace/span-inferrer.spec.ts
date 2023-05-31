@@ -78,24 +78,24 @@ describe("SpanInferrer", () => {
   });
 
   it("falls back to default span service name when service mapping has no value for a key", () => {
-      process.env.DD_SERVICE_MAPPING = "key1:value1,key2:";
-      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
-      inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
-      expect(getStartSpanServiceTag(1)).toBe("sns");
+    process.env.DD_SERVICE_MAPPING = "key1:value1,key2:";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
+    expect(getStartSpanServiceTag(1)).toBe("sns");
   });
 
   it("falls back to default span service name when service mapping has no key", () => {
-      process.env.DD_SERVICE_MAPPING = "key1:value1,:value2";
-      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
-      inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
-      expect(getStartSpanServiceTag(1)).toBe("sns");
+    process.env.DD_SERVICE_MAPPING = "key1:value1,:value2";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
+    expect(getStartSpanServiceTag(1)).toBe("sns");
   });
 
   it("falls back to default span service name when service mapping is not set", () => {
-      delete process.env.DD_SERVICE_MAPPING;
-      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
-      inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
-      expect(getStartSpanServiceTag(1)).toBe("sns");
+    delete process.env.DD_SERVICE_MAPPING;
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
+    expect(getStartSpanServiceTag(1)).toBe("sns");
   });
 
   it("handles mappings without a value", () => {
@@ -106,29 +106,29 @@ describe("SpanInferrer", () => {
   });
 
   it("ignores mappings without a key", () => {
-      process.env.DD_SERVICE_MAPPING = "key1:value1,:value2";
-      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
-      expect(SpanInferrer.getServiceMapping("")).toBe(undefined);
+    process.env.DD_SERVICE_MAPPING = "key1:value1,:value2";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    expect(SpanInferrer.getServiceMapping("")).toBe(undefined);
   });
 
   it("returns undefined for mappings with incorrect delimiters", () => {
-      process.env.DD_SERVICE_MAPPING = "key1-value1,key2=value2";
-      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
-      expect(SpanInferrer.getServiceMapping("key1")).toBe(undefined);
-      expect(SpanInferrer.getServiceMapping("key2")).toBe(undefined);
+    process.env.DD_SERVICE_MAPPING = "key1-value1,key2=value2";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    expect(SpanInferrer.getServiceMapping("key1")).toBe(undefined);
+    expect(SpanInferrer.getServiceMapping("key2")).toBe(undefined);
   });
 
   it("handles mappings with additional whitespace", () => {
-      process.env.DD_SERVICE_MAPPING = "key1 : value1 , key2 : value2";
-      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
-      expect(SpanInferrer.getServiceMapping("key1")).toBe("value1");
-      expect(SpanInferrer.getServiceMapping("key2")).toBe("value2");
+    process.env.DD_SERVICE_MAPPING = "key1 : value1 , key2 : value2";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    expect(SpanInferrer.getServiceMapping("key1")).toBe("value1");
+    expect(SpanInferrer.getServiceMapping("key2")).toBe("value2");
   });
 
   it("returns undefined when service mapping is not set", () => {
-      delete process.env.DD_SERVICE_MAPPING;
-      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
-      expect(SpanInferrer.getServiceMapping("key1")).toBe(undefined);
+    delete process.env.DD_SERVICE_MAPPING;
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    expect(SpanInferrer.getServiceMapping("key1")).toBe(undefined);
   });
 
   it("remaps all SNS inferred span service name based on DD_SERVICE_MAPPING", () => {
