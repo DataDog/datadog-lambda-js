@@ -15,7 +15,6 @@ import { parentSpanFinishTimeHeader } from "./constants";
 import { logDebug } from "../utils";
 import { getInjectedAuthorizerData } from "./context";
 import { decodeAuthorizerContextEnvVar } from "../index";
-import { string } from "yargs";
 
 export class SpanInferrer {
   private static serviceMapping: Record<string, string> = {};
