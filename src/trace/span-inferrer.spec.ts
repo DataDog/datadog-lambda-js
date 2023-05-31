@@ -70,6 +70,34 @@ describe("SpanInferrer", () => {
     expect(serviceName).toBe("fallback");
   });
 
+  it("falls back to default span service name when service mapping has incorrect delimiters", () => {
+    process.env.DD_SERVICE_MAPPING = "key1-value1,key2=value2";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
+    expect(getStartSpanServiceTag(1)).toBe("sns");
+  });
+
+  it("falls back to default span service name when service mapping has no value for a key", () => {
+      process.env.DD_SERVICE_MAPPING = "key1:value1,key2:";
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("sns");
+  });
+
+  it("falls back to default span service name when service mapping has no key", () => {
+      process.env.DD_SERVICE_MAPPING = "key1:value1,:value2";
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("sns");
+  });
+
+  it("falls back to default span service name when service mapping is not set", () => {
+      delete process.env.DD_SERVICE_MAPPING;
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("sns");
+  });
+
   it("handles mappings without a value", () => {
     process.env.DD_SERVICE_MAPPING = "key1:value1,key2:";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
@@ -106,7 +134,6 @@ describe("SpanInferrer", () => {
   it("remaps all SNS inferred span service name based on DD_SERVICE_MAPPING", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
 
-    // Call initServiceMapping manually with the mapping you want to test
     (SpanInferrer as any).serviceMapping = { lambda_sns: "new-name" };
 
     inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
@@ -122,7 +149,6 @@ describe("SpanInferrer", () => {
   it("remaps specific SNS inferred span service name based on DD_SERVICE_MAPPING topicname", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
 
-    // Set the service mapping manually
     (SpanInferrer as any).serviceMapping = { DifferentTopic: "new-name" };
 
     inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
@@ -138,7 +164,6 @@ describe("SpanInferrer", () => {
   it("remaps all SQS inferred span service name based on DD_SERVICE_MAPPING", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
 
-    // Set the service mapping manually
     (SpanInferrer as any).serviceMapping = { lambda_sqs: "new-name" };
 
     inferrer.createInferredSpan(sqsEvent, {} as any, {} as SpanContext);
