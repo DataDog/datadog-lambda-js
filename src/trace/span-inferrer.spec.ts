@@ -131,6 +131,18 @@ describe("SpanInferrer", () => {
     expect(SpanInferrer.getServiceMapping("key1")).toBe(undefined);
   });
 
+  it("ignores mappings with the same key and value", () => {
+    process.env.DD_SERVICE_MAPPING = "key1:key1";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    expect(SpanInferrer.getServiceMapping("key1")).toBe(undefined);
+  });
+
+  it("ignores mappings with more than one colon", () => {
+    process.env.DD_SERVICE_MAPPING = "key1:value1:value2";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    expect(SpanInferrer.getServiceMapping("key1")).toBe(undefined);
+  });
+
   it("remaps all SNS inferred span service name based on DD_SERVICE_MAPPING", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
 

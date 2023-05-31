@@ -28,9 +28,9 @@ export class SpanInferrer {
     const serviceMappingStr = process.env.DD_SERVICE_MAPPING || "";
 
     serviceMappingStr.split(",").forEach((entry) => {
-      const [key, value] = entry.split(":");
-      if (key && value) {
-        this.serviceMapping[key.trim()] = value.trim();
+      const parts = entry.split(":").map((part) => part.trim());
+      if (parts.length === 2 && parts[0] && parts[1] && parts[0] !== parts[1]) {
+        this.serviceMapping[parts[0]] = parts[1];
       }
     });
   }
