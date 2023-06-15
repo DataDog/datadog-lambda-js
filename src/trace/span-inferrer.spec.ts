@@ -1,5 +1,7 @@
+import { Context } from "aws-lambda";
 import { SpanInferrer } from "./span-inferrer";
 import { SpanContext, TracerWrapper } from "./tracer-wrapper";
+import { DD_SERVICE_ENV_VAR } from "./constants";
 const snssqsEvent = require("../../event_samples/snssqs.json");
 const snsEvent = require("../../event_samples/sns.json");
 const sqsEvent = require("../../event_samples/sqs.json");
@@ -24,8 +26,18 @@ const mockWrapper = {
 };
 
 describe("SpanInferrer", () => {
+  let oldEnv: any;
   beforeEach(() => {
     mockWrapper.startSpan.mockClear();
+
+    oldEnv = process.env;
+    process.env = {
+      [DD_SERVICE_ENV_VAR]: "mock-lambda-service",
+    };
+  });
+
+  afterEach(() => {
+    process.env = oldEnv;
   });
 
   afterEach(() => {
@@ -388,6 +400,7 @@ describe("SpanInferrer", () => {
         event_subscription_arn: "arn:aws:sns:us-east-1:123456789012:ExampleTopic",
         message_id: "95df01b4-ee98-5cb9-9903-4c221d41eb5e",
         operation_name: "aws.sns",
+        "peer.service": "mock-lambda-service",
         request_id: undefined,
         "resource.name": "ExampleTopic",
         resource_names: "ExampleTopic",
@@ -412,6 +425,7 @@ describe("SpanInferrer", () => {
         _inferred_span: { synchronicity: "async", tag_source: "self" },
         event_source_arn: "arn:aws:sqs:us-east-1:123456789012:MyQueue",
         operation_name: "aws.sqs",
+        "peer.service": "mock-lambda-service",
         queuename: "MyQueue",
         receipt_handle: "MessageReceiptHandle",
         request_id: undefined,
@@ -442,6 +456,7 @@ describe("SpanInferrer", () => {
           "arn:aws:dynamodb:us-east-1:123456789012:table/ExampleTableWithStream/stream/2015-06-27T00:48:05.899",
         event_version: "1.1",
         operation_name: "aws.dynamodb",
+        "peer.service": "mock-lambda-service",
         request_id: undefined,
         "resource.name": "INSERT ExampleTableWithStream",
         resource_names: "INSERT ExampleTableWithStream",
@@ -467,6 +482,7 @@ describe("SpanInferrer", () => {
         event_source_arn: "arn:aws:kinesis:EXAMPLE",
         event_version: "1.0",
         operation_name: "aws.kinesis",
+        "peer.service": "mock-lambda-service",
         partition_key: "cdbfd750-cec0-4f0f-a4b0-82ae6152c7fb",
         request_id: undefined,
         "resource.name": "EXAMPLE",
@@ -493,6 +509,7 @@ describe("SpanInferrer", () => {
             _inferred_span: { synchronicity: "async", tag_source: "self" },
             message_id: "0a0ab23e-4861-5447-82b7-e8094ff3e332",
             operation_name: "aws.sns",
+            "peer.service": "mock-lambda-service",
             "resource.name": "js-library-test-dev-demoTopic-15WGUVRCBMPAA",
             resource_names: "js-library-test-dev-demoTopic-15WGUVRCBMPAA",
             service: "sns",
@@ -513,6 +530,7 @@ describe("SpanInferrer", () => {
             _inferred_span: { synchronicity: "async", tag_source: "self" },
             event_source_arn: "arn:aws:sqs:eu-west-1:601427279990:aj-js-library-test-dev-demo-queue",
             operation_name: "aws.sqs",
+            "peer.service": "mock-lambda-service",
             queuename: "aj-js-library-test-dev-demo-queue",
             receipt_handle:
               "AQEBER6aRkfG8092GvkL7FRwCwbQ7LLDW9Tlk/CembqHe+suS2kfFxXiukomvaIN61QoyQMoRgWuV52SDkiQno2u+5hP64BDbmw+e/KR9ayvIfHJ3M6RfyQLaWNWm3hDFBCKTnBMVIxtdx0N9epZZewyokjKcrNYtmCghFgTCvZzsQkowi5rnoHAVHJ3je1c3bDnQ1KLrZFgajDnootYXDwEPuMq5FIxrf4EzTe0S7S+rnRm+GaQfeBLBVAY6dASL9usV3/AFRqDtaI7GKI+0F2NCgLlqj49VlPRz4ldhkGknYlKTZTluAqALWLJS62/J1GQo53Cs3nneJcmu5ajB2zzmhhRXoXINEkLhCD5ujZfcsw9H4xqW69Or4ECvlqx14bUU2rtMIW0QM2p7pEeXnyocymQv6m1te113eYWTVmaJ4I=",
@@ -540,6 +558,7 @@ describe("SpanInferrer", () => {
       tags: {
         _inferred_span: { synchronicity: "async", tag_source: "self" },
         operation_name: "aws.eventbridge",
+        "peer.service": "mock-lambda-service",
         request_id: undefined,
         "resource.name": "my.event",
         resource_names: "my.event",
@@ -565,6 +584,7 @@ describe("SpanInferrer", () => {
         "http.url": "08se3mvh28.execute-api.eu-west-1.amazonaws.com$connect",
         message_direction: "IN",
         operation_name: "aws.apigateway",
+        "peer.service": "mock-lambda-service",
         request_id: undefined,
         "resource.name": "08se3mvh28.execute-api.eu-west-1.amazonaws.com $connect",
         resource_names: "08se3mvh28.execute-api.eu-west-1.amazonaws.com $connect",
@@ -589,6 +609,7 @@ describe("SpanInferrer", () => {
         "http.url": "id.execute-api.us-east-1.amazonaws.com/my/path",
         domain_name: "id.execute-api.us-east-1.amazonaws.com",
         operation_name: "aws.apigateway",
+        "peer.service": "mock-lambda-service",
         request_id: undefined,
         "http.method": "GET",
         "resource.name": "GET /path",
@@ -615,6 +636,7 @@ describe("SpanInferrer", () => {
         "http.url": "r3pmxmplak.execute-api.us-east-2.amazonaws.com/default/nodejs-apig-function-1G3XMPLZXVXYI",
         domain_name: "r3pmxmplak.execute-api.us-east-2.amazonaws.com",
         operation_name: "aws.apigateway",
+        "peer.service": "mock-lambda-service",
         request_id: undefined,
         "http.method": "GET",
         "resource.name": "GET /default/nodejs-apig-function-1G3XMPLZXVXYI",
@@ -643,6 +665,7 @@ describe("SpanInferrer", () => {
         "http.method": "GET",
         "http.url": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com/",
         operation_name: "aws.lambda.url",
+        "peer.service": "mock-lambda-service",
         request_id: undefined,
         "resource.name": "GET /",
         resource_names: "GET /",
@@ -669,6 +692,7 @@ describe("SpanInferrer", () => {
         object_key: "test/key",
         object_size: 1024,
         operation_name: "aws.s3",
+        "peer.service": "mock-lambda-service",
         request_id: undefined,
         "resource.name": "example-bucket",
         resource_names: "example-bucket",
@@ -689,6 +713,7 @@ describe("Authorizer Spans", () => {
       };
     }),
   };
+  let oldEnv: any;
 
   beforeEach(() => {
     mockWrapperWithFinish.startSpan = jest.fn(() => {
@@ -696,10 +721,16 @@ describe("Authorizer Spans", () => {
         finish: mockFinish,
       };
     });
+
+    oldEnv = process.env;
+    process.env = {
+      [DD_SERVICE_ENV_VAR]: "mock-lambda-service",
+    };
   });
 
   afterEach(() => {
     mockWrapperWithFinish.startSpan.mockReset();
+    process.env = oldEnv;
   });
 
   it("creates an inferred span for API Gateway V1 event with traced authorizers [Request Type]", () => {
@@ -718,6 +749,7 @@ describe("Authorizer Spans", () => {
           "http.method": "POST",
           "http.url": "3gsxz7lha4.execute-api.eu-west-1.amazonaws.com/dev/hello",
           operation_name: "aws.apigateway",
+          "peer.service": "mock-lambda-service",
           request_id: undefined,
           "resource.name": "POST /hello",
           resource_names: "POST /hello",
@@ -741,6 +773,7 @@ describe("Authorizer Spans", () => {
           "http.method": "POST",
           "http.url": "3gsxz7lha4.execute-api.eu-west-1.amazonaws.com/dev/hello",
           operation_name: "aws.apigateway",
+          "peer.service": "mock-lambda-service",
           request_id: undefined,
           "resource.name": "POST /hello",
           resource_names: "POST /hello",
@@ -769,6 +802,7 @@ describe("Authorizer Spans", () => {
           "http.method": "POST",
           "http.url": "3gsxz7lha4.execute-api.eu-west-1.amazonaws.com/dev/hello",
           operation_name: "aws.apigateway",
+          "peer.service": "mock-lambda-service",
           request_id: undefined,
           "resource.name": "POST /hello",
           resource_names: "POST /hello",
@@ -797,6 +831,7 @@ describe("Authorizer Spans", () => {
           "http.method": "GET",
           "http.url": "4dyr9xqip7.execute-api.eu-west-1.amazonaws.com/dev/hi",
           operation_name: "aws.apigateway",
+          "peer.service": "mock-lambda-service",
           request_id: undefined,
           "resource.name": "GET /hi",
           resource_names: "GET /hi",
@@ -820,6 +855,7 @@ describe("Authorizer Spans", () => {
           "http.method": "GET",
           "http.url": "4dyr9xqip7.execute-api.eu-west-1.amazonaws.com/dev/hi",
           operation_name: "aws.apigateway",
+          "peer.service": "mock-lambda-service",
           request_id: undefined,
           "resource.name": "GET /hi",
           resource_names: "GET /hi",
@@ -848,6 +884,7 @@ describe("Authorizer Spans", () => {
           "http.method": "GET",
           "http.url": "4dyr9xqip7.execute-api.eu-west-1.amazonaws.com/dev/hi",
           operation_name: "aws.apigateway",
+          "peer.service": "mock-lambda-service",
           request_id: undefined,
           "resource.name": "GET /hi",
           resource_names: "GET /hi",
@@ -876,6 +913,7 @@ describe("Authorizer Spans", () => {
           "http.method": "GET",
           "http.url": "l9flvsey83.execute-api.eu-west-1.amazonaws.com/hello",
           operation_name: "aws.httpapi",
+          "peer.service": "mock-lambda-service",
           request_id: undefined,
           "resource.name": "GET /hello",
           resource_names: "GET /hello",
@@ -904,6 +942,7 @@ describe("Authorizer Spans", () => {
           "http.method": "GET",
           "http.url": "l9flvsey83.execute-api.eu-west-1.amazonaws.com/hello",
           operation_name: "aws.apigateway",
+          "peer.service": "mock-lambda-service",
           request_id: undefined,
           "resource.name": "GET /hello",
           resource_names: "GET /hello",
@@ -933,6 +972,7 @@ describe("Authorizer Spans", () => {
           "http.url": "85fj5nw29d.execute-api.eu-west-1.amazonaws.com$connect",
           message_direction: "IN",
           operation_name: "aws.apigateway",
+          "peer.service": "mock-lambda-service",
           request_id: undefined,
           "resource.name": "85fj5nw29d.execute-api.eu-west-1.amazonaws.com $connect",
           resource_names: "85fj5nw29d.execute-api.eu-west-1.amazonaws.com $connect",
@@ -956,6 +996,7 @@ describe("Authorizer Spans", () => {
           "http.url": "85fj5nw29d.execute-api.eu-west-1.amazonaws.com$connect",
           message_direction: "IN",
           operation_name: "aws.apigateway",
+          "peer.service": "mock-lambda-service",
           request_id: undefined,
           "resource.name": "85fj5nw29d.execute-api.eu-west-1.amazonaws.com $connect",
           resource_names: "85fj5nw29d.execute-api.eu-west-1.amazonaws.com $connect",
@@ -984,6 +1025,7 @@ describe("Authorizer Spans", () => {
           "http.url": "85fj5nw29d.execute-api.eu-west-1.amazonaws.comhello",
           message_direction: "IN",
           operation_name: "aws.apigateway",
+          "peer.service": "mock-lambda-service",
           request_id: undefined,
           "resource.name": "85fj5nw29d.execute-api.eu-west-1.amazonaws.com hello",
           resource_names: "85fj5nw29d.execute-api.eu-west-1.amazonaws.com hello",

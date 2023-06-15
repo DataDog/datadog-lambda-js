@@ -11,7 +11,7 @@ import {
 import { SpanContext, SpanOptions, TracerWrapper } from "./tracer-wrapper";
 import { eventSubTypes, eventTypes, parseEventSource, parseEventSourceSubType } from "./trigger";
 import { SpanWrapper } from "./span-wrapper";
-import { parentSpanFinishTimeHeader } from "./constants";
+import { DD_SERVICE_ENV_VAR, parentSpanFinishTimeHeader } from "./constants";
 import { logDebug } from "../utils";
 import { getInjectedAuthorizerData } from "./context";
 import { decodeAuthorizerContextEnvVar } from "../index";
@@ -19,8 +19,10 @@ import { decodeAuthorizerContextEnvVar } from "../index";
 export class SpanInferrer {
   private static serviceMapping: Record<string, string> = {};
   traceWrapper: TracerWrapper;
+  service?: string;
   constructor(traceWrapper: TracerWrapper) {
     this.traceWrapper = traceWrapper;
+    this.service = process.env[DD_SERVICE_ENV_VAR];
     SpanInferrer.initServiceMapping();
   }
 
@@ -113,6 +115,7 @@ export class SpanInferrer {
       "span.type": "http",
       "resource.name": resourceName,
       "service.name": domain,
+      "peer.service": this.service,
       apiid: apiId,
       service: serviceName,
       _inferred_span: {
@@ -210,6 +213,7 @@ export class SpanInferrer {
       "span.type": "http",
       "resource.name": resourceName,
       "service.name": domain,
+      "peer.service": this.service,
       service: serviceName,
       _inferred_span: {
         tag_source: "self",
@@ -245,6 +249,7 @@ export class SpanInferrer {
       request_id: context?.awsRequestId,
       "span.type": "web",
       "resource.name": resourceName,
+      "peer.service": this.service,
       service: serviceName,
       _inferred_span: {
         tag_source: "self",
@@ -290,6 +295,7 @@ export class SpanInferrer {
       request_id: context?.awsRequestId,
       "span.type": "sns",
       "resource.name": resourceName,
+      "peer.service": this.service,
       service: serviceName,
       _inferred_span: {
         tag_source: "self",
@@ -327,6 +333,7 @@ export class SpanInferrer {
       resource_names: resourceName,
       "span.type": "sns",
       "resource.name": resourceName,
+      "peer.service": this.service,
       service: serviceName,
       _inferred_span: {
         tag_source: "self",
@@ -372,6 +379,7 @@ export class SpanInferrer {
       "span.type": "web",
       "resource.name": resourceName,
       "service.name": resourceName,
+      "peer.service": this.service,
       service: serviceName,
       _inferred_span: {
         tag_source: "self",
@@ -433,6 +441,7 @@ export class SpanInferrer {
       request_id: context?.awsRequestId,
       "span.type": "web",
       "resource.name": streamName,
+      "peer.service": this.service,
       service: serviceName,
       _inferred_span: {
         tag_source: "self",
@@ -479,6 +488,7 @@ export class SpanInferrer {
       request_id: context?.awsRequestId,
       "span.type": "web",
       "resource.name": bucketName,
+      "peer.service": this.service,
       service: serviceName,
       _inferred_span: {
         tag_source: "self",
@@ -515,6 +525,7 @@ export class SpanInferrer {
       request_id: context?.awsRequestId,
       "span.type": "web",
       "resource.name": source,
+      "peer.service": this.service,
       service: serviceName,
       _inferred_span: {
         tag_source: "self",
