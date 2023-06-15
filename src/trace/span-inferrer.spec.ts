@@ -40,6 +40,354 @@ describe("SpanInferrer", () => {
     process.env = oldEnv;
   });
 
+  afterEach(() => {
+    delete process.env.DD_SERVICE_MAPPING;
+    (SpanInferrer as any).serviceMapping = {};
+  });
+
+  function getStartSpanServiceTag(callNumber: number) {
+    return mockWrapper.startSpan.mock.calls[callNumber - 1][1].tags.service;
+  }
+
+  it("initializes service mapping correctly", () => {
+    process.env.DD_SERVICE_MAPPING = "key1:value1,key2:value2";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    expect(SpanInferrer.getServiceMapping("key1")).toBe("value1");
+    expect(SpanInferrer.getServiceMapping("key2")).toBe("value2");
+  });
+
+  it("returns undefined when service name is not found in service mapping", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    expect(SpanInferrer.getServiceMapping("non_existent_key")).toBe(undefined);
+  });
+
+  it("determines service name correctly based on specific key", () => {
+    process.env.DD_SERVICE_MAPPING = "key1:value1,key2:value2";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    const serviceName = SpanInferrer.determineServiceName("key1", "key2", "fallback");
+    expect(serviceName).toBe("value1");
+  });
+
+  it("determines service name correctly based on generic key when specific key is not in service mapping", () => {
+    process.env.DD_SERVICE_MAPPING = "key1:value1,key2:value2";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    const serviceName = SpanInferrer.determineServiceName("non_existent_key", "key2", "fallback");
+    expect(serviceName).toBe("value2");
+  });
+
+  it("falls back to fallback value when neither specific nor generic key is in service mapping", () => {
+    process.env.DD_SERVICE_MAPPING = "key1:value1,key2:value2";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    const serviceName = SpanInferrer.determineServiceName("non_existent_key", "another_non_existent_key", "fallback");
+    expect(serviceName).toBe("fallback");
+  });
+
+  it("falls back to default span service name when service mapping has incorrect delimiters", () => {
+    process.env.DD_SERVICE_MAPPING = "key1-value1,key2=value2";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
+    expect(getStartSpanServiceTag(1)).toBe("sns");
+  });
+
+  it("falls back to default span service name when service mapping has no value for a key", () => {
+    process.env.DD_SERVICE_MAPPING = "key1:value1,key2:";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
+    expect(getStartSpanServiceTag(1)).toBe("sns");
+  });
+
+  it("falls back to default span service name when service mapping has no key", () => {
+    process.env.DD_SERVICE_MAPPING = "key1:value1,:value2";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
+    expect(getStartSpanServiceTag(1)).toBe("sns");
+  });
+
+  it("falls back to default span service name when service mapping is not set", () => {
+    delete process.env.DD_SERVICE_MAPPING;
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
+    expect(getStartSpanServiceTag(1)).toBe("sns");
+  });
+
+  it("handles mappings without a value", () => {
+    process.env.DD_SERVICE_MAPPING = "key1:value1,key2:";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    expect(SpanInferrer.getServiceMapping("key1")).toBe("value1");
+    expect(SpanInferrer.getServiceMapping("key2")).toBe(undefined);
+  });
+
+  it("ignores mappings without a key", () => {
+    process.env.DD_SERVICE_MAPPING = "key1:value1,:value2";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    expect(SpanInferrer.getServiceMapping("")).toBe(undefined);
+  });
+
+  it("returns undefined for mappings with incorrect delimiters", () => {
+    process.env.DD_SERVICE_MAPPING = "key1-value1,key2=value2";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    expect(SpanInferrer.getServiceMapping("key1")).toBe(undefined);
+    expect(SpanInferrer.getServiceMapping("key2")).toBe(undefined);
+  });
+
+  it("handles mappings with additional whitespace", () => {
+    process.env.DD_SERVICE_MAPPING = "key1 : value1 , key2 : value2";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    expect(SpanInferrer.getServiceMapping("key1")).toBe("value1");
+    expect(SpanInferrer.getServiceMapping("key2")).toBe("value2");
+  });
+
+  it("returns undefined when service mapping is not set", () => {
+    delete process.env.DD_SERVICE_MAPPING;
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    expect(SpanInferrer.getServiceMapping("key1")).toBe(undefined);
+  });
+
+  it("ignores mappings with the same key and value", () => {
+    process.env.DD_SERVICE_MAPPING = "key1:key1";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    expect(SpanInferrer.getServiceMapping("key1")).toBe(undefined);
+  });
+
+  it("ignores mappings with more than one colon", () => {
+    process.env.DD_SERVICE_MAPPING = "key1:value1:value2";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    expect(SpanInferrer.getServiceMapping("key1")).toBe(undefined);
+  });
+
+  it("remaps all SNS inferred span service name based on DD_SERVICE_MAPPING", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+
+    (SpanInferrer as any).serviceMapping = { lambda_sns: "new-name" };
+
+    inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
+
+    let modifiedSnsEvent = JSON.parse(JSON.stringify(snsEvent));
+    modifiedSnsEvent.Records[0].EventSubscriptionArn = "arn:aws:sns:us-east-1:123456789012:DifferentTopic";
+    inferrer.createInferredSpan(modifiedSnsEvent, {} as any, {} as SpanContext);
+
+    expect(getStartSpanServiceTag(1)).toBe("new-name");
+    expect(getStartSpanServiceTag(2)).toBe("new-name");
+  });
+
+  it("remaps specific SNS inferred span service name based on DD_SERVICE_MAPPING topicname", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+
+    (SpanInferrer as any).serviceMapping = { DifferentTopic: "new-name" };
+
+    inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
+
+    let modifiedSnsEvent = JSON.parse(JSON.stringify(snsEvent));
+    modifiedSnsEvent.Records[0].Sns.TopicArn = "arn:aws:sns:us-east-1:123456789012:DifferentTopic";
+    inferrer.createInferredSpan(modifiedSnsEvent, {} as any, {} as SpanContext);
+
+    expect(getStartSpanServiceTag(1)).toBe("sns");
+    expect(getStartSpanServiceTag(2)).toBe("new-name");
+  });
+
+  it("remaps all SQS inferred span service name based on DD_SERVICE_MAPPING", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+
+    (SpanInferrer as any).serviceMapping = { lambda_sqs: "new-name" };
+
+    inferrer.createInferredSpan(sqsEvent, {} as any, {} as SpanContext);
+
+    let modifiedSqsEvent = JSON.parse(JSON.stringify(sqsEvent));
+    modifiedSqsEvent.Records[0].eventSourceARN = "arn:aws:sqs:us-east-1:123456789012:DifferentQueue";
+    inferrer.createInferredSpan(modifiedSqsEvent, {} as any, {} as SpanContext);
+
+    expect(getStartSpanServiceTag(1)).toBe("new-name");
+    expect(getStartSpanServiceTag(2)).toBe("new-name");
+  });
+
+  it("remaps specific SQS inferred span service name based on DD_SERVICE_MAPPING", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    (SpanInferrer as any).serviceMapping = { MyQueue: "new-name" };
+
+    inferrer.createInferredSpan(sqsEvent, {} as any, {} as SpanContext);
+
+    let modifiedDdbEvent = JSON.parse(JSON.stringify(sqsEvent));
+    modifiedDdbEvent.Records[0].eventSourceARN = "arn:aws:sqs:us-east-1:123456789012:DifferentQueue";
+    inferrer.createInferredSpan(modifiedDdbEvent, {} as any, {} as SpanContext);
+
+    expect(getStartSpanServiceTag(1)).toBe("new-name");
+    expect(getStartSpanServiceTag(2)).toBe("sqs");
+  });
+
+  it("remaps all ddb inferred span service name based on DD_SERVICE_MAPPING", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    (SpanInferrer as any).serviceMapping = { lambda_dynamodb: "new-name" };
+
+    inferrer.createInferredSpan(ddbEvent, {} as any, {} as SpanContext);
+
+    let modifiedDdbEvent = JSON.parse(JSON.stringify(ddbEvent));
+    modifiedDdbEvent.Records[0].eventSourceARN =
+      "arn:aws:dynamodb:us-east-1:123456789012:table/DifferentTableWithStream/stream/2015-06-27T00:48:05.899";
+    inferrer.createInferredSpan(modifiedDdbEvent, {} as any, {} as SpanContext);
+
+    expect(getStartSpanServiceTag(1)).toBe("new-name");
+    expect(getStartSpanServiceTag(2)).toBe("new-name");
+  });
+
+  it("remaps specific ddb inferred span service name based on DD_SERVICE_MAPPING", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    (SpanInferrer as any).serviceMapping = { ExampleTableWithStream: "new-name" };
+
+    inferrer.createInferredSpan(ddbEvent, {} as any, {} as SpanContext);
+
+    let modifiedDdbEvent = JSON.parse(JSON.stringify(ddbEvent));
+    modifiedDdbEvent.Records[0].eventSourceARN =
+      "arn:aws:dynamodb:us-east-1:123456789012:table/DifferentTableWithStream/stream/2015-06-27T00:48:05.899";
+    inferrer.createInferredSpan(modifiedDdbEvent, {} as any, {} as SpanContext);
+
+    expect(getStartSpanServiceTag(1)).toBe("new-name");
+    expect(getStartSpanServiceTag(2)).toBe("aws.dynamodb");
+  });
+
+  it("remaps all kinesis inferred span service name based on DD_SERVICE_MAPPING", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    (SpanInferrer as any).serviceMapping = { lambda_kinesis: "new-name" };
+
+    inferrer.createInferredSpan(kinesisEvent, {} as any, {} as SpanContext);
+
+    let modifiedKinesisEvent = JSON.parse(JSON.stringify(kinesisEvent));
+    modifiedKinesisEvent.Records[0].eventSourceARN = "arn:aws:kinesis:DIFFERENT_EXAMPLE";
+    inferrer.createInferredSpan(modifiedKinesisEvent, {} as any, {} as SpanContext);
+
+    expect(getStartSpanServiceTag(1)).toBe("new-name");
+    expect(getStartSpanServiceTag(2)).toBe("new-name");
+  });
+
+  it("remaps specific kinesis inferred span service name based on DD_SERVICE_MAPPING", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    (SpanInferrer as any).serviceMapping = { EXAMPLE: "new-name" };
+
+    inferrer.createInferredSpan(kinesisEvent, {} as any, {} as SpanContext);
+
+    let modifiedKinesisEvent = JSON.parse(JSON.stringify(kinesisEvent));
+    modifiedKinesisEvent.Records[0].eventSourceARN = "arn:aws:kinesis:DIFFERENT_EXAMPLE";
+    inferrer.createInferredSpan(modifiedKinesisEvent, {} as any, {} as SpanContext);
+
+    expect(getStartSpanServiceTag(1)).toBe("new-name");
+    expect(getStartSpanServiceTag(2)).toBe("kinesis");
+  });
+
+  it("remaps sns sqs inferred spans service names based on DD_SERVICE_MAPPING", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    (SpanInferrer as any).serviceMapping = { lambda_sns: "new-sns-name", lambda_sqs: "new-sqs-name" };
+
+    inferrer.createInferredSpan(snssqsEvent, {} as any, {} as SpanContext);
+
+    expect(getStartSpanServiceTag(1)).toBe("new-sns-name");
+    expect(getStartSpanServiceTag(2)).toBe("new-sqs-name");
+  });
+
+  it("remaps all eventbridge inferred span service name based on DD_SERVICE_MAPPING", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    (SpanInferrer as any).serviceMapping = { lambda_eventbridge: "new-name" };
+
+    inferrer.createInferredSpan(eventBridgeEvent, {} as any, {} as SpanContext);
+
+    let modifiedDdbEvent = JSON.parse(JSON.stringify(eventBridgeEvent));
+    modifiedDdbEvent.source = "my.different.event";
+    inferrer.createInferredSpan(modifiedDdbEvent, {} as any, {} as SpanContext);
+
+    expect(getStartSpanServiceTag(1)).toBe("new-name");
+    expect(getStartSpanServiceTag(2)).toBe("new-name");
+  });
+
+  it("remaps specific eventbridge inferred span service name based on DD_SERVICE_MAPPING", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    (SpanInferrer as any).serviceMapping = { "my.event": "new-name" };
+
+    inferrer.createInferredSpan(eventBridgeEvent, {} as any, {} as SpanContext);
+
+    let modifiedDdbEvent = JSON.parse(JSON.stringify(eventBridgeEvent));
+    modifiedDdbEvent.source = "my.different.event";
+    inferrer.createInferredSpan(modifiedDdbEvent, {} as any, {} as SpanContext);
+
+    expect(getStartSpanServiceTag(1)).toBe("new-name");
+    expect(getStartSpanServiceTag(2)).toBe("eventbridge");
+  });
+
+  it("remaps all API Gateway inferred span service names based on DD_SERVICE_MAPPING", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    (SpanInferrer as any).serviceMapping = { lambda_api_gateway: "new-name" };
+
+    inferrer.createInferredSpan(webSocketEvent, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(apiGatewayV2, {} as any, {} as SpanContext);
+
+    expect(getStartSpanServiceTag(1)).toBe("new-name");
+    expect(getStartSpanServiceTag(2)).toBe("new-name");
+  });
+
+  it("remaps specific API Gateway inferred span service names based on DD_SERVICE_MAPPING and leaves others alone", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    (SpanInferrer as any).serviceMapping = { "08se3mvh28": "new-name" };
+
+    inferrer.createInferredSpan(webSocketEvent, {} as any, {} as SpanContext);
+    inferrer.createInferredSpan(apiGatewayV2, {} as any, {} as SpanContext);
+
+    expect(getStartSpanServiceTag(1)).toBe("new-name");
+    expect(getStartSpanServiceTag(2)).toBe("r3pmxmplak.execute-api.us-east-2.amazonaws.com");
+  });
+
+  it("remaps all Lambda URL inferred span service name based on DD_SERVICE_MAPPING", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    (SpanInferrer as any).serviceMapping = { lambda_url: "new-name" };
+
+    inferrer.createInferredSpan(functionUrlEvent, {} as any, {} as SpanContext);
+    let modifiedFunctionUrlEvent = JSON.parse(JSON.stringify(functionUrlEvent));
+    modifiedFunctionUrlEvent.requestContext.domainName = "foobar.lambda-url.eu-south-1.amazonaws.com";
+    inferrer.createInferredSpan(modifiedFunctionUrlEvent, {} as any, {} as SpanContext);
+
+    expect(getStartSpanServiceTag(1)).toBe("new-name");
+    expect(getStartSpanServiceTag(2)).toBe("new-name");
+  });
+
+  it("remaps specific Lambda URL inferred span service name based on DD_SERVICE_MAPPING and leaves others alone", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    (SpanInferrer as any).serviceMapping = { a8hyhsshac: "new-name" };
+
+    inferrer.createInferredSpan(functionUrlEvent, {} as any, {} as SpanContext);
+    let modifiedFunctionUrlEvent = JSON.parse(JSON.stringify(functionUrlEvent));
+    modifiedFunctionUrlEvent.requestContext.apiId = "different";
+    inferrer.createInferredSpan(modifiedFunctionUrlEvent, {} as any, {} as SpanContext);
+
+    expect(getStartSpanServiceTag(1)).toBe("new-name");
+    expect(getStartSpanServiceTag(2)).toBe("a8hyhsshac.lambda-url.eu-south-1.amazonaws.com");
+  });
+
+  it("remaps all S3 inferred span service name based on DD_SERVICE_MAPPING", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    (SpanInferrer as any).serviceMapping = { lambda_s3: "new-name" };
+
+    inferrer.createInferredSpan(s3Event, {} as any, {} as SpanContext);
+
+    let modifiedS3Event = JSON.parse(JSON.stringify(s3Event));
+    modifiedS3Event.Records[0].s3.bucket.arn = "arn:aws:s3:::different-example-bucket";
+    modifiedS3Event.Records[0].s3.bucket.name = "different-example-bucket";
+    inferrer.createInferredSpan(modifiedS3Event, {} as any, {} as SpanContext);
+
+    expect(getStartSpanServiceTag(1)).toBe("new-name");
+    expect(getStartSpanServiceTag(2)).toBe("new-name");
+  });
+
+  it("remaps specific S3 inferred span service name based on DD_SERVICE_MAPPING", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    (SpanInferrer as any).serviceMapping = { "example-bucket": "new-name" };
+
+    inferrer.createInferredSpan(s3Event, {} as any, {} as SpanContext);
+
+    let modifiedS3Event = JSON.parse(JSON.stringify(s3Event));
+    modifiedS3Event.Records[0].s3.bucket.arn = "arn:aws:s3:::different-example-bucket";
+    modifiedS3Event.Records[0].s3.bucket.name = "different-example-bucket";
+    inferrer.createInferredSpan(modifiedS3Event, {} as any, {} as SpanContext);
+
+    expect(getStartSpanServiceTag(1)).toBe("new-name");
+    expect(getStartSpanServiceTag(2)).toBe("s3");
+  });
+
   it("creates an inferred span for sns events", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
@@ -321,6 +669,7 @@ describe("SpanInferrer", () => {
         request_id: undefined,
         "resource.name": "GET /",
         resource_names: "GET /",
+        service: "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com",
         "service.name": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com",
         "span.type": "http",
       },

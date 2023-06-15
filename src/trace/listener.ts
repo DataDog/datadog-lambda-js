@@ -12,7 +12,7 @@ import { extractTriggerTags, extractHTTPStatusCodeTag } from "./trigger";
 import { ColdStartTracerConfig, ColdStartTracer } from "./cold-start-tracer";
 
 import { logDebug, tagObject } from "../utils";
-import { didFunctionColdStart } from "../utils/cold-start";
+import { didFunctionColdStart, isProactiveInitialization } from "../utils/cold-start";
 import { datadogLambdaVersion } from "../constants";
 import { Source, ddtraceVersion, parentSpanFinishTimeHeader, authorizingRequestIdHeader } from "./constants";
 import { patchConsole } from "./patch-console";
@@ -160,12 +160,15 @@ export class TraceListener {
     if (coldStartNodes.length > 0) {
       const coldStartConfig: ColdStartTracerConfig = {
         tracerWrapper: this.tracerWrapper,
-        parentSpan: didFunctionColdStart() ? this.inferredSpan || this.wrappedCurrentSpan : this.wrappedCurrentSpan,
+        parentSpan:
+          didFunctionColdStart() || isProactiveInitialization()
+            ? this.inferredSpan || this.wrappedCurrentSpan
+            : this.wrappedCurrentSpan,
         lambdaFunctionName: this.context?.functionName,
         currentSpanStartTime: this.wrappedCurrentSpan?.startTime(),
         minDuration: this.config.minColdStartTraceDuration,
         ignoreLibs: this.config.coldStartTraceSkipLib,
-        isColdStart: didFunctionColdStart(),
+        isColdStart: didFunctionColdStart() || isProactiveInitialization(),
       };
       const coldStartTracer = new ColdStartTracer(coldStartConfig);
       coldStartTracer.trace(coldStartNodes);
@@ -257,6 +260,9 @@ export class TraceListener {
         datadog_lambda: datadogLambdaVersion,
         dd_trace: ddtraceVersion,
       };
+      if (isProactiveInitialization()) {
+        options.tags.proactive_initialization = true;
+      }
       if (
         (this.contextService.traceSource === Source.Xray && this.config.mergeDatadogXrayTraces) ||
         this.contextService.traceSource === Source.Event
