@@ -1,14 +1,19 @@
 // In order to avoid the layer adding the 40mb aws-sdk to a deployment, (which is always available
 // in the Lambda environment anyway), we use require to import the SDK.
 
-import { logError } from "../utils";
-
 export class KMSService {
+  private encryptionContext
+
+  constructor () {
+    this.encryptionContext = { LambdaFunctionName: process.env.AWS_LAMBDA_FUNCTION_NAME ?? "" };
+  }
+
   public async decrypt(ciphertext: string): Promise<string> {
+    const buffer = Buffer.from(ciphertext, "base64");
+
     try {
       const kms = require("aws-sdk/clients/kms");
       const kmsClient = new kms();
-      const buffer = Buffer.from(ciphertext, "base64");
 
       // When the API key is encrypted using the AWS console, the function name is added as an encryption context.
       // When the API key is encrypted using the AWS CLI, no encryption context is added.
@@ -19,8 +24,7 @@ export class KMSService {
         result = await kmsClient.decrypt({ CiphertextBlob: buffer }).promise();
       } catch {
         // Then try with encryption context, in case API key was encrypted using the AWS Console
-        const encryptionContext = { LambdaFunctionName: process.env.AWS_LAMBDA_FUNCTION_NAME ?? "" };
-        result = await kmsClient.decrypt({ CiphertextBlob: buffer, EncryptionContext: encryptionContext }).promise();
+        result = await kmsClient.decrypt({ CiphertextBlob: buffer, EncryptionContext: this.encryptionContext }).promise();
       }
 
       if (result.Plaintext === undefined) {
@@ -29,11 +33,26 @@ export class KMSService {
       return result.Plaintext.toString("ascii");
     } catch (err) {
       if ((err as any).code === "MODULE_NOT_FOUND") {
-        const errorMsg = "optional dependency aws-sdk not installed. KMS key decryption will not work";
-        logError(errorMsg);
-        throw Error(errorMsg);
+        // Node 18
+        return this.decryptV3(buffer);
       }
       throw Error("Couldn't decrypt ciphertext");
     }
+  }
+
+  // Node 18 or AWS SDK V3
+  public async decryptV3(buffer: Buffer): Promise<string> {
+    const { KMSClient, DecryptCommand } = require("@aws-sdk/client-kms")
+    const kmsClient = new KMSClient()
+    let result;
+    try {
+      const decryptCommand = new DecryptCommand({ CiphertextBlob: buffer })
+      result = await kmsClient.send(decryptCommand)
+    } catch {
+      const decryptCommand = new DecryptCommand({ CiphertextBlob: buffer, EncryptionContext: this.encryptionContext })
+      result = await kmsClient.send(decryptCommand)
+    }
+    const finalRes = Buffer.from(result.Plaintext).toString("ascii")
+    return finalRes
   }
 }

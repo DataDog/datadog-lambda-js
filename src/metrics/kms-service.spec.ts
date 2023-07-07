@@ -39,7 +39,7 @@ describe("KMSService", () => {
       })
       .reply(200, {
         KeyId: KEY_ID,
-        Plaintext: Buffer.from(EXPECTED_RESULT),
+        Plaintext: Buffer.from(EXPECTED_RESULT, "ascii").toString("base64"),
       });
 
     const kmsService = new KMSService();
@@ -83,6 +83,41 @@ describe("KMSService", () => {
         expect((e as Error).message).toEqual(EXPECTED_ERROR_MESSAGE);
       }
     }
+    fakeKmsCall.done();
+  });
+
+  it("decrypts when the API key was encrypted with an encryption context using aws sdk v3", async () => {
+    const fakeKmsCall = nock("https://kms.us-east-1.amazonaws.com:443", { encodedQueryParams: true })
+      .post("/", {
+        CiphertextBlob: "BQICAHj0djbIQaGrIfSD2gstvRF3h8YGMeEvO5rRHNiuWwSeegEFl57KxNejRg==",
+        EncryptionContext: {
+          LambdaFunctionName: "my-test-function",
+        },
+      })
+      .reply(200, {
+        KeyId: KEY_ID,
+        Plaintext: Buffer.from(EXPECTED_RESULT, "ascii").toString("base64"),
+      });
+
+    const kmsService = new KMSService();
+    const result = await kmsService.decryptV3(Buffer.from(ENCRYPTED_KEY, "base64"));
+    expect(Buffer.from(result).toString("ascii")).toEqual(EXPECTED_RESULT);
+    fakeKmsCall.done();
+  });
+
+  it("decrypts when the API key was encrypted without an encryption context using aws sdk v3", async () => {
+    const fakeKmsCall = nock("https://kms.us-east-1.amazonaws.com:443", { encodedQueryParams: true })
+      .post("/", {
+        CiphertextBlob: "BQICAHj0djbIQaGrIfSD2gstvRF3h8YGMeEvO5rRHNiuWwSeegEFl57KxNejRg==",
+      })
+      .reply(200, {
+        KeyId: KEY_ID,
+        Plaintext: Buffer.from(EXPECTED_RESULT, "ascii").toString("base64"),
+      });
+
+    const kmsService = new KMSService();
+    const result = await kmsService.decryptV3(Buffer.from(ENCRYPTED_KEY, "base64"));
+    expect(Buffer.from(result).toString("ascii")).toEqual(EXPECTED_RESULT);
     fakeKmsCall.done();
   });
 });

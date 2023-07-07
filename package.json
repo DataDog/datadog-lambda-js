@@ -17,6 +17,7 @@
     "postbuild": "scripts/update_dist_version.sh"
   },
   "devDependencies": {
+    "@aws-sdk/client-kms": "^3.366.0",
     "@types/aws-lambda": "^8.10.76",
     "@types/aws-sdk": "^2.7.0",
     "@types/jest": "^26.0.23",
