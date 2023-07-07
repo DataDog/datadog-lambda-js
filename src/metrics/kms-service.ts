@@ -2,9 +2,9 @@
 // in the Lambda environment anyway), we use require to import the SDK.
 
 export class KMSService {
-  private encryptionContext
+  private encryptionContext;
 
-  constructor () {
+  constructor() {
     this.encryptionContext = { LambdaFunctionName: process.env.AWS_LAMBDA_FUNCTION_NAME ?? "" };
   }
 
@@ -24,7 +24,9 @@ export class KMSService {
         result = await kmsClient.decrypt({ CiphertextBlob: buffer }).promise();
       } catch {
         // Then try with encryption context, in case API key was encrypted using the AWS Console
-        result = await kmsClient.decrypt({ CiphertextBlob: buffer, EncryptionContext: this.encryptionContext }).promise();
+        result = await kmsClient
+          .decrypt({ CiphertextBlob: buffer, EncryptionContext: this.encryptionContext })
+          .promise();
       }
 
       if (result.Plaintext === undefined) {
@@ -42,17 +44,17 @@ export class KMSService {
 
   // Node 18 or AWS SDK V3
   public async decryptV3(buffer: Buffer): Promise<string> {
-    const { KMSClient, DecryptCommand } = require("@aws-sdk/client-kms")
-    const kmsClient = new KMSClient()
+    const { KMSClient, DecryptCommand } = require("@aws-sdk/client-kms");
+    const kmsClient = new KMSClient();
     let result;
     try {
-      const decryptCommand = new DecryptCommand({ CiphertextBlob: buffer })
-      result = await kmsClient.send(decryptCommand)
+      const decryptCommand = new DecryptCommand({ CiphertextBlob: buffer });
+      result = await kmsClient.send(decryptCommand);
     } catch {
-      const decryptCommand = new DecryptCommand({ CiphertextBlob: buffer, EncryptionContext: this.encryptionContext })
-      result = await kmsClient.send(decryptCommand)
+      const decryptCommand = new DecryptCommand({ CiphertextBlob: buffer, EncryptionContext: this.encryptionContext });
+      result = await kmsClient.send(decryptCommand);
     }
-    const finalRes = Buffer.from(result.Plaintext).toString("ascii")
-    return finalRes
+    const finalRes = Buffer.from(result.Plaintext).toString("ascii");
+    return finalRes;
   }
 }
