@@ -181,9 +181,7 @@ export class MetricsListener {
       try {
         return await this.kmsClient.decrypt(config.apiKeyKMS);
       } catch (error) {
-        if (error instanceof Error) {
-          logError("couldn't decrypt kms api key", error as Error);
-        }
+        logError("couldn't decrypt kms api key", error as Error);
       }
     }
     return "";
