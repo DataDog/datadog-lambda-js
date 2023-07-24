@@ -88,7 +88,8 @@ START
         "metrics": {
           "cold_start": 1,
           "_dd.measured": 1,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX,
@@ -110,7 +111,8 @@ START
         },
         "metrics": {
           "_dd.measured": 1,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX,
@@ -133,7 +135,8 @@ START
         },
         "metrics": {
           "_dd.measured": 1,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX,
@@ -155,7 +158,8 @@ START
           "language": "javascript"
         },
         "metrics": {
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX,
@@ -254,7 +258,8 @@ START
         "metrics": {
           "cold_start": 0,
           "_dd.measured": 1,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX,
@@ -278,7 +283,8 @@ START
         },
         "metrics": {
           "_dd.measured": 1,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX,
@@ -376,7 +382,8 @@ START
         "metrics": {
           "cold_start": 0,
           "_dd.measured": 1,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX,
@@ -400,7 +407,8 @@ START
         },
         "metrics": {
           "_dd.measured": 1,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX,
