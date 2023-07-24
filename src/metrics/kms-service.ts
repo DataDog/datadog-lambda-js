@@ -10,7 +10,7 @@ export class KMSService {
 
   public async decrypt(ciphertext: string): Promise<string> {
     const buffer = Buffer.from(ciphertext, "base64");
-    let kms
+    let kms;
 
     // Explicitly try/catch this require to appease esbuild and ts compiler
     // otherwise users would need to mark this as `external`
