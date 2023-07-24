@@ -10,9 +10,17 @@ export class KMSService {
 
   public async decrypt(ciphertext: string): Promise<string> {
     const buffer = Buffer.from(ciphertext, "base64");
+    let kms
 
     try {
-      const kms = require("aws-sdk/clients/kms");
+      kms = require("aws-sdk/clients/kms");
+    } catch (err) {
+      if ((err as any).code === "MODULE_NOT_FOUND") {
+        // Node 18
+        return this.decryptV3(buffer);
+      }
+    }
+    try {
       const kmsClient = new kms();
 
       // When the API key is encrypted using the AWS console, the function name is added as an encryption context.
@@ -34,10 +42,6 @@ export class KMSService {
       }
       return result.Plaintext.toString("ascii");
     } catch (err) {
-      if ((err as any).code === "MODULE_NOT_FOUND") {
-        // Node 18
-        return this.decryptV3(buffer);
-      }
       throw Error("Couldn't decrypt ciphertext");
     }
   }
