@@ -44,11 +44,11 @@ export class KMSService {
 
   // Node 18 or AWS SDK V3
   public async decryptV3(buffer: Buffer): Promise<string> {
-    let KMSClient, DecryptCommand
+    let KMSClient, DecryptCommand;
     try {
       ({ KMSClient, DecryptCommand } = require("@aws-sdk/client-kms"));
-    } catch(e) {
-      throw Error("Can't load AWS SDK v2 or v3 to decrypt KMS key, custom metrics may not be sent")
+    } catch (e) {
+      throw Error("Can't load AWS SDK v2 or v3 to decrypt KMS key, custom metrics may not be sent");
     }
     const kmsClient = new KMSClient();
     let result;
