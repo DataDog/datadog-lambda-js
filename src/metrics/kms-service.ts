@@ -12,6 +12,9 @@ export class KMSService {
     const buffer = Buffer.from(ciphertext, "base64");
     let kms
 
+    // Explicitly try/catch this require to appease esbuild and ts compiler
+    // otherwise users would need to mark this as `external`
+    // see https://github.com/DataDog/datadog-lambda-js/pull/409
     try {
       kms = require("aws-sdk/clients/kms");
     } catch (err) {
@@ -50,6 +53,9 @@ export class KMSService {
   public async decryptV3(buffer: Buffer): Promise<string> {
     // tslint:disable-next-line: variable-name one-variable-per-declaration
     let KMSClient, DecryptCommand;
+    // Explicitly try/catch this require to appease esbuild and ts compiler
+    // otherwise users would need to mark this as `external`
+    // see https://github.com/DataDog/datadog-lambda-js/pull/409
     try {
       ({ KMSClient, DecryptCommand } = require("@aws-sdk/client-kms"));
     } catch (e) {
