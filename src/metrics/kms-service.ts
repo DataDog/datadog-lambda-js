@@ -10,9 +10,20 @@ export class KMSService {
 
   public async decrypt(ciphertext: string): Promise<string> {
     const buffer = Buffer.from(ciphertext, "base64");
+    let kms;
 
+    // Explicitly try/catch this require to appease esbuild and ts compiler
+    // otherwise users would need to mark this as `external`
+    // see https://github.com/DataDog/datadog-lambda-js/pull/409
     try {
-      const kms = require("aws-sdk/clients/kms");
+      kms = require("aws-sdk/clients/kms");
+    } catch (err) {
+      if ((err as any).code === "MODULE_NOT_FOUND") {
+        // Node 18
+        return this.decryptV3(buffer);
+      }
+    }
+    try {
       const kmsClient = new kms();
 
       // When the API key is encrypted using the AWS console, the function name is added as an encryption context.
@@ -34,17 +45,22 @@ export class KMSService {
       }
       return result.Plaintext.toString("ascii");
     } catch (err) {
-      if ((err as any).code === "MODULE_NOT_FOUND") {
-        // Node 18
-        return this.decryptV3(buffer);
-      }
       throw Error("Couldn't decrypt ciphertext");
     }
   }
 
   // Node 18 or AWS SDK V3
   public async decryptV3(buffer: Buffer): Promise<string> {
-    const { KMSClient, DecryptCommand } = require("@aws-sdk/client-kms");
+    // tslint:disable-next-line: variable-name one-variable-per-declaration
+    let KMSClient, DecryptCommand;
+    // Explicitly try/catch this require to appease esbuild and ts compiler
+    // otherwise users would need to mark this as `external`
+    // see https://github.com/DataDog/datadog-lambda-js/pull/409
+    try {
+      ({ KMSClient, DecryptCommand } = require("@aws-sdk/client-kms"));
+    } catch (e) {
+      throw Error("Can't load AWS SDK v2 or v3 to decrypt KMS key, custom metrics may not be sent");
+    }
     const kmsClient = new KMSClient();
     let result;
     try {
