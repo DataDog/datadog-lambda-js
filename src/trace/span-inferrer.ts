@@ -280,12 +280,21 @@ export class SpanInferrer {
     parentSpanContext: SpanContext | undefined,
   ): SpanWrapper {
     const options: SpanOptions = {};
-    const { Records } = event as SNSEvent;
-    const referenceRecord = Records[0];
+
+    let referenceRecord: SNSMessage;
+    let EventSubscriptionArn = '';
+    if (event.Records) {
+      // Full SNS Event into Lambda
+      const { Records } = event as SNSEvent;
+      ({ Sns: referenceRecord, EventSubscriptionArn } = Records[0]);
+    } else {
+      // SNS message wrapping an SQS message
+      referenceRecord = event
+    }
     const {
-      EventSubscriptionArn,
-      Sns: { TopicArn, Timestamp, Type, Subject, MessageId },
-    } = referenceRecord;
+        TopicArn, Timestamp, Type, Subject, MessageId,
+      } = referenceRecord;
+
     const topicName = TopicArn?.split(":").pop() || "";
     const resourceName = topicName;
     const serviceName = SpanInferrer.determineServiceName(topicName, "lambda_sns", "sns");
@@ -306,8 +315,12 @@ export class SpanInferrer {
       message_id: MessageId,
       topicname: topicName,
       topic_arn: TopicArn,
-      event_subscription_arn: EventSubscriptionArn,
     };
+
+    // EventSubscriptionARN not available for direct integrations to SQS from SNS.
+    if (EventSubscriptionArn !== '') {
+      options.tags.event_subscription_arn = EventSubscriptionArn
+    }
     if (parentSpanContext) {
       options.childOf = parentSpanContext;
     }
@@ -316,74 +329,6 @@ export class SpanInferrer {
       isAsync: true,
     };
     return new SpanWrapper(this.traceWrapper.startSpan("aws.sns", options), spanWrapperOptions);
-  }
-
-  createInferredSpanForSqsSns(
-    event: SNSMessage,
-    context: Context | undefined,
-    parentSpanContext: SpanContext | undefined,
-  ): SpanWrapper {
-    const options: SpanOptions = {};
-    const { TopicArn, Timestamp, Type, Subject, MessageId } = event;
-    const topicName = TopicArn?.split(":").pop() || "";
-    const resourceName = topicName;
-    const serviceName = SpanInferrer.determineServiceName(topicName, "lambda_sns", "sns");
-    options.tags = {
-      operation_name: "aws.sns",
-      resource_names: resourceName,
-      "span.type": "sns",
-      "resource.name": resourceName,
-      "peer.service": this.service,
-      service: serviceName,
-      _inferred_span: {
-        tag_source: "self",
-        synchronicity: "async",
-      },
-      type: Type,
-      subject: Subject,
-      message_id: MessageId,
-      topicname: topicName,
-      topic_arn: TopicArn,
-    };
-    if (parentSpanContext) {
-      options.childOf = parentSpanContext;
-    }
-    options.startTime = Date.parse(Timestamp);
-    const spanWrapperOptions = {
-      isAsync: true,
-    };
-    return new SpanWrapper(this.traceWrapper.startSpan("aws.sns", options), spanWrapperOptions);
-  }
-
-  createInferredSpanForEBSQS(
-    event: EventBridgeEvent<any, any>,
-    context: Context | undefined,
-    parentSpanContext: SpanContext | undefined,
-  ): SpanWrapper {
-    const options: SpanOptions = {};
-    const { time, source } = event as EventBridgeEvent<any, any>;
-    const serviceName = SpanInferrer.determineServiceName(source, "lambda_eventbridge", "eventbridge");
-    options.tags = {
-      operation_name: "aws.eventbridge",
-      resource_names: source,
-      request_id: context?.awsRequestId,
-      "span.type": "web",
-      "resource.name": source,
-      "peer.service": this.service,
-      service: serviceName,
-      _inferred_span: {
-        tag_source: "self",
-        synchronicity: "async",
-      },
-    };
-    if (parentSpanContext) {
-      options.childOf = parentSpanContext;
-    }
-    options.startTime = Date.parse(time);
-    const spanWrapperOptions = {
-      isAsync: true,
-    };
-    return new SpanWrapper(this.traceWrapper.startSpan("aws.eventbridge", options), spanWrapperOptions);
   }
 
   createInferredSpanForSqs(
@@ -432,10 +377,10 @@ export class SpanInferrer {
       let upstreamMessage: any;
       upstreamMessage = JSON.parse(body);
       if (upstreamMessage && upstreamMessage.TopicArn && upstreamMessage.Timestamp) {
-        upstreamSpan = this.createInferredSpanForSqsSns(upstreamMessage, context, parentSpanContext);
+        upstreamSpan = this.createInferredSpanForSns(upstreamMessage, context, parentSpanContext);
         upstreamSpan.finish(Number(SentTimestamp));
       } else if (upstreamMessage?.detail?._datadog) {
-        upstreamSpan = this.createInferredSpanForEBSQS(upstreamMessage, context, parentSpanContext);
+        upstreamSpan = this.createInferredSpanForEventBridge(upstreamMessage, context, parentSpanContext);
         upstreamSpan.finish(Number(SentTimestamp));
       }
     } catch (e) {
@@ -546,7 +491,7 @@ export class SpanInferrer {
   }
 
   createInferredSpanForEventBridge(
-    event: any,
+    event: EventBridgeEvent<any, any>,
     context: Context | undefined,
     parentSpanContext: SpanContext | undefined,
   ): SpanWrapper {
