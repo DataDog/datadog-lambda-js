@@ -10,6 +10,7 @@ import {
   isSNSEvent,
   isSNSSQSEvent,
   isSQSEvent,
+  isEBSQSEvent,
 } from "../utils/event-type-guards";
 import {
   authorizingRequestIdHeader,
@@ -309,6 +310,25 @@ export function readTraceFromSNSSQSEvent(event: SQSEvent): TraceContext | undefi
   }
 }
 
+export function readTraceFromEBSQSEvent(event: SQSEvent): TraceContext | undefined {
+  if (event?.Records?.[0]?.body) {
+    try {
+      const parsedBody = JSON.parse(event.Records[0].body) as EventBridgeEvent<any, any>;
+      if (parsedBody?.detail?._datadog) {
+        const trace = exportTraceData(parsedBody.detail._datadog);
+
+        logDebug(`extracted trace context from EventBridge SQS event`, { trace, event });
+        return trace;
+      }
+    } catch (err) {
+      if (err instanceof Error) {
+        logDebug("Error parsing EventBridge SQS message trace data", err as Error);
+      }
+      return;
+    }
+  }
+}
+
 export function readTraceFromKinesisEvent(event: KinesisStreamEvent): TraceContext | undefined {
   if (event?.Records?.[0]?.kinesis?.data) {
     try {
@@ -461,6 +481,10 @@ export function readTraceFromEvent(event: any, decodeAuthorizerContext: boolean 
 
   if (isSNSSQSEvent(event)) {
     return readTraceFromSNSSQSEvent(event);
+  }
+
+  if (isEBSQSEvent(event)) {
+    return readTraceFromEBSQSEvent(event);
   }
 
   if (isAppSyncResolverEvent(event)) {

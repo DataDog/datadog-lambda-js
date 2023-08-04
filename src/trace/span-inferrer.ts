@@ -355,6 +355,37 @@ export class SpanInferrer {
     return new SpanWrapper(this.traceWrapper.startSpan("aws.sns", options), spanWrapperOptions);
   }
 
+  createInferredSpanForEBSQS(
+    event: EventBridgeEvent<any, any>,
+    context: Context | undefined,
+    parentSpanContext: SpanContext | undefined,
+  ): SpanWrapper {
+    const options: SpanOptions = {};
+    const { time, source } = event as EventBridgeEvent<any, any>;
+    const serviceName = SpanInferrer.determineServiceName(source, "lambda_eventbridge", "eventbridge");
+    options.tags = {
+      operation_name: "aws.eventbridge",
+      resource_names: source,
+      request_id: context?.awsRequestId,
+      "span.type": "web",
+      "resource.name": source,
+      "peer.service": this.service,
+      service: serviceName,
+      _inferred_span: {
+        tag_source: "self",
+        synchronicity: "async",
+      },
+    };
+    if (parentSpanContext) {
+      options.childOf = parentSpanContext;
+    }
+    options.startTime = Date.parse(time);
+    const spanWrapperOptions = {
+      isAsync: true,
+    };
+    return new SpanWrapper(this.traceWrapper.startSpan("aws.eventbridge", options), spanWrapperOptions);
+  }
+
   createInferredSpanForSqs(
     event: any,
     context: Context | undefined,
@@ -396,18 +427,21 @@ export class SpanInferrer {
     // Check if sqs message was from sns
     // If so, unpack and look at timestamp
     // create further upstream sns span and finish/attach it here
-    let upstreamSnsSpan: SpanWrapper | null = null;
+    let upstreamSpan: SpanWrapper | null = null;
     try {
-      let upstreamSnsMessage: SNSMessage;
-      upstreamSnsMessage = JSON.parse(body);
-      if (upstreamSnsMessage && upstreamSnsMessage.TopicArn && upstreamSnsMessage.Timestamp) {
-        upstreamSnsSpan = this.createInferredSpanForSqsSns(upstreamSnsMessage, context, parentSpanContext);
-        upstreamSnsSpan.finish(Number(SentTimestamp));
+      let upstreamMessage: any;
+      upstreamMessage = JSON.parse(body);
+      if (upstreamMessage && upstreamMessage.TopicArn && upstreamMessage.Timestamp) {
+        upstreamSpan = this.createInferredSpanForSqsSns(upstreamMessage, context, parentSpanContext);
+        upstreamSpan.finish(Number(SentTimestamp));
+      } else if (upstreamMessage?.detail?._datadog) {
+        upstreamSpan = this.createInferredSpanForEBSQS(upstreamMessage, context, parentSpanContext);
+        upstreamSpan.finish(Number(SentTimestamp));
       }
     } catch (e) {
       // Pass, it's a raw SQS message
     }
-    options.childOf = upstreamSnsSpan ? upstreamSnsSpan.span : parentSpanContext;
+    options.childOf = upstreamSpan ? upstreamSpan.span : parentSpanContext;
 
     options.startTime = Number(SentTimestamp);
 
