@@ -282,18 +282,16 @@ export class SpanInferrer {
     const options: SpanOptions = {};
 
     let referenceRecord: SNSMessage;
-    let EventSubscriptionArn = '';
+    let eventSubscriptionArn = "";
     if (event.Records) {
       // Full SNS Event into Lambda
       const { Records } = event as SNSEvent;
-      ({ Sns: referenceRecord, EventSubscriptionArn } = Records[0]);
+      ({ Sns: referenceRecord, EventSubscriptionArn: eventSubscriptionArn } = Records[0]);
     } else {
       // SNS message wrapping an SQS message
-      referenceRecord = event
+      referenceRecord = event;
     }
-    const {
-        TopicArn, Timestamp, Type, Subject, MessageId,
-      } = referenceRecord;
+    const { TopicArn, Timestamp, Type, Subject, MessageId } = referenceRecord;
 
     const topicName = TopicArn?.split(":").pop() || "";
     const resourceName = topicName;
@@ -318,8 +316,8 @@ export class SpanInferrer {
     };
 
     // EventSubscriptionARN not available for direct integrations to SQS from SNS.
-    if (EventSubscriptionArn !== '') {
-      options.tags.event_subscription_arn = EventSubscriptionArn
+    if (eventSubscriptionArn !== "") {
+      options.tags.event_subscription_arn = eventSubscriptionArn;
     }
     if (parentSpanContext) {
       options.childOf = parentSpanContext;
