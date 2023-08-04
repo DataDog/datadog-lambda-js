@@ -8,6 +8,7 @@ const sqsEvent = require("../../event_samples/sqs.json");
 const ddbEvent = require("../../event_samples/dynamodb.json");
 const kinesisEvent = require("../../event_samples/kinesis.json");
 const eventBridgeEvent = require("../../event_samples/eventbridge.json");
+const eventBridgeSQSEvent = require("../../event_samples/eventbridge-sqs.json");
 const webSocketEvent = require("../../event_samples/api-gateway-wss.json");
 const apiGatewayV1 = require("../../event_samples/api-gateway-v1.json");
 const apiGatewayV2 = require("../../event_samples/api-gateway-v2.json");
@@ -566,6 +567,55 @@ describe("SpanInferrer", () => {
         "span.type": "web",
       },
     });
+  });
+
+  it("creates an inferred span for eventbridge sqs events", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(eventBridgeSQSEvent, {} as any, {} as SpanContext);
+
+    expect(mockWrapper.startSpan.mock.calls).toEqual([
+      [
+        "aws.eventbridge",
+        {
+          childOf: {},
+          startTime: 1691102943000,
+          tags: {
+            _inferred_span: { synchronicity: "async", tag_source: "self" },
+            operation_name: "aws.eventbridge",
+            "peer.service": "mock-lambda-service",
+            request_id: undefined,
+            "resource.name": "my.Source",
+            resource_names: "my.Source",
+            service: "eventbridge",
+            "span.type": "web",
+          },
+        },
+      ],
+      [
+        "aws.sqs",
+        {
+          childOf: undefined,
+          startTime: 1691102943638,
+          tags: {
+            _inferred_span: { synchronicity: "async", tag_source: "self" },
+            event_source_arn: "arn:aws:sqs:us-east-1:425362996713:lambda-eb-sqs-lambda-dev-demo-queue",
+            operation_name: "aws.sqs",
+            "peer.service": "mock-lambda-service",
+            queuename: "lambda-eb-sqs-lambda-dev-demo-queue",
+            receipt_handle:
+              "AQEB4mIfRcyqtzn1X5Ss+ConhTejVGc+qnAcmu3/Z9ZvbNkaPcpuDLX/bzvPD/ZkAXJUXZcemGSJmd7L3snZHKMP2Ck8runZiyl4mubiLb444pZvdiNPuGRJ6a3FvgS/GQPzho/9nNMyOi66m8Viwh70v4EUCPGO4JmD3TTDAUrrcAnqU4WSObjfC/NAp9bI6wH2CEyAYEfex6Nxplbl/jBf9ZUG0I3m3vQd0Q4l4gd4jIR4oxQUglU2Tldl4Kx5fMUAhTRLAENri6HsY81avBkKd9FAuxONlsITB5uj02kOkvLlRGEcalqsKyPJ7AFaDLrOLaL3U+yReroPEJ5R5nwhLOEbeN5HROlZRXeaAwZOIN8BjqdeooYTIOrtvMEVb7a6OPLMdH1XB+ddevtKAH8K9Tm2ZjpaA7dtBGh1zFVHzBk=",
+            request_id: undefined,
+            "resource.name": "lambda-eb-sqs-lambda-dev-demo-queue",
+            resource_names: "lambda-eb-sqs-lambda-dev-demo-queue",
+            retry_count: 1,
+            sender_id: "AIDAJXNJGGKNS7OSV23OI",
+            service: "sqs",
+            "service.name": "lambda-eb-sqs-lambda-dev-demo-queue",
+            "span.type": "web",
+          },
+        },
+      ],
+    ]);
   });
 
   it("creates an inferred span for websocket events", () => {
