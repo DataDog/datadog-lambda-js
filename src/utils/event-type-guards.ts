@@ -83,6 +83,18 @@ export function isSNSSQSEvent(event: any): event is SQSEvent {
   return false;
 }
 
+export function isEBSQSEvent(event: any): event is SQSEvent {
+  if (Array.isArray(event.Records) && event.Records.length > 0 && event.Records[0].eventSource === "aws:sqs") {
+    try {
+      const body = JSON.parse(event.Records[0].body) as EventBridgeEvent<any, any>;
+      return body["detail-type"] !== undefined;
+    } catch (e) {
+      return false;
+    }
+  }
+  return false;
+}
+
 export function isAppSyncResolverEvent(event: any): event is AppSyncResolverEvent<any> {
   return event.info !== undefined && event.info.selectionSetGraphQL !== undefined;
 }
