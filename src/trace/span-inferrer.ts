@@ -24,6 +24,7 @@ export class SpanInferrer {
     this.traceWrapper = traceWrapper;
     this.service = process.env[DD_SERVICE_ENV_VAR];
     SpanInferrer.initServiceMapping();
+    logDebug(`DD_SERVICE_MAPPING DEBUGGING: Initialized service mapping: ${JSON.stringify(SpanInferrer.serviceMapping)}`);
   }
 
   private static initServiceMapping() {
@@ -33,13 +34,21 @@ export class SpanInferrer {
       const parts = entry.split(":").map((part) => part.trim());
       if (parts.length === 2 && parts[0] && parts[1] && parts[0] !== parts[1]) {
         this.serviceMapping[parts[0]] = parts[1];
+        logDebug(`DD_SERVICE_MAPPING DEBUGGING: Added service mapping: ${parts[0]} -> ${parts[1]}`);
       }
     });
   }
 
   static getServiceMapping(serviceName: string): string | undefined {
-    return this.serviceMapping[serviceName];
+    const mappedServiceName = this.serviceMapping[serviceName];
+    if (mappedServiceName) {
+      logDebug(`DD_SERVICE_MAPPING DEBUGGING:Mapped service name for "${serviceName}": ${mappedServiceName}`);
+    } else {
+      logDebug(`DD_SERVICE_MAPPING DEBUGGING: No mapping found for service name: "${serviceName}"`);
+    }
+    return mappedServiceName;
   }
+
 
   public createInferredSpan(
     event: any,
@@ -82,7 +91,9 @@ export class SpanInferrer {
   }
 
   static determineServiceName(specificKey: string, genericKey: string, fallback: string): string {
-    return this.serviceMapping[specificKey] || this.serviceMapping[genericKey] || fallback;
+    const serviceName = this.serviceMapping[specificKey] || this.serviceMapping[genericKey] || fallback;
+    logDebug(`DD_SERVICE_MAPPING DEBUGGING: Determined service name: ${serviceName}. SpecificKey: ${specificKey}, GenericKey: ${genericKey}, Fallback: ${fallback}`);
+    return serviceName;
   }
 
   createInferredSpanForApiGateway(
@@ -105,6 +116,7 @@ export class SpanInferrer {
     const resourceName = [method || domain, resourcePath].join(" ");
     const apiId = event.requestContext.apiId || "";
     const serviceName = SpanInferrer.determineServiceName(apiId, "lambda_api_gateway", domain);
+    logDebug(`DD_SERVICE_MAPPING DEBUGGING: Service name for API Gateway after removing service.name: ${serviceName}`);
 
     options.tags = {
       operation_name: "aws.apigateway",
@@ -114,7 +126,6 @@ export class SpanInferrer {
       request_id: context?.awsRequestId,
       "span.type": "http",
       "resource.name": resourceName,
-      "service.name": domain,
       "peer.service": this.service,
       apiid: apiId,
       service: serviceName,
@@ -296,6 +307,7 @@ export class SpanInferrer {
     const topicName = TopicArn?.split(":").pop() || "";
     const resourceName = topicName;
     const serviceName = SpanInferrer.determineServiceName(topicName, "lambda_sns", "sns");
+    logDebug(`DD_SERVICE_MAPPING DEBUGGING: Service name for SNS after removing service.name: ${serviceName}`);
     options.tags = {
       operation_name: "aws.sns",
       resource_names: resourceName,
@@ -346,13 +358,13 @@ export class SpanInferrer {
     const queueName = eventSourceARN?.split(":").pop() || "";
     const resourceName = queueName;
     const serviceName = SpanInferrer.determineServiceName(queueName, "lambda_sqs", "sqs");
+    logDebug(`DD_SERVICE_MAPPING DEBUGGING: Service name for SNS: ${serviceName}`);
     options.tags = {
       operation_name: "aws.sqs",
       resource_names: resourceName,
       request_id: context?.awsRequestId,
       "span.type": "web",
       "resource.name": resourceName,
-      "service.name": resourceName,
       "peer.service": this.service,
       service: serviceName,
       _inferred_span: {
