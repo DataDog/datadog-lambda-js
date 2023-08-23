@@ -42,10 +42,10 @@ export class SpanInferrer {
   }
 
   public createInferredSpan(
-    event: any,
-    context: Context | undefined,
-    parentSpanContext: SpanContext | undefined,
-    decodeAuthorizerContext: boolean = true,
+      event: any,
+      context: Context | undefined,
+      parentSpanContext: SpanContext | undefined,
+      decodeAuthorizerContext: boolean = true,
   ): any {
     const eventSource = parseEventSource(event);
     if (eventSource === eventTypes.lambdaUrl) {
