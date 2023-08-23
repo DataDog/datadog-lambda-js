@@ -24,7 +24,6 @@ export class SpanInferrer {
     this.traceWrapper = traceWrapper;
     this.service = process.env[DD_SERVICE_ENV_VAR];
     SpanInferrer.initServiceMapping();
-    logDebug(`DD_SERVICE_MAPPING DEBUGGING: Initialized service mapping: ${JSON.stringify(SpanInferrer.serviceMapping)}`);
   }
 
   private static initServiceMapping() {
@@ -34,27 +33,19 @@ export class SpanInferrer {
       const parts = entry.split(":").map((part) => part.trim());
       if (parts.length === 2 && parts[0] && parts[1] && parts[0] !== parts[1]) {
         this.serviceMapping[parts[0]] = parts[1];
-        logDebug(`DD_SERVICE_MAPPING DEBUGGING: Added service mapping: ${parts[0]} -> ${parts[1]}`);
       }
     });
   }
 
   static getServiceMapping(serviceName: string): string | undefined {
-    const mappedServiceName = this.serviceMapping[serviceName];
-    if (mappedServiceName) {
-      logDebug(`DD_SERVICE_MAPPING DEBUGGING:Mapped service name for "${serviceName}": ${mappedServiceName}`);
-    } else {
-      logDebug(`DD_SERVICE_MAPPING DEBUGGING: No mapping found for service name: "${serviceName}"`);
-    }
-    return mappedServiceName;
+    return this.serviceMapping[serviceName];
   }
 
-
   public createInferredSpan(
-    event: any,
-    context: Context | undefined,
-    parentSpanContext: SpanContext | undefined,
-    decodeAuthorizerContext: boolean = true,
+      event: any,
+      context: Context | undefined,
+      parentSpanContext: SpanContext | undefined,
+      decodeAuthorizerContext: boolean = true,
   ): any {
     const eventSource = parseEventSource(event);
     if (eventSource === eventTypes.lambdaUrl) {
@@ -91,16 +82,14 @@ export class SpanInferrer {
   }
 
   static determineServiceName(specificKey: string, genericKey: string, fallback: string): string {
-    const serviceName = this.serviceMapping[specificKey] || this.serviceMapping[genericKey] || fallback;
-    logDebug(`DD_SERVICE_MAPPING DEBUGGING: Determined service name: ${serviceName}. SpecificKey: ${specificKey}, GenericKey: ${genericKey}, Fallback: ${fallback}`);
-    return serviceName;
+    return this.serviceMapping[specificKey] || this.serviceMapping[genericKey] || fallback;
   }
 
   createInferredSpanForApiGateway(
-    event: any,
-    context: Context | undefined,
-    parentSpanContext: SpanContext | undefined,
-    decodeAuthorizerContext: boolean = true,
+      event: any,
+      context: Context | undefined,
+      parentSpanContext: SpanContext | undefined,
+      decodeAuthorizerContext: boolean = true,
   ): SpanWrapper {
     const options: SpanOptions = {};
     const domain = event.requestContext.domainName || "";
@@ -124,11 +113,12 @@ export class SpanInferrer {
       endpoint: path,
       resource_names: resourceName,
       request_id: context?.awsRequestId,
+      service: serviceName,
+      "service.name": serviceName,
       "span.type": "http",
       "resource.name": resourceName,
       "peer.service": this.service,
       apiid: apiId,
-      service: serviceName,
       _inferred_span: {
         tag_source: "self",
         synchronicity: this.isApiGatewayAsync(event),
@@ -165,8 +155,8 @@ export class SpanInferrer {
               tags: { operation_name: "aws.apigateway.authorizer", ...options.tags },
             };
             upstreamAuthorizerSpan = new SpanWrapper(
-              this.traceWrapper.startSpan("aws.apigateway.authorizer", upstreamSpanOptions),
-              { isAsync: false },
+                this.traceWrapper.startSpan("aws.apigateway.authorizer", upstreamSpanOptions),
+                { isAsync: false },
             );
             const endTime = event.requestContext.requestTimeEpoch + event.requestContext.authorizer.integrationLatency;
             upstreamAuthorizerSpan.finish(endTime);
@@ -180,8 +170,8 @@ export class SpanInferrer {
 
     if (!options.startTime) {
       if (
-        eventSourceSubType === eventSubTypes.apiGatewayV1 ||
-        eventSourceSubType === eventSubTypes.apiGatewayWebsocket
+          eventSourceSubType === eventSubTypes.apiGatewayV1 ||
+          eventSourceSubType === eventSubTypes.apiGatewayWebsocket
       ) {
         options.startTime = event.requestContext.requestTimeEpoch;
       } else {
@@ -197,9 +187,9 @@ export class SpanInferrer {
   }
 
   createInferredSpanForLambdaUrl(
-    event: any,
-    context: Context | undefined,
-    parentSpanContext: SpanContext | undefined,
+      event: any,
+      context: Context | undefined,
+      parentSpanContext: SpanContext | undefined,
   ): any {
     const options: SpanOptions = {};
     const domain: string = event.requestContext.domainName || "";
@@ -221,11 +211,11 @@ export class SpanInferrer {
       "http.method": event.requestContext.http.method,
       resource_names: resourceName,
       request_id: context?.awsRequestId,
+      service: serviceName,
+      "service.name": serviceName,
       "span.type": "http",
       "resource.name": resourceName,
-      "service.name": domain,
       "peer.service": this.service,
-      service: serviceName,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "sync",
@@ -242,9 +232,9 @@ export class SpanInferrer {
   }
 
   createInferredSpanForDynamoDBStreamEvent(
-    event: any,
-    context: Context | undefined,
-    parentSpanContext: SpanContext | undefined,
+      event: any,
+      context: Context | undefined,
+      parentSpanContext: SpanContext | undefined,
   ): SpanWrapper {
     const options: SpanOptions = {};
     const { Records } = event as DynamoDBStreamEvent;
@@ -258,10 +248,11 @@ export class SpanInferrer {
       tablename: tableName,
       resource_names: resourceName,
       request_id: context?.awsRequestId,
+      service: serviceName,
+      "service.name": serviceName,
       "span.type": "web",
       "resource.name": resourceName,
       "peer.service": this.service,
-      service: serviceName,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -286,9 +277,9 @@ export class SpanInferrer {
   }
 
   createInferredSpanForSns(
-    event: any,
-    context: Context | undefined,
-    parentSpanContext: SpanContext | undefined,
+      event: any,
+      context: Context | undefined,
+      parentSpanContext: SpanContext | undefined,
   ): SpanWrapper {
     const options: SpanOptions = {};
 
@@ -307,15 +298,15 @@ export class SpanInferrer {
     const topicName = TopicArn?.split(":").pop() || "";
     const resourceName = topicName;
     const serviceName = SpanInferrer.determineServiceName(topicName, "lambda_sns", "sns");
-    logDebug(`DD_SERVICE_MAPPING DEBUGGING: Service name for SNS after removing service.name: ${serviceName}`);
     options.tags = {
       operation_name: "aws.sns",
       resource_names: resourceName,
       request_id: context?.awsRequestId,
+      service: serviceName,
+      "service.name": serviceName,
       "span.type": "sns",
       "resource.name": resourceName,
       "peer.service": this.service,
-      service: serviceName,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -342,9 +333,9 @@ export class SpanInferrer {
   }
 
   createInferredSpanForSqs(
-    event: any,
-    context: Context | undefined,
-    parentSpanContext: SpanContext | undefined,
+      event: any,
+      context: Context | undefined,
+      parentSpanContext: SpanContext | undefined,
   ): SpanWrapper {
     const options: SpanOptions = {};
     const { Records } = event as SQSEvent;
@@ -358,15 +349,15 @@ export class SpanInferrer {
     const queueName = eventSourceARN?.split(":").pop() || "";
     const resourceName = queueName;
     const serviceName = SpanInferrer.determineServiceName(queueName, "lambda_sqs", "sqs");
-    logDebug(`DD_SERVICE_MAPPING DEBUGGING: Service name for SNS: ${serviceName}`);
     options.tags = {
       operation_name: "aws.sqs",
       resource_names: resourceName,
       request_id: context?.awsRequestId,
+      service: serviceName,
+      "service.name": serviceName,
       "span.type": "web",
       "resource.name": resourceName,
       "peer.service": this.service,
-      service: serviceName,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -407,9 +398,9 @@ export class SpanInferrer {
   }
 
   createInferredSpanForKinesis(
-    event: any,
-    context: Context | undefined,
-    parentSpanContext: SpanContext | undefined,
+      event: any,
+      context: Context | undefined,
+      parentSpanContext: SpanContext | undefined,
   ): SpanWrapper {
     const options: SpanOptions = {};
     const { Records } = event as KinesisStreamEvent;
@@ -428,10 +419,11 @@ export class SpanInferrer {
       operation_name: "aws.kinesis",
       resource_names: streamName,
       request_id: context?.awsRequestId,
+      service: serviceName,
+      "service.name": serviceName,
       "span.type": "web",
       "resource.name": streamName,
       "peer.service": this.service,
-      service: serviceName,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -455,9 +447,9 @@ export class SpanInferrer {
   }
 
   createInferredSpanForS3(
-    event: any,
-    context: Context | undefined,
-    parentSpanContext: SpanContext | undefined,
+      event: any,
+      context: Context | undefined,
+      parentSpanContext: SpanContext | undefined,
   ): SpanWrapper {
     const options: SpanOptions = {};
     const { Records } = event as S3CreateEvent;
@@ -475,10 +467,11 @@ export class SpanInferrer {
       operation_name: "aws.s3",
       resource_names: bucketName,
       request_id: context?.awsRequestId,
+      service: serviceName,
+      "service.name": serviceName,
       "span.type": "web",
       "resource.name": bucketName,
       "peer.service": this.service,
-      service: serviceName,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -501,9 +494,9 @@ export class SpanInferrer {
   }
 
   createInferredSpanForEventBridge(
-    event: EventBridgeEvent<any, any>,
-    context: Context | undefined,
-    parentSpanContext: SpanContext | undefined,
+      event: EventBridgeEvent<any, any>,
+      context: Context | undefined,
+      parentSpanContext: SpanContext | undefined,
   ): SpanWrapper {
     const options: SpanOptions = {};
     const { time, source } = event as EventBridgeEvent<any, any>;
@@ -512,10 +505,11 @@ export class SpanInferrer {
       operation_name: "aws.eventbridge",
       resource_names: source,
       request_id: context?.awsRequestId,
+      service: serviceName,
+      "service.name": serviceName,
       "span.type": "web",
       "resource.name": source,
       "peer.service": this.service,
-      service: serviceName,
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
