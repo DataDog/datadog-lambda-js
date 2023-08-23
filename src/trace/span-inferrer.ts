@@ -42,10 +42,10 @@ export class SpanInferrer {
   }
 
   public createInferredSpan(
-      event: any,
-      context: Context | undefined,
-      parentSpanContext: SpanContext | undefined,
-      decodeAuthorizerContext: boolean = true,
+    event: any,
+    context: Context | undefined,
+    parentSpanContext: SpanContext | undefined,
+    decodeAuthorizerContext: boolean = true,
   ): any {
     const eventSource = parseEventSource(event);
     if (eventSource === eventTypes.lambdaUrl) {
@@ -86,10 +86,10 @@ export class SpanInferrer {
   }
 
   createInferredSpanForApiGateway(
-      event: any,
-      context: Context | undefined,
-      parentSpanContext: SpanContext | undefined,
-      decodeAuthorizerContext: boolean = true,
+    event: any,
+    context: Context | undefined,
+    parentSpanContext: SpanContext | undefined,
+    decodeAuthorizerContext: boolean = true,
   ): SpanWrapper {
     const options: SpanOptions = {};
     const domain = event.requestContext.domainName || "";
@@ -154,8 +154,8 @@ export class SpanInferrer {
               tags: { operation_name: "aws.apigateway.authorizer", ...options.tags },
             };
             upstreamAuthorizerSpan = new SpanWrapper(
-                this.traceWrapper.startSpan("aws.apigateway.authorizer", upstreamSpanOptions),
-                { isAsync: false },
+              this.traceWrapper.startSpan("aws.apigateway.authorizer", upstreamSpanOptions),
+              { isAsync: false },
             );
             const endTime = event.requestContext.requestTimeEpoch + event.requestContext.authorizer.integrationLatency;
             upstreamAuthorizerSpan.finish(endTime);
@@ -169,8 +169,8 @@ export class SpanInferrer {
 
     if (!options.startTime) {
       if (
-          eventSourceSubType === eventSubTypes.apiGatewayV1 ||
-          eventSourceSubType === eventSubTypes.apiGatewayWebsocket
+        eventSourceSubType === eventSubTypes.apiGatewayV1 ||
+        eventSourceSubType === eventSubTypes.apiGatewayWebsocket
       ) {
         options.startTime = event.requestContext.requestTimeEpoch;
       } else {
@@ -186,9 +186,9 @@ export class SpanInferrer {
   }
 
   createInferredSpanForLambdaUrl(
-      event: any,
-      context: Context | undefined,
-      parentSpanContext: SpanContext | undefined,
+    event: any,
+    context: Context | undefined,
+    parentSpanContext: SpanContext | undefined,
   ): any {
     const options: SpanOptions = {};
     const domain: string = event.requestContext.domainName || "";
@@ -231,9 +231,9 @@ export class SpanInferrer {
   }
 
   createInferredSpanForDynamoDBStreamEvent(
-      event: any,
-      context: Context | undefined,
-      parentSpanContext: SpanContext | undefined,
+    event: any,
+    context: Context | undefined,
+    parentSpanContext: SpanContext | undefined,
   ): SpanWrapper {
     const options: SpanOptions = {};
     const { Records } = event as DynamoDBStreamEvent;
@@ -276,9 +276,9 @@ export class SpanInferrer {
   }
 
   createInferredSpanForSns(
-      event: any,
-      context: Context | undefined,
-      parentSpanContext: SpanContext | undefined,
+    event: any,
+    context: Context | undefined,
+    parentSpanContext: SpanContext | undefined,
   ): SpanWrapper {
     const options: SpanOptions = {};
 
@@ -332,9 +332,9 @@ export class SpanInferrer {
   }
 
   createInferredSpanForSqs(
-      event: any,
-      context: Context | undefined,
-      parentSpanContext: SpanContext | undefined,
+    event: any,
+    context: Context | undefined,
+    parentSpanContext: SpanContext | undefined,
   ): SpanWrapper {
     const options: SpanOptions = {};
     const { Records } = event as SQSEvent;
@@ -397,9 +397,9 @@ export class SpanInferrer {
   }
 
   createInferredSpanForKinesis(
-      event: any,
-      context: Context | undefined,
-      parentSpanContext: SpanContext | undefined,
+    event: any,
+    context: Context | undefined,
+    parentSpanContext: SpanContext | undefined,
   ): SpanWrapper {
     const options: SpanOptions = {};
     const { Records } = event as KinesisStreamEvent;
@@ -446,9 +446,9 @@ export class SpanInferrer {
   }
 
   createInferredSpanForS3(
-      event: any,
-      context: Context | undefined,
-      parentSpanContext: SpanContext | undefined,
+    event: any,
+    context: Context | undefined,
+    parentSpanContext: SpanContext | undefined,
   ): SpanWrapper {
     const options: SpanOptions = {};
     const { Records } = event as S3CreateEvent;
@@ -493,9 +493,9 @@ export class SpanInferrer {
   }
 
   createInferredSpanForEventBridge(
-      event: EventBridgeEvent<any, any>,
-      context: Context | undefined,
-      parentSpanContext: SpanContext | undefined,
+    event: EventBridgeEvent<any, any>,
+    context: Context | undefined,
+    parentSpanContext: SpanContext | undefined,
   ): SpanWrapper {
     const options: SpanOptions = {};
     const { time, source } = event as EventBridgeEvent<any, any>;
