@@ -105,7 +105,6 @@ export class SpanInferrer {
     const resourceName = [method || domain, resourcePath].join(" ");
     const apiId = event.requestContext.apiId || "";
     const serviceName = SpanInferrer.determineServiceName(apiId, "lambda_api_gateway", domain);
-    logDebug(`DD_SERVICE_MAPPING DEBUGGING: Service name for API Gateway after removing service.name: ${serviceName}`);
 
     options.tags = {
       operation_name: "aws.apigateway",

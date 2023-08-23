@@ -47,8 +47,16 @@ describe("SpanInferrer", () => {
   });
 
   function getStartSpanServiceTag(callNumber: number) {
-    return mockWrapper.startSpan.mock.calls[callNumber - 1][1].tags.service;
+    const tags = mockWrapper.startSpan.mock.calls[callNumber - 1][1].tags;
+
+    // Ensure that the service.name exists in the tags
+    if (!tags['service.name']) {
+      throw new Error("The tag service.name is missing in the startSpan call.");
+    }
+
+    return tags['service.name'];
   }
+
 
   it("initializes service mapping correctly", () => {
     process.env.DD_SERVICE_MAPPING = "key1:value1,key2:value2";
@@ -406,6 +414,7 @@ describe("SpanInferrer", () => {
         "resource.name": "ExampleTopic",
         resource_names: "ExampleTopic",
         service: "sns",
+        "service.name": "sns",
         "span.type": "sns",
         subject: "example subject",
         topic_arn: "arn:aws:sns:us-east-1:123456789012:ExampleTopic",
@@ -435,7 +444,7 @@ describe("SpanInferrer", () => {
         retry_count: 1,
         sender_id: "123456789012",
         service: "sqs",
-        "service.name": "MyQueue",
+        "service.name": "sqs",
         "span.type": "web",
       },
     });
@@ -462,6 +471,7 @@ describe("SpanInferrer", () => {
         "resource.name": "INSERT ExampleTableWithStream",
         resource_names: "INSERT ExampleTableWithStream",
         service: "aws.dynamodb",
+        "service.name": "aws.dynamodb",
         size_bytes: 26,
         "span.type": "web",
         stream_view_type: "NEW_AND_OLD_IMAGES",
@@ -489,6 +499,7 @@ describe("SpanInferrer", () => {
         "resource.name": "EXAMPLE",
         resource_names: "EXAMPLE",
         service: "kinesis",
+        "service.name": "kinesis",
         shardid: "49545115243490985018280067714973144582180062593244200961",
         "span.type": "web",
         streamname: "EXAMPLE",
@@ -511,9 +522,11 @@ describe("SpanInferrer", () => {
             message_id: "0a0ab23e-4861-5447-82b7-e8094ff3e332",
             operation_name: "aws.sns",
             "peer.service": "mock-lambda-service",
-            "resource.name": "js-library-test-dev-demoTopic-15WGUVRCBMPAA",
+            "request_id": undefined,
+        "resource.name": "js-library-test-dev-demoTopic-15WGUVRCBMPAA",
             resource_names: "js-library-test-dev-demoTopic-15WGUVRCBMPAA",
             service: "sns",
+            "service.name": "sns",
             "span.type": "sns",
             subject: undefined,
             topic_arn: "arn:aws:sns:eu-west-1:601427279990:js-library-test-dev-demoTopic-15WGUVRCBMPAA",
@@ -541,7 +554,7 @@ describe("SpanInferrer", () => {
             retry_count: 1,
             sender_id: "AIDAIOA2GYWSHW4E2VXIO",
             service: "sqs",
-            "service.name": "aj-js-library-test-dev-demo-queue",
+            "service.name": "sqs",
             "span.type": "web",
           },
         },
@@ -564,6 +577,7 @@ describe("SpanInferrer", () => {
         "resource.name": "my.event",
         resource_names: "my.event",
         service: "eventbridge",
+        "service.name": "eventbridge",
         "span.type": "web",
       },
     });
@@ -587,6 +601,7 @@ describe("SpanInferrer", () => {
             "resource.name": "my.Source",
             resource_names: "my.Source",
             service: "eventbridge",
+            "service.name": "eventbridge",
             "span.type": "web",
           },
         },
@@ -610,7 +625,7 @@ describe("SpanInferrer", () => {
             retry_count: 1,
             sender_id: "AIDAJXNJGGKNS7OSV23OI",
             service: "sqs",
-            "service.name": "lambda-eb-sqs-lambda-dev-demo-queue",
+            "service.name": "sqs",
             "span.type": "web",
           },
         },
@@ -747,6 +762,7 @@ describe("SpanInferrer", () => {
         "resource.name": "example-bucket",
         resource_names: "example-bucket",
         service: "s3",
+        "service.name": "s3",
         "span.type": "web",
       },
     });
