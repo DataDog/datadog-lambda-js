@@ -50,13 +50,12 @@ describe("SpanInferrer", () => {
     const tags = mockWrapper.startSpan.mock.calls[callNumber - 1][1].tags;
 
     // Ensure that the service.name exists in the tags
-    if (!tags['service.name']) {
+    if (!tags["service.name"]) {
       throw new Error("The tag service.name is missing in the startSpan call.");
     }
 
-    return tags['service.name'];
+    return tags["service.name"];
   }
-
 
   it("initializes service mapping correctly", () => {
     process.env.DD_SERVICE_MAPPING = "key1:value1,key2:value2";
@@ -522,8 +521,8 @@ describe("SpanInferrer", () => {
             message_id: "0a0ab23e-4861-5447-82b7-e8094ff3e332",
             operation_name: "aws.sns",
             "peer.service": "mock-lambda-service",
-            "request_id": undefined,
-        "resource.name": "js-library-test-dev-demoTopic-15WGUVRCBMPAA",
+            request_id: undefined,
+            "resource.name": "js-library-test-dev-demoTopic-15WGUVRCBMPAA",
             resource_names: "js-library-test-dev-demoTopic-15WGUVRCBMPAA",
             service: "sns",
             "service.name": "sns",
