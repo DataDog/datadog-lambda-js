@@ -42,6 +42,7 @@ START
         "error": 0,
         "meta": {
           "_dd.p.dm": "-0",
+          "service": "remappedApiGatewayServiceName",
           "runtime-id":"XXXX",
           "operation_name": "aws.apigateway",
           "http.url": "undefined",
@@ -63,6 +64,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
+        "service": "remappedApiGatewayServiceName",
         "type": "http"
       },
       {
@@ -152,7 +154,7 @@ START
         "error": 0,
         "meta": {
           "_dd.p.dm": "-0",
-          "service": "sns",
+          "service": "remappedSnsServiceName",
           "runtime-id":"XXXX",
           "operation_name": "aws.sns",
           "resource_names": "sns-lambda",
@@ -175,7 +177,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "service": "integration-tests-js-XXXX-status-code-500s_node14",
+        "service": "remappedSnsServiceName",
         "type": "sns"
       },
       {
@@ -241,7 +243,7 @@ START
         "error": 0,
         "meta": {
           "_dd.p.dm": "-0",
-          "service": "sqs",
+          "service": "remappedSqsServiceName",
           "runtime-id":"XXXX",
           "operation_name": "aws.sqs",
           "resource_names": "my-queue",
@@ -263,7 +265,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "service": "my-queue",
+        "service": "remappedSqsServiceName",
         "type": "web"
       },
       {
