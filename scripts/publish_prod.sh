@@ -39,7 +39,7 @@ ddsaml2aws login -a govcloud-us1-fed-human-engineering
 AWS_PROFILE=govcloud-us1-fed-human-engineering aws sts get-caller-identity
 
 echo "Ensure you have access to the production AWS account"
-aws-vault exec prod-engineering -- aws sts get-caller-identity
+aws-vault exec sso-prod-engineering -- aws sts get-caller-identity
 
 CURRENT_VERSION=$(npm view datadog-lambda-js version)
 LAYER_VERSION=$(echo $NEW_VERSION | cut -d '.' -f 2)
@@ -59,11 +59,11 @@ echo 'Building layers...'
 
 echo
 echo "Signing layers for commercial AWS regions"
-aws-vault exec prod-engineering -- ./scripts/sign_layers.sh prod
+aws-vault exec sso-prod-engineering -- ./scripts/sign_layers.sh prod
 
 echo
 echo "Publishing layers to commercial AWS regions"
-VERSION=$LAYER_VERSION aws-vault exec prod-engineering --no-session -- ./scripts/publish_layers.sh
+VERSION=$LAYER_VERSION aws-vault exec sso-prod-engineering --no-session -- ./scripts/publish_layers.sh
 
 echo "Publishing layers to GovCloud AWS regions"
 ddsaml2aws login -a govcloud-us1-fed-human-engineering
