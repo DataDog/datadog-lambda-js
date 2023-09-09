@@ -34,10 +34,10 @@ describe("tagObject", () => {
       ["lambda_payload.request.myObject.anotherKey.0", "array"],
       ["lambda_payload.request.myObject.anotherKey.1", "of"],
       ["lambda_payload.request.myObject.anotherKey.2", "values"],
-      ["lambda_payload.request.myObject.nestedBoolean", false],
+      ["lambda_payload.request.myObject.nestedBoolean", "false"],
       ["lambda_payload.request.val", null],
       ["lambda_payload.request.number", "1"],
-      ["lambda_payload.request.aBoolean", true],
+      ["lambda_payload.request.aBoolean", "true"],
     ]);
   });
   it("tags arrays of objects", () => {
