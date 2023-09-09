@@ -20,7 +20,10 @@ export function tagObject(currentSpan: any, key: string, obj: any, depth = 0): a
     }
     return tagObject(currentSpan, key, parsed, depth);
   }
-  if (typeof obj === "number" || typeof obj === "boolean") {
+  if (typeof obj === "number") {
+    return currentSpan.setTag(key, obj.toString());
+  }
+  if (typeof obj === "boolean") {
     return currentSpan.setTag(key, obj);
   }
   if (typeof obj === "object") {

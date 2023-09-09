@@ -36,7 +36,7 @@ describe("tagObject", () => {
       ["lambda_payload.request.myObject.anotherKey.2", "values"],
       ["lambda_payload.request.myObject.nestedBoolean", false],
       ["lambda_payload.request.val", null],
-      ["lambda_payload.request.number", 1],
+      ["lambda_payload.request.number", "1"],
       ["lambda_payload.request.aBoolean", true],
     ]);
   });
@@ -50,8 +50,8 @@ describe("tagObject", () => {
       },
     });
     expect(setTag.mock.calls).toEqual([
-      ["lambda_payload.request.vals.0.thingOne", 1],
-      ["lambda_payload.request.vals.1.thingTwo", 2],
+      ["lambda_payload.request.vals.0.thingOne", "1"],
+      ["lambda_payload.request.vals.1.thingTwo", "2"],
     ]);
   });
   it("redacts common secret keys", () => {
