@@ -1,58 +1,43 @@
 import { datadogLambdaVersion } from "../constants";
-import { sendDistributionMetric } from "../index";
 
 import { Context } from "aws-lambda";
-import { parseTagsFromARN } from "../utils/arn";
+import { parseLambdaARN } from "../utils/arn";
 import { getSandboxInitTags } from "../utils/cold-start";
-import { getProcessVersion } from "../utils/process-version";
-import { writeMetricToStdout } from "./metric-log";
 import { MetricsListener } from "./listener";
+import { objectToKeyValueArray } from "../utils/tag-object";
+import { getProcessVersion } from "../utils/process-version";
 
 const ENHANCED_LAMBDA_METRICS_NAMESPACE = "aws.lambda.enhanced";
 
-// Same tag strings added to normal Lambda integration metrics
+/**
+ * Runtime tag values used for enhanced metrics.
+ * Same as Lambda integration metrics.
+ *
+ * See https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html
+ */
 enum RuntimeTagValues {
   Node14 = "nodejs14.x",
   Node16 = "nodejs16.x",
   Node18 = "nodejs18.x",
 }
 
-export function getVersionTag(): string {
-  return `datadog_lambda:v${datadogLambdaVersion}`;
-}
-
 /**
- * Uses process.version to create a runtime tag
- * If a version cannot be identified, returns null
- * See https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html
+ * Tags available from parsing an AWS Lambda ARN
  */
-export function getRuntimeTag(): string | null {
-  const processVersion = getProcessVersion();
-  let processVersionTagString: string | null = null;
-
-  if (processVersion.startsWith("v14")) {
-    processVersionTagString = RuntimeTagValues.Node14;
-  }
-
-  if (processVersion.startsWith("v16")) {
-    processVersionTagString = RuntimeTagValues.Node16;
-  }
-
-  if (processVersion.startsWith("v18")) {
-    processVersionTagString = RuntimeTagValues.Node18;
-  }
-
-  if (!processVersionTagString) {
-    return null;
-  }
-
-  return `runtime:${processVersionTagString}`;
+interface LambdaArnMetricTags {
+  // `account_id` is the key used for metric tags.
+  // tslint:disable-next-line: variable-name
+  account_id: string;
+  region: string;
+  functionname: string;
+  executedversion?: string;
+  resource?: string;
 }
 
 export function getEnhancedMetricTags(context: Context): string[] {
   let arnTags = [`functionname:${context.functionName}`];
   if (context.invokedFunctionArn) {
-    arnTags = parseTagsFromARN(context.invokedFunctionArn, context.functionVersion);
+    arnTags = objectToKeyValueArray(getLambdaArnTags(context.invokedFunctionArn, context.functionVersion));
   }
   const tags = [...arnTags, ...getSandboxInitTags(), `memorysize:${context.memoryLimitInMB}`, getVersionTag()];
 
@@ -64,6 +49,59 @@ export function getEnhancedMetricTags(context: Context): string[] {
   return tags;
 }
 
+export function getLambdaArnTags(arn: string, version?: string): LambdaArnMetricTags {
+  // tslint:disable-next-line: variable-name
+  const [, region, account_id, functionname, alias] = parseLambdaARN(arn);
+  let _alias = alias;
+  const tags: LambdaArnMetricTags = { region, account_id, functionname, resource: functionname };
+
+  if (alias !== undefined) {
+    // If `$LATEST`, remove `$` for Datadog metrics tag convention.
+    if (alias.startsWith("$")) {
+      _alias = alias.substring(1);
+      // Check if this is an alias and not a version.
+    } else if (!Number(alias)) {
+      tags.executedversion = version;
+    }
+    tags.resource = functionname + ":" + _alias;
+  }
+
+  return tags;
+}
+
+/**
+ * Inspects `process.version` to determine in which node runtime
+ * the code is running. If present, returns a `key:value` pair as
+ * `runtime:nodejs18.x`.
+ *
+ * @returns runtime tag, null if not present.
+ */
+export function getRuntimeTag(): string | null {
+  const processVersion = getProcessVersion();
+  let tag: string | null = null;
+
+  switch (processVersion.substring(0, 3)) {
+    case "v14":
+      tag = RuntimeTagValues.Node14;
+      break;
+    case "v16":
+      tag = RuntimeTagValues.Node16;
+      break;
+    case "v18":
+      tag = RuntimeTagValues.Node18;
+      break;
+
+    default:
+      return null;
+  }
+
+  return `runtime:${tag}`;
+}
+
+export function getVersionTag(): string {
+  return `datadog_lambda:v${datadogLambdaVersion}`;
+}
+
 /**
  * Increments the specified enhanced metric, applying all relevant tags
  * @param context object passed to invocation by AWS
@@ -71,7 +109,12 @@ export function getEnhancedMetricTags(context: Context): string[] {
  */
 function incrementEnhancedMetric(listener: MetricsListener, metricName: string, context: Context) {
   // Always write enhanced metrics to standard out
-  listener.sendDistributionMetric(`aws.lambda.enhanced.${metricName}`, 1, true, ...getEnhancedMetricTags(context));
+  listener.sendDistributionMetric(
+    `${ENHANCED_LAMBDA_METRICS_NAMESPACE}.${metricName}`,
+    1,
+    true,
+    ...getEnhancedMetricTags(context),
+  );
 }
 
 export function incrementInvocationsMetric(listener: MetricsListener, context: Context): void {

@@ -4,6 +4,7 @@ import * as shimmer from "shimmer";
 import { parse, URL } from "url";
 
 import { TraceContextService, TraceHeaders } from "./trace-context-service";
+import { objectToKeyValueArray } from "../utils/tag-object";
 
 type RequestCallback = (res: http.IncomingMessage) => void;
 
@@ -129,7 +130,7 @@ function _logHttpRequest(options: http.RequestOptions, traceHeaders: Partial<Tra
   let headerMessage = "TraceHeaders: []";
 
   if (traceHeaders) {
-    const headerStrings = Object.entries(traceHeaders).map(([name, value]) => `${name}:${value}`);
+    const headerStrings = objectToKeyValueArray(traceHeaders);
     headerStrings.sort();
     headerMessage = `TraceHeaders: ${JSON.stringify(headerStrings)}`;
   }

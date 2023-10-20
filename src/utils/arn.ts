@@ -1,55 +1,12 @@
-import { stringify } from "querystring";
-
-/** Parse properties of the ARN into an object */
-
-interface Tags {
-  // Disabling variable name because accountId is the key we need to use for the tag
-  // tslint:disable-next-line: variable-name
-  account_id: string;
-  region: string;
-  functionname: string;
-  executedversion?: string;
-  resource?: string;
-}
-
-export function parseLambdaARN(arn: string, version?: string) {
-  let region: string | undefined;
-  // tslint:disable-next-line: variable-name
-  let account_id: string | undefined;
-  let functionname: string | undefined;
-  let alias: string | undefined;
-
-  const splitArn = arn.split(":");
-  // If we have a version or alias let's declare it
-  [, , , region, account_id, , functionname, alias] = splitArn;
-  // Set the standard tags
-  const tags: Tags = { region, account_id, functionname };
-  // If we have an alias...
-  if (alias !== undefined) {
-    // Check if $Latest and remove $ for datadog tag convention.
-    if (alias.startsWith("$")) {
-      alias = alias.substring(1);
-      // Check if this is an alias and not a version.
-    } else if (!Number(alias)) {
-      tags.executedversion = version;
-    }
-    tags.resource = functionname + ":" + alias;
-  } else {
-    tags.resource = functionname;
-  }
-
-  return tags;
-}
-
 /**
- * Parse keyValueObject to get the array of key:value strings to use in Datadog metric submission
- * @param obj The object whose properties and values we want to get key:value strings from
+ * Parses an AWS Lambda ARN into an array of strings.
+ *
+ * @param arn an AWS Lambda ARN.
+ * @returns an array of strings in the form of `[lowerCaseArn, region, accountId, functionName, aliasOrVersion]`.
  */
-function makeTagStringsFromObject(tags: Tags) {
-  return Object.entries(tags).map(([tagKey, tagValue]) => `${tagKey}:${tagValue}`);
-}
+export function parseLambdaARN(arn?: string) {
+  if (arn === undefined) return [];
+  const [, , , region, accountId, , functionName, alias] = arn.split(":");
 
-/** Get the array of "key:value" string tags from the Lambda ARN */
-export function parseTagsFromARN(arn: string, version?: string) {
-  return makeTagStringsFromObject(parseLambdaARN(arn, version));
+  return [arn, region, accountId, functionName, alias];
 }

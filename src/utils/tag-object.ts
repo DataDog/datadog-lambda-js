@@ -38,3 +38,13 @@ function redactVal(k: string, v: string): string {
   }
   return v;
 }
+
+/**
+ * Converts an `Object` to a `key:value` array.
+ *
+ * @param object
+ * @returns an array of `key:value` pairs.
+ */
+export function objectToKeyValueArray(object: any): string[] {
+  return Object.entries(object).map(([key, value]) => `${key}:${value}`);
+}

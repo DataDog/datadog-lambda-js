@@ -1,52 +1,34 @@
-import { parseLambdaARN, parseTagsFromARN } from "./arn";
+import { parseLambdaARN } from "./arn";
 
-describe("arn utils", () => {
-  it("parses arn properties", () => {
-    expect(parseLambdaARN("arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda")).toEqual({
-      account_id: "123497598159",
-      functionname: "my-test-lambda",
-      region: "us-east-1",
-      resource: "my-test-lambda",
+describe("arn", () => {
+  describe("parseLambdaARN", () => {
+    it("parses all ARN properties", () => {
+      const result = parseLambdaARN("arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda:$LATEST");
+      expect(result).toEqual([
+        "arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda:$LATEST",
+        "us-east-1",
+        "123497598159",
+        "my-test-lambda",
+        "$LATEST",
+      ]);
     });
-  });
 
-  it("parses arn properties with version alias", () => {
-    expect(
-      parseLambdaARN("arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda:my-version-alias", "1"),
-    ).toEqual({
-      account_id: "123497598159",
-      functionname: "my-test-lambda",
-      region: "us-east-1",
-      executedversion: "1",
-      resource: "my-test-lambda:my-version-alias",
+    it("parses ARN without version", () => {
+      const result = parseLambdaARN(
+        "arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda-no-alias-or-version",
+      );
+      expect(result).toEqual([
+        "arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda-no-alias-or-version",
+        "us-east-1",
+        "123497598159",
+        "my-test-lambda-no-alias-or-version",
+        undefined,
+      ]);
     });
-  });
 
-  it("parses arn properties with $latest version", () => {
-    expect(parseLambdaARN("arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda:$Latest")).toEqual({
-      account_id: "123497598159",
-      functionname: "my-test-lambda",
-      region: "us-east-1",
-      resource: "my-test-lambda:Latest",
+    it("returns empty array when ARN is undefined", () => {
+      const result = parseLambdaARN(undefined);
+      expect(result).toEqual([]);
     });
-  });
-
-  it("parses arn tags", () => {
-    const parsedTags = parseTagsFromARN("arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda");
-    for (const tag of ["account_id:123497598159", "functionname:my-test-lambda", "region:us-east-1"]) {
-      expect(parsedTags).toContain(tag);
-    }
-  });
-
-  it("parses arn tags with version", () => {
-    const parsedTags = parseTagsFromARN("arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda:1");
-    for (const tag of [
-      "account_id:123497598159",
-      "functionname:my-test-lambda",
-      "region:us-east-1",
-      "resource:my-test-lambda:1",
-    ]) {
-      expect(parsedTags).toContain(tag);
-    }
   });
 });
