@@ -54,6 +54,7 @@ START
           "http.method": "GET",
           "stage": "test",
           "http.status_code": "500",
+          "_dd.base_service": "integration-tests-js-XXXX-status-code-500s_node14",
           "language": "javascript"
         },
         "metrics": {
@@ -87,6 +88,7 @@ START
           "function_trigger.event_source_arn": "arn:aws:apigateway:eu-west-1::/restapis/wt6mne2s9k/stages/test",
           "http.method": "GET",
           "http.status_code": "500",
+          "_dd.base_service": "integration-tests-js-XXXX-status-code-500s_node14",
           "language": "javascript"
         },
         "metrics": {
@@ -167,6 +169,7 @@ START
           "topicname": "sns-lambda",
           "topic_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda",
           "event_subscription_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda:21be56ed-a058-49f5-8c98-aedd2564c486",
+          "_dd.base_service": "integration-tests-js-XXXX-status-code-500s_node14",
           "language": "javascript"
         },
         "metrics": {
@@ -198,6 +201,7 @@ START
           "datadog_lambda":"XXXX",
           "function_trigger.event_source": "sns",
           "function_trigger.event_source_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda",
+          "_dd.base_service": "integration-tests-js-XXXX-status-code-500s_node14",
           "language": "javascript"
         },
         "metrics": {
@@ -254,6 +258,7 @@ START
           "event_source_arn": "arn:aws:sqs:us-east-2:123456789012:my-queue",
           "receipt_handle": "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
           "sender_id": "AIDAIENQZJOLO23YVJ4VO",
+          "_dd.base_service": "integration-tests-js-XXXX-status-code-500s_node14",
           "language": "javascript"
         },
         "metrics": {
@@ -286,6 +291,7 @@ START
           "datadog_lambda":"XXXX",
           "function_trigger.event_source": "sqs",
           "function_trigger.event_source_arn": "arn:aws:sqs:us-east-2:123456789012:my-queue",
+          "_dd.base_service": "integration-tests-js-XXXX-status-code-500s_node14",
           "language": "javascript"
         },
         "metrics": {
