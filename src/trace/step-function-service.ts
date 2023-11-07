@@ -28,6 +28,10 @@ export class StepFunctionContextService {
     return this._instance || (this._instance = new this(event));
   }
 
+  public static reset() {
+    this._instance = undefined as any;
+  }
+
   private setContext(event: any) {
     // It is safe to mark this as a singleton since this method will be
     // always triggered by the same event.
