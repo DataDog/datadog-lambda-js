@@ -16,25 +16,11 @@ interface XrayTraceHeader {
 }
 
 export class XrayService {
-  private header?: string;
-  private context?: XrayTraceHeader;
   private readonly subsegmentName = "datadog-metadata";
   private readonly subsegmentNamespace = "datadog";
   private readonly baggageSubsegmentKey = "root_span_metadata";
   private readonly subsegmentKey = "trace";
   private readonly lambdaFunctionTagsKey = "lambda_function_tags";
-
-  constructor() {
-    this.header = process.env[AMZN_TRACE_ID_ENV_VAR];
-    if (this.header === undefined) {
-      logDebug("Couldn't read Xray trace header from env");
-    }
-
-    this.context = this.parseTraceContextHeader();
-    if (this.context === undefined) {
-      logDebug("Couldn't parse Xray trace header from env");
-    }
-  }
 
   public addLambdaTriggerTags(triggerTags: { [key: string]: string }) {
     this.add(this.lambdaFunctionTagsKey, triggerTags);
@@ -57,9 +43,10 @@ export class XrayService {
   }
 
   private generateSubsegment(key: string, metadata: Record<string, any>) {
-    if (this.context === undefined) return;
+    const context = this.parseTraceContextHeader();
+    if (context === undefined) return;
 
-    const sampled = this.convertToSampleMode(parseInt(this.context.sampled, 10));
+    const sampled = this.convertToSampleMode(parseInt(context.sampled, 10));
     if (sampled === SampleMode.USER_REJECT || sampled === SampleMode.AUTO_REJECT) {
       logDebug("Discarding Xray metadata subsegment due to sampling");
       return;
@@ -69,8 +56,8 @@ export class XrayService {
 
     return JSON.stringify({
       id: randomBytes(8).toString("hex"),
-      trace_id: this.context.traceId,
-      parent_id: this.context.parentId,
+      trace_id: context.traceId,
+      parent_id: context.parentId,
       name: this.subsegmentName,
       start_time: milliseconds,
       end_time: milliseconds,
@@ -84,11 +71,15 @@ export class XrayService {
   }
 
   private parseTraceContextHeader(): XrayTraceHeader | undefined {
-    if (this.header === undefined) return;
+    const header = process.env[AMZN_TRACE_ID_ENV_VAR];
+    if (header === undefined) {
+      logDebug("Couldn't read Xray trace header from env");
+      return;
+    }
 
     // Example: Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1
-    logDebug(`Reading Xray trace context from env var ${this.header}`);
-    const [root, parent, _sampled] = this.header.split(";");
+    logDebug(`Reading Xray trace context from env var ${header}`);
+    const [root, parent, _sampled] = header.split(";");
     if (parent === undefined || _sampled === undefined) return;
 
     const [, traceId] = root.split("=");
@@ -140,30 +131,33 @@ export class XrayService {
   }
 
   public extract(): SpanContextWrapper | null {
-    if (this.context === undefined) return null;
-
     if (this.traceContext === undefined) return null;
+
     const spanContext = SpanContextWrapper.fromTraceContext(this.traceContext);
     if (spanContext === null) return null;
-    logDebug(`Extracted trace context from xray context`, { traceContext: this.traceContext, header: this.header });
+    logDebug(`Extracted trace context from xray context`, { traceContext: this.traceContext });
 
     return spanContext;
   }
 
   private get traceContext(): TraceContext | undefined {
-    if (this.context === undefined) return;
+    const context = this.parseTraceContextHeader();
+    if (context === undefined) {
+      logDebug("Couldn't parse Xray trace header from env");
+      return;
+    }
 
-    const parentId = this.convertToParentId(this.context.parentId);
+    const parentId = this.convertToParentId(context.parentId);
     if (parentId === undefined) {
-      logDebug("Couldn't parse Xray Parent Id", this.context);
+      logDebug("Couldn't parse Xray Parent Id", context);
       return;
     }
-    const traceId = this.convertToTraceId(this.context.traceId);
+    const traceId = this.convertToTraceId(context.traceId);
     if (traceId === undefined) {
-      logDebug("Couldn't parse Xray Trace Id", this.context);
+      logDebug("Couldn't parse Xray Trace Id", context);
       return;
     }
-    const sampleMode = this.convertToSampleMode(parseInt(this.context.sampled, 10));
+    const sampleMode = this.convertToSampleMode(parseInt(context.sampled, 10));
 
     const trace = {
       traceId,
