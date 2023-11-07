@@ -134,7 +134,10 @@ export class StepFunctionContextService {
     const sampleMode = SampleMode.AUTO_KEEP;
 
     const spanContext = SpanContextWrapper.fromTraceContext({
-      traceId, parentId, sampleMode, source: TraceSource.Event
+      traceId,
+      parentId,
+      sampleMode,
+      source: TraceSource.Event,
     });
 
     if (spanContext === null) return null;
