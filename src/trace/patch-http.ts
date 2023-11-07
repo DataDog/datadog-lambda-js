@@ -2,8 +2,8 @@ import http from "http";
 import https from "https";
 import * as shimmer from "shimmer";
 import { parse, URL } from "url";
-
-import { TraceContextService, TraceHeaders } from "./trace-context-service";
+import { TraceContextService } from "./trace-context-service";
+import { TraceHeaders } from "./context/extractor";
 
 type RequestCallback = (res: http.IncomingMessage) => void;
 

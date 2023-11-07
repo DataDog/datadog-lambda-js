@@ -4,10 +4,11 @@ import nock from "nock";
 import { parse } from "url";
 
 import { LogLevel, setLogLevel } from "../utils";
-import { parentIDHeader, SampleMode, samplingPriorityHeader, traceIDHeader, Source } from "./constants";
+import { parentIDHeader, SampleMode, samplingPriorityHeader, traceIDHeader } from "./constants";
 import { patchHttp, unpatchHttp } from "./patch-http";
-import { TraceContextService } from "./trace-context-service";
 import { URL } from "url";
+import { TraceContextService, TraceSource } from "./trace-context-service";
+import { SpanContextWrapper } from "./span-context-wrapper";
 
 describe("patchHttp", () => {
   let traceWrapper = {
@@ -27,13 +28,14 @@ describe("patchHttp", () => {
   }
 
   beforeEach(() => {
-    contextService = new TraceContextService(traceWrapper as any);
+    contextService = new TraceContextService(traceWrapper as any, {} as any);
     contextService["rootTraceContext"] = {
-      parentID: "78910",
-      sampleMode: SampleMode.USER_KEEP,
-      source: Source.Event,
-      traceID: "123456",
-    };
+      spanContext: {},
+      toTraceId: () => "123456",
+      toSpanId: () => "78910",
+      sampleMode: () => SampleMode.USER_KEEP,
+      source: TraceSource.Event,
+    } as SpanContextWrapper;
     setLogLevel(LogLevel.NONE);
   });
 
@@ -124,7 +126,7 @@ describe("patchHttp", () => {
   it("doesn't inject tracing headers when context is empty", () => {
     nock("http://www.example.com").get("/").reply(200, {});
 
-    contextService["rootTraceContext"] = undefined;
+    contextService["rootTraceContext"] = null as any;
     patchHttp(contextService);
     const req = http.request("http://www.example.com");
     const headers = req.getHeaders();
