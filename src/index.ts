@@ -7,7 +7,7 @@ import {
   MetricsConfig,
   MetricsListener,
 } from "./metrics";
-import { TraceConfig, TraceHeaders, TraceListener } from "./trace";
+import { TraceConfig, TraceListener } from "./trace";
 import { subscribeToDC } from "./runtime";
 import {
   logDebug,
@@ -20,8 +20,7 @@ import {
   setLogLevel,
 } from "./utils";
 import { getEnhancedMetricTags } from "./metrics/enhanced-metrics";
-
-export { TraceHeaders } from "./trace";
+import { TraceHeaders } from "trace/context/extractor";
 
 export const apiKeyEnvVar = "DD_API_KEY";
 export const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
