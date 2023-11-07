@@ -21,20 +21,30 @@ export class SpanContextWrapper implements SpanContext {
     return this.spanContext._sampling?.priority;
   }
 
+  public toString(): string {
+    return {
+      traceId: this.toTraceId(),
+      parentId: this.toSpanId(),
+      sampleMode: this.sampleMode().toString(),
+    }.toString();
+  }
+
   public static fromTraceContext(traceContext: TraceContext): SpanContextWrapper | null {
+    const traceId = traceContext.traceId || traceContext.traceID;
+    if (traceId === undefined) {
+      logDebug(`Unable to extract traceId`, { traceContext });
+      return null;
+    }
+
+    const spanId = traceContext.parentId || traceContext.parentID;
+    if (spanId === undefined) {
+      logDebug(`Unable to extract spanId`, { traceContext });
+      return null;
+    }
+
+    const samplingPriority = traceContext.sampleMode.toString(10);
+    const source = traceContext.source;
     try {
-      const traceId = traceContext.traceId || traceContext.traceID;
-      const spanId = traceContext.parentId || traceContext.parentID;
-      if (traceId === undefined) {
-        logDebug(`Unable to extract traceId`, { traceContext });
-        return null;
-      }
-
-      if (spanId === undefined) {
-        logDebug(`Unable to extract spanId`, { traceContext });
-        return null;
-      }
-
       // Try requiring class from the tracer.
       const _DatadogSpanContext = require("dd-trace/packages/dd-trace/src/opentracing/span_context");
 
@@ -42,15 +52,26 @@ export class SpanContextWrapper implements SpanContext {
         new _DatadogSpanContext({
           traceId,
           spanId,
-          sampling: { priority: traceContext.sampleMode.toString(10) },
+          sampling: { priority: samplingPriority },
         }),
-        traceContext.source,
+        source,
       );
     } catch (error) {
       if (error instanceof Error) {
-        logDebug("Couldn't require dd-trace from main", error);
+        logDebug("Couldn't generate SpanContext with tracer.", error);
       }
-      return null;
     }
+
+    // No tracer is available, fallback to a mock class.
+    // We can mock it, and it won't be parented since no
+    // tracer is available, and we are conditionally checking on it.
+    const _spanContext = {
+      toSpanId: () => spanId,
+      toTraceId: () => traceId,
+      _sampling: {
+        priority: samplingPriority,
+      },
+    };
+    return new SpanContextWrapper(_spanContext, source);
   }
 }
