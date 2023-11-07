@@ -1,6 +1,7 @@
-import { SampleMode, Source } from "./constants";
-import { TraceContextService } from "./trace-context-service";
+import { SampleMode } from "./constants";
+import { TraceContextService, TraceSource } from "./trace-context-service";
 import { patchConsole, unpatchConsole } from "./patch-console";
+import { SpanContextWrapper } from "./span-context-wrapper";
 
 describe("patchConsole", () => {
   let traceWrapper = {
@@ -27,13 +28,14 @@ describe("patchConsole", () => {
     warn = jest.fn();
     trace = jest.fn();
     cnsole = { log, info, debug, error, warn, trace } as any;
-    contextService = new TraceContextService(traceWrapper as any);
+    contextService = new TraceContextService(traceWrapper as any, {} as any);
     contextService["rootTraceContext"] = {
-      parentID: "78910",
-      sampleMode: SampleMode.USER_KEEP,
-      source: Source.Event,
-      traceID: "123456",
-    };
+      spanContext: {},
+      toTraceId: () => "123456",
+      toSpanId: () => "78910",
+      sampleMode: () => SampleMode.USER_KEEP,
+      source: TraceSource.Event,
+    } as SpanContextWrapper;
   });
 
   afterEach(() => {
@@ -72,7 +74,7 @@ describe("patchConsole", () => {
   });
 
   it("doesn't inject trace context when none is present", () => {
-    contextService["rootTraceContext"] = undefined;
+    contextService["rootTraceContext"] = undefined as any;
     patchConsole(cnsole as any, contextService);
     cnsole.log("Hello");
     expect(log).toHaveBeenCalledWith("Hello");
@@ -91,7 +93,7 @@ describe("patchConsole", () => {
     );
   });
   it("leaves empty message unmodified when there is no trace context", () => {
-    contextService["rootTraceContext"] = undefined;
+    contextService["rootTraceContext"] = undefined as any;
     patchConsole(cnsole as any, contextService);
     cnsole.log();
     expect(log).toHaveBeenCalledWith();
