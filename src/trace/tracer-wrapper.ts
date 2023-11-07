@@ -1,7 +1,6 @@
 import { logDebug } from "../utils";
-import { SampleMode, Source } from "./constants";
-import { TraceContext } from "./context";
-import { TraceHeaders } from "./trace-context-service";
+import { SpanContextWrapper } from "./span-context-wrapper";
+import { TraceSource } from "./trace-context-service";
 
 export interface SpanContext {
   toTraceId(): string;
@@ -55,11 +54,17 @@ export class TracerWrapper {
     return this.tracer.scope().active();
   }
 
-  public extract(event: Partial<TraceHeaders>): SpanContext | null {
+  public extract(event: any): SpanContextWrapper | null {
     if (!this.isTracerAvailable) {
       return null;
     }
-    return this.tracer.extract("http_headers", event) as SpanContext | null;
+
+    const extractedSpanContext = this.tracer.extract("text_map", event);
+    if (!extractedSpanContext) return null;
+
+    const spanContext = new SpanContextWrapper(extractedSpanContext, TraceSource.Event);
+
+    return spanContext;
   }
 
   public wrap<T = (...args: any[]) => any>(name: string, options: TraceOptions, fn: T) {
@@ -76,22 +81,16 @@ export class TracerWrapper {
     return this.tracer.startSpan(name, options);
   }
 
-  public traceContext(): TraceContext | undefined {
+  public traceContext(): SpanContextWrapper | null {
     if (!this.isTracerAvailable) {
-      return;
+      return null;
     }
     const span = this.currentSpan;
     if (span === null) {
-      return;
+      return null;
     }
-    const parentID = span.context().toSpanId();
-    const traceID = span.context().toTraceId();
-    return {
-      parentID,
-      sampleMode: SampleMode.AUTO_KEEP,
-      source: Source.Event,
-      traceID,
-    };
+
+    return new SpanContextWrapper(span.context(), TraceSource.DdTrace);
   }
 
   public injectSpan(span: SpanContext): any {
