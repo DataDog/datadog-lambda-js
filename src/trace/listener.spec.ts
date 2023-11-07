@@ -1,6 +1,5 @@
-import { TraceExtractor, TraceListener } from "./listener";
+import { TraceListener } from "./listener";
 import {
-  Source,
   ddtraceVersion,
   parentIDHeader,
   traceIDHeader,
@@ -9,14 +8,15 @@ import {
 } from "./constants";
 import { datadogLambdaVersion } from "../constants";
 import { Context } from "aws-lambda";
-import { TraceHeaders } from "./trace-context-service";
 import { SpanWrapper } from "./span-wrapper";
-import { eventSubTypes } from "./trigger";
+import { TraceSource } from "./trace-context-service";
+import { SpanContextWrapper } from "./span-context-wrapper";
 
 let mockWrap: jest.Mock<any, any>;
 let mockExtract: jest.Mock<any, any>;
-let mockTraceHeaders: Record<string, string> | undefined = undefined;
-let mockTraceSource: Source | undefined = undefined;
+let mockSpanContextWrapper: any;
+let mockSpanContext: any;
+let mockTraceSource: TraceSource | undefined = undefined;
 
 jest.mock("./tracer-wrapper", () => {
   mockWrap = jest.fn().mockImplementation((name, options, func) => func);
@@ -52,22 +52,19 @@ jest.mock("./tracer-wrapper", () => {
 
 jest.mock("./trace-context-service", () => {
   class MockTraceContextService {
-    extractHeadersFromContext(
-      event: any,
-      context: Context,
-      extractor?: TraceExtractor,
-    ): Partial<TraceHeaders> | undefined {
-      return mockTraceHeaders;
+    extract(event: any, context: Context): SpanContextWrapper {
+      return mockSpanContextWrapper;
     }
 
     get traceSource() {
       return mockTraceSource;
     }
-    get rootTraceHeaders() {
-      return mockTraceHeaders;
+    get currentTraceContext() {
+      return mockSpanContextWrapper;
     }
   }
   return {
+    ...jest.requireActual("./trace-context-service"),
     TraceContextService: MockTraceContextService,
   };
 });
@@ -100,7 +97,8 @@ describe("TraceListener", () => {
   beforeEach(() => {
     mockWrap.mockClear();
     mockExtract.mockClear();
-    mockTraceHeaders = undefined;
+    mockSpanContext = undefined;
+    mockSpanContextWrapper = undefined;
     mockTraceSource = undefined;
   });
 
@@ -135,12 +133,17 @@ describe("TraceListener", () => {
 
   it("wraps dd-trace span around invocation, with trace context from event", async () => {
     const listener = new TraceListener(defaultConfig);
-    mockTraceHeaders = {
-      "x-datadog-parent-id": "797643193680388251",
-      "x-datadog-sampling-priority": "2",
-      "x-datadog-trace-id": "4110911582297405551",
+    mockTraceSource = TraceSource.Event;
+    mockSpanContext = {
+      toTraceId: () => "4110911582297405551",
+      toSpanId: () => "797643193680388251",
+      _sampling: {
+        priority: "2",
+      },
     };
-    mockTraceSource = Source.Event;
+    mockSpanContextWrapper = {
+      spanContext: mockSpanContext,
+    };
     await listener.onStartInvocation({}, context as any);
     const unwrappedFunc = () => {};
     const wrappedFunc = listener.onWrap(unwrappedFunc);
@@ -164,7 +167,7 @@ describe("TraceListener", () => {
           dd_trace: ddtraceVersion,
         },
         type: "serverless",
-        childOf: mockTraceHeaders,
+        childOf: mockSpanContext,
       },
       unwrappedFunc,
     );
@@ -172,12 +175,7 @@ describe("TraceListener", () => {
 
   it("wraps dd-trace span around invocation, without trace context from xray", async () => {
     const listener = new TraceListener(defaultConfig);
-    mockTraceHeaders = {
-      "x-datadog-parent-id": "797643193680388251",
-      "x-datadog-sampling-priority": "2",
-      "x-datadog-trace-id": "4110911582297405551",
-    };
-    mockTraceSource = Source.Xray;
+    mockTraceSource = TraceSource.Xray;
 
     await listener.onStartInvocation({}, context as any);
     const unwrappedFunc = () => {};
@@ -208,12 +206,17 @@ describe("TraceListener", () => {
 
   it("wraps dd-trace span around invocation, with trace context from xray when mergeDatadogXrayTraces is enabled", async () => {
     const listener = new TraceListener({ ...defaultConfig, mergeDatadogXrayTraces: true });
-    mockTraceHeaders = {
-      "x-datadog-parent-id": "797643193680388251",
-      "x-datadog-sampling-priority": "2",
-      "x-datadog-trace-id": "4110911582297405551",
+    mockTraceSource = TraceSource.Xray;
+    mockSpanContext = {
+      toTraceId: () => "4110911582297405551",
+      toSpanId: () => "797643193680388251",
+      _sampling: {
+        priority: "2",
+      },
     };
-    mockTraceSource = Source.Xray;
+    mockSpanContextWrapper = {
+      spanContext: mockSpanContext,
+    };
 
     await listener.onStartInvocation({}, context as any);
     const unwrappedFunc = () => {};
@@ -238,7 +241,7 @@ describe("TraceListener", () => {
           dd_trace: ddtraceVersion,
         },
         type: "serverless",
-        childOf: mockTraceHeaders,
+        childOf: mockSpanContext,
       },
       unwrappedFunc,
     );
@@ -304,13 +307,7 @@ describe("TraceListener", () => {
 
   it("injects authorizer context if it exists", async () => {
     const listener = new TraceListener(defaultConfig);
-    mockTraceHeaders = {
-      "x-datadog-parent-id": "797643193680388251",
-      "x-datadog-sampling-priority": "2",
-      "x-datadog-trace-id": "4110911582297405551",
-      "x-datadog-parent-span-finish-time": "1661189936981",
-    };
-    mockTraceSource = Source.Event;
+    mockTraceSource = TraceSource.Event;
     const inferredSpan = new SpanWrapper(
       {
         toSpanId: () => {

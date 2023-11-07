@@ -1,25 +1,22 @@
 import { Context } from "aws-lambda";
 
-import {
-  addLambdaFunctionTagsToXray,
-  TraceContext,
-  readStepFunctionContextFromEvent,
-  StepFunctionContext,
-} from "./context";
 import { patchHttp, unpatchHttp } from "./patch-http";
-import { TraceContextService } from "./trace-context-service";
+
 import { extractTriggerTags, extractHTTPStatusCodeTag } from "./trigger";
 import { ColdStartTracerConfig, ColdStartTracer } from "./cold-start-tracer";
 
 import { logDebug, tagObject } from "../utils";
 import { didFunctionColdStart, isProactiveInitialization } from "../utils/cold-start";
 import { datadogLambdaVersion } from "../constants";
-import { Source, ddtraceVersion, parentSpanFinishTimeHeader, authorizingRequestIdHeader } from "./constants";
+import { ddtraceVersion, parentSpanFinishTimeHeader, authorizingRequestIdHeader } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 import { SpanInferrer } from "./span-inferrer";
 import { SpanWrapper } from "./span-wrapper";
 import { getTraceTree, clearTraceTree } from "../runtime/index";
+import { TraceContext, TraceContextService, TraceSource } from "./trace-context-service";
+import { StepFunctionContext, StepFunctionContextService } from "./step-function-service";
+import { XrayService } from "./xray-service";
 export type TraceExtractor = (event: any, context: Context) => Promise<TraceContext> | TraceContext;
 
 export interface TraceConfig {
@@ -84,7 +81,7 @@ export class TraceListener {
 
   constructor(private config: TraceConfig) {
     this.tracerWrapper = new TracerWrapper();
-    this.contextService = new TraceContextService(this.tracerWrapper);
+    this.contextService = new TraceContextService(this.tracerWrapper, this.config);
     this.inferrer = new SpanInferrer(this.tracerWrapper);
   }
 
@@ -104,17 +101,12 @@ export class TraceListener {
     } else {
       logDebug("Not patching HTTP libraries", { autoPatchHTTP: this.config.autoPatchHTTP, tracerInitialized });
     }
-    const rootTraceHeaders = await this.contextService.extractHeadersFromContext(
-      event,
-      context,
-      this.config.traceExtractor,
-      this.config.decodeAuthorizerContext,
-    );
     // The aws.lambda span needs to have a parented to the Datadog trace context from the
     // incoming event if available or the X-Ray trace context if hybrid tracing is enabled
+    const spanContextWrapper = await this.contextService.extract(event, context);
     let parentSpanContext: SpanContext | undefined;
-    if (this.contextService.traceSource === Source.Event || this.config.mergeDatadogXrayTraces) {
-      parentSpanContext = rootTraceHeaders ? this.tracerWrapper.extract(rootTraceHeaders) ?? undefined : undefined;
+    if (this.contextService.traceSource === TraceSource.Event || this.config.mergeDatadogXrayTraces) {
+      parentSpanContext = spanContextWrapper?.spanContext;
       logDebug("Attempting to find parent for the aws.lambda span");
     } else {
       logDebug("Didn't attempt to find parent for aws.lambda span", {
@@ -134,7 +126,7 @@ export class TraceListener {
     this.lambdaSpanParentContext = this.inferredSpan?.span || parentSpanContext;
     this.context = context;
     this.triggerTags = extractTriggerTags(event, context);
-    this.stepFunctionContext = readStepFunctionContextFromEvent(event);
+    this.stepFunctionContext = StepFunctionContextService.instance().context;
   }
 
   /**
@@ -215,7 +207,8 @@ export class TraceListener {
     // Create a new dummy Datadog subsegment for function trigger tags so we
     // can attach them to X-Ray spans when hybrid tracing is used
     if (this.triggerTags) {
-      addLambdaFunctionTagsToXray(this.triggerTags);
+      const xray = new XrayService();
+      xray.addLambdaTriggerTags(this.triggerTags);
     }
     // If the DD tracer is initialized it manages patching of the http lib on its own
     const tracerInitialized = this.tracerWrapper.isTracerAvailable;
@@ -242,6 +235,10 @@ export class TraceListener {
       // We're in an authorizer, pass on the trace context, requestId and finishTime to make the authorizer span
       this.injectAuthorizerSpan(result, event?.requestContext?.requestId, finishTime || Date.now());
     }
+
+    // Reset singleton
+    this.stepFunctionContext = undefined;
+    StepFunctionContextService.reset();
   }
 
   public onWrap<T = (...args: any[]) => any>(func: T): T {
@@ -264,8 +261,8 @@ export class TraceListener {
         options.tags.proactive_initialization = true;
       }
       if (
-        (this.contextService.traceSource === Source.Xray && this.config.mergeDatadogXrayTraces) ||
-        this.contextService.traceSource === Source.Event
+        (this.contextService.traceSource === TraceSource.Xray && this.config.mergeDatadogXrayTraces) ||
+        this.contextService.traceSource === TraceSource.Event
       ) {
         options.tags["_dd.parent_source"] = this.contextService.traceSource;
       }
