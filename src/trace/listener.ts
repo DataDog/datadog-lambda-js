@@ -106,7 +106,7 @@ export class TraceListener {
     const spanContextWrapper = await this.contextService.extract(event, context);
     let parentSpanContext: SpanContext | undefined;
     if (this.contextService.traceSource === TraceSource.Event || this.config.mergeDatadogXrayTraces) {
-      parentSpanContext = spanContextWrapper?.spanContext;
+      parentSpanContext = this.tracerWrapper.isTracerAvailable ? spanContextWrapper?.spanContext : undefined;
       logDebug("Attempting to find parent for the aws.lambda span");
     } else {
       logDebug("Didn't attempt to find parent for aws.lambda span", {
