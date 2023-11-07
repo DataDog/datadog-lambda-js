@@ -10,7 +10,6 @@ import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
 import { extractTriggerTags, extractHTTPStatusCodeTag } from "./trigger";
 import { ColdStartTracerConfig, ColdStartTracer } from "./cold-start-tracer";
-
 import { logDebug, tagObject } from "../utils";
 import { didFunctionColdStart, isProactiveInitialization } from "../utils/cold-start";
 import { datadogLambdaVersion } from "../constants";
@@ -30,6 +29,12 @@ export interface TraceConfig {
   autoPatchHTTP: boolean;
   /**
    * Whether to capture the lambda payload and response in Datadog.
+   */
+  captureLambdaPayloadMaxDepth: number;
+  /**
+   * The captured AWS Lambda payloads will become tags of the `aws.lambda` span. This sets how deep
+   * it fathoms the JSON structure. When the max depth reached, the tag's value will be the
+   * stringified value of the deeper nested items.
    */
   captureLambdaPayload: boolean;
   /**
@@ -153,8 +158,14 @@ export class TraceListener {
     if (!this.tracerWrapper.currentSpan) return false;
     this.wrappedCurrentSpan = new SpanWrapper(this.tracerWrapper.currentSpan, {});
     if (this.config.captureLambdaPayload) {
-      tagObject(this.tracerWrapper.currentSpan, "function.request", event);
-      tagObject(this.tracerWrapper.currentSpan, "function.response", result);
+      tagObject(this.tracerWrapper.currentSpan, "function.request", event, 0, this.config.captureLambdaPayloadMaxDepth);
+      tagObject(
+        this.tracerWrapper.currentSpan,
+        "function.response",
+        result,
+        0,
+        this.config.captureLambdaPayloadMaxDepth,
+      );
     }
     const coldStartNodes = getTraceTree();
     if (coldStartNodes.length > 0) {
