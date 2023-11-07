@@ -132,7 +132,7 @@ export class StepFunctionContextService {
         this.context["step_function.state_entered_time"],
     );
     const sampleMode = SampleMode.AUTO_KEEP;
-    
+
     const spanContext = SpanContextWrapper.fromTraceContext({
       traceId, parentId, sampleMode, source: TraceSource.Event
     });
