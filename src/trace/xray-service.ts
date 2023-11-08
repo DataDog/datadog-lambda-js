@@ -131,11 +131,12 @@ export class XrayService {
   }
 
   public extract(): SpanContextWrapper | null {
-    if (this.traceContext === undefined) return null;
+    const traceContext = this.traceContext;
+    if (traceContext === undefined) return null;
 
-    const spanContext = SpanContextWrapper.fromTraceContext(this.traceContext);
+    const spanContext = SpanContextWrapper.fromTraceContext(traceContext);
     if (spanContext === null) return null;
-    logDebug(`Extracted trace context from xray context`, { traceContext: this.traceContext });
+    logDebug(`Extracted trace context from xray context`, { traceContext });
 
     return spanContext;
   }

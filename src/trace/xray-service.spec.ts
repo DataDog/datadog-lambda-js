@@ -61,11 +61,11 @@ describe("XrayService", () => {
     it("returns null when Xray trace context is undefined", () => {
       const xray = new XrayService();
 
-      xray["context"] = {
+      xray["parseTraceContextHeader"] = () => ({
         parentId: "1234567890123456",
         traceId: "not-traceid", // not valid format
         sampled: "1",
-      };
+      });
 
       const traceContext = xray.extract();
       expect(traceContext).toBeNull();
@@ -95,11 +95,11 @@ describe("XrayService", () => {
     it("returns undefined when context converted parentId is undefined", () => {
       const xray = new XrayService();
 
-      xray["context"] = {
+      xray["parseTraceContextHeader"] = () => ({
         parentId: "1234567890123456",
         traceId: "not-traceid", // not valid format
         sampled: "1",
-      };
+      });
 
       const traceContext = xray["traceContext"];
 
@@ -109,11 +109,11 @@ describe("XrayService", () => {
     it("returns undefined when context converted traceId is undefined", () => {
       const xray = new XrayService();
 
-      xray["context"] = {
+      xray["parseTraceContextHeader"] = () => ({
         parentId: "123456789012345", // not 16 characters length
         traceId: "not-long-enough",
         sampled: "1",
-      };
+      });
 
       const traceContext = xray["traceContext"];
 

@@ -22,9 +22,7 @@ jest.mock("./tracer-wrapper", () => {
   mockWrap = jest.fn().mockImplementation((name, options, func) => func);
   mockExtract = jest.fn().mockImplementation((val) => val);
   class MockTraceWrapper {
-    get isTraceAvailable() {
-      return true;
-    }
+    public isTracerAvailable = true;
 
     constructor() {}
 
