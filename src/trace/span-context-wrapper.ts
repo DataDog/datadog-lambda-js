@@ -27,7 +27,7 @@ export class SpanContextWrapper implements SpanContext {
       parentId: this.toSpanId(),
       sampleMode: this.sampleMode().toString(),
     }.toString();
-  }
+  };
 
   public static fromTraceContext(traceContext: TraceContext): SpanContextWrapper | null {
     const traceId = traceContext.traceId || traceContext.traceID;
