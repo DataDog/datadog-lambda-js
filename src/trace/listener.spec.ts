@@ -1,9 +1,6 @@
 import { TraceListener } from "./listener";
 import {
   ddtraceVersion,
-  parentIDHeader,
-  traceIDHeader,
-  samplingPriorityHeader,
   parentSpanFinishTimeHeader,
 } from "./constants";
 import { datadogLambdaVersion } from "../constants";
@@ -11,6 +8,7 @@ import { Context } from "aws-lambda";
 import { SpanWrapper } from "./span-wrapper";
 import { TraceSource } from "./trace-context-service";
 import { SpanContextWrapper } from "./span-context-wrapper";
+import { DATADOG_PARENT_ID_HEADER, DATADOG_SAMPLING_PRIORITY_HEADER, DATADOG_TRACE_ID_HEADER } from "./context/extractor";
 
 let mockWrap: jest.Mock<any, any>;
 let mockExtract: jest.Mock<any, any>;
@@ -36,9 +34,9 @@ jest.mock("./tracer-wrapper", () => {
 
     injectSpan(span: any): any {
       return {
-        [parentIDHeader]: span.toSpanId(),
-        [traceIDHeader]: span.toTraceId(),
-        [samplingPriorityHeader]: 1,
+        [DATADOG_PARENT_ID_HEADER]: span.toSpanId(),
+        [DATADOG_TRACE_ID_HEADER]: span.toTraceId(),
+        [DATADOG_SAMPLING_PRIORITY_HEADER]: 1,
         [parentSpanFinishTimeHeader]: 1661189936981,
       };
     }

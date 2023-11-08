@@ -8,7 +8,7 @@ import { ColdStartTracerConfig, ColdStartTracer } from "./cold-start-tracer";
 import { logDebug, tagObject } from "../utils";
 import { didFunctionColdStart, isProactiveInitialization } from "../utils/cold-start";
 import { datadogLambdaVersion } from "../constants";
-import { ddtraceVersion, parentSpanFinishTimeHeader, authorizingRequestIdHeader } from "./constants";
+import { ddtraceVersion, parentSpanFinishTimeHeader } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 import { SpanInferrer } from "./span-inferrer";
@@ -17,6 +17,7 @@ import { getTraceTree, clearTraceTree } from "../runtime/index";
 import { TraceContext, TraceContextService, TraceSource } from "./trace-context-service";
 import { StepFunctionContext, StepFunctionContextService } from "./step-function-service";
 import { XrayService } from "./xray-service";
+import { AUTHORIZING_REQUEST_ID_HEADER } from "./context/extractors/http";
 export type TraceExtractor = (event: any, context: Context) => Promise<TraceContext> | TraceContext;
 
 export interface TraceConfig {
@@ -198,7 +199,7 @@ export class TraceListener {
     };
     if (requestId) {
       //  undefined in token-type authorizer
-      injectedHeaders[authorizingRequestIdHeader] = requestId;
+      injectedHeaders[AUTHORIZING_REQUEST_ID_HEADER] = requestId;
     }
     result.context._datadog = Buffer.from(JSON.stringify(injectedHeaders)).toString("base64");
   }

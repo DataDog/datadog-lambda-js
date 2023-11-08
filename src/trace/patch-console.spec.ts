@@ -1,5 +1,4 @@
-import { SampleMode } from "./constants";
-import { TraceContextService, TraceSource } from "./trace-context-service";
+import { SampleMode, TraceContextService, TraceSource } from "./trace-context-service";
 import { patchConsole, unpatchConsole } from "./patch-console";
 import { SpanContextWrapper } from "./span-context-wrapper";
 
