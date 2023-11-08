@@ -4,11 +4,15 @@ import nock from "nock";
 import { parse } from "url";
 
 import { LogLevel, setLogLevel } from "../utils";
-import { parentIDHeader, SampleMode, samplingPriorityHeader, traceIDHeader } from "./constants";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { URL } from "url";
-import { TraceContextService, TraceSource } from "./trace-context-service";
+import { SampleMode, TraceContextService, TraceSource } from "./trace-context-service";
 import { SpanContextWrapper } from "./span-context-wrapper";
+import {
+  DATADOG_PARENT_ID_HEADER,
+  DATADOG_SAMPLING_PRIORITY_HEADER,
+  DATADOG_TRACE_ID_HEADER,
+} from "./context/extractor";
 
 describe("patchHttp", () => {
   let traceWrapper = {
@@ -22,9 +26,9 @@ describe("patchHttp", () => {
 
   function expectHeaders(request: http.ClientRequest) {
     const headers = request.getHeaders();
-    expect(headers[traceIDHeader]).toEqual("123456");
-    expect(headers[parentIDHeader]).toEqual("78910");
-    expect(headers[samplingPriorityHeader]).toEqual("2");
+    expect(headers[DATADOG_TRACE_ID_HEADER]).toEqual("123456");
+    expect(headers[DATADOG_PARENT_ID_HEADER]).toEqual("78910");
+    expect(headers[DATADOG_SAMPLING_PRIORITY_HEADER]).toEqual("2");
   }
 
   beforeEach(() => {
@@ -130,9 +134,9 @@ describe("patchHttp", () => {
     patchHttp(contextService);
     const req = http.request("http://www.example.com");
     const headers = req.getHeaders();
-    expect(headers[traceIDHeader]).toBeUndefined();
-    expect(headers[parentIDHeader]).toBeUndefined();
-    expect(headers[samplingPriorityHeader]).toBeUndefined();
+    expect(headers[DATADOG_TRACE_ID_HEADER]).toBeUndefined();
+    expect(headers[DATADOG_PARENT_ID_HEADER]).toBeUndefined();
+    expect(headers[DATADOG_SAMPLING_PRIORITY_HEADER]).toBeUndefined();
   });
   it("injects tracing headers when using the new WHATWG URL object", () => {
     nock("http://www.example.com").get("/").reply(200, {});

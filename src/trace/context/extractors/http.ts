@@ -4,7 +4,7 @@ import { EventTraceExtractor } from "../extractor";
 import { TracerWrapper } from "../../tracer-wrapper";
 import { SpanContextWrapper } from "../../span-context-wrapper";
 
-const AUTHORIZING_REQUEST_ID_HEADER = "x-datadog-authorizing-requestid";
+export const AUTHORIZING_REQUEST_ID_HEADER = "x-datadog-authorizing-requestid";
 
 export enum HTTPEventSubType {
   ApiGatewayV1 = "api-gateway-rest-api",
