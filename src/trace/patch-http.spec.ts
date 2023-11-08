@@ -4,10 +4,10 @@ import nock from "nock";
 import { parse } from "url";
 
 import { LogLevel, setLogLevel } from "../utils";
-import { parentIDHeader, SampleMode, samplingPriorityHeader, traceIDHeader, Source } from "./constants";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
 import { URL } from "url";
+import { SampleMode, Source, parentIDHeader, samplingPriorityHeader, traceIDHeader } from "./context/extractor";
 
 describe("patchHttp", () => {
   let traceWrapper = {

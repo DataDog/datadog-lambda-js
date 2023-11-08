@@ -13,8 +13,8 @@ import { eventSubTypes, eventTypes, parseEventSource, parseEventSourceSubType } 
 import { SpanWrapper } from "./span-wrapper";
 import { DD_SERVICE_ENV_VAR, parentSpanFinishTimeHeader } from "./constants";
 import { logDebug } from "../utils";
-import { getInjectedAuthorizerData } from "./context";
 import { decodeAuthorizerContextEnvVar } from "../index";
+import { getInjectedAuthorizerData } from "./context/extractors/http";
 
 export class SpanInferrer {
   private static serviceMapping: Record<string, string> = {};

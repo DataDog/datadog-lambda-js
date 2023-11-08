@@ -1,5 +1,5 @@
+import { SampleMode, Source } from "./context/extractor";
 import { TracerWrapper } from "./tracer-wrapper";
-import { Source, SampleMode } from "./constants";
 
 let mockNoTracer = false;
 let mockTracerInitialised = false;
