@@ -1,11 +1,5 @@
 import { Context } from "aws-lambda";
 
-import {
-  addLambdaFunctionTagsToXray,
-  TraceContext,
-  readStepFunctionContextFromEvent,
-  StepFunctionContext,
-} from "./context";
 import { patchHttp, unpatchHttp } from "./patch-http";
 import { TraceContextService } from "./trace-context-service";
 import { extractTriggerTags, extractHTTPStatusCodeTag } from "./trigger";
@@ -14,12 +8,16 @@ import { ColdStartTracerConfig, ColdStartTracer } from "./cold-start-tracer";
 import { logDebug, tagObject } from "../utils";
 import { didFunctionColdStart, isProactiveInitialization } from "../utils/cold-start";
 import { datadogLambdaVersion } from "../constants";
-import { Source, ddtraceVersion, parentSpanFinishTimeHeader, authorizingRequestIdHeader } from "./constants";
+import { ddtraceVersion, parentSpanFinishTimeHeader } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 import { SpanInferrer } from "./span-inferrer";
 import { SpanWrapper } from "./span-wrapper";
 import { getTraceTree, clearTraceTree } from "../runtime/index";
+import { Source, TraceContext } from "./context/extractor";
+import { StepFunctionContext, readStepFunctionContextFromEvent } from "./step-function-service";
+import { authorizingRequestIdHeader } from "./context/extractors/http";
+import { addLambdaFunctionTagsToXray } from "./xray-service";
 export type TraceExtractor = (event: any, context: Context) => Promise<TraceContext> | TraceContext;
 
 export interface TraceConfig {

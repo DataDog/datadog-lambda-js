@@ -1,6 +1,5 @@
 import { logDebug } from "../utils";
-import { SampleMode, Source } from "./constants";
-import { TraceContext } from "./context";
+import { SampleMode, Source, TraceContext } from "./context/extractor";
 import { TraceHeaders } from "./trace-context-service";
 
 export interface SpanContext {

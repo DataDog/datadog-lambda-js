@@ -1,6 +1,6 @@
-import { SampleMode, Source } from "./constants";
 import { TraceContextService } from "./trace-context-service";
 import { patchConsole, unpatchConsole } from "./patch-console";
+import { SampleMode, Source } from "./context/extractor";
 
 describe("patchConsole", () => {
   let traceWrapper = {

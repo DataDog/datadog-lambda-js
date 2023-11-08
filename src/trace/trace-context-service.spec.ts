@@ -1,6 +1,5 @@
+import { SampleMode, Source, TraceContext } from "./context/extractor";
 import { TraceContextService } from "./trace-context-service";
-import { TraceContext } from "./context";
-import { SampleMode, Source } from "./constants";
 
 let mockXRaySegment: any;
 let mockXRayShouldThrow = false;

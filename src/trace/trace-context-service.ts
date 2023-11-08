@@ -1,9 +1,14 @@
 import { Context } from "aws-lambda";
 import { logDebug } from "../utils";
-import { parentIDHeader, samplingPriorityHeader, traceIDHeader } from "./constants";
-import { TraceContext, extractTraceContext } from "./context";
 import { TracerWrapper } from "./tracer-wrapper";
 import { TraceExtractor } from "./listener";
+import {
+  TraceContext,
+  extractTraceContext,
+  parentIDHeader,
+  samplingPriorityHeader,
+  traceIDHeader,
+} from "./context/extractor";
 /**
  * Headers that can be added to a request.
  */
