@@ -21,7 +21,7 @@ export class SpanContextWrapper implements SpanContext {
     return this.spanContext._sampling?.priority;
   }
 
-  public toString(): string {
+  public toString = (): string => {
     return {
       traceId: this.toTraceId(),
       parentId: this.toSpanId(),
