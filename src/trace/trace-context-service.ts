@@ -4,7 +4,7 @@ import {
   DATADOG_SAMPLING_PRIORITY_HEADER,
   DATADOG_TRACE_ID_HEADER,
   TraceContextExtractor,
-  TraceHeaders,
+  DatadogTraceHeaders,
 } from "./context/extractor";
 import { TracerWrapper } from "./tracer-wrapper";
 import { TraceConfig } from "./listener";
@@ -55,7 +55,7 @@ export class TraceContextService {
     return this.currentTraceContext;
   }
 
-  get currentTraceHeaders(): Partial<TraceHeaders> {
+  get currentTraceHeaders(): Partial<DatadogTraceHeaders> {
     const traceContext = this.currentTraceContext as SpanContextWrapper;
     if (traceContext === null) return {};
 

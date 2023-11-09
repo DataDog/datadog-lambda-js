@@ -20,7 +20,7 @@ import {
   setLogLevel,
 } from "./utils";
 import { getEnhancedMetricTags } from "./metrics/enhanced-metrics";
-import { TraceHeaders } from "trace/context/extractor";
+import { DatadogTraceHeaders } from "trace/context/extractor";
 
 export const apiKeyEnvVar = "DD_API_KEY";
 export const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
@@ -277,7 +277,7 @@ export function sendDistributionMetric(name: string, value: number, ...tags: str
 /**
  * Retrieves the Datadog headers for the current trace.
  */
-export function getTraceHeaders(): Partial<TraceHeaders> {
+export function getTraceHeaders(): Partial<DatadogTraceHeaders> {
   if (currentTraceListener === undefined) {
     return {};
   }

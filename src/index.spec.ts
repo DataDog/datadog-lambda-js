@@ -7,7 +7,7 @@ import { incrementErrorsMetric, incrementInvocationsMetric } from "./metrics/enh
 import { LogLevel, setLogLevel } from "./utils";
 import { HANDLER_STREAMING, STREAM_RESPONSE } from "./constants";
 import { PassThrough } from "stream";
-import { TraceHeaders } from "./trace/context/extractor";
+import { DatadogTraceHeaders } from "./trace/context/extractor";
 import { SpanContextWrapper } from "./trace/span-context-wrapper";
 import { TraceSource } from "./trace/trace-context-service";
 
@@ -228,7 +228,7 @@ describe("datadog", () => {
       "x-datadog-sampling-priority": "2",
       "x-datadog-trace-id": "123456",
     };
-    let traceHeaders: Partial<TraceHeaders> = {};
+    let traceHeaders: Partial<DatadogTraceHeaders> = {};
     const event = {
       headers: {
         "x-datadog-parent-id": "9101112",

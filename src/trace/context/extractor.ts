@@ -28,7 +28,7 @@ export interface EventTraceExtractor {
   extract(event: any): SpanContextWrapper | null;
 }
 
-export interface TraceHeaders {
+export interface DatadogTraceHeaders {
   [DATADOG_TRACE_ID_HEADER]: string;
   [DATADOG_PARENT_ID_HEADER]: string;
   [DATADOG_SAMPLING_PRIORITY_HEADER]: string;

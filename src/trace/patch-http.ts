@@ -3,7 +3,7 @@ import https from "https";
 import * as shimmer from "shimmer";
 import { parse, URL } from "url";
 import { TraceContextService } from "./trace-context-service";
-import { TraceHeaders } from "./context/extractor";
+import { DatadogTraceHeaders } from "./context/extractor";
 
 type RequestCallback = (res: http.IncomingMessage) => void;
 
@@ -125,7 +125,7 @@ function isIntegrationTest() {
  * HTTP GET https://ip-ranges.datadoghq.com/ Headers: ["x-datadog-parent-id:abc"] Data: {}
  * @param options The options for the HTTP request
  */
-function _logHttpRequest(options: http.RequestOptions, traceHeaders: Partial<TraceHeaders>) {
+function _logHttpRequest(options: http.RequestOptions, traceHeaders: Partial<DatadogTraceHeaders>) {
   let headerMessage = "TraceHeaders: []";
 
   if (traceHeaders) {
