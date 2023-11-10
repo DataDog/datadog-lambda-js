@@ -1,17 +1,10 @@
 import { TraceExtractor, TraceListener } from "./listener";
-import {
-  Source,
-  ddtraceVersion,
-  parentIDHeader,
-  traceIDHeader,
-  samplingPriorityHeader,
-  parentSpanFinishTimeHeader,
-} from "./constants";
 import { datadogLambdaVersion } from "../constants";
 import { Context } from "aws-lambda";
 import { TraceHeaders } from "./trace-context-service";
 import { SpanWrapper } from "./span-wrapper";
-import { eventSubTypes } from "./trigger";
+import { Source, parentIDHeader, samplingPriorityHeader, traceIDHeader } from "./context/extractor";
+import { ddtraceVersion, parentSpanFinishTimeHeader } from "./constants";
 
 let mockWrap: jest.Mock<any, any>;
 let mockExtract: jest.Mock<any, any>;
