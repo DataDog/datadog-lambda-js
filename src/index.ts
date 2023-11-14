@@ -20,8 +20,10 @@ import {
   setLogLevel,
 } from "./utils";
 import { getEnhancedMetricTags } from "./metrics/enhanced-metrics";
-import { DatadogTraceHeaders } from "trace/context/extractor";
+import { DatadogTraceHeaders } from "./trace/context/extractor";
 
+// Backwards-compatible export, TODO deprecate in next breaking
+export { DatadogTraceHeaders as TraceHeaders } from "./trace/context/extractor";
 export const apiKeyEnvVar = "DD_API_KEY";
 export const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
 export const captureLambdaPayloadEnvVar = "DD_CAPTURE_LAMBDA_PAYLOAD";
