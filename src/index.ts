@@ -22,7 +22,7 @@ import {
 import { getEnhancedMetricTags } from "./metrics/enhanced-metrics";
 import { DatadogTraceHeaders } from "./trace/context/extractor";
 
-// Backwards-compatible export, TODO deprecate in next major 
+// Backwards-compatible export, TODO deprecate in next major
 export { DatadogTraceHeaders as TraceHeaders } from "./trace/context/extractor";
 export const apiKeyEnvVar = "DD_API_KEY";
 export const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
