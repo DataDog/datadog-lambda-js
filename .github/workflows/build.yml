@@ -70,6 +70,8 @@ jobs:
 
       - name: Install NodeGYP 
         run: yarn global add node-gyp
+        with:
+          node-version: 20.9
 
       - name: Install dependencies
         run: yarn install
