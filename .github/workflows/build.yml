@@ -31,9 +31,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
 
-      - name: Install NodeGYP 
-        run: yarn global add node-gyp
-
       - name: Install dependencies
         run: yarn install
 
@@ -70,6 +67,9 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
+
+      - name: Install NodeGYP 
+        run: yarn global add node-gyp
 
       - name: Install dependencies
         run: yarn install
