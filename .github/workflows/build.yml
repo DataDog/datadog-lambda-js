@@ -32,6 +32,9 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - name: Install dependencies
+        run: yarn global add node-gyp
+
+      - name: Install dependencies
         run: yarn install
 
       - name: Check formatting
