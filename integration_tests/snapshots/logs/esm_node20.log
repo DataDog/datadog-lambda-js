@@ -11,7 +11,7 @@ START
     "cold_start:true",
     "memorysize:1024",
     "datadog_lambda:vX.X.X",
-    "runtime:nodejs18.x"
+    "runtime:nodejs20.x"
   ],
   "v": 1
 }
@@ -28,7 +28,7 @@ START
     "cold_start:false",
     "memorysize:1024",
     "datadog_lambda:vX.X.X",
-    "runtime:nodejs18.x"
+    "runtime:nodejs20.x"
   ],
   "v": 1
 }
@@ -45,7 +45,7 @@ START
     "cold_start:false",
     "memorysize:1024",
     "datadog_lambda:vX.X.X",
-    "runtime:nodejs18.x"
+    "runtime:nodejs20.x"
   ],
   "v": 1
 }
