@@ -4,7 +4,7 @@ ARG image
 
 # Install git so we can specify a specific git ref (ie: refs/head/my-feature) in package.json 
 # to install a specific dd-trace version for performance test
-RUN apk add git
+RUN apk add git python3 make g++
 
 # Create the directory structure required for AWS Lambda Layer
 RUN mkdir -p /nodejs/node_modules/
@@ -12,6 +12,7 @@ RUN mkdir -p /nodejs/node_modules/
 # Install dev dependencies
 COPY . datadog-lambda-js
 WORKDIR /datadog-lambda-js
+RUN if [ $image = "node:20.9-alpine" ] ; then yarn global add node-gyp; fi;
 RUN yarn install
 
 # Build the lambda layer
@@ -24,7 +25,8 @@ RUN rm -rf node_modules
 
 # Move dd-trace from devDependencies to production dependencies
 # That way it is included in our layer, while keeping it an optional dependency for npm
-RUN node ./scripts/move_ddtrace_dependency.js "$(cat package.json)" > package.json
+RUN node ./scripts/move_ddtrace_dependency.js "$(cat package.json)" > package-new.json
+RUN mv package-new.json package.json
 # Install dependencies
 RUN yarn install --production=true
 # Copy the dependencies to the modules folder

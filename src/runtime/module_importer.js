@@ -13,6 +13,7 @@ exports.initTracer = function () {
     const path = require.resolve("dd-trace", { paths: ["/var/task/node_modules", ...module.paths] });
     // tslint:disable-next-line:no-var-requires
     const tracer = require(path).init({
+        debug: true,
         tags: {
             "_dd.origin": "lambda",
         },
