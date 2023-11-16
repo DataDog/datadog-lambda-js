@@ -69,9 +69,8 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - name: Install NodeGYP 
+        if: matrix.node-version == '20.9'
         run: yarn global add node-gyp
-        with:
-          node-version: 20.9
 
       - name: Install dependencies
         run: yarn install
