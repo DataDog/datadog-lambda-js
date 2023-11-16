@@ -44,7 +44,7 @@ export function getRuntimeTag(): string | null {
   }
 
   if (processVersion.startsWith("v20")) {
-    processVersionTagString = RuntimeTagValues.Node18;
+    processVersionTagString = RuntimeTagValues.Node20;
   }
 
   if (!processVersionTagString) {
