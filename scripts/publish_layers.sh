@@ -14,6 +14,11 @@ NODE_VERSIONS_FOR_AWS_CLI=("nodejs14.x" "nodejs16.x" "nodejs18.x")
 LAYER_PATHS=(".layers/datadog_lambda_node14.15.zip" ".layers/datadog_lambda_node16.14.zip" ".layers/datadog_lambda_node18.12.zip")
 AVAILABLE_LAYERS=("Datadog-Node14-x" "Datadog-Node16-x" "Datadog-Node18-x")
 AVAILABLE_REGIONS=$(aws ec2 describe-regions | jq -r '.[] | .[] | .RegionName')
+BATCH_SIZE=60
+PIDS=()
+
+# Makes sure any subprocesses will be terminated with this process
+trap "pkill -P $$; exit 1;" INT
 
 # Check that the layer files exist
 for layer_file in "${LAYER_PATHS[@]}"
@@ -99,28 +104,20 @@ publish_layer() {
     echo $version_nbr
 }
 
-for region in $REGIONS
-do
-    echo "Starting publishing layer for region $region..."
+wait_for_processes() {
+    for pid in "${PIDS[@]}"; do
+        wait $pid
+    done
+    PIDS=()
+}
 
-    for layer_name in "${LAYERS[@]}"; do
-        latest_version=$(aws lambda list-layer-versions --region $region --layer-name $layer_name --query 'LayerVersions[0].Version || `0`')
-        if [ $latest_version -ge $VERSION ]; then
-            echo "Layer $layer_name version $VERSION already exists in region $region, skipping..."
-            continue
-        elif [ $latest_version -lt $((VERSION-1)) ]; then
-            read -p "WARNING: The latest version of layer $layer_name in region $region is $latest_version, publish all the missing versions including $VERSION or EXIT the script (y/n)?" CONT
-            if [ "$CONT" != "y" ]; then
-                echo "Exiting"
-                exit 1
-            fi
-        fi
-
-        index=$(index_of_layer $layer_name)
-        aws_version_key="${NODE_VERSIONS_FOR_AWS_CLI[$index]}"
-        layer_path="${LAYER_PATHS[$index]}"
-
-        while [ $latest_version -lt $VERSION ]; do
+backfill_layers() {
+    latest_version=$1
+    region=$2
+    layer_name=$3
+    aws_version_key=$4
+    layer_path=$5
+    while [ $latest_version -lt $VERSION ]; do
             latest_version=$(publish_layer $region $layer_name $aws_version_key $layer_path)
             echo "Published version $latest_version for layer $layer_name in region $region"
 
@@ -132,8 +129,32 @@ do
                 echo "Exiting"
                 exit 1
             fi
-        done
+    done
+}
+
+for region in $REGIONS
+do
+    echo "Starting publishing layer for region $region..."
+
+    for layer_name in "${LAYERS[@]}"; do
+        latest_version=$(aws lambda list-layer-versions --region $region --layer-name $layer_name --query 'LayerVersions[0].Version || `0`')
+        if [ $latest_version -ge $VERSION ]; then
+            echo "Layer $layer_name version $VERSION already exists in region $region, skipping..."
+            continue
+        elif [ $latest_version -lt $((VERSION-1)) ]; then
+            echo "WARNING: The latest version of layer $layer_name in region $region is $latest_version, this will publish all the missing versions including $VERSION"
+        fi
+
+        index=$(index_of_layer $layer_name)
+        aws_version_key="${NODE_VERSIONS_FOR_AWS_CLI[$index]}"
+        layer_path="${LAYER_PATHS[$index]}"
+
+        backfill_layers $latest_version $region $layer_name $aws_version_key $layer_path &
+        PIDS+=($!)
+        if [ ${#PIDS[@]} -eq $BATCH_SIZE ]; then
+            wait_for_processes
+        fi
     done
 done
-
+wait_for_processes
 echo "Done !"
