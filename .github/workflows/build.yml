@@ -45,7 +45,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        node-version: [14.15, 16.14, 18.12]
+        node-version: [14.15, 16.14, 18.12, 20.9]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -68,6 +68,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
 
+      - name: Install NodeGYP 
+        if: matrix.node-version == '20.9'
+        run: yarn global add node-gyp
+
       - name: Install dependencies
         run: yarn install
 
@@ -84,7 +88,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        runtime-param: [14, 16, 18]
+        runtime-param: [14, 16, 18, 20]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
