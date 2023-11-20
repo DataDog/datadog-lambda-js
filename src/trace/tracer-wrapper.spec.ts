@@ -1,4 +1,3 @@
-import { SampleMode, Source } from "./context/extractor";
 import { TracerWrapper } from "./tracer-wrapper";
 
 let mockNoTracer = false;
@@ -51,7 +50,8 @@ describe("TracerWrapper", () => {
   });
   it("should extract span context when dd-trace is present", () => {
     const wrapper = new TracerWrapper();
-    expect(wrapper.extract({})).toBe(mockSpanContext);
+    const extractedTraceContext = wrapper.extract({})?.spanContext;
+    expect(extractedTraceContext).toBe(mockSpanContext);
   });
   it("shouldn't extract span context when dd-trace is absent", () => {
     mockNoTracer = true;
@@ -60,27 +60,25 @@ describe("TracerWrapper", () => {
   });
 
   it("should find the current span context", () => {
-    const spanID = "1234";
-    const traceID = "45678";
-
     mockSpan = {
       context: () => ({
-        toSpanId: () => spanID,
-        toTraceId: () => traceID,
+        toSpanId: () => "1234",
+        toTraceId: () => "45678",
+        _sampling: {
+          priority: "2",
+        },
       }),
     };
     const wrapper = new TracerWrapper();
     const traceContext = wrapper.traceContext();
-    expect(traceContext).toEqual({
-      parentID: spanID,
-      traceID: traceID,
-      source: Source.Event,
-      sampleMode: SampleMode.AUTO_KEEP,
-    });
+    expect(traceContext?.toTraceId()).toBe("45678");
+    expect(traceContext?.toSpanId()).toBe("1234");
+    expect(traceContext?.sampleMode()).toBe("2");
+    expect(traceContext?.source).toBe("ddtrace");
   });
-  it("should return undefined when no span is available", () => {
+  it("should return NULL when no span is available", () => {
     const wrapper = new TracerWrapper();
     const traceContext = wrapper.traceContext();
-    expect(traceContext).toBeUndefined();
+    expect(traceContext).toBeNull();
   });
 });

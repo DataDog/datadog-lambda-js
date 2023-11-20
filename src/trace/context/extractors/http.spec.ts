@@ -1,35 +1,294 @@
-import { SampleMode, Source } from "../extractor";
-import { readTraceFromHTTPEvent } from "./http";
+import { TracerWrapper } from "../../tracer-wrapper";
+import { HTTPEventSubType, HTTPEventTraceExtractor } from "./http";
 
-describe("readTraceFromHTTPEvent", () => {
-  it("can read well formed event with headers", () => {
-    const result = readTraceFromHTTPEvent({
-      headers: {
-        "x-datadog-parent-id": "797643193680388254",
-        "x-datadog-sampling-priority": "2",
-        "x-datadog-trace-id": "4110911582297405557",
-      },
+let mockSpanContext: any = null;
+
+// Mocking extract is needed, due to dd-trace being a No-op
+// if the detected environment is testing. This is expected, since
+// we don"t want to test dd-trace extraction, but our components.
+const ddTrace = require("dd-trace");
+jest.mock("dd-trace", () => {
+  return {
+    ...ddTrace,
+    _tracer: { _service: {} },
+    extract: (_carrier: any, _headers: any) => mockSpanContext,
+  };
+});
+const spyTracerWrapper = jest.spyOn(TracerWrapper.prototype, "extract");
+
+describe("HTTPEventTraceExtractor", () => {
+  describe("extract", () => {
+    beforeEach(() => {
+      mockSpanContext = null;
     });
-    expect(result).toEqual({
-      parentID: "797643193680388254",
-      sampleMode: SampleMode.USER_KEEP,
-      traceID: "4110911582297405557",
-      source: Source.Event,
+
+    afterEach(() => {
+      jest.resetModules();
+    });
+
+    it("extracts trace context from payload with headers", () => {
+      mockSpanContext = {
+        toTraceId: () => "797643193680388254",
+        toSpanId: () => "4726693487091824375",
+        _sampling: {
+          priority: "2",
+        },
+      };
+      const tracerWrapper = new TracerWrapper();
+
+      const payload = {
+        headers: {
+          "x-datadog-parent-id": "4726693487091824375",
+          "x-datadog-sampling-priority": "2",
+          "x-datadog-trace-id": "797643193680388254",
+        },
+      };
+
+      const extractor = new HTTPEventTraceExtractor(tracerWrapper);
+
+      const traceContext = extractor.extract(payload);
+      expect(traceContext).not.toBeNull();
+
+      expect(spyTracerWrapper).toHaveBeenCalledWith({
+        "x-datadog-parent-id": "4726693487091824375",
+        "x-datadog-sampling-priority": "2",
+        "x-datadog-trace-id": "797643193680388254",
+      });
+
+      expect(traceContext?.toTraceId()).toBe("797643193680388254");
+      expect(traceContext?.toSpanId()).toBe("4726693487091824375");
+      expect(traceContext?.sampleMode()).toBe("2");
+      expect(traceContext?.source).toBe("event");
+    });
+
+    // The tracer is not handling mixed casing Datadog headers yet
+    it("extracts trace context from payload with mixed casing headers", () => {
+      mockSpanContext = {
+        toTraceId: () => "797643193680388254",
+        toSpanId: () => "4726693487091824375",
+        _sampling: {
+          priority: "2",
+        },
+      };
+      const tracerWrapper = new TracerWrapper();
+
+      const payload = {
+        headers: {
+          "X-Datadog-Parent-Id": "4726693487091824375",
+          "X-Datadog-Sampling-Priority": "2",
+          "X-Datadog-Trace-Id": "797643193680388254",
+        },
+      };
+
+      const extractor = new HTTPEventTraceExtractor(tracerWrapper);
+
+      const traceContext = extractor.extract(payload);
+      expect(traceContext).not.toBeNull();
+
+      expect(spyTracerWrapper).toHaveBeenCalledWith({
+        "x-datadog-parent-id": "4726693487091824375",
+        "x-datadog-sampling-priority": "2",
+        "x-datadog-trace-id": "797643193680388254",
+      });
+
+      expect(traceContext?.toTraceId()).toBe("797643193680388254");
+      expect(traceContext?.toSpanId()).toBe("4726693487091824375");
+      expect(traceContext?.sampleMode()).toBe("2");
+      expect(traceContext?.source).toBe("event");
+    });
+
+    it("extracts trace context from payload with authorizer", () => {
+      mockSpanContext = {
+        toTraceId: () => "2389589954026090296",
+        toSpanId: () => "2389589954026090296",
+        _sampling: {
+          priority: "1",
+        },
+      };
+      const tracerWrapper = new TracerWrapper();
+
+      const payload = {
+        requestContext: {
+          resourceId: "oozq9u",
+          authorizer: {
+            _datadog:
+              "eyJ4LWRhdGFkb2ctdHJhY2UtaWQiOiIyMzg5NTg5OTU0MDI2MDkwMjk2IiwieC1kYXRhZG9nLXBhcmVudC1pZCI6IjIzODk1ODk5NTQwMjYwOTAyOTYiLCJ4LWRhdGFkb2ctc2FtcGxpbmctcHJpb3JpdHkiOiIxIiwieC1kYXRhZG9nLXBhcmVudC1zcGFuLWZpbmlzaC10aW1lIjoxNjYwOTM5ODk5MjMzLCJ4LWRhdGFkb2ctYXV0aG9yaXppbmctcmVxdWVzdGlkIjoicmFuZG9tLWlkIn0==",
+            principalId: "foo",
+            integrationLatency: 71,
+            preserve: "this key set by a customer",
+          },
+          stage: "dev",
+          requestId: "random-id",
+        },
+        httpMethod: "GET",
+        resource: "/hello",
+      };
+
+      const extractor = new HTTPEventTraceExtractor(tracerWrapper);
+
+      const traceContext = extractor.extract(payload);
+      expect(traceContext).not.toBeNull();
+
+      expect(spyTracerWrapper).toHaveBeenCalledWith({
+        "x-datadog-authorizing-requestid": "random-id",
+        "x-datadog-parent-id": "2389589954026090296",
+        "x-datadog-parent-span-finish-time": 1660939899233,
+        "x-datadog-sampling-priority": "1",
+        "x-datadog-trace-id": "2389589954026090296",
+      });
+
+      expect(traceContext?.toTraceId()).toBe("2389589954026090296");
+      expect(traceContext?.toSpanId()).toBe("2389589954026090296");
+      expect(traceContext?.sampleMode()).toBe("1");
+      expect(traceContext?.source).toBe("event");
+    });
+
+    it("returns null when extracted span context by tracer is null", () => {
+      const tracerWrapper = new TracerWrapper();
+
+      const payload = {
+        headers: {},
+      };
+
+      const extractor = new HTTPEventTraceExtractor(tracerWrapper);
+
+      const traceContext = extractor.extract(payload);
+      expect(traceContext).toBeNull();
     });
   });
-  it("can read well formed headers with mixed casing", () => {
-    const result = readTraceFromHTTPEvent({
-      headers: {
-        "X-Datadog-Parent-Id": "797643193680388254",
-        "X-Datadog-Sampling-Priority": "2",
-        "X-Datadog-Trace-Id": "4110911582297405557",
-      },
+
+  describe("getEventSubType", () => {
+    it.each([
+      [
+        "ApiGatewayV1",
+        "ApiGatewayEvent",
+        HTTPEventSubType.ApiGatewayV1,
+        {
+          requestContext: {
+            stage: "dev",
+          },
+          httpMethod: "POST",
+          resource: "my-lambda-resource",
+        },
+      ],
+      [
+        "ApiGatewayV2",
+        "APIGatewayProxyEventV2",
+        HTTPEventSubType.ApiGatewayV2,
+        {
+          requestContext: {
+            domainName: "some-domain",
+          },
+          version: "2.0",
+          rawQueryString: "some-raw-query-string",
+        },
+      ],
+      [
+        "ApiGatewayV2",
+        "WebSocket event",
+        HTTPEventSubType.ApiGatewayWebSocket,
+        {
+          requestContext: {
+            messageDirection: "outbound",
+          },
+        },
+      ],
+      [
+        "Unknown",
+        "any other event",
+        HTTPEventSubType.Unknown,
+        {
+          event_type: "not-api-gateway",
+        },
+      ],
+    ])("returns %s when event is %s", (_, __, _enum, event) => {
+      const eventSubType = HTTPEventTraceExtractor.getEventSubType(event);
+
+      expect(eventSubType).toStrictEqual(_enum);
     });
-    expect(result).toEqual({
-      parentID: "797643193680388254",
-      sampleMode: SampleMode.USER_KEEP,
-      traceID: "4110911582297405557",
-      source: Source.Event,
+  });
+  describe("getInjectedAuthorizerHeaders", () => {
+    it("parses authorizer headers properly", () => {
+      const payload = {
+        requestContext: {
+          resourceId: "oozq9u",
+          authorizer: {
+            _datadog:
+              "eyJ4LWRhdGFkb2ctdHJhY2UtaWQiOiIyMzg5NTg5OTU0MDI2MDkwMjk2IiwieC1kYXRhZG9nLXBhcmVudC1pZCI6IjIzODk1ODk5NTQwMjYwOTAyOTYiLCJ4LWRhdGFkb2ctc2FtcGxpbmctcHJpb3JpdHkiOiIxIiwieC1kYXRhZG9nLXBhcmVudC1zcGFuLWZpbmlzaC10aW1lIjoxNjYwOTM5ODk5MjMzLCJ4LWRhdGFkb2ctYXV0aG9yaXppbmctcmVxdWVzdGlkIjoicmFuZG9tLWlkIn0==",
+            principalId: "foo",
+            integrationLatency: 71,
+            preserve: "this key set by a customer",
+          },
+          stage: "dev",
+          requestId: "random-id",
+        },
+        httpMethod: "GET",
+        resource: "/hello",
+      };
+
+      const subType = HTTPEventTraceExtractor.getEventSubType(payload);
+      const injectedAuthorizerHeaders = HTTPEventTraceExtractor.getInjectedAuthorizerHeaders(payload, subType);
+
+      expect(injectedAuthorizerHeaders).toEqual({
+        "x-datadog-trace-id": "2389589954026090296",
+        "x-datadog-parent-id": "2389589954026090296",
+        "x-datadog-sampling-priority": "1",
+        "x-datadog-parent-span-finish-time": 1660939899233,
+        "x-datadog-authorizing-requestid": "random-id",
+      });
+    });
+
+    it.each([
+      ["requestContext", {}, HTTPEventSubType.ApiGatewayV1],
+      ["requestContext authorizer", { requestContext: {} }, HTTPEventSubType.ApiGatewayV1],
+      [
+        "_datadog in authorizer - API Gateway V1",
+        { requestContext: { authorizer: {} } },
+        HTTPEventSubType.ApiGatewayV1,
+      ],
+      [
+        "lambda._datadog in authorizer - API Gateway V2",
+        { requestContext: { authorizer: { lambda: {} } } },
+        HTTPEventSubType.ApiGatewayV2,
+      ],
+    ])("returns null and skips parsing when payload is missing '%s'", (_, payload, eventSubType) => {
+      const authorizerHeaders = HTTPEventTraceExtractor.getInjectedAuthorizerHeaders(payload, eventSubType);
+
+      expect(authorizerHeaders).toBeNull();
+    });
+
+    it.each([
+      [
+        "integrationLatency < 0",
+        {
+          requestContext: {
+            requestId: "random-id",
+            authorizer: {
+              _datadog: "e30=",
+              integrationLatency: -1,
+            },
+          },
+        },
+      ],
+      [
+        "requestContext requestId not matching the parsed headers requestId",
+        {
+          requestContext: {
+            requestId: "not-random-id",
+            authorizer: {
+              _datadog:
+                "eyJ4LWRhdGFkb2ctdHJhY2UtaWQiOiIyMzg5NTg5OTU0MDI2MDkwMjk2IiwieC1kYXRhZG9nLXBhcmVudC1pZCI6IjIzODk1ODk5NTQwMjYwOTAyOTYiLCJ4LWRhdGFkb2ctc2FtcGxpbmctcHJpb3JpdHkiOiIxIiwieC1kYXRhZG9nLXBhcmVudC1zcGFuLWZpbmlzaC10aW1lIjoxNjYwOTM5ODk5MjMzLCJ4LWRhdGFkb2ctYXV0aG9yaXppbmctcmVxdWVzdGlkIjoicmFuZG9tLWlkIn0==",
+            },
+          },
+        },
+      ],
+    ])("returns null when parsed headers have '%s'", (_, payload) => {
+      const authorizerHeaders = HTTPEventTraceExtractor.getInjectedAuthorizerHeaders(
+        payload,
+        HTTPEventSubType.ApiGatewayV1,
+      );
+
+      expect(authorizerHeaders).toBeNull();
     });
   });
 });

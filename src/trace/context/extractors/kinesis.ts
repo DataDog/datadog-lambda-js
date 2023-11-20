@@ -1,21 +1,33 @@
 import { KinesisStreamEvent } from "aws-lambda";
-import { TraceContext, exportTraceData } from "../extractor";
 import { logDebug } from "../../../utils";
+import { EventTraceExtractor } from "../extractor";
+import { TracerWrapper } from "../../tracer-wrapper";
+import { SpanContextWrapper } from "../../span-context-wrapper";
 
-export function readTraceFromKinesisEvent(event: KinesisStreamEvent): TraceContext | undefined {
-  if (event?.Records?.[0]?.kinesis?.data) {
+export class KinesisEventTraceExtractor implements EventTraceExtractor {
+  constructor(private tracerWrapper: TracerWrapper) {}
+
+  extract(event: KinesisStreamEvent): SpanContextWrapper | null {
+    const kinesisData = event?.Records?.[0]?.kinesis.data;
+    if (kinesisData === undefined) return null;
+
     try {
-      const parsedBody = JSON.parse(Buffer.from(event.Records[0].kinesis.data, "base64").toString("ascii")) as any;
-      if (parsedBody && parsedBody._datadog) {
-        const trace = exportTraceData(parsedBody._datadog);
-        logDebug(`extracted trace context from Kinesis event`, { trace });
-        return trace;
+      const decodedData = Buffer.from(kinesisData, "base64").toString("ascii");
+      const parsedBody = JSON.parse(decodedData);
+      const headers = parsedBody?._datadog;
+      if (headers) {
+        const traceContext = this.tracerWrapper.extract(headers);
+        if (traceContext === null) return null;
+
+        logDebug(`Extracted trace context from Kinesis event`, { traceContext, headers });
+        return traceContext;
       }
-    } catch (err) {
-      if (err instanceof Error) {
-        logDebug("Error parsing Kinesis message trace data", err as Error);
+    } catch (error) {
+      if (error instanceof Error) {
+        logDebug("Unable to extract trace context from Kinesis event", error);
       }
-      return;
     }
+
+    return null;
   }
 }

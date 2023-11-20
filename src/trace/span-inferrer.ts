@@ -9,12 +9,12 @@ import {
   SQSEvent,
 } from "aws-lambda";
 import { SpanContext, SpanOptions, TracerWrapper } from "./tracer-wrapper";
-import { eventSubTypes, eventTypes, parseEventSource, parseEventSourceSubType } from "./trigger";
+import { eventTypes, parseEventSource } from "./trigger";
 import { SpanWrapper } from "./span-wrapper";
 import { DD_SERVICE_ENV_VAR, parentSpanFinishTimeHeader } from "./constants";
 import { logDebug } from "../utils";
-import { decodeAuthorizerContextEnvVar } from "../index";
-import { getInjectedAuthorizerData } from "./context/extractors/http";
+import { HTTPEventTraceExtractor } from "./context/extractors";
+import { HTTPEventSubType } from "./context/extractors/http";
 
 export class SpanInferrer {
   private static serviceMapping: Record<string, string> = {};
@@ -136,15 +136,15 @@ export class SpanInferrer {
       options.tags.event_type = event.requestContext.eventType;
     }
     let upstreamAuthorizerSpan: SpanWrapper | undefined;
-    const eventSourceSubType: eventSubTypes = parseEventSourceSubType(event);
+    const eventSourceSubType: HTTPEventSubType = HTTPEventTraceExtractor.getEventSubType(event);
     if (decodeAuthorizerContext) {
       try {
-        const parsedUpstreamContext = getInjectedAuthorizerData(event, eventSourceSubType);
+        const parsedUpstreamContext = HTTPEventTraceExtractor.getInjectedAuthorizerHeaders(event, eventSourceSubType);
         if (parsedUpstreamContext) {
           let upstreamSpanOptions: SpanOptions = {};
           const startTime = parsedUpstreamContext[parentSpanFinishTimeHeader] / 1e6;
           // getting an approximated endTime
-          if (eventSourceSubType === eventSubTypes.apiGatewayV2) {
+          if (eventSourceSubType === HTTPEventSubType.ApiGatewayV2) {
             options.startTime = startTime; // not inserting authorizer span
             options.tags.operation_name = "aws.httpapi";
           } else {
@@ -169,8 +169,8 @@ export class SpanInferrer {
 
     if (!options.startTime) {
       if (
-        eventSourceSubType === eventSubTypes.apiGatewayV1 ||
-        eventSourceSubType === eventSubTypes.apiGatewayWebsocket
+        eventSourceSubType === HTTPEventSubType.ApiGatewayV1 ||
+        eventSourceSubType === HTTPEventSubType.ApiGatewayWebSocket
       ) {
         options.startTime = event.requestContext.requestTimeEpoch;
       } else {

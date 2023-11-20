@@ -1,5 +1,5 @@
 import { TracerWrapper } from "../../tracer-wrapper";
-import { LambdaContextTraceExtractor } from "./lambda-context";
+import { EventBridgeEventTraceExtractor } from "./event-bridge";
 
 let mockSpanContext: any = null;
 
@@ -16,7 +16,7 @@ jest.mock("dd-trace", () => {
 });
 const spyTracerWrapper = jest.spyOn(TracerWrapper.prototype, "extract");
 
-describe("LambdaContextTraceExtractor", () => {
+describe("EventBridgeEventTraceExtractor", () => {
   describe("extract", () => {
     beforeEach(() => {
       mockSpanContext = null;
@@ -26,29 +26,10 @@ describe("LambdaContextTraceExtractor", () => {
       jest.resetModules();
     });
 
-    it.each([
-      [
-        "legacy payload",
-        {
-          _datadog: {
-            "x-datadog-trace-id": "667309514221035538",
-            "x-datadog-parent-id": "1350735035497811828",
-            "x-datadog-sampling-priority": "1",
-          },
-        },
-      ],
-      [
-        "payload",
-        {
-          "x-datadog-trace-id": "667309514221035538",
-          "x-datadog-parent-id": "1350735035497811828",
-          "x-datadog-sampling-priority": "1",
-        },
-      ],
-    ])("extracts trace context with valid '%s'", (_, customValue) => {
+    it("extracts trace context with valid payload", () => {
       mockSpanContext = {
-        toTraceId: () => "667309514221035538",
-        toSpanId: () => "1350735035497811828",
+        toTraceId: () => "5827606813695714842",
+        toSpanId: () => "4726693487091824375",
         _sampling: {
           priority: "1",
         },
@@ -56,36 +37,47 @@ describe("LambdaContextTraceExtractor", () => {
       const tracerWrapper = new TracerWrapper();
 
       const payload = {
-        clientContext: {
-          custom: customValue,
+        version: "0",
+        id: "bd3c8258-8d30-007c-2562-64715b2d0ea8",
+        "detail-type": "UserSignUp",
+        source: "my.event",
+        account: "601427279990",
+        time: "2022-01-24T16:00:10Z",
+        region: "eu-west-1",
+        resources: [],
+        detail: {
+          hello: "there",
+          _datadog: {
+            "x-datadog-trace-id": "5827606813695714842",
+            "x-datadog-parent-id": "4726693487091824375",
+            "x-datadog-sampling-priority": "1",
+          },
         },
       };
 
-      const extractor = new LambdaContextTraceExtractor(tracerWrapper);
+      const extractor = new EventBridgeEventTraceExtractor(tracerWrapper);
 
       const traceContext = extractor.extract(payload);
       expect(traceContext).not.toBeNull();
 
       expect(spyTracerWrapper).toHaveBeenCalledWith({
-        "x-datadog-parent-id": "1350735035497811828",
+        "x-datadog-trace-id": "5827606813695714842",
+        "x-datadog-parent-id": "4726693487091824375",
         "x-datadog-sampling-priority": "1",
-        "x-datadog-trace-id": "667309514221035538",
       });
 
-      expect(traceContext?.toTraceId()).toBe("667309514221035538");
-      expect(traceContext?.toSpanId()).toBe("1350735035497811828");
+      expect(traceContext?.toTraceId()).toBe("5827606813695714842");
+      expect(traceContext?.toSpanId()).toBe("4726693487091824375");
       expect(traceContext?.sampleMode()).toBe("1");
       expect(traceContext?.source).toBe("event");
     });
 
     it.each([
-      ["context", undefined],
-      ["clientContext", {}],
-      ["custom key in clientContext", { clientContext: {} }],
-      ["object value in custom key", { clientContext: { custom: "not-an-object" } }],
+      ["detail", {}],
+      ["_datadog in detail", { hello: "there" }],
     ])("returns null and skips extracting when payload is missing '%s'", (_, payload) => {
       const tracerWrapper = new TracerWrapper();
-      const extractor = new LambdaContextTraceExtractor(tracerWrapper);
+      const extractor = new EventBridgeEventTraceExtractor(tracerWrapper);
 
       const traceContext = extractor.extract(payload as any);
       expect(traceContext).toBeNull();
@@ -95,14 +87,21 @@ describe("LambdaContextTraceExtractor", () => {
       const tracerWrapper = new TracerWrapper();
 
       const payload = {
-        clientContext: {
-          custom: {
-            foo: "bar",
-          },
+        version: "0",
+        id: "bd3c8258-8d30-007c-2562-64715b2d0ea8",
+        "detail-type": "UserSignUp",
+        source: "my.event",
+        account: "601427279990",
+        time: "2022-01-24T16:00:10Z",
+        region: "eu-west-1",
+        resources: [],
+        detail: {
+          hello: "there",
+          _datadog: {},
         },
       };
 
-      const extractor = new LambdaContextTraceExtractor(tracerWrapper);
+      const extractor = new EventBridgeEventTraceExtractor(tracerWrapper);
 
       const traceContext = extractor.extract(payload);
       expect(traceContext).toBeNull();

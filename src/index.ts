@@ -7,7 +7,7 @@ import {
   MetricsConfig,
   MetricsListener,
 } from "./metrics";
-import { TraceConfig, TraceHeaders, TraceListener } from "./trace";
+import { TraceConfig, TraceListener } from "./trace";
 import { subscribeToDC } from "./runtime";
 import {
   logDebug,
@@ -20,9 +20,10 @@ import {
   setLogLevel,
 } from "./utils";
 import { getEnhancedMetricTags } from "./metrics/enhanced-metrics";
+import { DatadogTraceHeaders } from "./trace/context/extractor";
 
-export { TraceHeaders } from "./trace";
-
+// Backwards-compatible export, TODO deprecate in next major
+export { DatadogTraceHeaders as TraceHeaders } from "./trace/context/extractor";
 export const apiKeyEnvVar = "DD_API_KEY";
 export const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
 export const captureLambdaPayloadEnvVar = "DD_CAPTURE_LAMBDA_PAYLOAD";
@@ -278,7 +279,7 @@ export function sendDistributionMetric(name: string, value: number, ...tags: str
 /**
  * Retrieves the Datadog headers for the current trace.
  */
-export function getTraceHeaders(): Partial<TraceHeaders> {
+export function getTraceHeaders(): Partial<DatadogTraceHeaders> {
   if (currentTraceListener === undefined) {
     return {};
   }

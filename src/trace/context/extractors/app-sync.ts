@@ -1,7 +1,18 @@
-import { TraceContext } from "../extractor";
-import { readTraceFromHTTPEvent } from "./http";
+import { HTTPEventTraceExtractor } from "./http";
+import { EventTraceExtractor } from "../extractor";
+import { TracerWrapper } from "../../tracer-wrapper";
+import { SpanContextWrapper } from "../../span-context-wrapper";
 
-export function readTraceFromAppSyncEvent(event: any): TraceContext | undefined {
-  event.headers = event.request.headers;
-  return readTraceFromHTTPEvent(event, false);
+export class AppSyncEventTraceExtractor implements EventTraceExtractor {
+  private httpEventExtractor: HTTPEventTraceExtractor;
+
+  constructor(private tracerWrapper: TracerWrapper) {
+    this.httpEventExtractor = new HTTPEventTraceExtractor(this.tracerWrapper, false);
+  }
+
+  extract(event: any): SpanContextWrapper | null {
+    event.headers = event.request.headers;
+
+    return this.httpEventExtractor.extract(event);
+  }
 }

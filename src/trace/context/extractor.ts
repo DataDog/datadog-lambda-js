@@ -1,168 +1,122 @@
 import { Context } from "aws-lambda";
-import { TraceExtractor } from "../listener";
+import { TraceConfig } from "../listener";
 import { logDebug, logError } from "../../utils";
-import { readTraceFromHTTPEvent } from "./extractors/http";
-import { readTraceFromSNSEvent } from "./extractors/sns";
-import { readTraceFromSNSSQSEvent } from "./extractors/sns-sqs";
-import { readTraceFromEBSQSEvent } from "./extractors/event-bridge-sqs";
-import { readTraceFromAppSyncEvent } from "./extractors/app-sync";
-import { readTraceFromSQSEvent } from "./extractors/sqs";
-import { readTraceFromKinesisEvent } from "./extractors/kinesis";
-import { readTraceFromEventbridgeEvent } from "./extractors/event-bridge";
+import { XrayService } from "../xray-service";
 import {
-  isAppSyncResolverEvent,
-  isEBSQSEvent,
-  isEventBridgeEvent,
-  isKinesisStreamEvent,
-  isSNSEvent,
-  isSNSSQSEvent,
-  isSQSEvent,
-} from "../../utils/event-type-guards";
-import { readTraceFromLambdaContext } from "./extractors/lambda-context";
-import { readStepFunctionContextFromEvent } from "../step-function-service";
-import { addStepFunctionContextToXray, addTraceContextToXray, readTraceContextFromXray } from "../xray-service";
-import { readTraceFromStepFunctionsContext } from "./extractors/step-function";
+  AppSyncEventTraceExtractor,
+  CustomTraceExtractor,
+  EventBridgeEventTraceExtractor,
+  EventBridgeSQSEventTraceExtractor,
+  HTTPEventTraceExtractor,
+  KinesisEventTraceExtractor,
+  LambdaContextTraceExtractor,
+  SNSEventTraceExtractor,
+  SNSSQSEventTraceExtractor,
+  SQSEventTraceExtractor,
+  StepFunctionEventTraceExtractor,
+} from "./extractors";
+import { StepFunctionContextService } from "../step-function-service";
+import { EventValidator } from "../../utils/event-validator";
+import { TracerWrapper } from "../tracer-wrapper";
+import { SpanContextWrapper } from "trace/span-context-wrapper";
 
-export enum SampleMode {
-  USER_REJECT = -1,
-  AUTO_REJECT = 0,
-  AUTO_KEEP = 1,
-  USER_KEEP = 2,
-}
-export enum Source {
-  Xray = "xray",
-  Event = "event",
-  DDTrace = "ddtrace",
-}
+export const DATADOG_TRACE_ID_HEADER = "x-datadog-trace-id";
+export const DATADOG_PARENT_ID_HEADER = "x-datadog-parent-id";
+export const DATADOG_SAMPLING_PRIORITY_HEADER = "x-datadog-sampling-priority";
 
-export interface TraceContext {
-  traceID: string;
-  parentID: string;
-  sampleMode: SampleMode;
-  source: Source;
+export interface EventTraceExtractor {
+  extract(event: any): SpanContextWrapper | null;
 }
 
-export const traceIDHeader = "x-datadog-trace-id";
-export const parentIDHeader = "x-datadog-parent-id";
-export const samplingPriorityHeader = "x-datadog-sampling-priority";
-
-/**
- * Reads the trace context from either an incoming lambda event, or the current xray segment.
- * @param event An incoming lambda event. This must have incoming trace headers in order to be read.
- */
-export async function extractTraceContext(
-  event: any,
-  context: Context,
-  extractor?: TraceExtractor,
-  decodeAuthorizerContext: boolean = true,
-): Promise<TraceContext | undefined> {
-  let trace;
-
-  if (extractor) {
-    try {
-      trace = await extractor(event, context);
-      logDebug(`extracted trace context from the custom extractor`, { trace });
-    } catch (error) {
-      if (error instanceof Error) {
-        logError("custom extractor function failed", error as Error);
-      }
-    }
-  }
-
-  if (!trace) {
-    trace = readTraceFromEvent(event, decodeAuthorizerContext);
-  }
-
-  if (!trace) {
-    trace = readTraceFromLambdaContext(context);
-  }
-
-  const stepFuncContext = readStepFunctionContextFromEvent(event);
-  if (stepFuncContext) {
-    try {
-      addStepFunctionContextToXray(stepFuncContext);
-    } catch (error) {
-      if (error instanceof Error) {
-        logError("couldn't add step function metadata to xray", error as Error);
-      }
-    }
-    if (trace === undefined) {
-      trace = readTraceFromStepFunctionsContext(stepFuncContext);
-      if (trace !== undefined) {
-        return trace;
-      }
-    }
-  }
-
-  if (trace !== undefined) {
-    try {
-      addTraceContextToXray(trace);
-      logDebug(`added trace context to xray metadata`, { trace });
-    } catch (error) {
-      // This might fail if running in an environment where xray isn't set up, (like for local development).
-      if (error instanceof Error) {
-        logError("couldn't add trace context to xray metadata", error as Error);
-      }
-    }
-    return trace;
-  }
-  return readTraceContextFromXray();
+export interface DatadogTraceHeaders {
+  [DATADOG_TRACE_ID_HEADER]: string;
+  [DATADOG_PARENT_ID_HEADER]: string;
+  [DATADOG_SAMPLING_PRIORITY_HEADER]: string;
 }
 
-export function readTraceFromEvent(event: any, decodeAuthorizerContext: boolean = true): TraceContext | undefined {
-  if (!event || typeof event !== "object") {
+export class TraceContextExtractor {
+  private xrayService: XrayService;
+  private stepFunctionContextService?: StepFunctionContextService;
+
+  constructor(private tracerWrapper: TracerWrapper, private config: TraceConfig) {
+    this.xrayService = new XrayService();
+  }
+
+  async extract(event: any, context: Context): Promise<SpanContextWrapper | null> {
+    this.stepFunctionContextService = StepFunctionContextService.instance(event);
+
+    let spanContext: SpanContextWrapper | null = null;
+    if (this.config.traceExtractor) {
+      const customExtractor = new CustomTraceExtractor(this.config.traceExtractor);
+      spanContext = await customExtractor.extract(event, context);
+    }
+
+    if (spanContext === null) {
+      const eventExtractor = this.getTraceEventExtractor(event);
+      if (eventExtractor !== undefined) {
+        spanContext = eventExtractor.extract(event);
+      }
+    }
+
+    if (spanContext === null) {
+      const contextExtractor = new LambdaContextTraceExtractor(this.tracerWrapper);
+      spanContext = contextExtractor.extract(context);
+    }
+
+    if (spanContext !== null) {
+      this.addTraceContextToXray(spanContext);
+
+      return spanContext;
+    }
+
+    return this.xrayService.extract();
+  }
+
+  private getTraceEventExtractor(event: any): EventTraceExtractor | undefined {
+    if (!event || typeof event !== "object") return;
+
+    if (event.headers !== null && typeof event.headers === "object") {
+      return new HTTPEventTraceExtractor(this.tracerWrapper, this.config.decodeAuthorizerContext);
+    }
+
+    if (EventValidator.isSNSEvent(event)) return new SNSEventTraceExtractor(this.tracerWrapper);
+    if (EventValidator.isSNSSQSEvent(event)) return new SNSSQSEventTraceExtractor(this.tracerWrapper);
+    if (EventValidator.isEventBridgeSQSEvent(event)) return new EventBridgeSQSEventTraceExtractor(this.tracerWrapper);
+    if (EventValidator.isAppSyncResolverEvent(event)) return new AppSyncEventTraceExtractor(this.tracerWrapper);
+    if (EventValidator.isSQSEvent(event)) return new SQSEventTraceExtractor(this.tracerWrapper);
+    if (EventValidator.isKinesisStreamEvent(event)) return new KinesisEventTraceExtractor(this.tracerWrapper);
+    if (EventValidator.isEventBridgeEvent(event)) return new EventBridgeEventTraceExtractor(this.tracerWrapper);
+
+    if (this.stepFunctionContextService?.context) return new StepFunctionEventTraceExtractor();
+
     return;
   }
 
-  if (event.headers !== null && typeof event.headers === "object") {
-    return readTraceFromHTTPEvent(event, decodeAuthorizerContext);
+  private addTraceContextToXray(spanContext: SpanContextWrapper) {
+    try {
+      if (this.stepFunctionContextService?.context !== undefined) {
+        this.xrayService.addStepFunctionContext(this.stepFunctionContextService.context);
+        logDebug(`Added Step Function metadata to Xray metadata`, { trace: spanContext });
+        return;
+      }
+
+      const metadata = {
+        "trace-id": spanContext.toTraceId(),
+        "parent-id": spanContext.toSpanId(),
+        "sampling-priority": spanContext.sampleMode(),
+      };
+      this.xrayService.addMetadata(metadata);
+
+      logDebug(`Added trace context to Xray metadata`, { trace: spanContext });
+    } catch (error) {
+      if (error instanceof Error) {
+        if (this.stepFunctionContextService?.context !== undefined) {
+          logError("Couldn't add Step Function metadata to Xray", error);
+          return;
+        }
+
+        logError("Couldn't add trace context to xray metadata", error);
+      }
+    }
   }
-
-  if (isSNSEvent(event)) {
-    return readTraceFromSNSEvent(event);
-  }
-
-  if (isSNSSQSEvent(event)) {
-    return readTraceFromSNSSQSEvent(event);
-  }
-
-  if (isEBSQSEvent(event)) {
-    return readTraceFromEBSQSEvent(event);
-  }
-
-  if (isAppSyncResolverEvent(event)) {
-    return readTraceFromAppSyncEvent(event);
-  }
-
-  if (isSQSEvent(event)) {
-    return readTraceFromSQSEvent(event);
-  }
-  if (isKinesisStreamEvent(event)) {
-    return readTraceFromKinesisEvent(event);
-  }
-
-  if (isEventBridgeEvent(event)) {
-    return readTraceFromEventbridgeEvent(event);
-  }
-
-  return;
-}
-
-export function exportTraceData(traceData: any): TraceContext | undefined {
-  const traceID = traceData[traceIDHeader];
-  const parentID = traceData[parentIDHeader];
-  const sampledHeader = traceData[samplingPriorityHeader];
-
-  if (typeof traceID !== "string" || typeof parentID !== "string" || typeof sampledHeader !== "string") {
-    return;
-  }
-
-  const sampleMode = parseInt(sampledHeader, 10);
-
-  return {
-    parentID,
-    sampleMode,
-    source: Source.Event,
-    traceID,
-  };
 }

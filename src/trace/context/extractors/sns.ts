@@ -1,27 +1,37 @@
 import { SNSEvent } from "aws-lambda";
-import { TraceContext, exportTraceData } from "../extractor";
+import { TracerWrapper } from "../../tracer-wrapper";
 import { logDebug } from "../../../utils";
+import { EventTraceExtractor } from "../extractor";
+import { SpanContextWrapper } from "../../span-context-wrapper";
 
-export function readTraceFromSNSEvent(event: SNSEvent): TraceContext | undefined {
-  if (event?.Records?.[0]?.Sns?.MessageAttributes?._datadog?.Value) {
+export class SNSEventTraceExtractor implements EventTraceExtractor {
+  constructor(private tracerWrapper: TracerWrapper) {}
+
+  extract(event: SNSEvent): SpanContextWrapper | null {
+    const messageAttribute = event?.Records?.[0]?.Sns?.MessageAttributes?._datadog;
+    if (messageAttribute?.Value === undefined) return null;
+
     try {
-      let traceData;
-      if (event.Records[0].Sns.MessageAttributes._datadog.Type === "String") {
-        traceData = JSON.parse(event.Records[0].Sns.MessageAttributes._datadog.Value);
+      let headers;
+      if (messageAttribute.Type === "String") {
+        headers = JSON.parse(messageAttribute.Value);
       } else {
-        const b64Decoded = Buffer.from(event.Records[0].Sns.MessageAttributes._datadog.Value, "base64").toString(
-          "ascii",
-        );
-        traceData = JSON.parse(b64Decoded);
+        // Try decoding base64 values
+        const decodedValue = Buffer.from(messageAttribute.Value, "base64").toString("ascii");
+        headers = JSON.parse(decodedValue);
       }
-      const trace = exportTraceData(traceData);
-      logDebug(`extracted trace context from SNS event`, { trace, event });
-      return trace;
-    } catch (err) {
-      if (err instanceof Error) {
-        logDebug("Error parsing SNS SQS message trace data", err as Error);
+
+      const traceContext = this.tracerWrapper.extract(headers);
+      if (traceContext === null) return null;
+
+      logDebug(`Extracted trace context from SNS event`, { traceContext, event });
+      return traceContext;
+    } catch (error) {
+      if (error instanceof Error) {
+        logDebug("Unable to extract trace context from SNS event", error);
       }
-      return;
     }
+
+    return null;
   }
 }

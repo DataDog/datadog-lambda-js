@@ -52,9 +52,10 @@ function patchMethod(mod: Console, method: LogMethod, contextService: TraceConte
       setLogLevel(LogLevel.NONE);
       try {
         const context = contextService.currentTraceContext;
-        if (context !== undefined) {
-          const { traceID, parentID } = context;
-          prefix = `[dd.trace_id=${traceID} dd.span_id=${parentID}]`;
+        if (context !== null) {
+          const traceId = context.toTraceId();
+          const parentId = context.toSpanId();
+          prefix = `[dd.trace_id=${traceId} dd.span_id=${parentId}]`;
           if (arguments.length === 0) {
             arguments.length = 1;
             arguments[0] = prefix;
