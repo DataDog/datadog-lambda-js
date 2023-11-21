@@ -1,3 +1,4 @@
+// TODO NEXT MAJOR (AJ): Remove this when we drop node14
 const dc = require('dc-polyfill')
 
 export class RequireNode {
