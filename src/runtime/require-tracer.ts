@@ -1,4 +1,4 @@
-const dc = require('diagnostics_channel')
+const dc = require('dc-polyfill')
 
 export class RequireNode {
   public id: string
