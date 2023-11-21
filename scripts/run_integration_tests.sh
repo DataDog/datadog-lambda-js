@@ -221,7 +221,10 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
                 # Normalize Axios version
                 perl -p -e "s/User-Agent:axios\/\d+\.\d+\.\d+/User-Agent:axios\/X\.X\.X/g" |
                 # Remove init start line
-                perl -p -e "s/INIT_START.*//g"
+                perl -p -e "s/INIT_START.*//g" |
+                sed -E "s/(tracestate\:)([A-Za-z0-9\-\=\:\;].+)/\1XXX/g" |
+                sed -E "s/(\"_dd.p.tid\"\: \")[a-z0-9\.\-]+/\1XXXX/g" |
+                sed -E "s/(_dd.p.tid=)[a-z0-9\.\-]+/\1XXXX/g"
         )
 
         if [ ! -f $function_snapshot_path ]; then

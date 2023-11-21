@@ -1,5 +1,5 @@
 import { subscribeToDC, getTraceTree, RequireNode } from "./require-tracer";
-const dc = require('diagnostics_channel')
+const dc = require('dc-polyfill')
 
 describe('require-tracer', () => {
   it('generates a trace tree', () => {
