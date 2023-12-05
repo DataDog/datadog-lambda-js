@@ -28,13 +28,13 @@ export interface TraceConfig {
   /**
    * Whether to capture the lambda payload and response in Datadog.
    */
-  captureLambdaPayloadMaxDepth: number;
+  captureLambdaPayload: boolean;
   /**
    * The captured AWS Lambda payloads will become tags of the `aws.lambda` span. This sets how deep
    * it fathoms the JSON structure. When the max depth reached, the tag's value will be the
    * stringified value of the deeper nested items.
    */
-  captureLambdaPayload: boolean;
+  captureLambdaPayloadMaxDepth: number;
   /**
    * Whether to create inferred spans for managed services
    */
