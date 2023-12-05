@@ -1,85 +1,85 @@
 import { Context } from "aws-lambda";
-import { logDebug } from "../utils";
-import { TracerWrapper } from "./tracer-wrapper";
-import { TraceExtractor } from "./listener";
 import {
-  TraceContext,
-  extractTraceContext,
-  parentIDHeader,
-  samplingPriorityHeader,
-  traceIDHeader,
+  DATADOG_PARENT_ID_HEADER,
+  DATADOG_SAMPLING_PRIORITY_HEADER,
+  DATADOG_TRACE_ID_HEADER,
+  TraceContextExtractor,
+  DatadogTraceHeaders,
 } from "./context/extractor";
-/**
- * Headers that can be added to a request.
- */
-export interface TraceHeaders {
-  [traceIDHeader]: string;
-  [parentIDHeader]: string;
-  [samplingPriorityHeader]: string;
+import { TracerWrapper } from "./tracer-wrapper";
+import { TraceConfig } from "./listener";
+import { logDebug } from "../utils";
+import { SpanContextWrapper } from "./span-context-wrapper";
+
+export enum TraceSource {
+  Xray = "xray",
+  Event = "event",
+  DdTrace = "ddtrace",
 }
 
-/**
- * Service for retrieving the latest version of the request context from xray.
- */
+export enum SampleMode {
+  USER_REJECT = -1,
+  AUTO_REJECT = 0,
+  AUTO_KEEP = 1,
+  USER_KEEP = 2,
+}
+
+export interface TraceContext {
+  /**
+   * @deprecated use `traceId`
+   */
+  traceID?: string;
+  /**
+   * @deprecated use `parentId`
+   */
+  parentID?: string;
+  traceId?: string;
+  parentId?: string;
+  sampleMode: SampleMode;
+  source: TraceSource;
+}
+
+export type TraceExtractor = (event: any, context: Context) => Promise<TraceContext> | TraceContext;
+
 export class TraceContextService {
-  private rootTraceContext?: TraceContext;
+  public rootTraceContext: SpanContextWrapper | null = null;
+  private traceExtractor: TraceContextExtractor;
 
-  constructor(private tracerWrapper: TracerWrapper) {}
-
-  async extractHeadersFromContext(
-    event: any,
-    context: Context,
-    extractor?: TraceExtractor,
-    decodeAuthorizerContext: boolean = true,
-  ): Promise<Partial<TraceHeaders> | undefined> {
-    this.rootTraceContext = await extractTraceContext(event, context, extractor, decodeAuthorizerContext);
-    return this.currentTraceHeaders;
+  constructor(private tracerWrapper: TracerWrapper, private config: TraceConfig) {
+    this.traceExtractor = new TraceContextExtractor(this.tracerWrapper, this.config);
   }
 
-  get currentTraceContext(): TraceContext | undefined {
-    if (this.rootTraceContext === undefined) {
-      return;
-    }
-    const traceContext = { ...this.rootTraceContext };
+  async extract(event: any, context: Context): Promise<SpanContextWrapper | null> {
+    this.rootTraceContext = await this.traceExtractor?.extract(event, context);
 
-    // Update the parent id to the active datadog span if available
-    const datadogContext = this.tracerWrapper.traceContext();
-    if (datadogContext) {
-      logDebug(`set trace context from dd-trace with parent ${datadogContext.parentID}`);
-      return datadogContext;
+    return this.currentTraceContext;
+  }
+
+  get currentTraceHeaders(): Partial<DatadogTraceHeaders> {
+    const traceContext = this.currentTraceContext as SpanContextWrapper;
+    if (traceContext === null) return {};
+
+    return {
+      [DATADOG_TRACE_ID_HEADER]: traceContext.toTraceId(),
+      [DATADOG_PARENT_ID_HEADER]: traceContext.toSpanId(),
+      [DATADOG_SAMPLING_PRIORITY_HEADER]: traceContext.sampleMode().toString(),
+    };
+  }
+
+  get currentTraceContext(): SpanContextWrapper | null {
+    if (this.rootTraceContext === null) return null;
+
+    const traceContext = this.rootTraceContext;
+    const currentDatadogContext = this.tracerWrapper.traceContext();
+    if (currentDatadogContext) {
+      logDebug(`set trace context from dd-trace with parent ${currentDatadogContext.toTraceId()}`);
+      return currentDatadogContext;
     }
 
     return traceContext;
   }
 
-  // Get the current trace headers to be propagated to the downstream calls,
-  // The parent id always points to the current active span.
-  get currentTraceHeaders(): Partial<TraceHeaders> {
-    const traceContext = this.currentTraceContext;
-    if (traceContext === undefined) {
-      return {};
-    }
-    return {
-      [traceIDHeader]: traceContext.traceID,
-      [parentIDHeader]: traceContext.parentID,
-      [samplingPriorityHeader]: traceContext.sampleMode.toString(10),
-    };
-  }
-
-  // Get the trace headers from the root trace context.
-  get rootTraceHeaders(): Partial<TraceHeaders> {
-    const rootTraceContext = this.rootTraceContext;
-    if (rootTraceContext === undefined) {
-      return {};
-    }
-    return {
-      [traceIDHeader]: rootTraceContext.traceID,
-      [parentIDHeader]: rootTraceContext.parentID,
-      [samplingPriorityHeader]: rootTraceContext.sampleMode.toString(10),
-    };
-  }
-
   get traceSource() {
-    return this.rootTraceContext !== undefined ? this.rootTraceContext.source : undefined;
+    return this.rootTraceContext !== null ? this.rootTraceContext?.source : null;
   }
 }

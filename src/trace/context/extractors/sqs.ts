@@ -1,23 +1,28 @@
 import { SQSEvent } from "aws-lambda";
-import { TraceContext, exportTraceData } from "../extractor";
+import { EventTraceExtractor } from "../extractor";
+import { TracerWrapper } from "../../tracer-wrapper";
 import { logDebug } from "../../../utils";
+import { SpanContextWrapper } from "../../span-context-wrapper";
 
-export function readTraceFromSQSEvent(event: SQSEvent): TraceContext | undefined {
-  if (event?.Records?.[0]?.messageAttributes?._datadog?.stringValue) {
-    const traceHeaders = event.Records[0].messageAttributes._datadog.stringValue;
+export class SQSEventTraceExtractor implements EventTraceExtractor {
+  constructor(private tracerWrapper: TracerWrapper) {}
+
+  extract(event: SQSEvent): SpanContextWrapper | null {
+    const headers = event?.Records?.[0]?.messageAttributes?._datadog?.stringValue;
+    if (headers === undefined) return null;
 
     try {
-      const trace = exportTraceData(JSON.parse(traceHeaders));
+      const traceContext = this.tracerWrapper.extract(JSON.parse(headers));
+      if (traceContext === null) return null;
 
-      logDebug(`extracted trace context from sqs event`, { trace, event });
-      return trace;
-    } catch (err) {
-      if (err instanceof Error) {
-        logDebug("Error parsing SQS message trace data", err as Error);
+      logDebug(`Extracted trace context from SQS event`, { traceContext, event });
+      return traceContext;
+    } catch (error) {
+      if (error instanceof Error) {
+        logDebug("Unable to extract trace context from SQS event", error);
       }
-      return;
     }
-  }
 
-  return;
+    return null;
+  }
 }

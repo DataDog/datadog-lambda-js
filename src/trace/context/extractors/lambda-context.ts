@@ -1,37 +1,31 @@
 import { logDebug } from "../../../utils";
-import { TraceContext, exportTraceData, parentIDHeader, samplingPriorityHeader, traceIDHeader } from "../extractor";
+import { TracerWrapper } from "../../tracer-wrapper";
+import { SpanContextWrapper } from "../../span-context-wrapper";
 
-export function readTraceFromLambdaContext(context: any): TraceContext | undefined {
-  if (!context || typeof context !== "object") {
-    return;
+interface ContextTraceExtractor {
+  extract(context: any): SpanContextWrapper | null;
+}
+
+export class LambdaContextTraceExtractor implements ContextTraceExtractor {
+  constructor(private tracerWrapper: TracerWrapper) {}
+
+  extract(context: any): SpanContextWrapper | null {
+    if (!context || typeof context !== "object") return null;
+
+    const custom = context.clientContext?.custom;
+    if (!custom || typeof custom !== "object") return null;
+
+    // TODO: Note of things to deprecate in next release, headers being just
+    // custom field, instead of custom._datadog
+    let headers = custom;
+    if (headers._datadog !== undefined) {
+      headers = headers._datadog;
+    }
+
+    const spanContext = this.tracerWrapper.extract(headers);
+    if (spanContext === null) return null;
+
+    logDebug("Extracted trace context from Lambda Context event", { spanContext, headers });
+    return spanContext;
   }
-
-  const custom = context.clientContext?.custom;
-
-  if (!custom || typeof custom !== "object") {
-    return;
-  }
-  let traceData = null;
-
-  if (
-    custom.hasOwnProperty("_datadog") &&
-    typeof custom._datadog === "object" &&
-    custom._datadog.hasOwnProperty(traceIDHeader) &&
-    custom._datadog.hasOwnProperty(parentIDHeader) &&
-    custom._datadog.hasOwnProperty(samplingPriorityHeader)
-  ) {
-    traceData = custom._datadog;
-  } else if (
-    custom.hasOwnProperty(traceIDHeader) &&
-    custom.hasOwnProperty(parentIDHeader) &&
-    custom.hasOwnProperty(samplingPriorityHeader)
-  ) {
-    traceData = custom;
-  } else {
-    return;
-  }
-
-  const trace = exportTraceData(traceData);
-  logDebug(`extracted trace context from lambda context`, { trace, context });
-  return trace;
 }

@@ -1,41 +1,48 @@
-import { SampleMode, Source, TraceContext } from "./context/extractor";
-import { TraceContextService } from "./trace-context-service";
+import { TraceContextService, TraceSource } from "./trace-context-service";
+import { SpanContextWrapper } from "./span-context-wrapper";
 
 let mockXRaySegment: any;
 let mockXRayShouldThrow = false;
+let traceContextService: TraceContextService;
+let spanContextWrapper: SpanContextWrapper;
+let spanContext: any;
 
 describe("TraceContextService", () => {
-  let traceContextService: TraceContextService;
-  let datadogTraceContext: TraceContext | undefined;
   beforeEach(() => {
-    datadogTraceContext = undefined;
+    spanContextWrapper = undefined as any;
     mockXRaySegment = undefined;
     mockXRayShouldThrow = false;
     const traceWrapper = {
-      traceContext: () => datadogTraceContext,
+      traceContext: () => spanContextWrapper,
     };
-    traceContextService = new TraceContextService(traceWrapper as any);
+    traceContextService = new TraceContextService(traceWrapper as any, {} as any);
   });
 
   it("uses datadog trace parent id by default", () => {
-    datadogTraceContext = {
-      traceID: "123456",
-      parentID: "78910",
-      sampleMode: SampleMode.AUTO_KEEP,
-      source: Source.Event,
+    spanContext = {
+      toTraceId: () => "123456",
+      toSpanId: () => "78910",
+    };
+    spanContextWrapper = {
+      toTraceId: () => "123456",
+      toSpanId: () => "78910",
+      sampleMode: () => 1,
+      source: TraceSource.Event,
+      spanContext: spanContext,
     };
     traceContextService["rootTraceContext"] = {
-      traceID: "123456",
-      parentID: "abcdef",
-      sampleMode: SampleMode.AUTO_KEEP,
-      source: Source.Event,
+      toTraceId: () => "123456",
+      toSpanId: () => "abcdef",
+      sampleMode: () => 1,
+      source: TraceSource.Event,
+      spanContext: spanContext,
     };
-    expect(traceContextService.currentTraceContext).toEqual({
-      traceID: "123456",
-      parentID: "78910",
-      sampleMode: SampleMode.AUTO_KEEP,
-      source: Source.Event,
-    });
+
+    const currentTraceContext = traceContextService.currentTraceContext;
+    expect(currentTraceContext?.toTraceId()).toBe("123456");
+    expect(currentTraceContext?.toSpanId()).toBe("78910");
+    expect(currentTraceContext?.sampleMode()).toBe(1);
+    expect(currentTraceContext?.source).toBe("event");
   });
   it("uses parent trace parent id when trace id is invalid", () => {
     mockXRayShouldThrow = true;
@@ -43,31 +50,33 @@ describe("TraceContextService", () => {
       id: "0b11cc",
     };
     traceContextService["rootTraceContext"] = {
-      traceID: "123456",
-      parentID: "abcdef",
-      sampleMode: SampleMode.AUTO_KEEP,
-      source: Source.Xray,
+      toTraceId: () => "123456",
+      toSpanId: () => "abcdef",
+      sampleMode: () => 1,
+      source: TraceSource.Xray,
+      spanContext: spanContext,
     };
-    expect(traceContextService.currentTraceContext).toEqual({
-      traceID: "123456",
-      parentID: "abcdef",
-      sampleMode: SampleMode.AUTO_KEEP,
-      source: Source.Xray,
-    });
+
+    const currentTraceContext = traceContextService.currentTraceContext;
+    expect(currentTraceContext?.toTraceId()).toBe("123456");
+    expect(currentTraceContext?.toSpanId()).toBe("abcdef");
+    expect(currentTraceContext?.sampleMode()).toBe(1);
+    expect(currentTraceContext?.source).toBe("xray");
   });
   it("uses parent trace parent id when no datadog trace context is available and xray throws", () => {
     mockXRayShouldThrow = true;
     traceContextService["rootTraceContext"] = {
-      traceID: "123456",
-      parentID: "abcdef",
-      sampleMode: SampleMode.AUTO_KEEP,
-      source: Source.Xray,
+      toTraceId: () => "123456",
+      toSpanId: () => "abcdef",
+      sampleMode: () => 1,
+      source: TraceSource.Xray,
+      spanContext: spanContext,
     };
-    expect(traceContextService.currentTraceContext).toEqual({
-      traceID: "123456",
-      parentID: "abcdef",
-      sampleMode: SampleMode.AUTO_KEEP,
-      source: Source.Xray,
-    });
+
+    const currentTraceContext = traceContextService.currentTraceContext;
+    expect(currentTraceContext?.toTraceId()).toBe("123456");
+    expect(currentTraceContext?.toSpanId()).toBe("abcdef");
+    expect(currentTraceContext?.sampleMode()).toBe(1);
+    expect(currentTraceContext?.source).toBe("xray");
   });
 });

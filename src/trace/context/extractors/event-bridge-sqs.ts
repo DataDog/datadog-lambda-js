@@ -1,22 +1,32 @@
 import { EventBridgeEvent, SQSEvent } from "aws-lambda";
-import { TraceContext, exportTraceData } from "../extractor";
+import { EventTraceExtractor } from "../extractor";
 import { logDebug } from "../../../utils";
+import { TracerWrapper } from "../../tracer-wrapper";
+import { SpanContextWrapper } from "../../span-context-wrapper";
 
-export function readTraceFromEBSQSEvent(event: SQSEvent): TraceContext | undefined {
-  if (event?.Records?.[0]?.body) {
+export class EventBridgeSQSEventTraceExtractor implements EventTraceExtractor {
+  constructor(private tracerWrapper: TracerWrapper) {}
+
+  extract(event: SQSEvent): SpanContextWrapper | null {
+    const body = event?.Records?.[0]?.body;
+    if (body === undefined) return null;
+
     try {
-      const parsedBody = JSON.parse(event.Records[0].body) as EventBridgeEvent<any, any>;
-      if (parsedBody?.detail?._datadog) {
-        const trace = exportTraceData(parsedBody.detail._datadog);
+      const parsedBody = JSON.parse(body) as EventBridgeEvent<any, any>;
+      const headers = parsedBody?.detail?._datadog;
+      if (headers === undefined) return null;
 
-        logDebug(`extracted trace context from EventBridge SQS event`, { trace, event });
-        return trace;
+      const traceContext = this.tracerWrapper.extract(headers);
+      if (traceContext === null) return null;
+
+      logDebug("Extracted trace context from EventBridge-SQS event", { traceContext, event });
+      return traceContext;
+    } catch (error) {
+      if (error instanceof Error) {
+        logDebug("Unable to extract trace context from EventBridge-SQS event", error);
       }
-    } catch (err) {
-      if (err instanceof Error) {
-        logDebug("Error parsing EventBridge SQS message trace data", err as Error);
-      }
-      return;
     }
+
+    return null;
   }
 }

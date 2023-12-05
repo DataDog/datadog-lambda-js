@@ -1,20 +1,15 @@
-import { StepFunctionContext, deterministicMd5HashToBigIntString } from "../../step-function-service";
-import { SampleMode, Source, TraceContext } from "../extractor";
+import { SpanContextWrapper } from "trace/span-context-wrapper";
+import { StepFunctionContextService } from "../../step-function-service";
+import { EventTraceExtractor } from "../extractor";
 
-export function readTraceFromStepFunctionsContext(stepFunctionContext: StepFunctionContext): TraceContext | undefined {
-  const traceID = deterministicMd5HashToBigIntString(stepFunctionContext["step_function.execution_id"]);
-  const parentID = deterministicMd5HashToBigIntString(
-    stepFunctionContext["step_function.execution_id"] +
-      "#" +
-      stepFunctionContext["step_function.state_name"] +
-      "#" +
-      stepFunctionContext["step_function.state_entered_time"],
-  );
+export class StepFunctionEventTraceExtractor implements EventTraceExtractor {
+  extract(event: any): SpanContextWrapper | null {
+    // Probably StepFunctionContextService hasn't been called
+    const instance = StepFunctionContextService.instance(event);
+    const context = instance.context;
 
-  return {
-    parentID,
-    traceID,
-    sampleMode: SampleMode.AUTO_KEEP.valueOf(),
-    source: Source.Event,
-  };
+    if (context === undefined) return null;
+
+    return instance.spanContext;
+  }
 }

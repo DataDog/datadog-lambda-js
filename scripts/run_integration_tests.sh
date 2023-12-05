@@ -32,8 +32,9 @@ mismatch_found=false
 node14=("nodejs14.x" "14.15" $(xxd -l 4 -c 4 -p < /dev/random))
 node16=("nodejs16.x" "16.14" $(xxd -l 4 -c 4 -p < /dev/random))
 node18=("nodejs18.x" "18.12" $(xxd -l 4 -c 4 -p < /dev/random))
+node20=("nodejs20.x" "20.9" $(xxd -l 4 -c 4 -p < /dev/random))
 
-PARAMETERS_SETS=("node14" "node16" "node18")
+PARAMETERS_SETS=("node14" "node16" "node18" "node20")
 
 if [ -z "$RUNTIME_PARAM" ]; then
     echo "Node version not specified, running for all node versions."
@@ -220,7 +221,10 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
                 # Normalize Axios version
                 perl -p -e "s/User-Agent:axios\/\d+\.\d+\.\d+/User-Agent:axios\/X\.X\.X/g" |
                 # Remove init start line
-                perl -p -e "s/INIT_START.*//g"
+                perl -p -e "s/INIT_START.*//g" |
+                sed -E "s/(tracestate\:)([A-Za-z0-9\-\=\:\;].+)/\1XXX/g" |
+                sed -E "s/(\"_dd.p.tid\"\: \")[a-z0-9\.\-]+/\1XXXX/g" |
+                sed -E "s/(_dd.p.tid=)[a-z0-9\.\-]+/\1XXXX/g"
         )
 
         if [ ! -f $function_snapshot_path ]; then

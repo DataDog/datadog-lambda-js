@@ -2,17 +2,14 @@ import http from "http";
 import nock from "nock";
 
 import { Context, Handler } from "aws-lambda";
-import {
-  datadog,
-  getTraceHeaders,
-  sendDistributionMetric,
-  TraceHeaders,
-  sendDistributionMetricWithDate,
-} from "./index";
+import { datadog, getTraceHeaders, sendDistributionMetric, sendDistributionMetricWithDate } from "./index";
 import { incrementErrorsMetric, incrementInvocationsMetric } from "./metrics/enhanced-metrics";
 import { LogLevel, setLogLevel } from "./utils";
 import { HANDLER_STREAMING, STREAM_RESPONSE } from "./constants";
 import { PassThrough } from "stream";
+import { DatadogTraceHeaders } from "./trace/context/extractor";
+import { SpanContextWrapper } from "./trace/span-context-wrapper";
+import { TraceSource } from "./trace/trace-context-service";
 
 jest.mock("./metrics/enhanced-metrics");
 
@@ -27,6 +24,34 @@ const mockContext = {
 // const MockedListener = OriginalListenerModule.MetricsListener as jest.Mocked<
 //   typeof OriginalListenerModule.MetricsListener
 // >;
+
+let mockSpanContextWrapper: any;
+let mockSpanContext: any;
+let mockTraceHeaders: Record<string, string> | undefined = undefined;
+let mockTraceSource: TraceSource | undefined = undefined;
+
+jest.mock("./trace/trace-context-service", () => {
+  class MockTraceContextService {
+    extract(event: any, context: Context): SpanContextWrapper {
+      return mockSpanContextWrapper;
+    }
+
+    get traceSource() {
+      return mockTraceSource;
+    }
+    get currentTraceContext() {
+      return mockSpanContextWrapper;
+    }
+
+    get currentTraceHeaders() {
+      return mockTraceHeaders;
+    }
+  }
+  return {
+    ...jest.requireActual("./trace/trace-context-service"),
+    TraceContextService: MockTraceContextService,
+  };
+});
 
 describe("datadog", () => {
   let traceId: string | undefined;
@@ -43,6 +68,9 @@ describe("datadog", () => {
     callback(null, "Result");
   };
   beforeEach(() => {
+    mockTraceHeaders = undefined;
+    mockSpanContext = undefined;
+    mockSpanContextWrapper = undefined;
     traceId = undefined;
     parentId = undefined;
     sampled = undefined;
@@ -60,6 +88,12 @@ describe("datadog", () => {
 
   it("patches http request when autoPatch enabled", async () => {
     nock("http://www.example.com").get("/").reply(200, {});
+    mockTraceHeaders = {
+      "x-datadog-parent-id": "9101112",
+      "x-datadog-sampling-priority": "2",
+      "x-datadog-trace-id": "123456",
+    };
+
     const wrapped = datadog(handler, { forceWrap: true });
     await wrapped(
       {
@@ -189,7 +223,12 @@ describe("datadog", () => {
   });
 
   it("makes the current trace headers available", async () => {
-    let traceHeaders: Partial<TraceHeaders> = {};
+    mockTraceHeaders = {
+      "x-datadog-parent-id": "9101112",
+      "x-datadog-sampling-priority": "2",
+      "x-datadog-trace-id": "123456",
+    };
+    let traceHeaders: Partial<DatadogTraceHeaders> = {};
     const event = {
       headers: {
         "x-datadog-parent-id": "9101112",
@@ -214,6 +253,19 @@ describe("datadog", () => {
   });
 
   it("injects context into console.log messages", async () => {
+    mockSpanContext = {
+      toTraceId: () => "123456",
+      toSpanId: () => "9101112",
+      _sampling: {
+        priority: "2",
+      },
+    };
+    mockSpanContextWrapper = {
+      spanContext: mockSpanContext,
+      toTraceId: () => mockSpanContext.toTraceId(),
+      toSpanId: () => mockSpanContext.toSpanId(),
+    };
+
     const event = {
       headers: {
         "x-datadog-parent-id": "9101112",
@@ -237,6 +289,19 @@ describe("datadog", () => {
 
   it("injects context into console.log messages with env var", async () => {
     process.env.DD_LOGS_INJECTION = "true";
+
+    mockSpanContext = {
+      toTraceId: () => "123456",
+      toSpanId: () => "9101112",
+      _sampling: {
+        priority: "2",
+      },
+    };
+    mockSpanContextWrapper = {
+      spanContext: mockSpanContext,
+      toTraceId: () => mockSpanContext.toTraceId(),
+      toSpanId: () => mockSpanContext.toSpanId(),
+    };
 
     const event = {
       headers: {
@@ -333,7 +398,7 @@ describe("datadog", () => {
 
     expect(mockedIncrementInvocations).toBeCalledTimes(1);
     expect(mockedIncrementInvocations).toBeCalledWith(expect.anything(), mockContext);
-    expect(logger.debug).toHaveBeenCalledTimes(11);
+    expect(logger.debug).toHaveBeenCalledTimes(8);
     expect(logger.debug).toHaveBeenLastCalledWith('{"status":"debug","message":"datadog:Unpatching HTTP libraries"}');
   });
 
