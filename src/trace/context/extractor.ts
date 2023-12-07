@@ -18,7 +18,7 @@ import {
 import { StepFunctionContextService } from "../step-function-service";
 import { EventValidator } from "../../utils/event-validator";
 import { TracerWrapper } from "../tracer-wrapper";
-import { SpanContextWrapper } from "trace/span-context-wrapper";
+import { SpanContextWrapper } from "../span-context-wrapper";
 
 export const DATADOG_TRACE_ID_HEADER = "x-datadog-trace-id";
 export const DATADOG_PARENT_ID_HEADER = "x-datadog-parent-id";
