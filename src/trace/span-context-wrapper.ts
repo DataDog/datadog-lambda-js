@@ -49,9 +49,13 @@ export class SpanContextWrapper implements SpanContext {
       const _DatadogSpanContext = require("dd-trace/packages/dd-trace/src/opentracing/span_context");
 
       return new SpanContextWrapper(
+        // The inner type _DatadogSpanContext must have traceId and spanId as objects instead of strings because of the toArray() call
+        // https://github.com/DataDog/dd-trace-js/blob/9c71b3060081a77639bab4c6b2a26c952f4a114f/packages/dd-trace/src/encode/0.4.js#L168
         new _DatadogSpanContext({
-          traceId,
-          spanId,
+          // tslint:disable-next-line:no-construct
+          traceId: new String(traceId),
+          // tslint:disable-next-line:no-construct
+          spanId: new String(spanId),
           sampling: { priority: samplingPriority },
         }),
         source,
