@@ -54,6 +54,39 @@ describe("tagObject", () => {
       ["lambda_payload.request.vals.1.thingTwo", "2"],
     ]);
   });
+  it("tags reach max depth", () => {
+    const span = {
+      setTag,
+    };
+
+    tagObject(
+      span,
+      "function.request",
+      {
+        hello: "world",
+        level1: {
+          level2_dict: {
+            level3: 3,
+          },
+          level2_list: [null, true, "nice", { l3: "v3" }],
+          level2_bool: true,
+          level2_int: 2,
+        },
+        vals: [{ thingOne: 1 }, { thingTwo: 2 }],
+      },
+      0,
+      2,
+    );
+    expect(setTag.mock.calls).toEqual([
+      ["function.request.hello", "world"],
+      ["function.request.level1.level2_dict", '{"level3":3}'],
+      ["function.request.level1.level2_list", '[null,true,"nice",{"l3":"v3"}]'],
+      ["function.request.level1.level2_bool", "true"],
+      ["function.request.level1.level2_int", "2"],
+      ["function.request.vals.0", '{"thingOne":1}'],
+      ["function.request.vals.1", '{"thingTwo":2}'],
+    ]);
+  });
   it("redacts common secret keys", () => {
     const span = {
       setTag,

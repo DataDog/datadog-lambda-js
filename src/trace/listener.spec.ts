@@ -70,6 +70,7 @@ describe("TraceListener", () => {
   const defaultConfig = {
     autoPatchHTTP: true,
     captureLambdaPayload: false,
+    captureLambdaPayloadMaxDepth: 10,
     createInferredSpan: true,
     encodeAuthorizerContext: true,
     decodeAuthorizerContext: true,

@@ -27,6 +27,7 @@ export { DatadogTraceHeaders as TraceHeaders } from "./trace/context/extractor";
 export const apiKeyEnvVar = "DD_API_KEY";
 export const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
 export const captureLambdaPayloadEnvVar = "DD_CAPTURE_LAMBDA_PAYLOAD";
+export const captureLambdaPayloadMaxDepthEnvVar = "DD_CAPTURE_LAMBDA_PAYLOAD_MAX_DEPTH";
 export const traceManagedServicesEnvVar = "DD_TRACE_MANAGED_SERVICES";
 export const siteURLEnvVar = "DD_SITE";
 export const logLevelEnvVar = "DD_LOG_LEVEL";
@@ -71,6 +72,7 @@ export const defaultConfig: Config = {
   apiKeyKMS: "",
   autoPatchHTTP: true,
   captureLambdaPayload: false,
+  captureLambdaPayloadMaxDepth: 10,
   createInferredSpan: true,
   debugLogging: false,
   encodeAuthorizerContext: true,
@@ -357,6 +359,10 @@ function getConfig(userConfig?: Partial<Config>): Config {
 
   if (userConfig === undefined || userConfig.minColdStartTraceDuration === undefined) {
     config.coldStartTraceSkipLib = getEnvValue(coldStartTraceSkipLibEnvVar, "./opentracing/tracer");
+  }
+
+  if (userConfig === undefined || userConfig.captureLambdaPayloadMaxDepth === undefined) {
+    config.captureLambdaPayloadMaxDepth = Number(getEnvValue(captureLambdaPayloadMaxDepthEnvVar, "10"));
   }
 
   return config;
