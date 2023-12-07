@@ -1,4 +1,4 @@
-import { SpanContextWrapper } from "trace/span-context-wrapper";
+import { SpanContextWrapper } from "../../span-context-wrapper";
 import { StepFunctionContextService } from "../../step-function-service";
 import { EventTraceExtractor } from "../extractor";
 
