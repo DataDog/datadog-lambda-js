@@ -6,7 +6,7 @@ variables:
 
 build-layer:
   stage: build
-  tags: ["arch:amd64"]
+  tags: ["runner:docker"]
   image: $INTERNAL_REGISTRY/docker:20.10
   parallel:
     matrix:
