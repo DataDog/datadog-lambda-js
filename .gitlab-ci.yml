@@ -1,0 +1,11 @@
+stages:
+  - test
+
+lint:
+  stage: test
+  tags: ["arch:amd64"]
+  image: node:18-alpine
+  script:
+    - yarn install
+    - yarn check-formatting
+    - yarn lint
