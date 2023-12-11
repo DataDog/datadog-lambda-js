@@ -1,5 +1,5 @@
 ARG image
-FROM $image
+FROM $image as builder
 ARG image
 
 # Install git so we can specify a specific git ref (ie: refs/head/my-feature) in package.json 
@@ -55,4 +55,5 @@ RUN find /nodejs/node_modules -name "*.d.ts" -delete
 RUN find /nodejs/node_modules -name "*.js.map" -delete
 RUN find /nodejs/node_modules -name "*.ts.map" -delete
 
-
+FROM scratch
+COPY --from=builder /nodejs /
