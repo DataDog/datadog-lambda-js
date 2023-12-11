@@ -2,7 +2,7 @@ stages:
   - build
 
 variables:
-  INTERNAL_REGISTRY: 486234852809.dkr.ecr.us-east-1.amazonaws.com/
+  INTERNAL_REGISTRY: 486234852809.dkr.ecr.us-east-1.amazonaws.com
 
 build-layer:
   stage: build
