@@ -1,13 +1,10 @@
 stages:
   - build
 
-variables:
-  INTERNAL_REGISTRY: 486234852809.dkr.ecr.us-east-1.amazonaws.com
-
 build-layer:
   stage: build
-  tags: ["runner:docker"]
-  image: $INTERNAL_REGISTRY/docker:20.10
+  tags: ["arch:amd64"]
+  image: registry.ddbuild.io/images/docker:20.10
   parallel:
     matrix:
       - NODE_VERSION: [ "14.15", "16.14", "18.12", "20.9" ]

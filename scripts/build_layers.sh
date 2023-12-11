@@ -37,7 +37,7 @@ function docker_build_zip {
     # Install datadog node in a docker container to avoid the mess from switching
     # between different node runtimes.
     temp_dir=$(mktemp -d)
-    docker build -t datadog-lambda-layer-node:$1 . --no-cache \
+    docker buildx build -t datadog-lambda-layer-node:$1 . --no-cache \
         --build-arg image=node:$1-alpine --progress=plain
 
     # Run the image by runtime tag and copy the output /nodejs to the temp dir
