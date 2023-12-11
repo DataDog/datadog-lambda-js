@@ -10,7 +10,7 @@ build-layer:
   image: $INTERNAL_REGISTRY/docker:20.10
   parallel:
     matrix:
-      - NODE_VERSION: [ "14.15" "16.14" "18.12" "20.9" ]
+      - NODE_VERSION: [ "14.15", "16.14", "18.12", "20.9" ]
   artifacts:
     expire_in: 10 min # temp value
     paths:
