@@ -1,5 +1,6 @@
 stages:
   - build
+  - test
 
 build-layer:
   stage: build
@@ -16,3 +17,16 @@ build-layer:
     CI_ENABLE_CONTAINER_IMAGE_BUILDS: "true" # Enable docker in CI runner
   script:
     - ./scripts/build_layers.sh
+
+check-size:
+  stage: test
+  tags: ["arch:amd64"]
+  image: registry.ddbuild.io/images/docker:20.10
+  needs: 
+    - build-layer
+  dependencies:
+    - build-layer
+  parallel:
+    matrix:
+      - NODE_VERSION: [ "14.15", "16.14", "18.12", "20.9" ]
+  script: ./scripts/check_size.sh
