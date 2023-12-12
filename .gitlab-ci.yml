@@ -29,4 +29,5 @@ check-size:
   parallel:
     matrix:
       - NODE_VERSION: [ "14.15", "16.14", "18.12", "20.9" ]
-  script: ./scripts/check_size.sh
+  script: 
+    - ./scripts/check_layer_size.sh
