@@ -40,6 +40,7 @@ publish-layers:
   image: registry.ddbuild.io/images/docker:20.10
   needs:
     - check-size
+    - build-layer
   dependencies:
     - build-layer
   variables:
