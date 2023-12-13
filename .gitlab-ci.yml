@@ -51,4 +51,4 @@ publish-layers:
       - NODE_VERSION: [ "14.15", "16.14", "18.12", "20.9" ]
         REGION: ["us-east-1", "us-east-2", "us-west-1", "us-west-2"]
   script:
-    - ./ci/build_layers.sh
+    - ./ci/publish_layers.sh
