@@ -71,11 +71,11 @@ done
 
 printf "Getting External ID...\n"
 
-EXTERNAL_ID=$(aws ssm get-parameter 
-    --region us-east-1 
-    --name ci.datadog-lambda-js.externalid 
-    --with-decryption 
-    --query "Parameter.Value" 
+EXTERNAL_ID=$(aws ssm get-parameter \
+    --region us-east-1 \
+    --name ci.datadog-lambda-js.externalid \
+    --with-decryption \
+    --query "Parameter.Value" \
     --out text)
 
 printf "Assuming role...\n"
@@ -85,7 +85,7 @@ export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN
     --role-arn arn:aws:iam::425362996713:role/sandbox-layer-deployer  \
     --role-session-name ci.datadog-lambda-js \
     --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
-    --external-id $EXTERNAL_ID
+    --external-id $EXTERNAL_ID \
     --output text))
 
 REGIONS=$(aws ec2 describe-regions | jq -r '.[] | .[] | .RegionName')
