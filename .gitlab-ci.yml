@@ -35,7 +35,6 @@ check-size:
 
 publish-layers:
   stage: publish
-  when: manual
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/docker:20.10-py3
   needs:
@@ -44,7 +43,7 @@ publish-layers:
   dependencies:
     - build-layer
   variables:
-    VERSION: 5
+    VERSION: 6
     
   parallel:
     matrix:
