@@ -69,7 +69,7 @@ for i in "${!NODE_VERSIONS[@]}"; do
     fi
 done
 
-print "Getting External ID...\n"
+printf "Getting External ID...\n"
 
 EXTERNAL_ID=$(aws ssm get-parameter 
     --region us-east-1 
