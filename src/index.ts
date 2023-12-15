@@ -44,6 +44,7 @@ export const decodeAuthorizerContextEnvVar = "DD_DECODE_AUTHORIZER_CONTEXT";
 export const coldStartTracingEnvVar = "DD_COLD_START_TRACING";
 export const minColdStartTraceDurationEnvVar = "DD_MIN_COLD_START_DURATION";
 export const coldStartTraceSkipLibEnvVar = "DD_COLD_START_TRACE_SKIP_LIB";
+export const localTestingEnvVar = "DD_LOCAL_TESTING";
 
 interface GlobalConfig {
   /**
@@ -86,6 +87,7 @@ export const defaultConfig: Config = {
   siteURL: "",
   minColdStartTraceDuration: 3,
   coldStartTraceSkipLib: "",
+  localTesting: false,
 } as const;
 
 let currentMetricsListener: MetricsListener | undefined;
@@ -363,6 +365,11 @@ function getConfig(userConfig?: Partial<Config>): Config {
 
   if (userConfig === undefined || userConfig.captureLambdaPayloadMaxDepth === undefined) {
     config.captureLambdaPayloadMaxDepth = Number(getEnvValue(captureLambdaPayloadMaxDepthEnvVar, "10"));
+  }
+
+  if (userConfig === undefined || userConfig.localTesting === undefined) {
+    const result = getEnvValue(localTestingEnvVar, "false").toLowerCase();
+    config.localTesting = result === "true";
   }
 
   return config;
