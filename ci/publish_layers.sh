@@ -13,7 +13,6 @@ set -e
 AWS_CLI_NODE_VERSIONS=("nodejs14.x" "nodejs16.x" "nodejs18.x" "nodejs20.x")
 LAYER_PATHS=(".layers/datadog_lambda_node14.15.zip" ".layers/datadog_lambda_node16.14.zip" ".layers/datadog_lambda_node18.12.zip" ".layers/datadog_lambda_node20.9.zip")
 LAYERS=("Datadog-Node14-x-GITLAB" "Datadog-Node16-x-GITLAB" "Datadog-Node18-x-GITLAB" "Datadog-Node20-x-GITLAB")
-REGIONS=$(aws ec2 describe-regions | jq -r '.[] | .[] | .RegionName')
 NODE_VERSIONS=("14.15" "16.14" "18.12" "20.9")
 
 printf "Starting script...\n\n"
@@ -63,18 +62,6 @@ if [[ ! ${NODE_VERSIONS[@]} =~ $NODE_VERSION ]]; then
     exit 1
 fi
 
-# Target region
-if [ -z "$REGION" ]; then
-    printf "REGION not specified.\n"
-    exit 1
-fi
-
-printf "Region specified, region is: $REGION\n"
-if [[ ! "$REGIONS" == *"$REGION"* ]]; then
-    printf "[Error] Could not find $REGION in AWS available regions: \n${REGIONS[@]}\n"
-    exit 1
-fi
-
 index=0
 for i in "${!NODE_VERSIONS[@]}"; do
     if [[ "${_NODE_VERSIONS[$i]}" = "${NODE_VERSION}" ]]; then
@@ -100,6 +87,20 @@ export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN
     --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
     --external-id $EXTERNAL_ID
     --output text))
+
+REGIONS=$(aws ec2 describe-regions | jq -r '.[] | .[] | .RegionName')
+
+# Target region
+if [ -z "$REGION" ]; then
+    printf "REGION not specified.\n"
+    exit 1
+fi
+
+printf "Region specified, region is: $REGION\n"
+if [[ ! "$REGIONS" == *"$REGION"* ]]; then
+    printf "[Error] Could not find $REGION in AWS available regions: \n${REGIONS[@]}\n"
+    exit 1
+fi
 
 printf "[$REGION] Starting publishing layers...\n"
 
