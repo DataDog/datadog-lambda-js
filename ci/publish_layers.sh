@@ -73,7 +73,7 @@ printf "Getting External ID...\n"
 
 EXTERNAL_ID=$(aws ssm get-parameter \
     --region us-east-1 \
-    --name ci.datadog-lambda-js.externalid \
+    --name ci.datadog-lambda-extension.externalid \
     --with-decryption \
     --query "Parameter.Value" \
     --out text)
