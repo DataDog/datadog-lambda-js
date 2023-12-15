@@ -10,13 +10,15 @@
 set -e
 
 # Available runtimes: https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html
-_AWS_CLI_NODE_VERSIONS=("nodejs14.x" "nodejs16.x" "nodejs18.x" "nodejs20.x")
-_LAYER_PATHS=(".layers/datadog_lambda_node14.15.zip" ".layers/datadog_lambda_node16.14.zip" ".layers/datadog_lambda_node18.12.zip" ".layers/datadog_lambda_node20.9.zip")
-_LAYERS=("Datadog-Node14-x-GITLAB" "Datadog-Node16-x-GITLAB" "Datadog-Node18-x-GITLAB" "Datadog-Node20-x-GITLAB")
-_REGIONS=$(aws ec2 describe-regions | jq -r '.[] | .[] | .RegionName')
-_NODE_VERSIONS=("14.15" "16.14" "18.12" "20.9")
+AWS_CLI_NODE_VERSIONS=("nodejs14.x" "nodejs16.x" "nodejs18.x" "nodejs20.x")
+LAYER_PATHS=(".layers/datadog_lambda_node14.15.zip" ".layers/datadog_lambda_node16.14.zip" ".layers/datadog_lambda_node18.12.zip" ".layers/datadog_lambda_node20.9.zip")
+LAYERS=("Datadog-Node14-x-GITLAB" "Datadog-Node16-x-GITLAB" "Datadog-Node18-x-GITLAB" "Datadog-Node20-x-GITLAB")
+REGIONS=$(aws ec2 describe-regions | jq -r '.[] | .[] | .RegionName')
+NODE_VERSIONS=("14.15" "16.14" "18.12" "20.9")
 
 printf "Starting script...\n\n"
+printf "Installing dependencies\n"
+pip install awscli
 
 publish_layer() {
     region=$1
@@ -56,7 +58,7 @@ if [ -z $NODE_VERSION ]; then
 fi
 
 printf "Node version specified: $NODE_VERSION\n"
-if [[ ! ${_NODE_VERSIONS[@]} =~ $NODE_VERSION ]]; then
+if [[ ! ${NODE_VERSIONS[@]} =~ $NODE_VERSION ]]; then
     printf "[Error] Unsupported NODE_VERSION found.\n"
     exit 1
 fi
@@ -68,23 +70,42 @@ if [ -z "$REGION" ]; then
 fi
 
 printf "Region specified, region is: $REGION\n"
-if [[ ! "$_REGIONS" == *"$REGION"* ]]; then
-    printf "[Error] Could not find $REGION in AWS available regions: \n${_REGIONS[@]}\n"
+if [[ ! "$REGIONS" == *"$REGION"* ]]; then
+    printf "[Error] Could not find $REGION in AWS available regions: \n${REGIONS[@]}\n"
     exit 1
 fi
 
 index=0
-for i in "${!_NODE_VERSIONS[@]}"; do
+for i in "${!NODE_VERSIONS[@]}"; do
     if [[ "${_NODE_VERSIONS[$i]}" = "${NODE_VERSION}" ]]; then
        index=$i
     fi
 done
 
+print "Getting External ID...\n"
+
+EXTERNAL_ID=$(aws ssm get-parameter 
+    --region us-east-1 
+    --name ci.datadog-lambda-js.externalid 
+    --with-decryption 
+    --query "Parameter.Value" 
+    --out text)
+
+printf "Assuming role...\n"
+
+export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" \
+    $(aws sts assume-role \
+    --role-arn arn:aws:iam::425362996713:role/sandbox-layer-deployer  \
+    --role-session-name ci.datadog-lambda-js \
+    --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
+    --external-id $EXTERNAL_ID
+    --output text))
+
 printf "[$REGION] Starting publishing layers...\n"
 
-aws_cli_node_version_key="${_AWS_CLI_NODE_VERSIONS[$index]}"
-layer_path="${_LAYER_PATHS[$index]}"
-layer="${_LAYERS[$index]}"
+aws_cli_node_version_key="${AWS_CLI_NODE_VERSIONS[$index]}"
+layer_path="${LAYER_PATHS[$index]}"
+layer="${LAYERS[$index]}"
 
 latest_version=$(aws lambda list-layer-versions --region $REGION --layer-name $layer --query 'LayerVersions[0].Version || `0`')
 if [ $latest_version -ge $VERSION ]; then
