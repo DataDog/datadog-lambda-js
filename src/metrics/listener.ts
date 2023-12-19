@@ -46,6 +46,13 @@ export interface MetricsConfig {
    * @default false
    */
   enhancedMetrics: boolean;
+
+  /**
+   * Whether to call the extension's Flush endpoint in a local test
+   * Only needed locally, as the extension knows about the end of the invocation
+   * from the runtime
+   */
+  localTesting: boolean;
 }
 
 export class MetricsListener {
@@ -114,8 +121,8 @@ export class MetricsListener {
       }
     }
     try {
-      if (this.isAgentRunning) {
-        logDebug(`Flushing Extension`);
+      if (this.isAgentRunning && this.config.localTesting) {
+        logDebug(`Flushing Extension for local test`);
         await flushExtension();
       }
     } catch (error) {
