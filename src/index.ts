@@ -369,7 +369,10 @@ function getConfig(userConfig?: Partial<Config>): Config {
 
   if (userConfig === undefined || userConfig.localTesting === undefined) {
     const result = getEnvValue(localTestingEnvVar, "false").toLowerCase();
-    config.localTesting = result === "true";
+    // TODO deprecate 1 for truthy, this shouldn't have been allowed
+    // but the extension allows it, so we must as well
+    // @ts-ignore-next-line
+    config.localTesting = result === "true" || result === "1";
   }
 
   return config;
