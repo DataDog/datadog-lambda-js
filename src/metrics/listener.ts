@@ -121,7 +121,8 @@ export class MetricsListener {
       }
     }
     try {
-      if (this.isAgentRunning && this.config.localTesting) {
+      //if (this.isAgentRunning && this.config.localTesting) {
+      if (this.isAgentRunning) {
         logDebug(`Flushing Extension for local test`);
         await flushExtension();
       }

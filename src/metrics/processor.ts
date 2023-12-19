@@ -92,8 +92,8 @@ export class Processor {
         retries: this.shouldRetryOnFail ? 2 : 0,
       };
       await promiseRetry(options, (retry) => this.client.sendMetrics(finalMetrics).catch(retry));
-    } catch {
-      throw Error("Failed to send metrics to Datadog");
+    } catch (e) {
+      throw e;
     }
   }
 }

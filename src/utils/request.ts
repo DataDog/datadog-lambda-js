@@ -2,6 +2,7 @@ import https, { RequestOptions } from "https";
 import http from "http";
 import { URL } from "url";
 import { logDebug } from "./log";
+import axios from "axios";
 
 type RequestResult = {
   success: boolean;
@@ -9,7 +10,7 @@ type RequestResult = {
   errorMessage?: string;
 };
 
-export function post<T>(url: URL, body: T, options?: Partial<RequestOptions>): Promise<RequestResult> {
+export async function post<T>(url: URL, body: T, options?: Partial<RequestOptions>): Promise<RequestResult> {
   const bodyJSON = JSON.stringify(body);
   const buffer = Buffer.from(bodyJSON);
   logDebug(`sending payload with body ${bodyJSON}`);
@@ -23,10 +24,11 @@ export function post<T>(url: URL, body: T, options?: Partial<RequestOptions>): P
     protocol: url.protocol,
     ...options,
   };
+  // return await axios.post(url.toString(), buffer, requestOptions as any)
   return sendRequest(url, requestOptions, buffer);
 }
 
-export function get(url: URL, options?: Partial<RequestOptions>): Promise<RequestResult> {
+export async function get(url: URL, options?: Partial<RequestOptions>): Promise<RequestResult> {
   const requestOptions: RequestOptions = {
     headers: { "content-type": "application/json" },
     host: url.host,
@@ -37,10 +39,16 @@ export function get(url: URL, options?: Partial<RequestOptions>): Promise<Reques
     protocol: url.protocol,
     ...options,
   };
+  //return await axios.get(url.toString(), requestOptions as any)
   return sendRequest(url, requestOptions);
 }
 
-function sendRequest(url: URL, options: RequestOptions, buffer?: Buffer): Promise<RequestResult> {
+async function sendRequest(url: URL, options: RequestOptions, buffer?: Buffer): Promise<RequestResult> {
+  //if (buffer) {
+  //  return await axios.post(url.toString(), buffer)
+  //} else {
+  //  return await axios.get(url.toString())
+  //}
   return new Promise((resolve) => {
     const requestMethod = url.protocol === "https:" ? https.request : http.request;
 
