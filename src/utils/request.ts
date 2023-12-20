@@ -43,6 +43,8 @@ export function get(url: URL, options?: Partial<RequestOptions>): Promise<Reques
 // This utility function returns NO data, as per the types indicate
 // if a response body is needed, we can implement a listener
 // response.on('data', cb)
+// or call
+// response.read()
 // which can append data to a buffer and return it
 function sendRequest(url: URL, options: RequestOptions, buffer?: Buffer): Promise<RequestResult> {
   return new Promise((resolve) => {
