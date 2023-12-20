@@ -40,12 +40,22 @@ export function get(url: URL, options?: Partial<RequestOptions>): Promise<Reques
   return sendRequest(url, requestOptions);
 }
 
+// This utility function returns NO data, as per the types indicate
+// if a response body is needed, we can implement a listener
+// response.on('data', cb)
+// or call
+// response.read()
+// which can append data to a buffer and return it
 function sendRequest(url: URL, options: RequestOptions, buffer?: Buffer): Promise<RequestResult> {
   return new Promise((resolve) => {
     const requestMethod = url.protocol === "https:" ? https.request : http.request;
 
     const request = requestMethod(options, (response) => {
       const statusCode = response.statusCode;
+
+      // https://nodejs.org/api/http.html#class-httpclientrequest
+      // "Until the data is consumed, the 'end' event will not fire. Also, until the data is read it will consume memory that can eventually lead to a 'process out of memory' error"
+      response.resume();
 
       if (statusCode === undefined || statusCode < 200 || statusCode > 299) {
         return resolve({
@@ -61,7 +71,7 @@ function sendRequest(url: URL, options: RequestOptions, buffer?: Buffer): Promis
       });
     });
 
-    request.on("error", (error) => {
+    request.once("error", (error) => {
       resolve({
         success: false,
         errorMessage: error.message,
