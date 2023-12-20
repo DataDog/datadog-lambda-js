@@ -55,7 +55,7 @@ function sendRequest(url: URL, options: RequestOptions, buffer?: Buffer): Promis
 
       // https://nodejs.org/api/http.html#class-httpclientrequest
       // "Until the data is consumed, the 'end' event will not fire. Also, until the data is read it will consume memory that can eventually lead to a 'process out of memory' error"
-      response.resume()
+      response.resume();
 
       if (statusCode === undefined || statusCode < 200 || statusCode > 299) {
         return resolve({
