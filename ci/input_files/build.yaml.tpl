@@ -4,6 +4,7 @@ stages:
 {{ range (ds "runtimes").runtimes }}
 build-{{ .name }}-layer:
   stage: build
+  tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/docker:20.10
   artifacts:
     expire_in: 10 min # temp value
