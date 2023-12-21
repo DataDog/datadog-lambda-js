@@ -6,10 +6,10 @@ stages:
 
 generator:
   stage: pre
-  image: registry.ddbuild.io/images/docker:20.10
+  image: registry.ddbuild.io/images/mirror/golang:alpine
   tags: ["arch:amd64"]
   script:
-    - alias gomplate='docker run hairyhenderson/gomplate:stable'
+    - /bin/sh -c apk add --no-cache gomplate
     - gomplate --config ci/config.yaml
   artifacts:
     paths:
