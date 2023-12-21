@@ -34,7 +34,7 @@ publish-{{ .name }}-layer:
   image: registry.ddbuild.io/images/docker:20.10-py3
   when: manual
   needs:
-    - check-{{ .name }}-layer-size:
+    - check-{{ .name }}-layer-size
   dependencies:
     - build-{{ .name }}-layer
   variables:
