@@ -9,7 +9,7 @@ generator:
   image: registry.ddbuild.io/images/docker:20.10
   tags: ["arch:amd64"]
   script:
-    - apk add --no-cache gomplate
+    - alias gomplate='docker run hairyhenderson/gomplate:stable'
     - gomplate --config ci/config.yaml
   artifacts:
     paths:
