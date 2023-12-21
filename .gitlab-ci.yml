@@ -1,53 +1,75 @@
 stages:
+  - pre 
   - build
   - test
   - publish
 
-build-layer:
-  stage: build
-  tags: ["arch:amd64"]
+generator:
+  stage: pre
   image: registry.ddbuild.io/images/docker:20.10
-  parallel:
-    matrix:
-      - NODE_VERSION: [ "14.15", "16.14", "18.12", "20.9" ]
+  tags: ["arch:amd64"]
+  script:
+    - apk add --no-cache gomplate
+    - gomplate --config ci/config.yaml
   artifacts:
-    expire_in: 10 min # temp value
     paths:
-      - .layers/*.zip
-  variables:
-    CI_ENABLE_CONTAINER_IMAGE_BUILDS: "true" # Enable docker in CI runner
-  script:
-    - ./scripts/build_layers.sh
+      - ci/*-pipeline.yaml
 
-check-size:
-  stage: test
-  tags: ["arch:amd64"]
-  image: registry.ddbuild.io/images/docker:20.10
-  needs: 
-    - build-layer
-  dependencies:
-    - build-layer
-  parallel:
-    matrix:
-      - NODE_VERSION: [ "14.15", "16.14", "18.12", "20.9" ]
-  script: 
-    - ./scripts/check_layer_size.sh
+build-layers:
+  stage: build
+  trigger:
+    include:
+      - artifact: ci/build-pipeline.yaml
+        job: generator
+    strategy: depend
+  rules:
+    - when: on_success
 
-publish-layers:
-  stage: publish
-  tags: ["arch:amd64"]
-  image: registry.ddbuild.io/images/docker:20.10-py3
-  needs:
-    - check-size
-    - build-layer
-  dependencies:
-    - build-layer
-  variables:
-    VERSION: 10
+# build-layer:
+#   stage: build
+#   tags: ["arch:amd64"]
+#   image: registry.ddbuild.io/images/docker:20.10
+#   parallel:
+#     matrix:
+#       - NODE_VERSION: [ "14.15", "16.14", "18.12", "20.9" ]
+#   artifacts:
+#     expire_in: 10 min # temp value
+#     paths:
+#       - .layers/*.zip
+#   variables:
+#     CI_ENABLE_CONTAINER_IMAGE_BUILDS: "true" # Enable docker in CI runner
+#   script:
+#     - ./scripts/build_layers.sh
+
+# check-size:
+#   stage: test
+#   tags: ["arch:amd64"]
+#   image: registry.ddbuild.io/images/docker:20.10
+#   needs: 
+#     - build-layer
+#   dependencies:
+#     - build-layer
+#   parallel:
+#     matrix:
+#       - NODE_VERSION: [ "14.15", "16.14", "18.12", "20.9" ]
+#   script: 
+#     - ./scripts/check_layer_size.sh
+
+# publish-layers:
+#   stage: publish
+#   tags: ["arch:amd64"]
+#   image: registry.ddbuild.io/images/docker:20.10-py3
+#   needs:
+#     - check-size
+#     - build-layer
+#   dependencies:
+#     - build-layer
+#   variables:
+#     VERSION: 10
     
-  parallel:
-    matrix:
-      - NODE_VERSION: [ "14.15", "16.14", "18.12", "20.9" ]
-        REGION: ["us-east-1", "us-east-2", "us-west-1", "us-west-2"]
-  script:
-    - ./ci/publish_layers.sh
+#   parallel:
+#     matrix:
+#       - NODE_VERSION: [ "14.15", "16.14", "18.12", "20.9" ]
+#         REGION: ["us-east-1", "us-east-2", "us-west-1", "us-west-2"]
+#   script:
+#     - ./ci/publish_layers.sh

@@ -1,0 +1,27 @@
+inputFiles:
+  - ci/input_files/build.yaml.tpl
+  # - ci/input_files/build-and-push.yaml.tpl
+  # - ci/input_files/terraform.yaml.tpl
+  # - ci/input_files/diff.yaml.tpl
+
+outputFiles:
+  - ci/build-pipeline.yaml
+  # - ci/build-and-push-pipeline.yaml
+  # - ci/terraform-pipeline.yaml
+  # - ci/diff-pipeline.yaml
+
+datasources:
+  runtimes:
+    url: ci/datasources/runtimes.yaml
+  # trains:
+  #   url: ci/datasources/trains.yaml
+  # cli_apps:
+  #   url: ci/datasources/cli_apps.yaml
+  # observability:
+  #   url: ci/datasources/observability.yaml
+
+# templates:
+  # - ci/templates/helpers.yaml
+  # - ci/templates/build.yaml
+  # - ci/templates/deploy.yaml
+  # - ci/templates/terraform.yaml
