@@ -37,6 +37,7 @@ describe("MetricsListener", () => {
       enhancedMetrics: false,
       logForwarding: false,
       shouldRetryMetrics: false,
+      localTesting: false,
       siteURL,
     });
 
@@ -56,6 +57,7 @@ describe("MetricsListener", () => {
       enhancedMetrics: false,
       logForwarding: false,
       shouldRetryMetrics: false,
+      localTesting: false,
       siteURL,
     });
 
@@ -73,6 +75,7 @@ describe("MetricsListener", () => {
       enhancedMetrics: false,
       logForwarding: false,
       shouldRetryMetrics: false,
+      localTesting: false,
       siteURL,
     });
 
@@ -91,6 +94,7 @@ describe("MetricsListener", () => {
       enhancedMetrics: false,
       logForwarding: true,
       shouldRetryMetrics: false,
+      localTesting: false,
       siteURL,
     });
     jest.useFakeTimers("legacy");
@@ -124,6 +128,7 @@ describe("MetricsListener", () => {
       enhancedMetrics: false,
       logForwarding: true,
       shouldRetryMetrics: false,
+      localTesting: true,
       siteURL,
     });
     jest.useFakeTimers("legacy");
@@ -146,6 +151,7 @@ describe("MetricsListener", () => {
       enhancedMetrics: false,
       logForwarding: true,
       shouldRetryMetrics: false,
+      localTesting: false,
       siteURL,
     });
     // jest.useFakeTimers();
