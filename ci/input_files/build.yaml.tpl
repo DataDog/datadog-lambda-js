@@ -34,15 +34,15 @@ publish-{{ .name }}-layer:
   image: registry.ddbuild.io/images/docker:20.10-py3
   when: manual
   needs:
+    - build-{{ .name }}-layer
     - check-{{ .name }}-layer-size
   dependencies:
     - build-{{ .name }}-layer
   variables:
     VERSION: 10
-    
   parallel:
     matrix:
-        REGION: ["us-east-1", "us-east-2", "us-west-1", "us-west-2"]
+      - REGION: ["us-east-1", "us-east-2", "us-west-1", "us-west-2"]
   script:
     -  NODE_VERSION={{ .node_version }} ./ci/publish_layers.sh
 
