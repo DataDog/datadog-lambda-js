@@ -32,17 +32,23 @@ publish-{{ .name }}-layer:
   stage: publish
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/docker:20.10-py3
-  when: manual
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v.*/
+    - when: manual
   needs:
     - build-{{ .name }}-layer
     - check-{{ .name }}-layer-size
   dependencies:
     - build-{{ .name }}-layer
   variables:
-    VERSION: 10
+    # Get Layer version from the Git tag
+    VERSION: $(echo "${CI_COMMIT_TAG##*v}" | cut -d. -f2)
   parallel:
     matrix:
-      - REGION: ["us-east-1", "us-east-2", "us-west-1", "us-west-2"]
+      - REGION: {{ range (ds "regions").regions }}
+          - {{ .code }}
+        {{- end}}
+
   script:
     -  NODE_VERSION={{ .node_version }} ./ci/publish_layers.sh
 

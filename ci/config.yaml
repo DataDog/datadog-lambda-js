@@ -13,8 +13,8 @@ outputFiles:
 datasources:
   runtimes:
     url: ci/datasources/runtimes.yaml
-  # trains:
-  #   url: ci/datasources/trains.yaml
+  regions:
+    url: ci/datasources/regions.yaml
   # cli_apps:
   #   url: ci/datasources/cli_apps.yaml
   # observability:
