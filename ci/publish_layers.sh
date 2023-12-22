@@ -41,13 +41,23 @@ publish_layer() {
     echo $version_nbr
 }
 
+if [ -z "$CI_COMMIT_TAG" ]; then
+    printf "[Error] No CI_COMMIT_TAG found.\n"
+    printf "Exiting script...\n"
+    exit 1
+else
+    printf "Tag found in environment: $CI_COMMIT_TAG\n"
+fi
+
+VERSION=$(echo "${CI_COMMIT_TAG##*v}" | cut -d. -f2)
+
 # Target layer version
 if [ -z "$VERSION" ]; then
     printf "[Error] VERSION for layer version not specified.\n"
     printf "Exiting script...\n"
     exit 1
 else
-    printf "Layer version specified: $VERSION\n"
+    printf "Layer version parsed: $VERSION\n"
 fi
 
 # Target Node version

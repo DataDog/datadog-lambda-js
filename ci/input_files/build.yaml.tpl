@@ -33,16 +33,13 @@ publish-{{ .name }}-layer:
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/docker:20.10-py3
   rules:
-    - if: $CI_COMMIT_TAG =~ /^v.*/
+    - if: '$CI_COMMIT_TAG =~ /^v.*/'
     - when: manual
   needs:
     - build-{{ .name }}-layer
     - check-{{ .name }}-layer-size
   dependencies:
     - build-{{ .name }}-layer
-  variables:
-    # Get Layer version from the Git tag
-    VERSION: $(echo "${CI_COMMIT_TAG##*v}" | cut -d. -f2)
   parallel:
     matrix:
       - REGION: {{ range (ds "regions").regions }}
