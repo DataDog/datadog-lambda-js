@@ -34,7 +34,7 @@ publish-{{ .name }}-layer:
   image: registry.ddbuild.io/images/docker:20.10-py3
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v.*/'
-    - when: manual
+      when: manual
   needs:
     - build-{{ .name }}-layer
     - check-{{ .name }}-layer-size
