@@ -74,7 +74,7 @@ fi
 
 index=0
 for i in "${!NODE_VERSIONS[@]}"; do
-    if [[ "${_NODE_VERSIONS[$i]}" = "${NODE_VERSION}" ]]; then
+    if [[ "${NODE_VERSIONS[$i]}" = "${NODE_VERSION}" ]]; then
        index=$i
     fi
 done
