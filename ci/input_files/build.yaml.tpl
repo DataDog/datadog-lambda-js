@@ -9,8 +9,6 @@ stages:
       - yarn.lock
   paths:
     - $CI_PROJECT_DIR/.yarn-cache
-    paths:
-      - .yarn-cache/
   policy: pull
 
 .node-before-script: &node-before-script
