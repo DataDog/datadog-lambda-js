@@ -72,7 +72,7 @@ unit-test-{{ .name }}:
 
 integration-test-{{ .name }}:
   stage: test
-  tags: ["arch:amd64]
+  tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/docker:20.10
   needs: 
     - build-{{ .name }}-layer
