@@ -67,7 +67,7 @@ unit-test-{{ .name }}:
   before_script: *node-before-script
   script: 
     - yarn build
-    - yarn test --ci
+    - yarn test --ci --forceExit
 
 publish-{{ .name }}-layer:
   stage: publish
