@@ -68,7 +68,6 @@ unit-test-{{ .name }}:
   script: 
     - yarn build
     - yarn test
-    - bash <(curl -s https://codecov.io/bash)
 
 publish-{{ .name }}-layer:
   stage: publish
