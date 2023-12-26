@@ -28,6 +28,28 @@ check-{{ .name }}-layer-size:
   script: 
     - NODE_VERSION={{ .node_version }} ./scripts/check_layer_size.sh
 
+lint-{{ .name }}:
+  stage: test
+  tags: ["arch:amd64"]
+  image: registry.ddbuild.io/images/mirror/node:{{ .node_major_version }}-bullseye
+  needs: 
+    - build-{{ .name }}-layer
+  dependencies:
+    - build-{{ .name }}-layer
+  cache:
+    key:
+      files:
+        - yarn.lock
+    paths:
+      - .yarn-cache/
+  before_script:
+    - echo 'yarn-offline-mirror ".yarn-cache/"' >> .yarnrc
+    - echo 'yarn-offline-mirror-pruning true' >> .yarnrc
+    - yarn install --frozen-lockfile --no-progress
+  script: 
+    - yarn check-formatting
+    - yarn lint
+
 publish-{{ .name }}-layer:
   stage: publish
   tags: ["arch:amd64"]
