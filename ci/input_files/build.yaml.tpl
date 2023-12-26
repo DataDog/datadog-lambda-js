@@ -4,7 +4,7 @@ stages:
  - publish
 
 .node-cache: &node-cache
-  key: "$CI_JOB_STAGE-$CI_COMMIT_REF_SLUG"
+  key:
     files:
       - yarn.lock
   paths:
