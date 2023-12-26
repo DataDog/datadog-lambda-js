@@ -80,7 +80,7 @@ integration-test-{{ .name }}:
     - build-{{ .name }}-layer
   cache: *node-cache
   before_script:
-    - apk --update add nodejs npm
+    - sudo apt-get install nodejs yarn
     - *node-before-script
   script:
     - echo "Working hard"
