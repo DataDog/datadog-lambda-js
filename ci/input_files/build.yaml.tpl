@@ -67,7 +67,7 @@ unit-test-{{ .name }}:
   before_script: *node-before-script
   script: 
     - yarn build
-    - yarn test --ci --forceExit
+    - yarn test --ci --forceExit --detectOpenHandles
 
 publish-{{ .name }}-layer:
   stage: publish
