@@ -3,6 +3,21 @@ stages:
  - test
  - publish
 
+.node-cache: &node-cache
+  key: "$CI_JOB_STAGE-$CI_COMMIT_REF_SLUG"
+    files:
+      - yarn.lock
+  paths:
+    - $CI_PROJECT_DIR/.yarn-cache
+    paths:
+      - .yarn-cache/
+  policy: pull
+
+.node-before-script: &node-before-script
+  - echo 'yarn-offline-mirror ".yarn-cache/"' >> .yarnrc
+  - echo 'yarn-offline-mirror-pruning true' >> .yarnrc
+  - yarn install --frozen-lockfile --no-progress
+
 {{ range (ds "runtimes").runtimes }}
 build-{{ .name }}-layer:
   stage: build
@@ -36,19 +51,26 @@ lint-{{ .name }}:
     - build-{{ .name }}-layer
   dependencies:
     - build-{{ .name }}-layer
-  cache:
-    key:
-      files:
-        - yarn.lock
-    paths:
-      - .yarn-cache/
-  before_script:
-    - echo 'yarn-offline-mirror ".yarn-cache/"' >> .yarnrc
-    - echo 'yarn-offline-mirror-pruning true' >> .yarnrc
-    - yarn install --frozen-lockfile --no-progress
+  cache: *node-cache
+  before_script: *node-before-script
   script: 
     - yarn check-formatting
     - yarn lint
+
+unit-test-{{ .name }}:
+  stage: test
+  tags: ["arch:amd64"]
+  image: registry.ddbuild.io/images/mirror/node:{{ .node_major_version }}-bullseye
+  needs: 
+    - build-{{ .name }}-layer
+  dependencies:
+    - build-{{ .name }}-layer
+  cache: *node-cache
+  before_script: *node-before-script
+  script: 
+    - yarn build
+    - yarn test
+    - bash <(curl -s https://codecov.io/bash)
 
 publish-{{ .name }}-layer:
   stage: publish
@@ -60,6 +82,7 @@ publish-{{ .name }}-layer:
   needs:
     - build-{{ .name }}-layer
     - check-{{ .name }}-layer-size
+    - lint-{{ .name }}
   dependencies:
     - build-{{ .name }}-layer
   parallel:
