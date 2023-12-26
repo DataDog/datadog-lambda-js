@@ -68,6 +68,22 @@ unit-test-{{ .name }}:
   script: 
     - yarn build
     - yarn test --ci --forceExit --detectOpenHandles
+    - bash <(curl -s https://codecov.io/bash)
+
+integration-test-{{ .name }}:
+  stage: test
+  tags: ["arch:amd64]
+  image: registry.ddbuild.io/images/docker:20.10
+  needs: 
+    - build-{{ .name }}-layer
+  dependencies:
+    - build-{{ .name }}-layer
+  cache: *node-cache
+  before_script:
+    - apk --update add nodejs npm
+    - *node-before-script
+  script:
+    - echo "Working hard"
 
 publish-{{ .name }}-layer:
   stage: publish
@@ -80,6 +96,7 @@ publish-{{ .name }}-layer:
     - build-{{ .name }}-layer
     - check-{{ .name }}-layer-size
     - lint-{{ .name }}
+    - unit-test-{{ .name }}
   dependencies:
     - build-{{ .name }}-layer
   parallel:
