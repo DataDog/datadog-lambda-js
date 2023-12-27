@@ -3,6 +3,18 @@ stages:
  - test
  - publish
 
+.install-node: &install-node
+  - apt-get update
+  - apt-get install -y ca-certificates curl gnupg
+  - mkdir -p /etc/apt/keyrings
+  - curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+  # We are explicitly setting the node_20.x version for the installation
+  - echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
+  - apt-get update
+  - apt-get install nodejs -y
+  - npm install --global yarn
+  - yarn global add node-gyp
+
 .node-before-script: &node-before-script
   - echo 'yarn-offline-mirror ".yarn-cache/"' >> .yarnrc
   - echo 'yarn-offline-mirror-pruning true' >> .yarnrc
@@ -81,18 +93,9 @@ integration-test-{{ .name }}:
   variables:
     CI_ENABLE_CONTAINER_IMAGE_BUILDS: "true"
   before_script:
-    - apt-get update
-    - apt-get install -y ca-certificates curl gnupg
-    - mkdir -p /etc/apt/keyrings
-    - curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
-    # We are explicitly setting the node_20.x version for the installation
-    - echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
-    - apt-get update
-    - apt-get install nodejs -y
-    - npm install --global yarn
-    - yarn global add node-gyp
+    - *install-node
   script:
-    - yarn global add serverless
+    - yarn global add serverless --prefix /usr/local
     - cd integration_tests
     - yarn install
     - serverless --version
