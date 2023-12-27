@@ -89,6 +89,7 @@ integration-test-{{ .name }}:
     - apt-get update
     - apt-get install nodejs -y
     - npm install --global yarn
+    - yarn global add node-gyp
     - *node-before-script
   script:
     - echo "Working hard"
