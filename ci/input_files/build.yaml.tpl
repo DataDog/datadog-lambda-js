@@ -78,6 +78,8 @@ integration-test-{{ .name }}:
   dependencies:
     - build-{{ .name }}-layer
   cache: &{{ .name }}-cache
+  variables:
+    CI_ENABLE_CONTAINER_IMAGE_BUILDS: "true"
   before_script:
     - apt-get update
     - apt-get install -y ca-certificates curl gnupg
@@ -89,9 +91,11 @@ integration-test-{{ .name }}:
     - apt-get install nodejs -y
     - npm install --global yarn
     - yarn global add node-gyp
-    - *node-before-script
   script:
-    - echo "Working hard"
+    - yarn global add serverless
+    - cd integration_tests
+    - yarn install
+    - serverless --version
 
 publish-{{ .name }}-layer:
   stage: publish
