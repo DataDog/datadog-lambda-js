@@ -3,20 +3,19 @@ stages:
  - test
  - publish
 
-.node-cache: &node-cache
-  key:
-    files:
-      - yarn.lock
-  paths:
-    - $CI_PROJECT_DIR/.yarn-cache
-  policy: pull
-
 .node-before-script: &node-before-script
   - echo 'yarn-offline-mirror ".yarn-cache/"' >> .yarnrc
   - echo 'yarn-offline-mirror-pruning true' >> .yarnrc
   - yarn install --frozen-lockfile --no-progress
 
 {{ range (ds "runtimes").runtimes }}
+
+.{{ .name }}-cache: &{{ .name }}-cache
+  key: "$CI_JOB_STAGE-$CI_COMMIT_REF_SLUG"
+  paths:
+    - $CI_PROJECT_DIR/.yarn-cache
+  policy: pull
+
 build-{{ .name }}-layer:
   stage: build
   tags: ["arch:amd64"]
@@ -49,7 +48,7 @@ lint-{{ .name }}:
     - build-{{ .name }}-layer
   dependencies:
     - build-{{ .name }}-layer
-  cache: *node-cache
+  cache: &{{ .name }}-cache
   before_script: *node-before-script
   script: 
     - yarn check-formatting
@@ -63,7 +62,7 @@ unit-test-{{ .name }}:
     - build-{{ .name }}-layer
   dependencies:
     - build-{{ .name }}-layer
-  cache: *node-cache
+  cache: &{{ .name }}-cache
   before_script: *node-before-script
   script: 
     - yarn build
@@ -78,7 +77,7 @@ integration-test-{{ .name }}:
     - build-{{ .name }}-layer
   dependencies:
     - build-{{ .name }}-layer
-  cache: *node-cache
+  cache: &{{ .name }}-cache
   before_script:
     - apt-get update
     - apt-get install -y ca-certificates curl gnupg
