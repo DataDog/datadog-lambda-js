@@ -93,11 +93,13 @@ integration-test-{{ .name }}:
     CI_ENABLE_CONTAINER_IMAGE_BUILDS: "true"
   before_script:
     - *install-node
+    - EXTERNAL_ID_NAME=integration-test-externalid ROLE_TO_ASSUME=sandbox-integration-test-deployer ./ci/get_secrets.sh
   script:
     - yarn global add serverless --prefix /usr/local
     - cd integration_tests
     - yarn install
     - serverless --version
+    - RUNTIME_PARAM={{ .node_major_version }} ./scripts/run_integration_tests
 
 publish-{{ .name }}-layer:
   stage: publish
@@ -118,7 +120,8 @@ publish-{{ .name }}-layer:
       - REGION: {{ range (ds "regions").regions }}
           - {{ .code }}
         {{- end}}
-
+  before_script:
+    - EXTERNAL_ID_NAME=sandbox-publish-externalid ROLE_TO_ASSUME=sandbox-layer-deployer ./ci/get_secrets.sh
   script:
     -  NODE_VERSION={{ .node_version }} ./ci/publish_layers.sh
 
