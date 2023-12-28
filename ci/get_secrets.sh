@@ -23,7 +23,7 @@ printf "Getting AWS External ID...\n"
 
 EXTERNAL_ID=$(aws ssm get-parameter \
     --region us-east-1 \
-    --name ci.datadog-lambda-js.$EXTERNAL_ID_NAME \
+    --name "ci.datadog-lambda-js.$EXTERNAL_ID_NAME" \
     --with-decryption \
     --query "Parameter.Value" \
     --out text)
@@ -41,8 +41,8 @@ printf "Assuming role...\n"
 
 export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" \
     $(aws sts assume-role \
-    --role-arn arn:aws:iam::425362996713:role/$ROLE_TO_ASSUME  \
-    --role-session-name ci.datadog-lambda-js-$CI_JOB_ID-$CI_JOB_STAGE \
+    --role-arn "arn:aws:iam::425362996713:role/$ROLE_TO_ASSUME"  \
+    --role-session-name "ci.datadog-lambda-js-$CI_JOB_ID-$CI_JOB_STAGE" \
     --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
     --external-id $EXTERNAL_ID \
     --output text))
