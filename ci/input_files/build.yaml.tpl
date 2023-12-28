@@ -94,11 +94,9 @@ integration-test-{{ .name }}:
   before_script:
     - *install-node
     - EXTERNAL_ID_NAME=integration-test-externalid ROLE_TO_ASSUME=sandbox-integration-test-deployer ./ci/get_secrets.sh
-  script:
     - yarn global add serverless --prefix /usr/local
-    - cd integration_tests
-    - yarn install
-    - serverless --version
+    - cd integration_tests && yarn install && cd ..
+  script:
     - RUNTIME_PARAM={{ .node_major_version }} ./scripts/run_integration_tests
 
 publish-{{ .name }}-layer:
