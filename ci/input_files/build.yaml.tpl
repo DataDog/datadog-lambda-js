@@ -97,7 +97,7 @@ integration-test-{{ .name }}:
     - yarn global add serverless --prefix /usr/local
     - cd integration_tests && yarn install && cd ..
   script:
-    - RUNTIME_PARAM={{ .node_major_version }} ./scripts/run_integration_tests
+    - RUNTIME_PARAM={{ .node_major_version }} ./scripts/run_integration_tests.sh
 
 publish-{{ .name }}-layer:
   stage: publish
