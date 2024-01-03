@@ -93,7 +93,7 @@ integration-test-{{ .name }}:
     CI_ENABLE_CONTAINER_IMAGE_BUILDS: "true"
   before_script:
     - *install-node
-    - EXTERNAL_ID_NAME=integration-test-externalid ROLE_TO_ASSUME=sandbox-integration-test-deployer ./ci/get_secrets.sh
+    - EXTERNAL_ID_NAME=integration-test-externalid ROLE_TO_ASSUME=sandbox-integration-test-deployer source ./ci/get_secrets.sh
     - yarn global add serverless --prefix /usr/local
     - cd integration_tests && yarn install && cd ..
   script:
@@ -119,7 +119,7 @@ publish-{{ .name }}-layer:
           - {{ .code }}
         {{- end}}
   before_script:
-    - EXTERNAL_ID_NAME=sandbox-publish-externalid ROLE_TO_ASSUME=sandbox-layer-deployer ./ci/get_secrets.sh
+    - EXTERNAL_ID_NAME=sandbox-publish-externalid ROLE_TO_ASSUME=sandbox-layer-deployer source ./ci/get_secrets.sh
   script:
     -  NODE_VERSION={{ .node_version }} ./ci/publish_layers.sh
 
