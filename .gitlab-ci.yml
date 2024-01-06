@@ -1,8 +1,6 @@
 stages:
   - pre 
   - build
-  - test
-  - publish
 
 .go-cache: &go-cache
   key: datadog-lambda-js-go-cache
