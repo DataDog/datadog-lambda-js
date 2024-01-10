@@ -15,12 +15,13 @@ import {
   Logger,
   LogLevel,
   promisifiedHandler,
-  setSandboxInit,
   setLogger,
   setLogLevel,
+  setSandboxInit,
 } from "./utils";
 import { getEnhancedMetricTags } from "./metrics/enhanced-metrics";
 import { DatadogTraceHeaders } from "./trace/context/extractor";
+import { MalformedMetricName } from "./runtime/errors";
 
 // Backwards-compatible export, TODO deprecate in next major
 export { DatadogTraceHeaders as TraceHeaders } from "./trace/context/extractor";
@@ -98,6 +99,10 @@ if (getEnvValue(coldStartTracingEnvVar, "true").toLowerCase() === "true") {
 }
 
 const initTime = Date.now();
+
+// Avoid accidentally messing up the `datadog-agent`'s field separator logic.
+// see: https://github.com/DataDog/datadog-agent/blob/5e8ef178cf4594bb51121fc121789fa3ac43c9c1/comp/dogstatsd/server/parse.go#L29-L42
+const FORBIDDEN_METRIC_NAME_CHARS: string[] = [":", "|", ","];
 
 /**
  * Wraps your AWS lambda handler functions to add tracing/metrics support
@@ -255,6 +260,14 @@ export function extractArgs<TEvent>(isResponseStreamFunction: boolean, ...args: 
  * @param tags The tags associated with the metric. Should be of the format "tag:value".
  */
 export function sendDistributionMetricWithDate(name: string, value: number, metricTime: Date, ...tags: string[]) {
+  if (FORBIDDEN_METRIC_NAME_CHARS.some((c) => name.includes(c))) {
+    throw new MalformedMetricName(
+      `Your metric name ${name} cannot contain any of the following characters: "${FORBIDDEN_METRIC_NAME_CHARS.join(
+        " ",
+      )}".`,
+    );
+  }
+
   tags = [...tags, getRuntimeTag()];
 
   if (currentMetricsListener !== undefined) {

@@ -115,6 +115,7 @@ export class ExtendedError extends Error {
 export class ImportModuleError extends ExtendedError {}
 export class HandlerNotFound extends ExtendedError {}
 export class MalformedHandlerName extends ExtendedError {}
+export class MalformedMetricName extends ExtendedError {}
 export class UserCodeSyntaxError extends ExtendedError {}
 export class UnhandledPromiseRejection extends ExtendedError {
   constructor(reason?: string, promise?: Promise<any>) {
@@ -128,6 +129,7 @@ const errorClasses = [
   ImportModuleError,
   HandlerNotFound,
   MalformedHandlerName,
+  MalformedMetricName,
   UserCodeSyntaxError,
   UnhandledPromiseRejection,
 ];

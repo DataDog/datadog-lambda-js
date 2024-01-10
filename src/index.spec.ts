@@ -39,6 +39,7 @@ jest.mock("./trace/trace-context-service", () => {
     get traceSource() {
       return mockTraceSource;
     }
+
     get currentTraceContext() {
       return mockSpanContextWrapper;
     }
@@ -47,6 +48,7 @@ jest.mock("./trace/trace-context-service", () => {
       return mockTraceHeaders;
     }
   }
+
   return {
     ...jest.requireActual("./trace/trace-context-service"),
     TraceContextService: MockTraceContextService,
@@ -220,6 +222,52 @@ describe("datadog", () => {
     await wrapped({}, {} as any, () => {});
 
     expect(nock.isDone()).toBeTruthy();
+  });
+
+  it.each([
+    {
+      name: "my-dist",
+      shouldFail: false,
+    },
+    {
+      name: "coffee_house.order_value",
+      shouldFail: false,
+    },
+    {
+      name: "coffee_house:order_value",
+      shouldFail: true,
+    },
+    {
+      name: "coffee_house|order_value",
+      shouldFail: true,
+    },
+  ])("correctly handles when injecting names with forbidden symbols ", async ({ name, shouldFail }) => {
+    const site = "datadoghq.com";
+    const siteEnvVar = "DD_SITE";
+    const apiKey = "12345";
+    process.env[siteEnvVar] = site;
+
+    nock("https://api.datadoghq.com")
+      .post(`/api/v1/distribution_points?api_key=${apiKey}`, (request: any) => request.series[0].metric === name)
+      .reply(200, {});
+
+    const wrapped = datadog(
+      async () => {
+        sendDistributionMetricWithDate(name, 100, new Date(), "first-tag", "second-tag");
+        return "";
+      },
+      { apiKey, forceWrap: true },
+    );
+
+    if (!shouldFail) {
+      await wrapped({}, {} as any, () => {});
+      expect(nock.isDone()).toBeTruthy();
+      return;
+    }
+
+    await expect(async () => await wrapped({}, {} as any, () => {})).rejects.toThrow(
+      "cannot contain any of the following characters",
+    );
   });
 
   it("makes the current trace headers available", async () => {
