@@ -1,0 +1,7 @@
+environments:
+  - name: sandbox
+    external_id: sandbox-publish-externalid
+    role_to_assume: sandbox-layer-deployer
+  - name: prod
+    external_id: prod-publish-externalid
+    role_to_assume: dd-serverless-layer-deployer-role
