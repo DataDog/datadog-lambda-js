@@ -9,3 +9,5 @@ datasources:
     url: ci/datasources/runtimes.yaml
   regions:
     url: ci/datasources/regions.yaml
+  environments:
+    url: ci/datasources/environments.yaml
