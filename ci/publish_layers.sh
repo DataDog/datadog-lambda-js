@@ -105,7 +105,7 @@ else
     fi
 
     VERSION=$(echo "${CI_COMMIT_TAG##*v}" | cut -d. -f2)
-then
+fi
 
 # Target layer version
 if [ -z "$VERSION" ]; then
