@@ -125,7 +125,7 @@ publish-{{ $environment.name }}-{{ $runtime.name }}-layer:
   before_script:
     - EXTERNAL_ID_NAME={{ $environment.external_id }} ROLE_TO_ASSUME={{ $environment.role_to_assume }} source ./ci/get_secrets.sh
   script:
-    -  NODE_VERSION={{ $runtime.node_version }} ./ci/publish_layers.sh
+    - STAGE={{ $environment.name }} NODE_VERSION={{ $runtime.node_version }} ./ci/publish_layers.sh
 
 {{- end }}
 
