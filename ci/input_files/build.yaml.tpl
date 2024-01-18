@@ -115,6 +115,7 @@ publish-{{ $environment.name }}-{{ $runtime.name }}-layer:
     - check-{{ $runtime.name }}-layer-size
     - lint-{{ $runtime.name }}
     - unit-test-{{ $runtime.name }}
+    - integration-test-{{ $runtime.name }}
   dependencies:
     - build-{{ $runtime.name }}-layer
   parallel:
