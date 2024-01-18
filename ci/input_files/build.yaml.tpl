@@ -56,10 +56,6 @@ lint-{{ $runtime.name }}:
   stage: test
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/mirror/node:{{ $runtime.node_major_version }}-bullseye
-  needs: 
-    - build-{{ $runtime.name }}-layer
-  dependencies:
-    - build-{{ $runtime.name }}-layer
   cache: &{{ $runtime.name }}-cache
   before_script: *node-before-script
   script: 
@@ -70,10 +66,6 @@ unit-test-{{ $runtime.name }}:
   stage: test
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/mirror/node:{{ $runtime.node_major_version }}-bullseye
-  needs: 
-    - build-{{ $runtime.name }}-layer
-  dependencies:
-    - build-{{ $runtime.name }}-layer
   cache: &{{ $runtime.name }}-cache
   before_script: *node-before-script
   script: 
