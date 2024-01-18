@@ -1,0 +1,29 @@
+stages:
+ - test
+
+lint:
+  stage: test
+  tags: ["arch:amd64"]
+  image: registry.ddbuild.io/images/mirror/node:18-bullseye
+  script:
+    - yarn check-formatting
+    - yarn lint
+
+notify-slack:
+  tags: ["arch:amd64"]
+  image: registry.ddbuild.io/images/slack-notifier:latest
+  stage: notify
+  when: on_success
+  allow_failure: true
+  script:
+      # If the pipeline was launched by a user, send pings to him (eg, creating a pipe on master without commiting)
+    - if [[ $GITLAB_USER_LOGIN = "gitsync" ]]; then EMAIL=$(git show -s --format="%ae" HEAD); else EMAIL=$GITLAB_USER_EMAIL; fi
+
+    # Map email to slack handle
+    - SLACK_AUTHOR=$(echo $EMAIL | email2slack | sed 's/^/@/')
+    - if [ -z "$SLACK_AUTHOR" ]; then echo "author not found"; exit 0; fi
+
+    - BUILD_URL="$CI_PROJECT_URL/pipelines/$CI_PIPELINE_ID"
+    - 'MESSAGE_TEXT="$SLACK_AUTHOR :pika_hehe: $CI_PROJECT_NAME $CI_COMMIT_REF_NAME pipeline <$BUILD_URL|$CI_PIPELINE_ID> succeeded."'
+
+    - postmessage "#serverless-apm-ops" "$MESSAGE_TEXT"
