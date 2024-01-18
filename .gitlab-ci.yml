@@ -1,5 +1,6 @@
-stage:
+stages:
   - test
+
 
 lint:
   stage: test
