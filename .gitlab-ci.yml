@@ -2,10 +2,16 @@ stages:
  - test
  - notify
 
+.node-before-script: &node-before-script
+  - echo 'yarn-offline-mirror ".yarn-cache/"' >> .yarnrc
+  - echo 'yarn-offline-mirror-pruning true' >> .yarnrc
+  - yarn install --frozen-lockfile --no-progress
+
 lint:
   stage: test
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/mirror/node:18-bullseye
+  before_script: *node-before-script
   script:
     - yarn check-formatting
     - yarn lint
