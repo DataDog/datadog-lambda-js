@@ -1,0 +1,11 @@
+stage:
+  - test
+
+lint:
+  stage: test
+  tags: ["arch:amd64"]
+  image: registry.ddbuild.io/images/mirror/node:18-bullseye
+  script:
+    - yarn install
+    - check-formatting
+    - yarn lint
