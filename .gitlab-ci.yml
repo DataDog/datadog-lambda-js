@@ -1,5 +1,6 @@
 stages:
  - test
+ - notify
 
 lint:
   stage: test
