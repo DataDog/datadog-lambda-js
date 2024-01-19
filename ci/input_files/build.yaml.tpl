@@ -118,7 +118,7 @@ sign-{{ $environment.name }}-{{ $runtime.name }}-layer:
   before_script:
     - EXTERNAL_ID_NAME={{ $environment.external_id }} ROLE_TO_ASSUME={{ $environment.role_to_assume }} AWS_ACCOUNT={{ $environment.account }} source ./ci/get_secrets.sh
   script:
-    - LAYER_FILE=datadog_lambda_node{{ $runtime.node_version }}.zip ./ci/sign_layers.sh {{ $environment.name }}
+    - LAYER_FILE=datadog_lambda_node{{ $runtime.node_version }}.zip ./scripts/sign_layers.sh {{ $environment.name }}
 {{ end }}
 
 publish-{{ $environment.name }}-{{ $runtime.name }}-layer:
