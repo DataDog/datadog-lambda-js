@@ -101,6 +101,8 @@ sign-{{ $environment.name }}-{{ $runtime.name }}-layer:
   stage: sign
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/docker:20.10-py3
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v.*/'
   needs:
     - build-{{ $runtime.name }}-layer
     - check-{{ $runtime.name }}-layer-size
