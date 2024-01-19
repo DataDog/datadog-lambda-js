@@ -102,7 +102,7 @@ sign-{{ $environment.name }}-{{ $runtime.name }}-layer:
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/docker:20.10-py3
   rules:
-    - if: '"{{ $environment.name }}" =~ /^(prod|sandbox)/'
+    - if: '"{{ $environment.name }}" == "prod"'
   needs:
     - build-{{ $runtime.name }}-layer
     - check-{{ $runtime.name }}-layer-size
@@ -128,10 +128,10 @@ publish-{{ $environment.name }}-{{ $runtime.name }}-layer:
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/docker:20.10-py3
   rules:
-    - if: '$CI_COMMIT_TAG =~ /^v.*/ || "{{ $environment.name }}" =~ /^(sandbox|staging|prod)/'
+    - if: '$CI_COMMIT_TAG =~ /^v.*/ || "{{ $environment.name }}" =~ /^(sandbox|staging)/'
       when: manual
   needs:
-{{ if or (eq $environment.name "prod") (eq $environment.name "sandbox") }}
+{{ if or (eq $environment.name "prod") }}
       - sign-{{ $environment.name }}-{{ $runtime.name }}-layer
 {{ else }}
       - build-{{ $runtime.name }}-layer
@@ -141,7 +141,7 @@ publish-{{ $environment.name }}-{{ $runtime.name }}-layer:
       - integration-test-{{ $runtime.name }}
 {{ end }}
   dependencies:
-{{ if or (eq $environment.name "prod") (eq $environment.name "sandbox") }}
+{{ if or (eq $environment.name "prod") }}
       - sign-{{ $environment.name }}-{{ $runtime.name }}-layer
 {{ else }}
       - build-{{ $runtime.name }}-layer

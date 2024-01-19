@@ -12,7 +12,7 @@ set -e
 # Available runtimes: https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html
 AWS_CLI_NODE_VERSIONS=("nodejs14.x" "nodejs16.x" "nodejs18.x" "nodejs20.x")
 LAYER_PATHS=(".layers/datadog_lambda_node14.15.zip" ".layers/datadog_lambda_node16.14.zip" ".layers/datadog_lambda_node18.12.zip" ".layers/datadog_lambda_node20.9.zip")
-LAYERS=("Datadog-Node-Test" "Datadog-Node16-x-GITLAB" "Datadog-Node18-x-GITLAB" "Datadog-Node20-x-GITLAB")
+LAYERS=("Datadog-Node14-x-GITLAB" "Datadog-Node16-x-GITLAB" "Datadog-Node18-x-GITLAB" "Datadog-Node20-x-GITLAB")
 NODE_VERSIONS=("14.15" "16.14" "18.12" "20.9")
 STAGES=('prod', 'sandbox', 'staging')
 
@@ -96,7 +96,6 @@ if [[ "$STAGE" =~ ^(staging|sandbox)$ ]]; then
     VERSION=$(($latest_version + 1))
 else
     # Running on prod
-    CI_COMMIT_TAG="v1.1.1"
     if [ -z "$CI_COMMIT_TAG" ]; then
         printf "[Error] No CI_COMMIT_TAG found.\n"
         printf "Exiting script...\n"
