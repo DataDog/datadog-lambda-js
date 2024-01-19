@@ -103,6 +103,7 @@ sign-{{ $environment.name }}-{{ $runtime.name }}-layer:
   image: registry.ddbuild.io/images/docker:20.10-py3
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v.*/'
+      when: manual
   needs:
     - build-{{ $runtime.name }}-layer
     - check-{{ $runtime.name }}-layer-size
@@ -127,9 +128,11 @@ publish-{{ $environment.name }}-{{ $runtime.name }}-layer:
   stage: publish
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/docker:20.10-py3
-  when: manual
   rules:
-    - if: '$CI_COMMIT_TAG =~ /^v.*/ || "{{ $environment.name }}" =~ /^(sandbox|staging)/'
+    - if: "{{ $environment.name }}" =~ /^(sandbox|staging)/'
+      when: manual
+      allow_failure: true
+    - if: '$CI_COMMIT_TAG =~ /^v.*/
   needs:
 {{ if or (eq $environment.name "prod") }}
       - sign-{{ $environment.name }}-{{ $runtime.name }}-layer
