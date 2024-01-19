@@ -100,7 +100,7 @@ publish-{{ $environment.name }}-{{ $runtime.name }}-layer:
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/docker:20.10-py3
   rules:
-    - if: '$CI_COMMIT_TAG =~ /^v.*/ || "{{ $environment.name }}" =~ /^(sandbox|staging)/'
+    - if: '$CI_COMMIT_TAG =~ /^v.*/ || "{{ $environment.name }}" =~ /^(sandbox|staging|prod)/'
       when: manual
   needs:
     - build-{{ $runtime.name }}-layer
