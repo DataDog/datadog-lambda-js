@@ -1,6 +1,7 @@
 stages:
  - build
  - test
+ - sign
  - publish
 
 .install-node: &install-node
@@ -95,13 +96,13 @@ integration-test-{{ $runtime.name }}:
 {{ $environments := (ds "environments").environments }}
 {{ range $environment := $environments }}
 
-publish-{{ $environment.name }}-{{ $runtime.name }}-layer:
-  stage: publish
+{{ if or (eq $environment.name "prod") (eq $environment.name "sandbox") }}
+sign-{{ $environment.name }}-{{ $runtime.name }}-layer:
+  stage: sign
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/docker:20.10-py3
   rules:
-    - if: '$CI_COMMIT_TAG =~ /^v.*/ || "{{ $environment.name }}" =~ /^(sandbox|staging|prod)/'
-      when: manual
+    - if: '{{ $environment.name }} =~ /^(prod|sandbox)/'
   needs:
     - build-{{ $runtime.name }}-layer
     - check-{{ $runtime.name }}-layer-size
@@ -110,6 +111,35 @@ publish-{{ $environment.name }}-{{ $runtime.name }}-layer:
     - integration-test-{{ $runtime.name }}
   dependencies:
     - build-{{ $runtime.name }}-layer
+  before_script:
+    - EXTERNAL_ID_NAME={{ $environment.external_id }} ROLE_TO_ASSUME={{ $environment.role_to_assume }} AWS_ACCOUNT={{ $environment.account }} source ./ci/get_secrets.sh
+  script:
+    - LAYER_FILE=datadog_lambda_node{{ $runtime.node_version }}.zip ./ci/sign_layers.sh {{ $environment.name }}
+{{ end }}
+
+publish-{{ $environment.name }}-{{ $runtime.name }}-layer:
+  stage: publish
+  tags: ["arch:amd64"]
+  image: registry.ddbuild.io/images/docker:20.10-py3
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v.*/ || "{{ $environment.name }}" =~ /^(sandbox|staging|prod)/'
+      when: manual
+  needs:
+{{ if or (eq $environment.name "prod") (eq $environment.name "sandbox") }}
+      - sign-{{ $environment.name }}-{{ $runtime.name }}-layer
+{{ else }}
+      - build-{{ $runtime.name }}-layer
+      - check-{{ $runtime.name }}-layer-size
+      - lint-{{ $runtime.name }}
+      - unit-test-{{ $runtime.name }}
+      - integration-test-{{ $runtime.name }}
+{{ end }}
+  dependencies:
+{{ if or (eq $environment.name "prod") (eq $environment.name "sandbox") }}
+      - sign-{{ $environment.name }}-{{ $runtime.name }}-layer
+{{ else }}
+      - build-{{ $runtime.name }}-layer
+{{ end }}
   parallel:
     matrix:
       - REGION: {{ range (ds "regions").regions }}
