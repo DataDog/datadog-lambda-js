@@ -34,7 +34,7 @@ build-{{ $runtime.name }}-layer:
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/docker:20.10
   artifacts:
-    expire_in: 10 min # temp value
+    expire_in: 10 min # TODO: remove temp value
     paths:
       - .layers/datadog_lambda_node{{ $runtime.node_version }}.zip
   variables:
@@ -102,7 +102,7 @@ sign-{{ $environment.name }}-{{ $runtime.name }}-layer:
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/docker:20.10-py3
   rules:
-    - if: '{{ $environment.name }} =~ /^(prod|sandbox)/'
+    - if: '"{{ $environment.name }}" =~ /^(prod|sandbox)/'
   needs:
     - build-{{ $runtime.name }}-layer
     - check-{{ $runtime.name }}-layer-size
@@ -111,6 +111,10 @@ sign-{{ $environment.name }}-{{ $runtime.name }}-layer:
     - integration-test-{{ $runtime.name }}
   dependencies:
     - build-{{ $runtime.name }}-layer
+  artifacts: # Re specify artifacts so the modified signed file is passed
+    expire_in: 10 min # TODO: remove temp value
+    paths:
+      - .layers/datadog_lambda_node{{ $runtime.node_version }}.zip
   before_script:
     - EXTERNAL_ID_NAME={{ $environment.external_id }} ROLE_TO_ASSUME={{ $environment.role_to_assume }} AWS_ACCOUNT={{ $environment.account }} source ./ci/get_secrets.sh
   script:
