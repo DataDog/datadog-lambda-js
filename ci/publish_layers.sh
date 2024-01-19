@@ -96,6 +96,7 @@ if [[ "$STAGE" =~ ^(staging|sandbox)$ ]]; then
     VERSION=$(($latest_version + 1))
 else
     # Running on prod
+    CI_COMMIT_TAG="v1.1.1"
     if [ -z "$CI_COMMIT_TAG" ]; then
         printf "[Error] No CI_COMMIT_TAG found.\n"
         printf "Exiting script...\n"
