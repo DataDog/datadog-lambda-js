@@ -165,7 +165,7 @@ publish-{{ $environment.name }}-{{ $runtime.name }}-layer:
 
 publish-npm-package:
   stage: publish
-  tags: ["arch:amd64]
+  tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/docker:20.10-py3
   cache: []
   rules:
