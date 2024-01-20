@@ -162,3 +162,16 @@ publish-{{ $environment.name }}-{{ $runtime.name }}-layer:
 {{- end }}
 
 {{- end }}
+
+publish-npm-package:
+  stage: publish
+  tags: ["arch:amd64]
+  image: registry.ddbuild.io/images/docker:20.10-py3
+  cache: []
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v.*/'
+  when: manual
+  before_script:
+    - *install-node
+  script:
+    - ./scripts/publish_npm.sh
