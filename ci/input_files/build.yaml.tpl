@@ -34,7 +34,7 @@ build-{{ $runtime.name }}-layer:
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/docker:20.10
   artifacts:
-    expire_in: 10 min # TODO: remove temp value
+    expire_in: 1 hr # Unsigned zips expire in 1 hour
     paths:
       - .layers/datadog_lambda_node{{ $runtime.node_version }}.zip
   variables:
@@ -113,7 +113,7 @@ sign-{{ $environment.name }}-{{ $runtime.name }}-layer:
   dependencies:
     - build-{{ $runtime.name }}-layer
   artifacts: # Re specify artifacts so the modified signed file is passed
-    expire_in: 10 min # TODO: remove temp value
+    expire_in: 1 day # Signed layers should expire after 1 day
     paths:
       - .layers/datadog_lambda_node{{ $runtime.node_version }}.zip
   before_script:
