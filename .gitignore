@@ -9,3 +9,5 @@ package-lock.json
 
 **/.serverless
 /.idea/
+
+ci/build-*.yaml

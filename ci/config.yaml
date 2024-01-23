@@ -1,0 +1,13 @@
+inputFiles:
+  - ci/input_files/build.yaml.tpl
+
+outputFiles:
+  - ci/build-pipeline.yaml
+
+datasources:
+  runtimes:
+    url: ci/datasources/runtimes.yaml
+  regions:
+    url: ci/datasources/regions.yaml
+  environments:
+    url: ci/datasources/environments.yaml
