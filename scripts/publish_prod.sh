@@ -40,6 +40,7 @@ if [ "$CONT" != "y" ]; then
     exit 1
 fi
 
+echo "Answer 'n' if already done in a PR"
 read -p "Update package.json version? (y/n)?" CONT
 if [ "$CONT" != "y" ]; then
     echo "Skipping updating package.json version"
@@ -56,6 +57,8 @@ echo
 echo "Signing layers for commercial AWS regions"
 aws-vault exec sso-prod-engineering -- ./scripts/sign_layers.sh prod
 
+
+echo "Answer 'n' if GitLab already did this"
 read -p "Deploy layers to commercial AWS (y/n)?" CONT
 if [ "$CONT" != "y" ]; then
     echo "Skipping deployment to commercial AWS"
@@ -81,6 +84,7 @@ else
     VERSION=$LAYER_VERSION AWS_PROFILE=govcloud-us1-fed-human-engineering ./scripts/publish_layers.sh
 fi
 
+echo "Answer 'n' if GitLab already did this"
 read -p "Ready to publish $NEW_VERSION to NPM (y/n)?" CONT
 if [ "$CONT" != "y" ]; then
     echo "Skipping publishing to NPM"
@@ -97,6 +101,7 @@ else
     yarn publish --new-version "$NEW_VERSION"
 fi
 
+echo "Answer 'n' if you already released in GitHub"
 read -p "Do you want to bump the version in GitHub? (y/n)" CONT
 if [ "$CONT" != "y" ]; then
     echo "Skipping publishing updates to GitHub"
