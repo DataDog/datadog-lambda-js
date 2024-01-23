@@ -71,6 +71,8 @@ describe("tagObject", () => {
           level2_list: [null, true, "nice", { l3: "v3" }],
           level2_bool: true,
           level2_int: 2,
+          level2_null: null,
+          level2_empty_obj: {},
         },
         vals: [{ thingOne: 1 }, { thingTwo: 2 }],
       },
@@ -83,6 +85,8 @@ describe("tagObject", () => {
       ["function.request.level1.level2_list", '[null,true,"nice",{"l3":"v3"}]'],
       ["function.request.level1.level2_bool", "true"],
       ["function.request.level1.level2_int", "2"],
+      ["function.request.level1.level2_null", null],
+      ["function.request.level1.level2_empty_obj", "{}"],
       ["function.request.vals.0", '{"thingOne":1}'],
       ["function.request.vals.1", '{"thingTwo":2}'],
     ]);
