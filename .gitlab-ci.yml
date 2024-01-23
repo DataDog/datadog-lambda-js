@@ -4,8 +4,6 @@ stages:
 
 .go-cache: &go-cache
   key: datadog-lambda-js-go-cache
-  paths:
-    - $CI_PROJECT_DIR/.go-cache/pkg/mod
   policy: pull
 
 generator:
@@ -14,7 +12,7 @@ generator:
   tags: ["arch:amd64"]
   cache: *go-cache
   script:
-    - go install github.com/hairyhenderson/gomplate/v4/cmd/gomplate@latest
+    - apk add --no-cache gomplate
     - gomplate --config ci/config.yaml
   artifacts:
     paths:
