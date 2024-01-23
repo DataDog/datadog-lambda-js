@@ -1,11 +1,11 @@
 const redactableKeys = ["authorization", "x-authorization", "password", "token"];
 
 export function tagObject(currentSpan: any, key: string, obj: any, depth = 0, maxDepth = 10): any {
-  if (depth >= maxDepth) {
-    return currentSpan.setTag(key, redactVal(key, JSON.stringify(obj).substring(0, 5000)));
-  }
   if (obj === null) {
     return currentSpan.setTag(key, obj);
+  }
+  if (depth >= maxDepth) {
+    return currentSpan.setTag(key, redactVal(key, JSON.stringify(obj).substring(0, 5000)));
   }
   depth += 1;
   if (typeof obj === "string") {
