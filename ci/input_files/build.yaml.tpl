@@ -20,8 +20,7 @@ stages:
   - echo 'yarn-offline-mirror-pruning true' >> .yarnrc
   - yarn install --frozen-lockfile --no-progress
 
-{{ $runtimes := (ds "runtimes").runtimes }}
-{{ range $runtime := $runtimes  }}
+{{ range $runtime := (ds "runtimes").runtimes }}
 
 .{{ $runtime.name }}-cache: &{{ $runtime.name }}-cache
   key: "$CI_JOB_STAGE-$CI_COMMIT_REF_SLUG"
@@ -29,7 +28,7 @@ stages:
     - $CI_PROJECT_DIR/.yarn-cache
   policy: pull
 
-build-{{ $runtime.name }}-layer:
+build-layer ({{ $runtime.name }}):
   stage: build
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/docker:20.10
@@ -42,18 +41,18 @@ build-{{ $runtime.name }}-layer:
   script:
     - NODE_VERSION={{ $runtime.node_version }} ./scripts/build_layers.sh
 
-check-{{ $runtime.name }}-layer-size:
+check-layer-size ({{ $runtime.name }}):
   stage: test
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/docker:20.10
   needs: 
-    - build-{{ $runtime.name }}-layer
+    - build-layer ({{ $runtime.name }})
   dependencies:
-    - build-{{ $runtime.name }}-layer
+    - build-layer ({{ $runtime.name }})
   script: 
     - NODE_VERSION={{ $runtime.node_version }} ./scripts/check_layer_size.sh
 
-lint-{{ $runtime.name }}:
+lint ({{ $runtime.name }}):
   stage: test
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/mirror/node:{{ $runtime.node_major_version }}-bullseye
@@ -63,7 +62,7 @@ lint-{{ $runtime.name }}:
     - yarn check-formatting
     - yarn lint
 
-unit-test-{{ $runtime.name }}:
+unit-test ({{ $runtime.name }}):
   stage: test
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/mirror/node:{{ $runtime.node_major_version }}-bullseye
@@ -74,14 +73,14 @@ unit-test-{{ $runtime.name }}:
     - yarn test --ci --forceExit --detectOpenHandles
     - bash <(curl -s https://codecov.io/bash)
 
-integration-test-{{ $runtime.name }}:
+integration-test ({{ $runtime.name }}):
   stage: test
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/docker:20.10-py3
   needs: 
-    - build-{{ $runtime.name }}-layer
+    - build-layer ({{ $runtime.name }})
   dependencies:
-    - build-{{ $runtime.name }}-layer
+    - build-layer ({{ $runtime.name }})
   cache: &{{ $runtime.name }}-cache
   variables:
     CI_ENABLE_CONTAINER_IMAGE_BUILDS: "true"
@@ -93,11 +92,10 @@ integration-test-{{ $runtime.name }}:
   script:
     - RUNTIME_PARAM={{ $runtime.node_major_version }} ./scripts/run_integration_tests.sh
 
-{{ $environments := (ds "environments").environments }}
-{{ range $environment := $environments }}
+{{ range $environment := (ds "environments").environments }}
 
 {{ if or (eq $environment.name "prod") }}
-sign-{{ $environment.name }}-{{ $runtime.name }}-layer:
+sign-layer ({{ $runtime.name }}):
   stage: sign
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/docker:20.10-py3
@@ -105,13 +103,13 @@ sign-{{ $environment.name }}-{{ $runtime.name }}-layer:
     - if: '$CI_COMMIT_TAG =~ /^v.*/'
       when: manual
   needs:
-    - build-{{ $runtime.name }}-layer
-    - check-{{ $runtime.name }}-layer-size
-    - lint-{{ $runtime.name }}
-    - unit-test-{{ $runtime.name }}
-    - integration-test-{{ $runtime.name }}
+    - build-layer ({{ $runtime.name }})
+    - check-layer-size ({{ $runtime.name }})
+    - lint ({{ $runtime.name }})
+    - unit-test ({{ $runtime.name }})
+    - integration-test ({{ $runtime.name }})
   dependencies:
-    - build-{{ $runtime.name }}-layer
+    - build-layer ({{ $runtime.name }})
   artifacts: # Re specify artifacts so the modified signed file is passed
     expire_in: 1 day # Signed layers should expire after 1 day
     paths:
@@ -124,7 +122,7 @@ sign-{{ $environment.name }}-{{ $runtime.name }}-layer:
     - LAYER_FILE=datadog_lambda_node{{ $runtime.node_version }}.zip ./scripts/sign_layers.sh {{ $environment.name }}
 {{ end }}
 
-publish-{{ $environment.name }}-{{ $runtime.name }}-layer:
+publish-layer-{{ $environment.name }} ({{ $runtime.name }}):
   stage: publish
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/docker:20.10-py3
@@ -135,19 +133,19 @@ publish-{{ $environment.name }}-{{ $runtime.name }}-layer:
     - if: '$CI_COMMIT_TAG =~ /^v.*/'
   needs:
 {{ if or (eq $environment.name "prod") }}
-      - sign-{{ $environment.name }}-{{ $runtime.name }}-layer
+      - sign-layer ({{ $runtime.name }})
 {{ else }}
-      - build-{{ $runtime.name }}-layer
-      - check-{{ $runtime.name }}-layer-size
-      - lint-{{ $runtime.name }}
-      - unit-test-{{ $runtime.name }}
-      - integration-test-{{ $runtime.name }}
+      - build-layer ({{ $runtime.name }})
+      - check-layer-size ({{ $runtime.name }})
+      - lint ({{ $runtime.name }})
+      - unit-test ({{ $runtime.name }})
+      - integration-test ({{ $runtime.name }})
 {{ end }}
   dependencies:
 {{ if or (eq $environment.name "prod") }}
-      - sign-{{ $environment.name }}-{{ $runtime.name }}-layer
+      - sign-layer ({{ $runtime.name }})
 {{ else }}
-      - build-{{ $runtime.name }}-layer
+      - build-layer ({{ $runtime.name }})
 {{ end }}
   parallel:
     matrix:
@@ -171,6 +169,9 @@ publish-npm-package:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v.*/'
   when: manual
+  needs: {{ range $runtime := (ds "runtimes").runtimes }}
+    - sign-layer ({{ $runtime.name }})
+  {{- end }}
   before_script:
     - *install-node
   script:
