@@ -65,8 +65,8 @@ describe("tagObject", () => {
       "function.request",
       {
         hello: "world",
-        level1_undefined: undefinedVar, // payload won't include this
-        level1_empty_func: () => {}, // payload won't include this
+        level1_undefined: undefinedVar, //  payload won't include this
+        level1_empty_func: () => {}, //  payload won't include this
         level2_empty_obj: {},
         level1_null: null,
         level1: {
@@ -76,8 +76,8 @@ describe("tagObject", () => {
           level2_list: [null, true, "nice", { l3: "v3" }],
           level2_bool: true,
           level2_int: 2,
-          level2_undefined: undefinedVar, // payload won't include this
-          level2_empty_func: () => {}, // payload won't include this
+          level2_undefined: undefinedVar, //  payload won't include this
+          level2_empty_func: () => {}, //  payload won't include this
           level2_null: null,
           level2_empty_obj: {},
         },
