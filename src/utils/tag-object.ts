@@ -2,10 +2,13 @@ const redactableKeys = ["authorization", "x-authorization", "password", "token"]
 
 export function tagObject(currentSpan: any, key: string, obj: any, depth = 0, maxDepth = 10): any {
   if (obj === null) {
+    // when val is null, unlike undefined, it will be stringified into '{"key":null}'
     return currentSpan.setTag(key, obj);
   }
   if (depth >= maxDepth) {
-    return currentSpan.setTag(key, redactVal(key, JSON.stringify(obj).substring(0, 5000)));
+    const strOrUndefined = JSON.stringify(obj);
+    if (typeof strOrUndefined === "undefined") return;
+    return currentSpan.setTag(key, redactVal(key, strOrUndefined.substring(0, 5000)));
   }
   depth += 1;
   if (typeof obj === "string") {
