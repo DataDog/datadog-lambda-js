@@ -1,0 +1,83 @@
+name: build
+
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node 16.14
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.14
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: Restore node modules from cache
+        id: cache-node-modules
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Check formatting
+        run: yarn check-formatting
+
+      - name: Lint
+        run: yarn lint
+
+  unit-test:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        node-version: [14.15, 16.14, 18.12, 20.9]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: Restore node modules from cache
+        id: cache-node-modules
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - name: Install NodeGYP 
+        if: matrix.node-version == '20.9'
+        run: yarn global add node-gyp
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build
+        run: yarn build
+
+      - name: Run tests
+        run: yarn test
+
+      - name: Upload code coverage report
+        run: bash <(curl -s https://codecov.io/bash)
