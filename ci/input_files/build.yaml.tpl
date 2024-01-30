@@ -175,4 +175,4 @@ publish-npm-package:
   before_script:
     - *install-node
   script:
-    - ./scripts/publish_npm.sh
+    - ./ci/publish_npm.sh
