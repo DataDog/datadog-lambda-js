@@ -23,25 +23,31 @@ describe("SpanContextWrapper", () => {
 
   describe("sampleMode", () => {
     it("should return AUTO_KEEP when sampling priority is not available in spanContext", () => {
-      const spanContext = new SpanContextWrapper({
-        toSpanId: () => "1234",
-        toTraceId: () => "5678",
-        _sampling: {}
-      }, TraceSource.Event);
-  
-      const sampleMode = spanContext.sampleMode()
+      const spanContext = new SpanContextWrapper(
+        {
+          toSpanId: () => "1234",
+          toTraceId: () => "5678",
+          _sampling: {},
+        },
+        TraceSource.Event,
+      );
+
+      const sampleMode = spanContext.sampleMode();
       expect(sampleMode).toBe(SampleMode.AUTO_KEEP);
       expect(sampleMode.toString()).toBe("1");
-    })
+    });
 
     it("should return sampling priority when available in spanContext", () => {
-      const spanContext = new SpanContextWrapper({
-        toSpanId: () => "1234",
-        toTraceId: () => "5678",
-        _sampling: { priority: 2 }
-      }, TraceSource.Event);
-  
-      const sampleMode = spanContext.sampleMode()
+      const spanContext = new SpanContextWrapper(
+        {
+          toSpanId: () => "1234",
+          toTraceId: () => "5678",
+          _sampling: { priority: 2 },
+        },
+        TraceSource.Event,
+      );
+
+      const sampleMode = spanContext.sampleMode();
       expect(sampleMode).toBe(2);
       expect(sampleMode.toString()).toBe("2");
     });
