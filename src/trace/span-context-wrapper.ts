@@ -1,5 +1,5 @@
 import { logDebug } from "../utils";
-import { TraceContext, TraceSource } from "./trace-context-service";
+import { SampleMode, TraceContext, TraceSource } from "./trace-context-service";
 import { SpanContext } from "./tracer-wrapper";
 
 /**
@@ -18,7 +18,7 @@ export class SpanContextWrapper implements SpanContext {
   }
 
   public sampleMode(): number {
-    return this.spanContext._sampling?.priority;
+    return this.spanContext._sampling?.priority ?? SampleMode.AUTO_KEEP;
   }
 
   public toString = (): string => {
