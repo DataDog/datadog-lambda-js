@@ -24,10 +24,6 @@ describe("getRuntimeTag", () => {
     expect(getRuntimeTag()).toBe(null);
   });
 
-  it("returns the right tag for v14.15.0", () => {
-    mockedGetProcessVersion.mockReturnValue("v14.15.0");
-    expect(getRuntimeTag()).toBe("runtime:nodejs14.x");
-  });
   it("returns the right tag for v16.15.0", () => {
     mockedGetProcessVersion.mockReturnValue("v16.15.0");
     expect(getRuntimeTag()).toBe("runtime:nodejs16.x");
@@ -53,7 +49,7 @@ describe("getEnhancedMetricTags", () => {
   });
 
   it("generates tag list with runtime", () => {
-    mockedGetProcessVersion.mockReturnValue("v14.15.0");
+    mockedGetProcessVersion.mockReturnValue("v20.9.0");
     expect(getEnhancedMetricTags(mockContext)).toStrictEqual([
       "region:us-east-1",
       "account_id:123497598159",
@@ -62,18 +58,18 @@ describe("getEnhancedMetricTags", () => {
       "cold_start:true",
       "memorysize:128",
       "datadog_lambda:vX.X.X",
-      "runtime:nodejs14.x",
+      "runtime:nodejs20.x",
     ]);
   });
 
   it("generates tag list with local runtime", () => {
-    mockedGetProcessVersion.mockReturnValue("v14.15.0");
+    mockedGetProcessVersion.mockReturnValue("v20.9.0");
     expect(getEnhancedMetricTags(mockContextLocal)).toStrictEqual([
       "functionname:my-test-lambda",
       "cold_start:true",
       "memorysize:128",
       "datadog_lambda:vX.X.X",
-      "runtime:nodejs14.x",
+      "runtime:nodejs20.x",
     ]);
   });
 
