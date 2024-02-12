@@ -5,7 +5,7 @@
 # This product includes software developed at Datadog (https://www.datadoghq.com/).
 # Copyright 2023 Datadog, Inc.
 
-# NODE_VERSION=14.15 REGION=us-east-1
+# NODE_VERSION=20.9 REGION=us-east-1
 
 set -e
 
