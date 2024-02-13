@@ -43,7 +43,10 @@ describe("KMSService", () => {
       });
 
     const kmsService = new KMSService();
+
+    nock.recorder.rec()
     const result = await kmsService.decrypt(ENCRYPTED_KEY);
+    nock.recorder.play()
     expect(result).toEqual(EXPECTED_RESULT);
     firstFakeKmsCall.done();
     secondFakeKmsCall.done();
