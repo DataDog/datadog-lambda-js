@@ -8,7 +8,7 @@ import {
   MetricsListener,
 } from "./metrics";
 import { TraceConfig, TraceListener } from "./trace";
-import { subscribeToDC } from "./runtime";
+import { patchRequire} from "./runtime";
 import {
   logDebug,
   logError,
@@ -93,9 +93,7 @@ export const defaultConfig: Config = {
 let currentMetricsListener: MetricsListener | undefined;
 let currentTraceListener: TraceListener | undefined;
 
-if (getEnvValue(coldStartTracingEnvVar, "true").toLowerCase() === "true") {
-  subscribeToDC();
-}
+patchRequire()
 
 const initTime = Date.now();
 

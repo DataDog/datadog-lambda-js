@@ -1,4 +1,5 @@
-const dc = require('dc-polyfill')
+const Module = require('module')
+const unpatchedRequire = Module.prototype.require
 
 export class RequireNode {
   public id: string
@@ -20,8 +21,6 @@ export class RequireNode {
   }
 }
 
-const moduleLoadStartChannel = dc.channel('dd-trace:moduleLoadStart')
-const moduleLoadEndChannel = dc.channel('dd-trace:moduleLoadEnd')
 let rootNodes: RequireNode[] = []
 
 const requireStack: RequireNode[] = []
@@ -48,9 +47,30 @@ const popNode = () => {
   }
 }
 
-export const subscribeToDC = () => {
-  moduleLoadStartChannel.subscribe(pushNode)
-  moduleLoadEndChannel.subscribe(popNode)
+function patchedRequire (this: unknown, id: string) {
+  let required
+  const startTime = Date.now()
+  const reqNode = new RequireNode(id, id, startTime)
+  const maybeParent = requireStack[requireStack.length - 1]
+  //console.log(`require tree length is ${requireStack.length}, parent is ${maybeParent?.id}`)
+  if (maybeParent) {
+    //console.log(`pushing child ${reqNode.id} to parent ${maybeParent.id}`)
+    maybeParent?.children?.push(reqNode)
+  }
+  requireStack.push(reqNode)
+  try {
+    //console.time(`require-${id}`)
+    required = unpatchedRequire.call(this, id)
+  } finally {
+    //console.timeEnd(`require-${id}`)
+    reqNode.endTime = Date.now()
+    requireStack.pop()
+
+    if (requireStack.length <= 0 && reqNode?.children && reqNode.children.length > 0) {
+      rootNodes.push(reqNode)
+    }
+  }
+  return required
 }
 
 export const getTraceTree = (): RequireNode[] => {
@@ -60,3 +80,15 @@ export const getTraceTree = (): RequireNode[] => {
 export const clearTraceTree = () => {
   rootNodes = []
 }
+
+export const patchRequire = () => {
+  console.log('[ASTUYVE] patching required')
+  Module.prototype.require = patchedRequire
+}
+
+export const unpatchRequire = () => {
+  console.log('[ASTUYVE] unpatching required')
+  Module.prototype.require = unpatchedRequire
+}
+
+Module.prototype.require = patchedRequire

@@ -1,2 +1,2 @@
 export { load, loadSync } from "./user-function";
-export { subscribeToDC, getTraceTree, clearTraceTree, RequireNode } from "./require-tracer"
+export { patchRequire, getTraceTree, clearTraceTree, RequireNode } from "./require-tracer"
