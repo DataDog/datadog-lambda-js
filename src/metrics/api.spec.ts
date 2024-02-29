@@ -2,6 +2,7 @@ import nock from "nock";
 
 import { APIClient } from "./api";
 import { APIMetric } from "./model";
+import { deflateSync } from "zlib";
 
 const baseAPIURL = "https://www.example.com";
 
@@ -33,7 +34,40 @@ describe("APIClient", () => {
     const scope = nock(baseAPIURL)
       .post("/api/v1/distribution_points?api_key=api_key", JSON.stringify({ series: input }))
       .reply(200);
-    const client = new APIClient("api_key", baseAPIURL);
+    const client = new APIClient("api_key", baseAPIURL, false);
+
+    await client.sendMetrics(input);
+    expect(scope.isDone()).toBeTruthy();
+  });
+
+  it("sends metrics with compression", async () => {
+    const input: APIMetric[] = [
+      {
+        metric: "a-metric",
+        points: [
+          [1, [2]],
+          [3, [4]],
+          [5, [6]],
+        ],
+        tags: ["a", "b", "c"],
+        type: "distribution",
+      },
+      {
+        metric: "b-metric",
+        points: [
+          [1, [2]],
+          [3, [4]],
+          [5, [6]],
+        ],
+        tags: ["a", "b", "c"],
+        type: "distribution",
+      },
+    ];
+
+    const scope = nock(baseAPIURL)
+      .post("/api/v1/distribution_points?api_key=api_key", deflateSync(JSON.stringify({ series: input })), { reqheaders: { "content-encoding": "deflate" } })
+      .reply(200);
+    const client = new APIClient("api_key", baseAPIURL, true);
 
     await client.sendMetrics(input);
     expect(scope.isDone()).toBeTruthy();
@@ -43,7 +77,7 @@ describe("APIClient", () => {
     const scope = nock(baseAPIURL)
       .post("/api/v1/distribution_points?api_key=bad_api_key", JSON.stringify({ series: [] }))
       .reply(403);
-    const client = new APIClient("bad_api_key", baseAPIURL);
+    const client = new APIClient("bad_api_key", baseAPIURL, false);
     await expect(client.sendMetrics([])).rejects.toMatchInlineSnapshot(`"HTTP error code: 403"`);
     expect(scope.isDone()).toBeTruthy();
   });
@@ -52,7 +86,7 @@ describe("APIClient", () => {
     const scope = nock(baseAPIURL)
       .post("/api/v1/distribution_points?api_key=api_key", JSON.stringify({ series: [] }))
       .replyWithError("Connection closed");
-    const client = new APIClient("api_key", baseAPIURL);
+    const client = new APIClient("api_key", baseAPIURL, false);
     await expect(client.sendMetrics([])).rejects.toMatchInlineSnapshot(`"Connection closed"`);
     expect(scope.isDone()).toBeTruthy();
   });

@@ -2,6 +2,7 @@ import https, { RequestOptions } from "https";
 import http from "http";
 import { URL } from "url";
 import { logDebug } from "./log";
+import { deflateSync } from "zlib";
 
 type RequestResult = {
   success: boolean;
@@ -9,9 +10,18 @@ type RequestResult = {
   errorMessage?: string;
 };
 
-export function post<T>(url: URL, body: T, options?: Partial<RequestOptions>): Promise<RequestResult> {
+export function post<T>(url: URL, body: T, options?: Partial<RequestOptions>, compressPayload?: boolean): Promise<RequestResult> {
   const bodyJSON = JSON.stringify(body);
-  const buffer = Buffer.from(bodyJSON);
+  let buffer = Buffer.from(bodyJSON);
+
+  if (compressPayload) {
+    // Adding compression header
+    options = options || {}; // Define options object if not already defined
+    options.headers = { ...options.headers, "Content-Encoding": "deflate" };
+
+    buffer = deflateSync(buffer);
+  }
+
   logDebug(`sending payload with body ${bodyJSON}`);
   const requestOptions: RequestOptions = {
     headers: { "content-type": "application/json" },

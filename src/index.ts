@@ -88,6 +88,7 @@ export const defaultConfig: Config = {
   minColdStartTraceDuration: 3,
   coldStartTraceSkipLib: "",
   localTesting: false,
+  compressPayload: false
 } as const;
 
 let currentMetricsListener: MetricsListener | undefined;

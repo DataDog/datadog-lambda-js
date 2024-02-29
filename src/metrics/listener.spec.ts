@@ -1,4 +1,3 @@
-import { AWSError, KMS, Request } from "aws-sdk";
 import nock from "nock";
 import mock from "mock-fs";
 
@@ -38,6 +37,7 @@ describe("MetricsListener", () => {
       logForwarding: false,
       shouldRetryMetrics: false,
       localTesting: false,
+      compressPayload: false,
       siteURL,
     });
 
@@ -58,6 +58,7 @@ describe("MetricsListener", () => {
       logForwarding: false,
       shouldRetryMetrics: false,
       localTesting: false,
+      compressPayload: false,
       siteURL,
     });
 
@@ -76,6 +77,7 @@ describe("MetricsListener", () => {
       logForwarding: false,
       shouldRetryMetrics: false,
       localTesting: false,
+      compressPayload: false,
       siteURL,
     });
 
@@ -95,6 +97,7 @@ describe("MetricsListener", () => {
       logForwarding: true,
       shouldRetryMetrics: false,
       localTesting: false,
+      compressPayload: false,
       siteURL,
     });
     jest.useFakeTimers("legacy");
@@ -129,6 +132,7 @@ describe("MetricsListener", () => {
       logForwarding: true,
       shouldRetryMetrics: false,
       localTesting: true,
+      compressPayload: false,
       siteURL,
     });
     jest.useFakeTimers("legacy");
@@ -152,6 +156,7 @@ describe("MetricsListener", () => {
       logForwarding: true,
       shouldRetryMetrics: false,
       localTesting: false,
+      compressPayload: false,
       siteURL,
     });
     // jest.useFakeTimers();

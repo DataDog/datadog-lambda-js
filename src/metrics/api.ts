@@ -15,10 +15,10 @@ export interface Client {
  * APIClient interfaces with the Datadog API
  */
 export class APIClient implements Client {
-  constructor(private apiKey: string, private baseAPIURL: string) {}
+  constructor(private apiKey: string, private baseAPIURL: string, private compressPayload: boolean) {}
 
   public async sendMetrics(metrics: APIMetric[]): Promise<void> {
-    const result = await post(this.getUrl("api/v1/distribution_points"), { series: metrics });
+    const result = await post(this.getUrl("api/v1/distribution_points"), { series: metrics }, {}, this.compressPayload);
     if (result.success) {
       return;
     }
