@@ -45,7 +45,6 @@ export const coldStartTracingEnvVar = "DD_COLD_START_TRACING";
 export const minColdStartTraceDurationEnvVar = "DD_MIN_COLD_START_DURATION";
 export const coldStartTraceSkipLibEnvVar = "DD_COLD_START_TRACE_SKIP_LIB";
 export const localTestingEnvVar = "DD_LOCAL_TESTING";
-export const compressPayloadEnvVar = "DD_COMPRESS_METRIC_PAYLOAD";
 
 interface GlobalConfig {
   /**
@@ -355,11 +354,6 @@ function getConfig(userConfig?: Partial<Config>): Config {
   if (userConfig === undefined || userConfig.decodeAuthorizerContext === undefined) {
     const result = getEnvValue(decodeAuthorizerContextEnvVar, "true").toLowerCase();
     config.decodeAuthorizerContext = result === "true";
-  }
-
-  if (userConfig === undefined || userConfig.compressPayload === undefined) {
-    const result = getEnvValue(compressPayloadEnvVar, "true").toLowerCase();
-    config.compressPayload = result === "true";
   }
 
   if (userConfig === undefined || userConfig.minColdStartTraceDuration === undefined) {
