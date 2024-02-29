@@ -53,12 +53,6 @@ export interface MetricsConfig {
    * from the runtime
    */
   localTesting: boolean;
-
-  /**
-   * If set, Compresses requests payload in the metrics request using zlib
-   * @default false
-   */
-  compressPayload: boolean;
 }
 
 export class MetricsListener {
@@ -179,7 +173,7 @@ export class MetricsListener {
   private async createProcessor(config: MetricsConfig, apiKey: Promise<string>) {
     const key = await apiKey;
     const url = `https://api.${config.siteURL}`;
-    const apiClient = new APIClient(key, url, config.compressPayload);
+    const apiClient = new APIClient(key, url);
     const processor = new Processor(apiClient, metricsBatchSendIntervalMS, config.shouldRetryMetrics);
     processor.startProcessing();
     return processor;
