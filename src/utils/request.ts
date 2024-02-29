@@ -10,7 +10,12 @@ type RequestResult = {
   errorMessage?: string;
 };
 
-export function post<T>(url: URL, body: T, options?: Partial<RequestOptions>, compressPayload?: boolean): Promise<RequestResult> {
+export function post<T>(
+  url: URL,
+  body: T,
+  options?: Partial<RequestOptions>,
+  compressPayload?: boolean,
+): Promise<RequestResult> {
   const bodyJSON = JSON.stringify(body);
   let buffer = Buffer.from(bodyJSON);
 

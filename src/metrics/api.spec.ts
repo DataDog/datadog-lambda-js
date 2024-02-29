@@ -32,7 +32,9 @@ describe("APIClient", () => {
     ];
 
     const scope = nock(baseAPIURL)
-      .post("/api/v1/distribution_points?api_key=api_key", deflateSync(JSON.stringify({ series: input })), { reqheaders: { "content-encoding": "deflate" } })
+      .post("/api/v1/distribution_points?api_key=api_key", deflateSync(JSON.stringify({ series: input })), {
+        reqheaders: { "content-encoding": "deflate" },
+      })
       .reply(200);
     const client = new APIClient("api_key", baseAPIURL);
 
@@ -42,7 +44,9 @@ describe("APIClient", () => {
 
   it("throws an authentication error on authentication failure", async () => {
     const scope = nock(baseAPIURL)
-      .post("/api/v1/distribution_points?api_key=bad_api_key", deflateSync(JSON.stringify({ series: [] })), { reqheaders: { "content-encoding": "deflate" } })
+      .post("/api/v1/distribution_points?api_key=bad_api_key", deflateSync(JSON.stringify({ series: [] })), {
+        reqheaders: { "content-encoding": "deflate" },
+      })
       .reply(403);
     const client = new APIClient("bad_api_key", baseAPIURL);
     await expect(client.sendMetrics([])).rejects.toMatchInlineSnapshot(`"HTTP error code: 403"`);
@@ -51,7 +55,9 @@ describe("APIClient", () => {
 
   it("throws an error on connection error failure", async () => {
     const scope = nock(baseAPIURL)
-      .post("/api/v1/distribution_points?api_key=api_key", deflateSync(JSON.stringify({ series: [] })), { reqheaders: { "content-encoding": "deflate" } })
+      .post("/api/v1/distribution_points?api_key=api_key", deflateSync(JSON.stringify({ series: [] })), {
+        reqheaders: { "content-encoding": "deflate" },
+      })
       .replyWithError("Connection closed");
     const client = new APIClient("api_key", baseAPIURL);
     await expect(client.sendMetrics([])).rejects.toMatchInlineSnapshot(`"Connection closed"`);

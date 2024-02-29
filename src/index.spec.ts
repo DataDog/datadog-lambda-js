@@ -142,7 +142,11 @@ describe("datadog", () => {
     process.env[apiKeyVar] = apiKey;
 
     nock("https://api.datadoghq.com")
-      .post(`/api/v1/distribution_points?api_key=${apiKey}`, (request: any) => JSON.parse(inflateSync(Buffer.from(request, 'hex')).toString()).series[0].metric === "my-dist")
+      .post(
+        `/api/v1/distribution_points?api_key=${apiKey}`,
+        (request: any) =>
+          JSON.parse(inflateSync(Buffer.from(request, "hex")).toString()).series[0].metric === "my-dist",
+      )
       .reply(200, {});
 
     const wrapped = datadog(
@@ -164,7 +168,11 @@ describe("datadog", () => {
     const apiKey = "101112";
 
     nock("https://api.datadoghq.com")
-      .post(`/api/v1/distribution_points?api_key=${apiKey}`, (request: any) => JSON.parse(inflateSync(Buffer.from(request, 'hex')).toString()).series[0].metric === "my-dist")
+      .post(
+        `/api/v1/distribution_points?api_key=${apiKey}`,
+        (request: any) =>
+          JSON.parse(inflateSync(Buffer.from(request, "hex")).toString()).series[0].metric === "my-dist",
+      )
       .reply(200, {});
 
     const wrapped = datadog(
@@ -186,7 +194,11 @@ describe("datadog", () => {
     process.env[siteEnvVar] = site;
 
     nock("https://api.datadoghq.com")
-      .post(`/api/v1/distribution_points?api_key=${apiKey}`, (request: any) => JSON.parse(inflateSync(Buffer.from(request, 'hex')).toString()).series[0].metric === "my-dist")
+      .post(
+        `/api/v1/distribution_points?api_key=${apiKey}`,
+        (request: any) =>
+          JSON.parse(inflateSync(Buffer.from(request, "hex")).toString()).series[0].metric === "my-dist",
+      )
       .reply(200, {});
 
     const wrapped = datadog(
@@ -208,7 +220,11 @@ describe("datadog", () => {
     process.env[siteEnvVar] = site;
 
     nock("https://api.datadoghq.com")
-      .post(`/api/v1/distribution_points?api_key=${apiKey}`, (request: any) => JSON.parse(inflateSync(Buffer.from(request, 'hex')).toString()).series[0].metric === "my-dist")
+      .post(
+        `/api/v1/distribution_points?api_key=${apiKey}`,
+        (request: any) =>
+          JSON.parse(inflateSync(Buffer.from(request, "hex")).toString()).series[0].metric === "my-dist",
+      )
       .reply(200, {});
 
     const wrapped = datadog(
