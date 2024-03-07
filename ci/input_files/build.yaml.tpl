@@ -31,7 +31,7 @@ stages:
 build-layer ({{ $runtime.name }}):
   stage: build
   tags: ["arch:amd64"]
-  image: registry.ddbuild.io/images/docker:20.10
+  image: registry.ddbuild.io/images/mirror/docker:20.10
   artifacts:
     expire_in: 1 hr # Unsigned zips expire in 1 hour
     paths:
@@ -44,7 +44,7 @@ build-layer ({{ $runtime.name }}):
 check-layer-size ({{ $runtime.name }}):
   stage: test
   tags: ["arch:amd64"]
-  image: registry.ddbuild.io/images/docker:20.10
+  image: registry.ddbuild.io/images/mirror/docker:20.10
   needs: 
     - build-layer ({{ $runtime.name }})
   dependencies:
@@ -76,7 +76,7 @@ unit-test ({{ $runtime.name }}):
 integration-test ({{ $runtime.name }}):
   stage: test
   tags: ["arch:amd64"]
-  image: registry.ddbuild.io/images/docker:20.10-py3
+  image: registry.ddbuild.io/images/mirror/docker:20.10-py3
   needs: 
     - build-layer ({{ $runtime.name }})
   dependencies:
@@ -98,7 +98,7 @@ integration-test ({{ $runtime.name }}):
 sign-layer ({{ $runtime.name }}):
   stage: sign
   tags: ["arch:amd64"]
-  image: registry.ddbuild.io/images/docker:20.10-py3
+  image: registry.ddbuild.io/images/mirror/docker:20.10-py3
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v.*/'
       when: manual
@@ -125,7 +125,7 @@ sign-layer ({{ $runtime.name }}):
 publish-layer-{{ $environment.name }} ({{ $runtime.name }}):
   stage: publish
   tags: ["arch:amd64"]
-  image: registry.ddbuild.io/images/docker:20.10-py3
+  image: registry.ddbuild.io/images/mirror/docker:20.10-py3
   rules:
     - if: '"{{ $environment.name }}" =~ /^(sandbox|staging)/'
       when: manual
@@ -164,7 +164,7 @@ publish-layer-{{ $environment.name }} ({{ $runtime.name }}):
 publish-npm-package:
   stage: publish
   tags: ["arch:amd64"]
-  image: registry.ddbuild.io/images/docker:20.10-py3
+  image: registry.ddbuild.io/images/mirror/docker:20.10-py3
   cache: []
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v.*/'
