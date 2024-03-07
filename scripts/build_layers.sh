@@ -11,7 +11,7 @@ set -e
 LAYER_DIR=".layers"
 LAYER_FILES_PREFIX="datadog_lambda_node"
 
-export NODE_VERSIONS=("16.14" "18.12" "20.9")
+export NODE_VERSIONS=("16" "18" "20")
 
 if [ -z "$NODE_VERSION" ]; then
     echo "Node version not specified, running for all node versions."
@@ -38,7 +38,7 @@ function docker_build_zip {
     # between different node runtimes.
     temp_dir=$(mktemp -d)
     docker buildx build -t datadog-lambda-layer-node:$1 . --no-cache \
-        --build-arg image=node:$1-alpine --progress=plain -o $temp_dir/nodejs
+        --build-arg image=registry.ddbuild.io/images/mirror/node:$1-bullseye --progress=plain -o $temp_dir/nodejs
 
     # Zip to destination, and keep directory structure as based in $temp_dir
     (cd $temp_dir && zip -q -r $destination ./)
