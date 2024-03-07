@@ -18,6 +18,7 @@ regions:
 #  - code: "ca-west-1" we don't support it
   - code: "eu-central-1"
   - code: "eu-central-2"
+  - code: "eu-north-1"
   - code: "eu-west-1"
   - code: "eu-west-2"
   - code: "eu-west-3"
