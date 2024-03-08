@@ -1,8 +1,0 @@
-{
-    "message": "hello, dog!",
-    "recordIds": [
-        "059f36b4-87a3-44ab-83d2-661975830a7d",
-        "2e1424d4-f796-459a-8184-9c92662be6da"
-    ],
-    "eventType": "SQS"
-}

@@ -8,8 +8,20 @@
 set -e
 
 LAYER_DIR=".layers"
-LAYER_FILES=("datadog_lambda_node14.15.zip" "datadog_lambda_node16.14.zip" "datadog_lambda_node18.12.zip" "datadog_lambda_node20.9.zip")
+LAYER_FILES=("datadog_lambda_node16.14.zip" "datadog_lambda_node18.12.zip" "datadog_lambda_node20.9.zip")
 SIGNING_PROFILE_NAME="DatadogLambdaSigningProfile"
+
+if [ -z "$LAYER_FILE" ]; then
+    echo "Layer file not specified, running for all layer files."
+else
+    echo "Layer file is specified: $LAYER_FILE"
+    if (printf '%s\n' "${LAYER_FILES[@]}" | grep -xq $LAYER_FILE); then
+        LAYER_FILES=($LAYER_FILE)
+    else
+        echo "Unsupported layer found, valid options are : ${LAYER_FILES[@]}"
+        exit 1
+    fi
+fi
 
 # Check account parameter
 VALID_ACCOUNTS=("sandbox" "prod")

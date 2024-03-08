@@ -1,0 +1,29 @@
+stages:
+  - pre 
+  - build
+
+.go-cache: &go-cache
+  key: datadog-lambda-js-go-cache
+  policy: pull
+
+generator:
+  stage: pre
+  image: registry.ddbuild.io/images/mirror/golang:alpine
+  tags: ["arch:amd64"]
+  cache: *go-cache
+  script:
+    - apk add --no-cache gomplate
+    - gomplate --config ci/config.yaml
+  artifacts:
+    paths:
+      - ci/*-pipeline.yaml
+
+build-layers:
+  stage: build
+  trigger:
+    include:
+      - artifact: ci/build-pipeline.yaml
+        job: generator
+    strategy: depend
+  rules:
+    - when: on_success

@@ -18,7 +18,7 @@ export class APIClient implements Client {
   constructor(private apiKey: string, private baseAPIURL: string) {}
 
   public async sendMetrics(metrics: APIMetric[]): Promise<void> {
-    const result = await post(this.getUrl("api/v1/distribution_points"), { series: metrics });
+    const result = await post(this.getUrl("api/v1/distribution_points"), { series: metrics }, {}, true);
     if (result.success) {
       return;
     }

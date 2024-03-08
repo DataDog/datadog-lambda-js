@@ -1,4 +1,3 @@
-import { AWSError, KMS, Request } from "aws-sdk";
 import nock from "nock";
 import mock from "mock-fs";
 

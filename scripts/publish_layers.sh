@@ -6,13 +6,13 @@
 # Copyright 2019 Datadog, Inc.
 
 # Publish the datadog node lambda layer across regions, using the AWS CLI
-# Usage: VERSION=5 REGIONS=us-east-1 LAYERS=Datadog-Node14-x publish_layers.sh
+# Usage: VERSION=5 REGIONS=us-east-1 LAYERS=Datadog-Node20-x publish_layers.sh
 # VERSION is required.
 set -e
 
-NODE_VERSIONS_FOR_AWS_CLI=("nodejs14.x" "nodejs16.x" "nodejs18.x" "nodejs20.x")
-LAYER_PATHS=(".layers/datadog_lambda_node14.15.zip" ".layers/datadog_lambda_node16.14.zip" ".layers/datadog_lambda_node18.12.zip" ".layers/datadog_lambda_node20.9.zip")
-AVAILABLE_LAYERS=("Datadog-Node14-x" "Datadog-Node16-x" "Datadog-Node18-x" "Datadog-Node20-x")
+NODE_VERSIONS_FOR_AWS_CLI=("nodejs16.x" "nodejs18.x" "nodejs20.x")
+LAYER_PATHS=(".layers/datadog_lambda_node16.14.zip" ".layers/datadog_lambda_node18.12.zip" ".layers/datadog_lambda_node20.9.zip")
+AVAILABLE_LAYERS=("Datadog-Node16-x" "Datadog-Node18-x" "Datadog-Node20-x")
 AVAILABLE_REGIONS=$(aws ec2 describe-regions | jq -r '.[] | .[] | .RegionName')
 BATCH_SIZE=60
 PIDS=()
