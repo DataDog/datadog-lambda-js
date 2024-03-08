@@ -6,17 +6,19 @@
 # Copyright 2019 Datadog, Inc.
 
 # Run unit tests in Docker
+# For local use only
 set -e
 
 NODE_VERSIONS=("16.14" "18.12" "20.9")
 
 for node_version in "${NODE_VERSIONS[@]}"
 do
+    node_major_version=$(echo $node_version | cut -d '.' -f 1)
     echo "Running tests against node${node_version}"
     docker build -t datadog-lambda-layer-node-test:$node_version \
         -f scripts/Dockerfile_test . \
         --quiet \
-        --build-arg image=registry.ddbuild.io/images/mirror/node:$node_version-bullseye
+        --build-arg image=registry.ddbuild.io/images/mirror/node:$node_major_version-bullseye
     docker run --rm -v `pwd`:/datadog-lambda-layer-node \
         -w /datadog-lambda-layer-node \
         datadog-lambda-layer-node-test:$node_version \

@@ -39,7 +39,7 @@ build-layer ({{ $runtime.name }}):
   variables:
     CI_ENABLE_CONTAINER_IMAGE_BUILDS: "true"
   script:
-    - NODE_VERSION={{ $runtime.node_major_version }} ./scripts/build_layers.sh
+    - NODE_VERSION={{ $runtime.node_version }} ./scripts/build_layers.sh
 
 check-layer-size ({{ $runtime.name }}):
   stage: test
