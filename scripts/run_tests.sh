@@ -16,7 +16,7 @@ do
     docker build -t datadog-lambda-layer-node-test:$node_version \
         -f scripts/Dockerfile_test . \
         --quiet \
-        --build-arg image=node:$node_version-alpine
+        --build-arg image=registry.ddbuild.io/images/mirror/node:$node_version-bullseye
     docker run --rm -v `pwd`:/datadog-lambda-layer-node \
         -w /datadog-lambda-layer-node \
         datadog-lambda-layer-node-test:$node_version \
