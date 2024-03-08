@@ -61,6 +61,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
+        "links": [],
         "service": "remappedApiGatewayServiceName",
         "type": "http"
       },
@@ -98,6 +99,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
+        "links": [],
         "service": "aws.lambda",
         "type": "serverless"
       },
@@ -121,6 +123,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
+        "links": [],
         "service": "integration-tests-js-XXXX-process-input-traced_node16"
       },
       {
@@ -145,6 +148,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
+        "links": [],
         "service": "integration-tests-js-XXXX-process-input-traced_node16"
       }
     ]
@@ -214,6 +218,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
+        "links": [],
         "service": "remappedSnsServiceName",
         "type": "sns"
       },
@@ -248,6 +253,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
+        "links": [],
         "service": "aws.lambda",
         "type": "serverless"
       },
@@ -273,6 +279,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
+        "links": [],
         "service": "integration-tests-js-XXXX-process-input-traced_node16"
       }
     ]
@@ -341,6 +348,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
+        "links": [],
         "service": "remappedSqsServiceName",
         "type": "web"
       },
@@ -375,6 +383,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
+        "links": [],
         "service": "aws.lambda",
         "type": "serverless"
       },
@@ -400,6 +409,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
+        "links": [],
         "service": "integration-tests-js-XXXX-process-input-traced_node16"
       }
     ]
