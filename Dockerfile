@@ -2,10 +2,6 @@ ARG image
 FROM $image as builder
 ARG image
 
-# Install git so we can specify a specific git ref (ie: refs/head/my-feature) in package.json 
-# to install a specific dd-trace version for performance test
-RUN apk add git python3 make g++
-
 # Create the directory structure required for AWS Lambda Layer
 RUN mkdir -p /nodejs/node_modules/
 
