@@ -38,7 +38,7 @@ function docker_build_zip {
     # between different node runtimes.
     temp_dir=$(mktemp -d)
     docker buildx build -t datadog-lambda-layer-node:$1 . --no-cache \
-        --build-arg image=registry.ddbuild.io/images/mirror/node:$node_image_version-bullseye --progress=plain -o $temp_dir/nodejs
+        --build-arg image=registry.ddbuild.io/images/mirror/node:${node_image_version}-bullseye --progress=plain -o $temp_dir/nodejs
 
     # Zip to destination, and keep directory structure as based in $temp_dir
     (cd $temp_dir && zip -q -r $destination ./)
