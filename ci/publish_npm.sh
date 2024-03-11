@@ -5,6 +5,8 @@
 # This product includes software developed at Datadog (https://www.datadoghq.com/).
 # Copyright 2023 Datadog, Inc.
 
+set -e
+
 NPM_TOKEN=$(aws ssm get-parameter \
     --region us-east-1 \
     --name "ci.datadog-lambda-js.npm-token" \
