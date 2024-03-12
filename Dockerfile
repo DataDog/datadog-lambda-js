@@ -8,7 +8,6 @@ RUN mkdir -p /nodejs/node_modules/
 # Install dev dependencies
 COPY . datadog-lambda-js
 WORKDIR /datadog-lambda-js
-RUN if [ $image = "node:20.9-alpine" ] ; then yarn global add node-gyp; fi;
 RUN yarn install
 
 # Build the lambda layer
