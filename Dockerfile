@@ -46,6 +46,7 @@ RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/win32-ia32
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/win32-x64
 RUN rm -rf /nodejs/node_modules/@datadog/native-iast-taint-tracking
 RUN rm -rf /nodejs/node_modules/@datadog/native-iast-rewriter
+RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/linuxmusl-x64
 RUN find /nodejs/node_modules -name "*.d.ts" -delete
 RUN find /nodejs/node_modules -name "*.js.map" -delete
 RUN find /nodejs/node_modules -name "*.ts.map" -delete
