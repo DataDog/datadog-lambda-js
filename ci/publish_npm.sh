@@ -28,6 +28,6 @@ echo 'Publishing to NPM'
 if [ -d "./dist" ]; then
     rm -rf ./dist
 fi
-npm run build
+yarn build
 cp ./dist/handler.cjs ./dist/handler.js
 npm publish --dry-run
