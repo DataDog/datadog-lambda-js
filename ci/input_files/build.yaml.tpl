@@ -170,5 +170,6 @@ publish-npm-package-test:
   when: manual
   before_script:
     - *install-node
+    - *node-before-script
   script:
     - ./ci/publish_npm.sh
