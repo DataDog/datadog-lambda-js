@@ -14,7 +14,7 @@ stages:
   - apt-get update
   - apt-get install nodejs -y
   - npm install --global yarn
-  - npm install --global tsc
+  - npm install --global typescript
 
 .node-before-script: &node-before-script
   - echo 'yarn-offline-mirror ".yarn-cache/"' >> .yarnrc
@@ -175,5 +175,6 @@ publish-npm-package:
   {{- end }}
   before_script:
     - *install-node
+    - *node-before-script
   script:
     - ./ci/publish_npm.sh
