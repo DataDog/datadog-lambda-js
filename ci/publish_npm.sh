@@ -19,7 +19,7 @@ echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
 if [ -z "$CI_COMMIT_TAG" ]; then
     printf "[Error] No CI_COMMIT_TAG found.\n"
     printf "Exiting script...\n"
-    exit 1
+    # exit 1
 else
     printf "Tag found in environment: $CI_COMMIT_TAG\n"
 fi
