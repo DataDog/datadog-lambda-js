@@ -30,4 +30,4 @@ if [ -d "./dist" ]; then
 fi
 npm run build
 cp ./dist/handler.cjs ./dist/handler.js
-npm publish
+npm publish --dry-run

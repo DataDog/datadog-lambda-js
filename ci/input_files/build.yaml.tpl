@@ -162,17 +162,12 @@ publish-layer-{{ $environment.name }} ({{ $runtime.name }}):
 
 {{- end }}
 
-publish-npm-package:
+publish-npm-package-test:
   stage: publish
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/images/docker:20.10-py3
   cache: []
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^v.*/'
   when: manual
-  needs: {{ range $runtime := (ds "runtimes").runtimes }}
-    - sign-layer ({{ $runtime.name }})
-  {{- end }}
   before_script:
     - *install-node
   script:
