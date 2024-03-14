@@ -197,24 +197,25 @@ export class XrayService {
 
     // We want to turn the last 63 bits into a decimal number in a string representation
     try {
-      return (BigInt("0x" + lastPart) % BigInt("0x8000000000000000")).toString(10);
+      return (BigInt("0x" + lastPart) % BigInt("0x8000000000000000")).toString(10); // mod by 2^63 will leave us with the last 63 bits
     } catch (_) {
+      logDebug(`Faied to convert trace id ${lastPart}`);
       return undefined;
     }
   }
 
   public static extraceDDContextFromAWSTraceHeader(amznTraceId: string): DatadogTraceHeaders | null {
-    var aws_context = XrayService.parseAWSTraceHeader(amznTraceId);
-    if (!aws_context) {
+    const awsContext = XrayService.parseAWSTraceHeader(amznTraceId);
+    if (!awsContext) {
       return null;
     }
-    const trace_id_parts = aws_context.traceId.split("-");
-    if (trace_id_parts && trace_id_parts.length > 2 && trace_id_parts[2].startsWith("00000000")) {
+    const traceIdParts = awsContext.traceId.split("-");
+    if (traceIdParts && traceIdParts.length > 2 && traceIdParts[2].startsWith("00000000")) {
       // This AWSTraceHeader contains Datadog injected trace context
       return {
-        [DATADOG_TRACE_ID_HEADER]: hexStrToDecimalStr(trace_id_parts[2].substring(8)),
-        [DATADOG_PARENT_ID_HEADER]: hexStrToDecimalStr(aws_context.parentId),
-        [DATADOG_SAMPLING_PRIORITY_HEADER]: aws_context.sampled,
+        [DATADOG_TRACE_ID_HEADER]: hexStrToDecimalStr(traceIdParts[2].substring(8)),
+        [DATADOG_PARENT_ID_HEADER]: hexStrToDecimalStr(awsContext.parentId),
+        [DATADOG_SAMPLING_PRIORITY_HEADER]: awsContext.sampled,
       };
     }
     return null;

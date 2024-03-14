@@ -10,20 +10,20 @@ export class SQSEventTraceExtractor implements EventTraceExtractor {
 
   extract(event: SQSEvent): SpanContextWrapper | null {
     try {
-      var prepared_headers;
+      let preparedHeaders;
       const headers = event?.Records?.[0]?.messageAttributes?._datadog?.stringValue;
       if (headers !== undefined) {
-        prepared_headers = JSON.parse(headers);
+        preparedHeaders = JSON.parse(headers);
       } else {
         if (event?.Records?.[0]?.attributes?.AWSTraceHeader) {
-          prepared_headers = XrayService.extraceDDContextFromAWSTraceHeader(event.Records[0].attributes.AWSTraceHeader);
+          preparedHeaders = XrayService.extraceDDContextFromAWSTraceHeader(event.Records[0].attributes.AWSTraceHeader);
         }
       }
 
-      if (!prepared_headers) return null;
-      const traceContext = this.tracerWrapper.extract(prepared_headers);
+      if (!preparedHeaders) return null;
+      const traceContext = this.tracerWrapper.extract(preparedHeaders);
       if (traceContext === null) {
-        logDebug("Unable to extract the injected trace context from event");
+        logDebug(`Failed to extract trace context from prepared headers: ${preparedHeaders}`);
         return null;
       }
       logDebug(`Extracted trace context from SQS event`, { traceContext, event });
