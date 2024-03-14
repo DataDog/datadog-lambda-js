@@ -15,7 +15,7 @@ regions:
   - code: "ap-northeast-2"
   - code: "ap-northeast-3"
   - code: "ca-central-1"
-#  - code: "ca-west-1" we don't support it
+  - code: "ca-west-1"
   - code: "eu-central-1"
   - code: "eu-central-2"
   - code: "eu-north-1"
@@ -24,7 +24,7 @@ regions:
   - code: "eu-west-3"
   - code: "eu-south-1"
   - code: "eu-south-2"
-#  - code: "il-central-1" we don't support it
+  - code: "il-central-1"
   - code: "me-south-1"
   - code: "me-central-1"
   - code: "sa-east-1"
