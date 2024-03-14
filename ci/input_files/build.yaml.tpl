@@ -4,6 +4,13 @@ stages:
  - sign
  - publish
 
+default:
+  retry:
+    max: 1
+    when:
+      # Retry when the runner fails to start
+      - runner_system_failure
+
 .install-node: &install-node
   - apt-get update
   - apt-get install -y ca-certificates curl gnupg xxd
