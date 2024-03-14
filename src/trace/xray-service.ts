@@ -75,6 +75,7 @@ export class XrayService {
     });
   }
 
+  // Example: Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1
   public static parseAWSTraceHeader(awsTraceHeader: string): XrayTraceHeader | undefined {
     const [root, parent, _sampled] = awsTraceHeader.split(";");
     if (parent === undefined || _sampled === undefined) return;
