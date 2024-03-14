@@ -184,6 +184,7 @@ export class XrayService {
     try {
       return BigInt("0x" + xrayParentId).toString(10);
     } catch (_) {
+      logDebug(`Faied to convert xray parent id ${xrayParentId}`);
       return undefined;
     }
   }
