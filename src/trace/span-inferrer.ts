@@ -94,7 +94,15 @@ export class SpanInferrer {
     const options: SpanOptions = {};
     const domain = event.requestContext.domainName || "";
     const path = event.rawPath || event.requestContext.path || event.requestContext.routeKey;
-    const resourcePath = event.rawPath || event.requestContext.resourcePath || event.requestContext.routeKey;
+    var resourcePath = event.rawPath || event.requestContext.resourcePath || event.requestContext.routeKey;
+    if (event.requestContext.routeKey && event.requestContext.routeKey.includes("{")) {
+        // this is a parameterized route
+        try {
+            resourcePath = event.requestContext.routeKey.split(" ")[1];
+        } catch (e) {
+            logDebug("Error parsing routeKey", e as Error);
+        }
+    }
 
     let method;
     if (event.requestContext.httpMethod) {
