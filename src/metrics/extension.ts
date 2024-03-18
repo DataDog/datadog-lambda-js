@@ -14,13 +14,6 @@ export async function isAgentRunning() {
     logDebug(`Agent isn't present in sandbox`);
     return false;
   }
-
-  const url = new URL(HELLO_PATH, AGENT_URL);
-  const result = await get(url, { timeout: AGENT_TIMEOUT_MS });
-  if (!result.success) {
-    logDebug(`Could not connect to agent. ${result.errorMessage}`);
-    return false;
-  }
   return true;
 }
 
