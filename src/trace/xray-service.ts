@@ -208,7 +208,7 @@ export class XrayService {
 
   public static extraceDDContextFromAWSTraceHeader(amznTraceId: string): DatadogTraceHeaders | null {
     const awsContext = XrayService.parseAWSTraceHeader(amznTraceId);
-    if (!awsContext) {
+    if (awsContext === undefined) {
       return null;
     }
     const traceIdParts = awsContext.traceId.split("-");
