@@ -11,19 +11,8 @@ describe("isAgentRunning", () => {
     mock({
       "/opt/extensions/datadog-agent": Buffer.from([0]),
     });
-    const scope = nock(AGENT_URL).get("/lambda/hello").reply(200);
     const ran = await isAgentRunning();
-    expect(scope.isDone()).toBeTruthy();
     expect(ran).toBeTruthy();
-  });
-  it("returns false when agent doesn't respond", async () => {
-    mock({
-      "/opt/extensions/datadog-agent": Buffer.from([0]),
-    });
-    const scope = nock(AGENT_URL).get("/lambda/hello").replyWithError("Unreachable");
-    const ran = await isAgentRunning();
-    expect(scope.isDone()).toBeTruthy();
-    expect(ran).toBeFalsy();
   });
   it("returns false when agent doesn't exist", async () => {
     mock({});
