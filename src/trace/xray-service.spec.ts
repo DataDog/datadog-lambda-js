@@ -1,3 +1,8 @@
+import {
+  DATADOG_SAMPLING_PRIORITY_HEADER,
+  DATADOG_TRACE_ID_HEADER,
+  DATADOG_PARENT_ID_HEADER,
+} from "./context/extractor";
 import { SampleMode } from "./trace-context-service";
 import { XrayService } from "./xray-service";
 
@@ -338,6 +343,48 @@ describe("XrayService", () => {
       const xray = new XrayService();
       const traceId = xray["convertToTraceId"](xrayTraceId);
       expect(traceId).toBeUndefined();
+    });
+  });
+
+  describe("parseAWSTraceHeader", () => {
+    it("parses AWS trace header correctly", () => {
+      const awsTraceHeader = "Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1";
+      const xrayHeaders = XrayService.parseAWSTraceHeader(awsTraceHeader);
+      expect(xrayHeaders).toEqual({
+        parentId: "94ae789b969f1cc5",
+        sampled: "1",
+        traceId: "1-5e272390-8c398be037738dc042009320",
+      });
+    });
+    it.each(["Root=1-5e272390-8c398be037738dc042009320", "Root=1-65f2f78c-0000000008addb5405b376c0;Parent;Sampled"])(
+      "returns undefined when AWS trace header is malformatted",
+      (awsTraceHeader) => {
+        const xrayHeaders = XrayService.parseAWSTraceHeader(awsTraceHeader);
+        expect(xrayHeaders).toBeUndefined();
+      },
+    );
+  });
+  describe("extraceDDContextFromAWSTraceHeader", () => {
+    it("extracts Datadog trace context from AWS trace header", () => {
+      const awsTraceId = "Root=1-65f2f78c-0000000008addb5405b376c0;Parent=5abcb7ed643995c7;Sampled=1";
+      const ddTraceContext = XrayService.extraceDDContextFromAWSTraceHeader(awsTraceId);
+
+      expect(ddTraceContext).toEqual({
+        [DATADOG_TRACE_ID_HEADER]: "625397077193750208",
+        [DATADOG_PARENT_ID_HEADER]: "6538302989251745223",
+        [DATADOG_SAMPLING_PRIORITY_HEADER]: "1",
+      });
+    });
+
+    it("returns null when AWS trace header is NOT injected by dd-trace", () => {
+      const awsTraceId = "Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1";
+      const ddTraceContext = XrayService.extraceDDContextFromAWSTraceHeader(awsTraceId);
+      expect(ddTraceContext).toBeNull();
+    });
+    it("returns null when AWS trace header cannot be parsed", () => {
+      const awsTraceId = "Root=1-5e272390-8c398be037738dc042009320;;";
+      const ddTraceContext = XrayService.extraceDDContextFromAWSTraceHeader(awsTraceId);
+      expect(ddTraceContext).toBeNull();
     });
   });
 });
