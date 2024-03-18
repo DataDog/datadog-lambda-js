@@ -1,14 +1,15 @@
 import { StatsD } from "hot-shots";
 import { promisify } from "util";
 import { logDebug, logError } from "../utils";
-import { APIClient } from "./api";
-import { flushExtension, isAgentRunning } from "./extension";
+import { AGENT_URL, isAgentRunning } from "./extension";
 import { KMSService } from "./kms-service";
 import { writeMetricToStdout } from "./metric-log";
 import { Distribution } from "./model";
-import { Processor } from "./processor";
+import { URL } from "url";
 
 const metricsBatchSendIntervalMS = 10000; // 10 seconds
+const LOCAL_FLUSH_TIMEOUT_MS = 100;
+const LOCAL_FLUSH_PATH = "/lambda/flush";
 
 export interface MetricsConfig {
   /**
@@ -56,7 +57,7 @@ export interface MetricsConfig {
 }
 
 export class MetricsListener {
-  private currentProcessor?: Promise<Processor>;
+  private currentProcessor?: Promise<any>;
   private apiKey: Promise<string>;
   private statsDClient?: StatsD;
   private isAgentRunning?: boolean = undefined;
@@ -83,6 +84,7 @@ export class MetricsListener {
 
       return;
     }
+
     this.currentProcessor = this.createProcessor(this.config, this.apiKey);
   }
 
@@ -120,16 +122,22 @@ export class MetricsListener {
         logError("failed to flush metrics", error as Error);
       }
     }
+
     try {
       if (this.isAgentRunning && this.config.localTesting) {
-        logDebug(`Flushing Extension for local test`);
-        await flushExtension();
+        const utils = require("../utils/request");
+        const url = new URL(LOCAL_FLUSH_PATH, AGENT_URL);
+        const result = await utils.post(url, {}, { timeout: LOCAL_FLUSH_TIMEOUT_MS });
+        if (!result.success) {
+          logError(`Failed to flush extension. ${result.errorMessage}`);
+        }
       }
     } catch (error) {
       if (error instanceof Error) {
         logError("failed to flush extension", error as Error);
       }
     }
+
     this.currentProcessor = undefined;
   }
 
@@ -171,12 +179,17 @@ export class MetricsListener {
   }
 
   private async createProcessor(config: MetricsConfig, apiKey: Promise<string>) {
-    const key = await apiKey;
-    const url = `https://api.${config.siteURL}`;
-    const apiClient = new APIClient(key, url);
-    const processor = new Processor(apiClient, metricsBatchSendIntervalMS, config.shouldRetryMetrics);
-    processor.startProcessing();
-    return processor;
+    if (!this.isAgentRunning && !this.config.logForwarding) {
+      const APIClient = require("./api").APIClient;
+      const Processor = require("./processor").Processor;
+
+      const key = await apiKey;
+      const url = `https://api.${config.siteURL}`;
+      const apiClient = new APIClient(key, url);
+      const processor = new Processor(apiClient, metricsBatchSendIntervalMS, config.shouldRetryMetrics);
+      processor.startProcessing();
+      return processor;
+    }
   }
 
   private async getAPIKey(config: MetricsConfig) {
