@@ -126,5 +126,53 @@ describe("SQSEventTraceExtractor", () => {
       const traceContext = extractor.extract(payload);
       expect(traceContext).toBeNull();
     });
+
+    it("extracts trace context from AWSTraceHeader with valid payload", () => {
+      mockSpanContext = {
+        toTraceId: () => "625397077193750208",
+        toSpanId: () => "6538302989251745223",
+        _sampling: {
+          priority: "1",
+        },
+      };
+      const tracerWrapper = new TracerWrapper();
+      const payload: SQSEvent = {
+        Records: [
+          {
+            body: "Hello world",
+            attributes: {
+              ApproximateReceiveCount: "1",
+              SentTimestamp: "1605544528092",
+              SenderId: "AROAYYB64AB3JHSRKO6XR:sqs-trace-dev-producer",
+              ApproximateFirstReceiveTimestamp: "1605544528094",
+              AWSTraceHeader: "Root=1-65f2f78c-0000000008addb5405b376c0;Parent=5abcb7ed643995c7;Sampled=1",
+            },
+            messageAttributes: {},
+            eventSource: "aws:sqs",
+            eventSourceARN: "arn:aws:sqs:eu-west-1:601427279990:metal-queue",
+            awsRegion: "eu-west-1",
+            messageId: "foo",
+            md5OfBody: "x",
+            receiptHandle: "x",
+          },
+        ],
+      };
+
+      const extractor = new SQSEventTraceExtractor(tracerWrapper);
+
+      const traceContext = extractor.extract(payload);
+      expect(traceContext).not.toBeNull();
+
+      expect(spyTracerWrapper).toHaveBeenCalledWith({
+        "x-datadog-parent-id": "6538302989251745223",
+        "x-datadog-sampling-priority": "1",
+        "x-datadog-trace-id": "625397077193750208",
+      });
+
+      expect(traceContext?.toTraceId()).toBe("625397077193750208");
+      expect(traceContext?.toSpanId()).toBe("6538302989251745223");
+      expect(traceContext?.sampleMode()).toBe("1");
+      expect(traceContext?.source).toBe("event");
+    });
   });
 });
