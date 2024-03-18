@@ -13,7 +13,7 @@ import {
 
 const AMZN_TRACE_ID_ENV_VAR = "_X_AMZN_TRACE_ID";
 const AWS_XRAY_DAEMON_ADDRESS_ENV_VAR = "AWS_XRAY_DAEMON_ADDRESS";
-
+const DD_TRACE_JAVA_TRACE_ID_PADDING = "00000000";
 interface XrayTraceHeader {
   traceId: string;
   parentId: string;
@@ -212,7 +212,7 @@ export class XrayService {
       return null;
     }
     const traceIdParts = awsContext.traceId.split("-");
-    if (traceIdParts && traceIdParts.length > 2 && traceIdParts[2].startsWith("00000000")) {
+    if (traceIdParts && traceIdParts.length > 2 && traceIdParts[2].startsWith(DD_TRACE_JAVA_TRACE_ID_PADDING)) {
       // This AWSTraceHeader contains Datadog injected trace context
       return {
         [DATADOG_TRACE_ID_HEADER]: hexStrToDecimalStr(traceIdParts[2].substring(8)),
