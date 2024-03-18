@@ -201,7 +201,7 @@ export class XrayService {
     try {
       return (BigInt("0x" + lastPart) % BigInt("0x8000000000000000")).toString(10); // mod by 2^63 will leave us with the last 63 bits
     } catch (_) {
-      logDebug(`Faied to convert trace id ${lastPart}`);
+      logDebug(`Failed to convert Xray Trace Id ${lastPart}`);
       return undefined;
     }
   }
