@@ -1,13 +1,13 @@
 import { logDebug } from "../utils";
 import fs from "fs";
 
-export const AGENT_URL = "http://127.0.0.1:8124";
+export const EXTENSION_URL = "http://127.0.0.1:8124";
 const EXTENSION_PATH = "/opt/extensions/datadog-agent";
 
-export async function isAgentRunning() {
+export async function isExtensionRunning() {
   const extensionExists = await fileExists(EXTENSION_PATH);
   if (!extensionExists) {
-    logDebug(`Agent isn't present in sandbox`);
+    logDebug(`Extension Layer is not present.`);
     return false;
   }
   return true;
