@@ -1,13 +1,13 @@
 import { StatsD } from "hot-shots";
 import { promisify } from "util";
 import { logDebug, logError } from "../utils";
-import { AGENT_URL, isAgentRunning } from "./extension";
+import { EXTENSION_URL, isExtensionRunning } from "./extension";
 import { KMSService } from "./kms-service";
 import { writeMetricToStdout } from "./metric-log";
 import { Distribution } from "./model";
 import { URL } from "url";
 
-const metricsBatchSendIntervalMS = 10000; // 10 seconds
+const METRICS_BATCH_SEND_INTERVAL = 10000; // 10 seconds
 const LOCAL_FLUSH_TIMEOUT_MS = 100;
 const LOCAL_FLUSH_PATH = "/lambda/flush";
 
@@ -60,7 +60,7 @@ export class MetricsListener {
   private currentProcessor?: Promise<any>;
   private apiKey: Promise<string>;
   private statsDClient?: StatsD;
-  private isAgentRunning?: boolean = undefined;
+  private isExtensionRunning?: boolean = undefined;
 
   constructor(private kmsClient: KMSService, private config: MetricsConfig) {
     this.apiKey = this.getAPIKey(config);
@@ -68,12 +68,12 @@ export class MetricsListener {
   }
 
   public async onStartInvocation(_: any) {
-    if (this.isAgentRunning === undefined) {
-      this.isAgentRunning = await isAgentRunning();
-      logDebug(`Extension present: ${this.isAgentRunning}`);
+    if (this.isExtensionRunning === undefined) {
+      this.isExtensionRunning = await isExtensionRunning();
+      logDebug(`Extension present: ${this.isExtensionRunning}`);
     }
 
-    if (this.isAgentRunning) {
+    if (this.isExtensionRunning) {
       logDebug(`Using StatsD client`);
 
       this.statsDClient = new StatsD({ host: "127.0.0.1", closingFlushInterval: 1 });
@@ -123,21 +123,7 @@ export class MetricsListener {
       }
     }
 
-    try {
-      if (this.isAgentRunning && this.config.localTesting) {
-        const utils = require("../utils/request");
-        const url = new URL(LOCAL_FLUSH_PATH, AGENT_URL);
-        const result = await utils.post(url, {}, { timeout: LOCAL_FLUSH_TIMEOUT_MS });
-        if (!result.success) {
-          logError(`Failed to flush extension. ${result.errorMessage}`);
-        }
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        logError("failed to flush extension", error as Error);
-      }
-    }
-
+    this._localFlush();
     this.currentProcessor = undefined;
   }
 
@@ -148,7 +134,7 @@ export class MetricsListener {
     forceAsync: boolean,
     ...tags: string[]
   ) {
-    if (this.isAgentRunning) {
+    if (this.isExtensionRunning) {
       this.statsDClient?.distribution(name, value, undefined, tags);
       return;
     }
@@ -179,14 +165,14 @@ export class MetricsListener {
   }
 
   private async createProcessor(config: MetricsConfig, apiKey: Promise<string>) {
-    if (!this.isAgentRunning && !this.config.logForwarding) {
+    if (!this.isExtensionRunning && !this.config.logForwarding) {
       const APIClient = require("./api").APIClient;
       const Processor = require("./processor").Processor;
 
       const key = await apiKey;
       const url = `https://api.${config.siteURL}`;
       const apiClient = new APIClient(key, url);
-      const processor = new Processor(apiClient, metricsBatchSendIntervalMS, config.shouldRetryMetrics);
+      const processor = new Processor(apiClient, METRICS_BATCH_SEND_INTERVAL, config.shouldRetryMetrics);
       processor.startProcessing();
       return processor;
     }
@@ -205,5 +191,22 @@ export class MetricsListener {
       }
     }
     return "";
+  }
+
+  private async _localFlush() {
+    try {
+      if (this.isExtensionRunning && this.config.localTesting) {
+        const utils = require("../utils/request");
+        const url = new URL(LOCAL_FLUSH_PATH, EXTENSION_URL);
+        const result = await utils.post(url, {}, { timeout: LOCAL_FLUSH_TIMEOUT_MS });
+        if (!result.success) {
+          logError(`Failed to flush extension. ${result.errorMessage}`);
+        }
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        logError("Failed to flush extension", error);
+      }
+    }
   }
 }
