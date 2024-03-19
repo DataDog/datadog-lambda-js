@@ -123,7 +123,7 @@ export class MetricsListener {
       }
     }
 
-    this._localFlush();
+    await this._localFlush();
     this.currentProcessor = undefined;
   }
 
@@ -166,8 +166,8 @@ export class MetricsListener {
 
   private async createProcessor(config: MetricsConfig, apiKey: Promise<string>) {
     if (!this.isExtensionRunning && !this.config.logForwarding) {
-      const APIClient = require("./api").APIClient;
-      const Processor = require("./processor").Processor;
+      const { APIClient } = require("./api");
+      const { Processor } = require("./processor");
 
       const key = await apiKey;
       const url = `https://api.${config.siteURL}`;
@@ -196,9 +196,9 @@ export class MetricsListener {
   private async _localFlush() {
     try {
       if (this.isExtensionRunning && this.config.localTesting) {
-        const utils = require("../utils/request");
+        const { post } = require("../utils/request")
         const url = new URL(LOCAL_FLUSH_PATH, EXTENSION_URL);
-        const result = await utils.post(url, {}, { timeout: LOCAL_FLUSH_TIMEOUT_MS });
+        const result = await post(url, {}, { timeout: LOCAL_FLUSH_TIMEOUT_MS });
         if (!result.success) {
           logError(`Failed to flush extension. ${result.errorMessage}`);
         }
