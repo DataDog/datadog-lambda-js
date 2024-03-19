@@ -196,7 +196,7 @@ export class MetricsListener {
   private async _localFlush() {
     try {
       if (this.isExtensionRunning && this.config.localTesting) {
-        const { post } = require("../utils/request")
+        const { post } = require("../utils/request");
         const url = new URL(LOCAL_FLUSH_PATH, EXTENSION_URL);
         const result = await post(url, {}, { timeout: LOCAL_FLUSH_TIMEOUT_MS });
         if (!result.success) {

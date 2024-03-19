@@ -7,7 +7,7 @@ import { EXTENSION_URL } from "./extension";
 import { MetricsListener } from "./listener";
 import StatsDClient from "hot-shots";
 jest.mock("hot-shots");
-jest.requireActual("../utils/request")
+jest.requireActual("../utils/request");
 
 const siteURL = "example.com";
 
@@ -185,10 +185,10 @@ describe("MetricsListener", () => {
         siteURL,
       });
       await listener.onStartInvocation({});
-    })
+    });
     afterEach(() => {
       listener = undefined;
-    })
+    });
     it("calls flush on the agent", async () => {
       const scope = nock(EXTENSION_URL).post("/lambda/flush", JSON.stringify({})).reply(200);
       await listener!["_localFlush"]();
