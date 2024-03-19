@@ -7,6 +7,7 @@ import { EXTENSION_URL } from "./extension";
 import { MetricsListener } from "./listener";
 import StatsDClient from "hot-shots";
 jest.mock("hot-shots");
+jest.requireActual("../utils/request")
 
 const siteURL = "example.com";
 
@@ -78,7 +79,7 @@ describe("MetricsListener", () => {
       siteURL,
     });
 
-    listener.onStartInvocation({});
+    await listener.onStartInvocation({});
     listener.sendDistributionMetric("my-metric", 10, false, "tag:a", "tag:b");
     await expect(listener.onCompleteInvocation()).resolves.toEqual(undefined);
   });
