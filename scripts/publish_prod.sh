@@ -77,11 +77,11 @@ if [ "$CONT" != "y" ]; then
 else
     echo "Ensuring you have access to the AWS GovCloud account"
     ddsaml2aws login -a govcloud-us1-fed-human-engineering
-    AWS_PROFILE=govcloud-us1-fed-human-engineering aws sts get-caller-identity
+    aws-vault exec sso-govcloud-us1-fed-engineering -- aws sts get-caller-identity
 
     echo "Publishing layers to GovCloud AWS regions"
     ddsaml2aws login -a govcloud-us1-fed-human-engineering
-    VERSION=$LAYER_VERSION AWS_PROFILE=govcloud-us1-fed-human-engineering ./scripts/publish_layers.sh
+    VERSION=$LAYER_VERSION aws-vault exec sso-govcloud-us1-fed-engineering -- ./scripts/publish_layers.sh
 fi
 
 echo "Answer 'n' if GitLab already did this"
