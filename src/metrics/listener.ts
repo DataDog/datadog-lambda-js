@@ -140,7 +140,21 @@ export class MetricsListener {
     forceAsync: boolean,
     ...tags: string[]
   ) {
+    const dist = new Distribution(name, [{ timestamp: metricTime, value }], ...tags);
+
     if (this.isExtensionRunning) {
+      // Dogstatsd doesn't support distribution metrics with timestamps so we must use the API
+      const isMetricTimeValid = Date.parse(metricTime.toString()) > 0;
+      if (isMetricTimeValid) {
+        if (this.currentProcessor === undefined) {
+          this.currentProcessor = this.createProcessor(this.config, this.apiKey);
+        }
+        this.currentProcessor.then((processor) => {
+          processor.addMetric(dist);
+        });
+        return;
+      };
+
       this.statsDClient?.distribution(name, value, undefined, tags);
       return;
     }
@@ -148,8 +162,6 @@ export class MetricsListener {
       writeMetricToStdout(name, value, metricTime, tags);
       return;
     }
-
-    const dist = new Distribution(name, [{ timestamp: metricTime, value }], ...tags);
 
     if (!this.apiKey) {
       const errorMessage = "api key not configured, see https://dtdg.co/sls-node-metrics";
@@ -167,7 +179,9 @@ export class MetricsListener {
   }
 
   public sendDistributionMetric(name: string, value: number, forceAsync: boolean, ...tags: string[]) {
-    this.sendDistributionMetricWithDate(name, value, new Date(Date.now()), forceAsync, ...tags);
+    // The Extension doesn't support distribution metrics with timestamps. Use sendDistributionMetricWithDate instead.
+    const metricTime = this.isExtensionRunning ? new Date(0) : new Date(Date.now());
+    this.sendDistributionMetricWithDate(name, value, metricTime, forceAsync, ...tags);
   }
 
   private async createProcessor(config: MetricsConfig, apiKey: Promise<string>) {
