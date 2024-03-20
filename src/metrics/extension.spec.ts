@@ -7,14 +7,14 @@ describe("isExtensionRunning", () => {
   afterEach(() => {
     mock.restore();
   });
-  it("returns true when agent exists and responds", async () => {
+  it("returns true when extension exists and responds", async () => {
     mock({
       "/opt/extensions/datadog-agent": Buffer.from([0]),
     });
     const ran = await isExtensionRunning();
     expect(ran).toBeTruthy();
   });
-  it("returns false when agent doesn't exist", async () => {
+  it("returns false when extension doesn't exist", async () => {
     mock({});
     const scope = nock(EXTENSION_URL).get("/lambda/hello").replyWithError("Unreachable");
     const ran = await isExtensionRunning();
