@@ -1,6 +1,5 @@
 import nock from "nock";
-
-import { isExtensionRunning, flushExtension, EXTENSION_URL } from "./extension";
+import { isExtensionRunning, EXTENSION_URL, flushExtension } from "./extension";
 import mock from "mock-fs";
 
 describe("isExtensionRunning", () => {
@@ -22,15 +21,16 @@ describe("isExtensionRunning", () => {
     expect(ran).toBeFalsy();
   });
 });
+
 describe("flushExtension", () => {
   it("calls flush on the extension", async () => {
     const scope = nock(EXTENSION_URL).post("/lambda/flush", JSON.stringify({})).reply(200);
-    await flushExtension();
+    await flushExtension(true);
     expect(scope.isDone()).toBeTruthy();
   });
   it("catches error when flush doesn't respond", async () => {
     const scope = nock(EXTENSION_URL).post("/lambda/flush", JSON.stringify({})).replyWithError("Unavailable");
-    await flushExtension();
+    await flushExtension(true);
     expect(scope.isDone()).toBeTruthy();
   });
 });

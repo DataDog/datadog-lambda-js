@@ -78,7 +78,7 @@ describe("MetricsListener", () => {
       siteURL,
     });
 
-    listener.onStartInvocation({});
+    await listener.onStartInvocation({});
     listener.sendDistributionMetric("my-metric", 10, false, "tag:a", "tag:b");
     await expect(listener.onCompleteInvocation()).resolves.toEqual(undefined);
   });
@@ -153,7 +153,7 @@ describe("MetricsListener", () => {
     });
     // jest.useFakeTimers();
 
-    listener.onStartInvocation({});
+    await listener.onStartInvocation({});
     listener.sendDistributionMetricWithDate("my-metric", 10, new Date(1584983836 * 1000), false, "tag:a", "tag:b");
     await listener.onCompleteInvocation();
 
