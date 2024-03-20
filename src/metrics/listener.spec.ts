@@ -137,7 +137,7 @@ describe("MetricsListener", () => {
     expect(flushScope.isDone()).toBeTruthy();
     expect(distributionMock).toHaveBeenCalledWith("my-metric", 10, undefined, ["tag:a", "tag:b"]);
   });
-  
+
   it("only sends metrics with timestamps to the API when the extension is enabled", async () => {
     const flushScope = nock(EXTENSION_URL).post("/lambda/flush", JSON.stringify({})).reply(200);
     mock({
@@ -155,7 +155,7 @@ describe("MetricsListener", () => {
 
     jest.spyOn(Date, "now").mockImplementation(() => 1487076708000);
 
-    const metricTimeOneMinuteAgo = new Date(Date.now() - 60000)
+    const metricTimeOneMinuteAgo = new Date(Date.now() - 60000);
     const kms = new MockKMS("kms-api-key-decrypted");
     const listener = new MetricsListener(kms as any, {
       apiKey: "api-key",
@@ -168,7 +168,14 @@ describe("MetricsListener", () => {
     });
 
     await listener.onStartInvocation({});
-    listener.sendDistributionMetricWithDate("my-metric-with-a-timestamp", 10, metricTimeOneMinuteAgo, false, "tag:a", "tag:b");
+    listener.sendDistributionMetricWithDate(
+      "my-metric-with-a-timestamp",
+      10,
+      metricTimeOneMinuteAgo,
+      false,
+      "tag:a",
+      "tag:b",
+    );
     listener.sendDistributionMetric("my-metric-without-a-timestamp", 10, false, "tag:a", "tag:b");
     await listener.onCompleteInvocation();
     expect(flushScope.isDone()).toBeTruthy();

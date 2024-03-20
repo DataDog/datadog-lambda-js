@@ -153,7 +153,7 @@ export class MetricsListener {
           processor.addMetric(dist);
         });
         return;
-      };
+      }
 
       this.statsDClient?.distribution(name, value, undefined, tags);
       return;
