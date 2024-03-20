@@ -143,21 +143,15 @@ export class MetricsListener {
     const dist = new Distribution(name, [{ timestamp: metricTime, value }], ...tags);
 
     if (this.isExtensionRunning) {
-      // Dogstatsd doesn't support distribution metrics with timestamps so we must use the API
       const isMetricTimeValid = Date.parse(metricTime.toString()) > 0;
       if (isMetricTimeValid) {
-        if (this.currentProcessor === undefined) {
-          this.currentProcessor = this.createProcessor(this.config, this.apiKey);
-        }
-        // tslint:disable-next-line: no-floating-promises
-        this.currentProcessor.then((processor) => {
-          processor.addMetric(dist);
-        });
+        // Only create the processor to submit metrics to the API when a user provides a valid timestamp as
+        // Dogstatsd does not support timestamps for distributions.
+        this.currentProcessor = this.createProcessor(this.config, this.apiKey);
+      } else {
+        this.statsDClient?.distribution(name, value, undefined, tags);
         return;
       }
-
-      this.statsDClient?.distribution(name, value, undefined, tags);
-      return;
     }
     if (this.config.logForwarding || forceAsync) {
       writeMetricToStdout(name, value, metricTime, tags);

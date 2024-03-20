@@ -161,7 +161,7 @@ describe("MetricsListener", () => {
       apiKey: "api-key",
       apiKeyKMS: "",
       enhancedMetrics: false,
-      logForwarding: true,
+      logForwarding: false,
       shouldRetryMetrics: false,
       localTesting: true,
       siteURL,
