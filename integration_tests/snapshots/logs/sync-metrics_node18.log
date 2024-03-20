@@ -36,10 +36,8 @@ XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SNS re
   "v": 1
 }
 HTTP POST https://api.datadoghq.com/api/v1/distribution_points?api_key=XXXX TraceHeaders: ["x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
-HTTP POST https://api.datadoghq.com/api/v1/distribution_points?api_key=XXXX TraceHeaders: ["x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
 END Duration: XXXX ms Memory Used: XXXX MB
 START
-XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SQS request
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -55,6 +53,6 @@ XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SQS re
   ],
   "v": 1
 }
-HTTP POST https://api.datadoghq.com/api/v1/distribution_points?api_key=XXXX TraceHeaders: ["x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
+XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SQS request
 HTTP POST https://api.datadoghq.com/api/v1/distribution_points?api_key=XXXX TraceHeaders: ["x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
 END Duration: XXXX ms Memory Used: XXXX MB
