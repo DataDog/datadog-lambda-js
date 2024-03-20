@@ -149,6 +149,7 @@ export class MetricsListener {
         if (this.currentProcessor === undefined) {
           this.currentProcessor = this.createProcessor(this.config, this.apiKey);
         }
+        // tslint:disable-next-line: no-floating-promises
         this.currentProcessor.then((processor) => {
           processor.addMetric(dist);
         });
