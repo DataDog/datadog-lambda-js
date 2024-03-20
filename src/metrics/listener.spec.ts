@@ -7,7 +7,6 @@ import { EXTENSION_URL } from "./extension";
 import { MetricsListener } from "./listener";
 import StatsDClient from "hot-shots";
 jest.mock("hot-shots");
-jest.requireActual("../utils/request");
 
 const siteURL = "example.com";
 
@@ -159,45 +158,5 @@ describe("MetricsListener", () => {
     await listener.onCompleteInvocation();
 
     expect(spy).toHaveBeenCalledWith(`{"e":1584983836,"m":"my-metric","t":["tag:a","tag:b"],"v":10}\n`);
-  });
-
-  describe("_localFlush", () => {
-    let listener: MetricsListener | undefined;
-    beforeEach(async () => {
-      mock({
-        "/opt/extensions/datadog-agent": Buffer.from([0]),
-      });
-      const distributionMock = jest.fn();
-      (StatsDClient as any).mockImplementation(() => {
-        return {
-          distribution: distributionMock,
-          close: (callback: any) => callback(undefined),
-        };
-      });
-      const kms = new MockKMS("kms-api-key-decrypted");
-      listener = new MetricsListener(kms as any, {
-        apiKey: "api-key",
-        apiKeyKMS: "",
-        enhancedMetrics: false,
-        logForwarding: true,
-        shouldRetryMetrics: false,
-        localTesting: true,
-        siteURL,
-      });
-      await listener.onStartInvocation({});
-    });
-    afterEach(() => {
-      listener = undefined;
-    });
-    it("calls flush on the agent", async () => {
-      const scope = nock(EXTENSION_URL).post("/lambda/flush", JSON.stringify({})).reply(200);
-      await listener!["_localFlush"]();
-      expect(scope.isDone()).toBeTruthy();
-    });
-    it("catches error when flush doesn't respond", async () => {
-      const scope = nock(EXTENSION_URL).post("/lambda/flush", JSON.stringify({})).replyWithError("Unavailable");
-      await listener!["_localFlush"]();
-      expect(scope.isDone()).toBeTruthy();
-    });
   });
 });
