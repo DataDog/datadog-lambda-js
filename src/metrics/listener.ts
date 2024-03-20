@@ -1,15 +1,12 @@
 import { StatsD } from "hot-shots";
 import { promisify } from "util";
 import { logDebug, logError } from "../utils";
-import { EXTENSION_URL, isExtensionRunning } from "./extension";
+import { flushExtension, isExtensionRunning } from "./extension";
 import { KMSService } from "./kms-service";
 import { writeMetricToStdout } from "./metric-log";
 import { Distribution } from "./model";
-import { URL } from "url";
 
 const METRICS_BATCH_SEND_INTERVAL = 10000; // 10 seconds
-const LOCAL_FLUSH_TIMEOUT_MS = 100;
-const LOCAL_FLUSH_PATH = "/lambda/flush";
 
 export interface MetricsConfig {
   /**
@@ -123,7 +120,11 @@ export class MetricsListener {
       }
     }
 
-    await this._localFlush();
+    // Flush only when testing extension locally.
+    // Passing config flag so we can lazy load the request module.
+    if (this.isExtensionRunning) {
+      await flushExtension(this.config.localTesting);
+    }
     this.currentProcessor = undefined;
   }
 
@@ -191,22 +192,5 @@ export class MetricsListener {
       }
     }
     return "";
-  }
-
-  private async _localFlush() {
-    try {
-      if (this.isExtensionRunning && this.config.localTesting) {
-        const { post } = require("../utils/request");
-        const url = new URL(LOCAL_FLUSH_PATH, EXTENSION_URL);
-        const result = await post(url, {}, { timeout: LOCAL_FLUSH_TIMEOUT_MS });
-        if (!result.success) {
-          logError(`Failed to flush extension. ${result.errorMessage}`);
-        }
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        logError("Failed to flush extension", error);
-      }
-    }
   }
 }
