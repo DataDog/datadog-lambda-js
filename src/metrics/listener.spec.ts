@@ -2,7 +2,7 @@ import nock from "nock";
 import mock from "mock-fs";
 
 import { LogLevel, setLogLevel } from "../utils";
-import { AGENT_URL } from "./extension";
+import { EXTENSION_URL } from "./extension";
 
 import { MetricsListener } from "./listener";
 import StatsDClient from "hot-shots";
@@ -105,7 +105,7 @@ describe("MetricsListener", () => {
     expect(spy).toHaveBeenCalledWith(`{"e":1487076708,"m":"my-metric","t":["tag:a","tag:b"],"v":10}\n`);
   });
   it("always sends metrics to statsD when extension is enabled, ignoring logForwarding=true", async () => {
-    const flushScope = nock(AGENT_URL).post("/lambda/flush", JSON.stringify({})).reply(200);
+    const flushScope = nock(EXTENSION_URL).post("/lambda/flush", JSON.stringify({})).reply(200);
     mock({
       "/opt/extensions/datadog-agent": Buffer.from([0]),
     });
