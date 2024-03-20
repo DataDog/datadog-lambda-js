@@ -2,7 +2,7 @@ import { StatsD } from "hot-shots";
 import { promisify } from "util";
 import { logDebug, logError } from "../utils";
 import { APIClient } from "./api";
-import { flushExtension, isAgentRunning } from "./extension";
+import { flushExtension, isExtensionRunning } from "./extension";
 import { KMSService } from "./kms-service";
 import { writeMetricToStdout } from "./metric-log";
 import { Distribution } from "./model";
@@ -59,7 +59,7 @@ export class MetricsListener {
   private currentProcessor?: Promise<Processor>;
   private apiKey: Promise<string>;
   private statsDClient?: StatsD;
-  private isAgentRunning?: boolean = undefined;
+  private isExtensionRunning?: boolean = undefined;
 
   constructor(private kmsClient: KMSService, private config: MetricsConfig) {
     this.apiKey = this.getAPIKey(config);
@@ -67,12 +67,12 @@ export class MetricsListener {
   }
 
   public async onStartInvocation(_: any) {
-    if (this.isAgentRunning === undefined) {
-      this.isAgentRunning = await isAgentRunning();
-      logDebug(`Extension present: ${this.isAgentRunning}`);
+    if (this.isExtensionRunning === undefined) {
+      this.isExtensionRunning = await isExtensionRunning();
+      logDebug(`Extension present: ${this.isExtensionRunning}`);
     }
 
-    if (this.isAgentRunning) {
+    if (this.isExtensionRunning) {
       logDebug(`Using StatsD client`);
 
       this.statsDClient = new StatsD({ host: "127.0.0.1", closingFlushInterval: 1 });
@@ -121,7 +121,7 @@ export class MetricsListener {
       }
     }
     try {
-      if (this.isAgentRunning && this.config.localTesting) {
+      if (this.isExtensionRunning && this.config.localTesting) {
         logDebug(`Flushing Extension for local test`);
         await flushExtension();
       }
@@ -140,7 +140,7 @@ export class MetricsListener {
     forceAsync: boolean,
     ...tags: string[]
   ) {
-    if (this.isAgentRunning) {
+    if (this.isExtensionRunning) {
       this.statsDClient?.distribution(name, value, undefined, tags);
       return;
     }
