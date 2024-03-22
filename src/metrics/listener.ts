@@ -131,7 +131,7 @@ export class MetricsListener {
   public sendDistributionMetricWithDate(
     name: string,
     value: number,
-    metricTime: Date,
+    metricTime: Date, // TODO: Next breaking change to update to optional or 'Date | undefined'?
     forceAsync: boolean,
     ...tags: string[]
   ) {
