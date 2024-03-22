@@ -11,7 +11,6 @@ import { DatadogTraceHeaders } from "./trace/context/extractor";
 import { SpanContextWrapper } from "./trace/span-context-wrapper";
 import { TraceSource } from "./trace/trace-context-service";
 import { inflateSync } from "zlib";
-import { MetricsQueue } from "./metrics/queue";
 
 jest.mock("./metrics/enhanced-metrics");
 
