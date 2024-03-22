@@ -24,7 +24,7 @@ export class MetricsQueue {
   /**
    * Enqueues a metric for later processing.
    * If the queue is full, all metrics are dropped. But the new metric is still enqueued.
-   * 
+   *
    * @param metric The metric to be enqueued.
    */
   public push(metric: MetricParameters) {

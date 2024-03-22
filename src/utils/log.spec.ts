@@ -5,7 +5,7 @@ describe("logger", () => {
     const logger = {
       debug: jest.fn(),
       error: jest.fn(),
-      warn: jest.fn()
+      warn: jest.fn(),
     };
 
     setLogger(logger);
@@ -18,7 +18,7 @@ describe("logger", () => {
     const logger = {
       debug: jest.fn(),
       error: jest.fn(),
-      warn: jest.fn()
+      warn: jest.fn(),
     };
 
     setLogger(logger);
@@ -31,7 +31,7 @@ describe("logger", () => {
     const logger = {
       debug: jest.fn(),
       error: jest.fn(),
-      warn: jest.fn()
+      warn: jest.fn(),
     };
 
     setLogger(logger);
@@ -47,7 +47,7 @@ describe("logger", () => {
     const logger = {
       debug: jest.fn(),
       error: jest.fn(),
-      warn: jest.fn()
+      warn: jest.fn(),
     };
 
     setLogger(logger);
