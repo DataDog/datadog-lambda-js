@@ -10,15 +10,7 @@ import {
 } from "./metrics";
 import { TraceConfig, TraceListener } from "./trace";
 import { subscribeToDC } from "./runtime";
-import {
-  logDebug,
-  Logger,
-  LogLevel,
-  promisifiedHandler,
-  setSandboxInit,
-  setLogger,
-  setLogLevel,
-} from "./utils";
+import { logDebug, Logger, LogLevel, promisifiedHandler, setSandboxInit, setLogger, setLogLevel } from "./utils";
 import { getEnhancedMetricTags } from "./metrics/enhanced-metrics";
 import { DatadogTraceHeaders } from "./trace/context/extractor";
 
