@@ -12,7 +12,6 @@ import { TraceConfig, TraceListener } from "./trace";
 import { subscribeToDC } from "./runtime";
 import {
   logDebug,
-  logError,
   Logger,
   LogLevel,
   promisifiedHandler,
