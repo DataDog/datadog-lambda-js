@@ -135,8 +135,6 @@ export class MetricsListener {
     forceAsync: boolean,
     ...tags: string[]
   ) {
-    const dist = new Distribution(name, [{ timestamp: metricTime, value }], ...tags);
-
     if (this.isExtensionRunning) {
       const isMetricTimeValid = Date.parse(metricTime.toString()) > 0;
       if (isMetricTimeValid) {
@@ -152,6 +150,8 @@ export class MetricsListener {
       writeMetricToStdout(name, value, metricTime, tags);
       return;
     }
+
+    const dist = new Distribution(name, [{ timestamp: metricTime, value }], ...tags);
 
     if (!this.apiKey) {
       const errorMessage = "api key not configured, see https://dtdg.co/sls-node-metrics";
@@ -175,7 +175,7 @@ export class MetricsListener {
   }
 
   private async createProcessor(config: MetricsConfig, apiKey: Promise<string>) {
-    if (!this.isExtensionRunning && !this.config.logForwarding) {
+    if (!this.config.logForwarding) {
       const { APIClient } = require("./api");
       const { Processor } = require("./processor");
 
