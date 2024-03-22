@@ -6,6 +6,7 @@ import {
   KMSService,
   MetricsConfig,
   MetricsListener,
+  MetricsQueue,
 } from "./metrics";
 import { TraceConfig, TraceListener } from "./trace";
 import { subscribeToDC } from "./runtime";
@@ -90,6 +91,8 @@ export const defaultConfig: Config = {
   localTesting: false,
 } as const;
 
+export const _metricsQueue: MetricsQueue = new MetricsQueue();
+
 let currentMetricsListener: MetricsListener | undefined;
 let currentTraceListener: TraceListener | undefined;
 
@@ -150,6 +153,8 @@ export function datadog<TEvent, TResult>(
       if (finalConfig.enhancedMetrics) {
         incrementInvocationsMetric(metricsListener, context);
       }
+
+      sendQueueMetrics(metricsListener);
     } catch (err) {
       if (err instanceof Error) {
         logDebug("Failed to start listeners", err);
@@ -259,9 +264,10 @@ export function sendDistributionMetricWithDate(name: string, value: number, metr
 
   if (currentMetricsListener !== undefined) {
     currentMetricsListener.sendDistributionMetricWithDate(name, value, metricTime, false, ...tags);
-  } else {
-    logError("handler not initialized");
+    return;
   }
+
+  _metricsQueue.push({ name, value, metricTime, tags });
 }
 
 /**
@@ -275,8 +281,22 @@ export function sendDistributionMetric(name: string, value: number, ...tags: str
 
   if (currentMetricsListener !== undefined) {
     currentMetricsListener.sendDistributionMetric(name, value, false, ...tags);
-  } else {
-    logError("handler not initialized");
+    return;
+  }
+
+  _metricsQueue.push({ name, value, tags });
+}
+
+function sendQueueMetrics(listener: MetricsListener) {
+  while (_metricsQueue.length > 0) {
+    const metric = _metricsQueue.shift()!; // This will always exist.
+    const { name, value, metricTime, tags } = metric;
+    if (metricTime !== undefined) {
+      listener.sendDistributionMetricWithDate(name, value, metricTime, false, ...tags);
+      return;
+    }
+
+    listener.sendDistributionMetric(name, value, false, ...tags);
   }
 }
 

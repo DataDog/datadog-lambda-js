@@ -2,7 +2,7 @@ import http from "http";
 import nock from "nock";
 
 import { Context, Handler } from "aws-lambda";
-import { datadog, getTraceHeaders, sendDistributionMetric, sendDistributionMetricWithDate } from "./index";
+import { datadog, getTraceHeaders, sendDistributionMetric, sendDistributionMetricWithDate, _metricsQueue } from "./index";
 import { incrementErrorsMetric, incrementInvocationsMetric } from "./metrics/enhanced-metrics";
 import { LogLevel, setLogLevel } from "./utils";
 import { HANDLER_STREAMING, STREAM_RESPONSE } from "./constants";
@@ -11,6 +11,7 @@ import { DatadogTraceHeaders } from "./trace/context/extractor";
 import { SpanContextWrapper } from "./trace/span-context-wrapper";
 import { TraceSource } from "./trace/trace-context-service";
 import { inflateSync } from "zlib";
+import { MetricsQueue } from "./metrics/queue";
 
 jest.mock("./metrics/enhanced-metrics");
 
@@ -407,6 +408,7 @@ describe("datadog", () => {
     const logger = {
       debug: jest.fn(),
       error: jest.fn(),
+      warn: jest.fn()
     };
 
     const wrapped = datadog(handler, { forceWrap: true, logger: logger, debugLogging: true });
@@ -440,3 +442,26 @@ describe("datadog", () => {
     expect(wrapped[HANDLER_STREAMING]).toBe(undefined);
   });
 });
+
+
+describe("sendDistributionMetric", () => {
+  beforeEach(() => {
+    _metricsQueue.reset()
+    setLogLevel(LogLevel.NONE);
+  })
+  it("enqueues a metric for later processing when metrics listener is not initialized", () => {
+    sendDistributionMetric("metric", 1, "first-tag", "second-tag");
+    expect(_metricsQueue.length).toBe(1); 
+  })
+})
+
+describe("sendDistributionMetricWithDate", () => {
+  beforeEach(() => {
+    _metricsQueue.reset()
+    setLogLevel(LogLevel.NONE);
+  })
+  it("enqueues a metric for later processing when metrics listener is not initialized", () => {
+    sendDistributionMetricWithDate("metric", 1, new Date(), "first-tag", "second-tag");
+    expect(_metricsQueue.length).toBe(1); 
+  })
+})
