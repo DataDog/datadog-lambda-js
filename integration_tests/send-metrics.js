@@ -1,5 +1,12 @@
 const { datadog, sendDistributionMetric } = require("datadog-lambda-js");
 
+sendDistributionMetric(
+  "serverless.integration_test.outside_handler",
+  1,
+  "tagkey:tagvalue",
+  `eventsource:outside_handler`,
+);
+
 async function handle(event, context) {
   const responsePayload = { message: "hello, dog!" };
 
