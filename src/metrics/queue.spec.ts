@@ -37,18 +37,26 @@ describe("MetricsQueue", () => {
     });
   });
 
-  describe("shift", () => {
+  describe("pop", () => {
     it("returns undefined when queue is empty", () => {
       const queue = new MetricsQueue();
-      expect(queue.shift()).toBeUndefined();
+      expect(queue.pop()).toBeUndefined();
     });
 
     it("returns the first element in the queue", () => {
       const queue = new MetricsQueue();
       queue.push({ name: "metric", tags: [], value: 1 });
       queue.push({ name: "metric", tags: [], value: 2 });
-      expect(queue.shift()).toEqual({ name: "metric", tags: [], value: 1 });
+      expect(queue.pop()).toEqual({ name: "metric", tags: [], value: 2 });
     });
+  });
+
+  it("reverses the queue", () => {
+    const queue = new MetricsQueue();
+    queue.push({ name: "metric", tags: [], value: 1 });
+    queue.push({ name: "metric", tags: [], value: 2 });
+    queue.reverse();
+    expect(queue.pop()).toEqual({ name: "metric", tags: [], value: 1 });
   });
 
   it("resets the queue", () => {

@@ -36,12 +36,16 @@ export class MetricsQueue {
     this.queue.push(metric);
   }
 
-  public shift() {
+  public pop() {
     if (this.queue.length > 0) {
-      return this.queue.shift();
+      return this.queue.pop();
     }
 
     return undefined;
+  }
+
+  public reverse() {
+    this.queue.reverse();
   }
 
   public reset() {

@@ -279,8 +279,12 @@ export function sendDistributionMetric(name: string, value: number, ...tags: str
 }
 
 function sendQueueMetrics(listener: MetricsListener) {
+  // Reverse the queue to send metrics in order.
+  // This is necessary because the "queue" is a stack,
+  // and we want to send metrics in the order they were added.
+  _metricsQueue.reverse();
   while (_metricsQueue.length > 0) {
-    const metric = _metricsQueue.shift()!; // This will always exist.
+    const metric = _metricsQueue.pop()!; // This will always exist.
     const { name, value, metricTime, tags } = metric;
     if (metricTime !== undefined) {
       listener.sendDistributionMetricWithDate(name, value, metricTime, false, ...tags);
