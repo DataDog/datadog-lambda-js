@@ -284,7 +284,7 @@ function sendQueueMetrics(listener: MetricsListener) {
     const { name, value, metricTime, tags } = metric;
     if (metricTime !== undefined) {
       listener.sendDistributionMetricWithDate(name, value, metricTime, false, ...tags);
-      return;
+      continue;
     }
 
     listener.sendDistributionMetric(name, value, false, ...tags);
