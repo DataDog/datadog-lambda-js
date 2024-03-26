@@ -3,12 +3,14 @@ import { serializeError } from "serialize-error";
 export enum LogLevel {
   DEBUG = 0,
   ERROR,
+  WARNING,
   NONE,
 }
 
 export interface Logger {
   debug(message: string): void;
   error(message: string): void;
+  warn(message: string): void;
 }
 
 let logger: Logger = console;
@@ -38,6 +40,13 @@ export function logError(message: string, metadata?: Error | object, error?: Err
     return;
   }
   emitLog(logger.error, "error", message, metadata, error);
+}
+
+export function logWarning(message: string, metadata?: Error | object, error?: Error) {
+  if (logLevel > LogLevel.WARNING) {
+    return;
+  }
+  emitLog(logger.warn, "warning", message, metadata, error);
 }
 
 function emitLog(
