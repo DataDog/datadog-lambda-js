@@ -525,7 +525,7 @@ export class SpanInferrer {
   }
 
   getResourcePath(event: any): string {
-    const routeKey = event.requestContext.routeKey;
+    const routeKey = event?.requestContext?.routeKey;
     if (routeKey && routeKey.includes("{")) {
       // this is a parameterized route
       try {
