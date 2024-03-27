@@ -131,13 +131,20 @@ export class MetricsListener {
   public sendDistributionMetricWithDate(
     name: string,
     value: number,
-    metricTime: Date,
+    metricTime: Date, // TODO: Next breaking change to update to optional or 'Date | undefined'?
     forceAsync: boolean,
     ...tags: string[]
   ) {
     if (this.isExtensionRunning) {
-      this.statsDClient?.distribution(name, value, undefined, tags);
-      return;
+      const isMetricTimeValid = Date.parse(metricTime.toString()) > 0;
+      if (isMetricTimeValid) {
+        // Only create the processor to submit metrics to the API when a user provides a valid timestamp as
+        // Dogstatsd does not support timestamps for distributions.
+        this.currentProcessor = this.createProcessor(this.config, this.apiKey);
+      } else {
+        this.statsDClient?.distribution(name, value, undefined, tags);
+        return;
+      }
     }
     if (this.config.logForwarding || forceAsync) {
       writeMetricToStdout(name, value, metricTime, tags);
@@ -162,11 +169,13 @@ export class MetricsListener {
   }
 
   public sendDistributionMetric(name: string, value: number, forceAsync: boolean, ...tags: string[]) {
-    this.sendDistributionMetricWithDate(name, value, new Date(Date.now()), forceAsync, ...tags);
+    // The Extension doesn't support distribution metrics with timestamps. Use sendDistributionMetricWithDate instead.
+    const metricTime = this.isExtensionRunning ? new Date(0) : new Date(Date.now());
+    this.sendDistributionMetricWithDate(name, value, metricTime, forceAsync, ...tags);
   }
 
   private async createProcessor(config: MetricsConfig, apiKey: Promise<string>) {
-    if (!this.isExtensionRunning && !this.config.logForwarding) {
+    if (!this.config.logForwarding) {
       const { APIClient } = require("./api");
       const { Processor } = require("./processor");
 

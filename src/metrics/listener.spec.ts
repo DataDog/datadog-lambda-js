@@ -138,6 +138,51 @@ describe("MetricsListener", () => {
     expect(distributionMock).toHaveBeenCalledWith("my-metric", 10, undefined, ["tag:a", "tag:b"]);
   });
 
+  it("only sends metrics with timestamps to the API when the extension is enabled", async () => {
+    const flushScope = nock(EXTENSION_URL).post("/lambda/flush", JSON.stringify({})).reply(200);
+    mock({
+      "/opt/extensions/datadog-agent": Buffer.from([0]),
+    });
+    nock("https://api.example.com").post("/api/v1/distribution_points?api_key=api-key").reply(200, {});
+
+    const distributionMock = jest.fn();
+    (StatsDClient as any).mockImplementation(() => {
+      return {
+        distribution: distributionMock,
+        close: (callback: any) => callback(undefined),
+      };
+    });
+
+    jest.spyOn(Date, "now").mockImplementation(() => 1487076708000);
+
+    const metricTimeOneMinuteAgo = new Date(Date.now() - 60000);
+    const kms = new MockKMS("kms-api-key-decrypted");
+    const listener = new MetricsListener(kms as any, {
+      apiKey: "api-key",
+      apiKeyKMS: "",
+      enhancedMetrics: false,
+      logForwarding: false,
+      shouldRetryMetrics: false,
+      localTesting: true,
+      siteURL,
+    });
+
+    await listener.onStartInvocation({});
+    listener.sendDistributionMetricWithDate(
+      "my-metric-with-a-timestamp",
+      10,
+      metricTimeOneMinuteAgo,
+      false,
+      "tag:a",
+      "tag:b",
+    );
+    listener.sendDistributionMetric("my-metric-without-a-timestamp", 10, false, "tag:a", "tag:b");
+    await listener.onCompleteInvocation();
+    expect(flushScope.isDone()).toBeTruthy();
+    expect(nock.isDone()).toBeTruthy();
+    expect(distributionMock).toHaveBeenCalledWith("my-metric-without-a-timestamp", 10, undefined, ["tag:a", "tag:b"]);
+  });
+
   it("logs metrics when logForwarding is enabled with custom timestamp", async () => {
     const spy = jest.spyOn(process.stdout, "write");
     // jest.spyOn(Date, "now").mockImplementation(() => 1487076708000);
