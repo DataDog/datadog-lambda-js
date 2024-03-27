@@ -6,19 +6,11 @@ import {
   KMSService,
   MetricsConfig,
   MetricsListener,
+  MetricsQueue,
 } from "./metrics";
 import { TraceConfig, TraceListener } from "./trace";
 import { subscribeToDC } from "./runtime";
-import {
-  logDebug,
-  logError,
-  Logger,
-  LogLevel,
-  promisifiedHandler,
-  setSandboxInit,
-  setLogger,
-  setLogLevel,
-} from "./utils";
+import { logDebug, Logger, LogLevel, promisifiedHandler, setSandboxInit, setLogger, setLogLevel } from "./utils";
 import { getEnhancedMetricTags } from "./metrics/enhanced-metrics";
 import { DatadogTraceHeaders } from "./trace/context/extractor";
 
@@ -90,6 +82,8 @@ export const defaultConfig: Config = {
   localTesting: false,
 } as const;
 
+export const _metricsQueue: MetricsQueue = new MetricsQueue();
+
 let currentMetricsListener: MetricsListener | undefined;
 let currentTraceListener: TraceListener | undefined;
 
@@ -150,6 +144,8 @@ export function datadog<TEvent, TResult>(
       if (finalConfig.enhancedMetrics) {
         incrementInvocationsMetric(metricsListener, context);
       }
+
+      sendQueueMetrics(metricsListener);
     } catch (err) {
       if (err instanceof Error) {
         logDebug("Failed to start listeners", err);
@@ -259,9 +255,10 @@ export function sendDistributionMetricWithDate(name: string, value: number, metr
 
   if (currentMetricsListener !== undefined) {
     currentMetricsListener.sendDistributionMetricWithDate(name, value, metricTime, false, ...tags);
-  } else {
-    logError("handler not initialized");
+    return;
   }
+
+  _metricsQueue.push({ name, value, metricTime, tags });
 }
 
 /**
@@ -275,8 +272,26 @@ export function sendDistributionMetric(name: string, value: number, ...tags: str
 
   if (currentMetricsListener !== undefined) {
     currentMetricsListener.sendDistributionMetric(name, value, false, ...tags);
-  } else {
-    logError("handler not initialized");
+    return;
+  }
+
+  _metricsQueue.push({ name, value, tags });
+}
+
+function sendQueueMetrics(listener: MetricsListener) {
+  // Reverse the queue to send metrics in order.
+  // This is necessary because the "queue" is a stack,
+  // and we want to send metrics in the order they were added.
+  _metricsQueue.reverse();
+  while (_metricsQueue.length > 0) {
+    const metric = _metricsQueue.pop()!; // This will always exist.
+    const { name, value, metricTime, tags } = metric;
+    if (metricTime !== undefined) {
+      listener.sendDistributionMetricWithDate(name, value, metricTime, false, ...tags);
+      continue;
+    }
+
+    listener.sendDistributionMetric(name, value, false, ...tags);
   }
 }
 
