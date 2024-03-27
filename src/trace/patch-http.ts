@@ -33,6 +33,8 @@ export function unpatchHttp() {
 }
 
 function patchMethod(mod: typeof http | typeof https, method: "get" | "request", contextService: TraceContextService) {
+  if (mod[method].__wrapped !== undefined) return; // Only patch once
+
   shimmer.wrap(mod, method, (original) => {
     const fn = (arg1: any, arg2: any, arg3: any) => {
       [arg1, arg2, arg3] = addTraceContextToArgs(contextService, arg1, arg2, arg3);

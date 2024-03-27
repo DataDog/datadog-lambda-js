@@ -2,7 +2,7 @@ import nock from "nock";
 import mock from "mock-fs";
 
 import { LogLevel, setLogLevel } from "../utils";
-import { AGENT_URL } from "./extension";
+import { EXTENSION_URL } from "./extension";
 
 import { MetricsListener } from "./listener";
 import StatsDClient from "hot-shots";
@@ -78,7 +78,7 @@ describe("MetricsListener", () => {
       siteURL,
     });
 
-    listener.onStartInvocation({});
+    await listener.onStartInvocation({});
     listener.sendDistributionMetric("my-metric", 10, false, "tag:a", "tag:b");
     await expect(listener.onCompleteInvocation()).resolves.toEqual(undefined);
   });
@@ -105,8 +105,7 @@ describe("MetricsListener", () => {
     expect(spy).toHaveBeenCalledWith(`{"e":1487076708,"m":"my-metric","t":["tag:a","tag:b"],"v":10}\n`);
   });
   it("always sends metrics to statsD when extension is enabled, ignoring logForwarding=true", async () => {
-    const helloScope = nock(AGENT_URL).get("/lambda/hello").reply(200);
-    const flushScope = nock(AGENT_URL).post("/lambda/flush", JSON.stringify({})).reply(200);
+    const flushScope = nock(EXTENSION_URL).post("/lambda/flush", JSON.stringify({})).reply(200);
     mock({
       "/opt/extensions/datadog-agent": Buffer.from([0]),
     });
@@ -135,7 +134,6 @@ describe("MetricsListener", () => {
     await listener.onStartInvocation({});
     listener.sendDistributionMetric("my-metric", 10, false, "tag:a", "tag:b");
     await listener.onCompleteInvocation();
-    expect(helloScope.isDone()).toBeTruthy();
     expect(flushScope.isDone()).toBeTruthy();
     expect(distributionMock).toHaveBeenCalledWith("my-metric", 10, undefined, ["tag:a", "tag:b"]);
   });
@@ -155,7 +153,7 @@ describe("MetricsListener", () => {
     });
     // jest.useFakeTimers();
 
-    listener.onStartInvocation({});
+    await listener.onStartInvocation({});
     listener.sendDistributionMetricWithDate("my-metric", 10, new Date(1584983836 * 1000), false, "tag:a", "tag:b");
     await listener.onCompleteInvocation();
 

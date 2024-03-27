@@ -1,7 +1,8 @@
 import querystring from "querystring";
 import { URL } from "url";
 
-import { logDebug, post } from "../utils";
+import { logDebug } from "../utils";
+import { post } from "../utils/request";
 import { APIMetric } from "./model";
 
 const API_KEY_QUERY_PARAM = "api_key";
