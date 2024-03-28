@@ -72,6 +72,9 @@ export class MetricsListener {
 
     if (this.isExtensionRunning) {
       logDebug(`Using StatsD client`);
+      if (this.statsDClient) {
+        return;
+      }
 
       this.statsDClient = new StatsD({ host: "127.0.0.1", closingFlushInterval: 1 });
       return;
@@ -97,20 +100,6 @@ export class MetricsListener {
         await promisify(setImmediate)();
 
         await processor.flush();
-      }
-      if (this.statsDClient !== undefined) {
-        logDebug(`Flushing statsD`);
-
-        // Make sure all stats are flushed to extension
-        await new Promise<void>((resolve, reject) => {
-          this.statsDClient?.close((error) => {
-            if (error !== undefined) {
-              reject(error);
-            }
-            resolve();
-          });
-        });
-        this.statsDClient = undefined;
       }
     } catch (error) {
       // This can fail for a variety of reasons, from the API not being reachable,
