@@ -3,6 +3,7 @@ import { HANDLER_STREAMING, STREAM_RESPONSE } from "./constants";
 import {
   incrementErrorsMetric,
   incrementInvocationsMetric,
+  incrementBatchItemFailureMetric,
   KMSService,
   MetricsConfig,
   MetricsListener,
@@ -10,6 +11,7 @@ import {
 import { TraceConfig, TraceListener } from "./trace";
 import { subscribeToDC } from "./runtime";
 import {
+  isBatchItemFailure,
   logDebug,
   logError,
   Logger,
@@ -193,6 +195,9 @@ export function datadog<TEvent, TResult>(
           );
           if (responseIs5xxError) {
             incrementErrorsMetric(metricsListener, context);
+          }
+          if (isBatchItemFailure(localResult)) {
+            incrementBatchItemFailureMetric(metricsListener, context);
           }
         }
         return localResult;
