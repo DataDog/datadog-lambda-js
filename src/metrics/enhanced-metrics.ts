@@ -81,3 +81,7 @@ export function incrementInvocationsMetric(listener: MetricsListener, context: C
 export function incrementErrorsMetric(listener: MetricsListener, context: Context): void {
   incrementEnhancedMetric(listener, "errors", context);
 }
+
+export function incrementBatchItemFailureMetric(listener: MetricsListener, context: Context): void {
+  incrementEnhancedMetric(listener, "batchItemFailures", context);
+}

@@ -1,3 +1,3 @@
 export { MetricsConfig, MetricsListener } from "./listener";
 export { KMSService } from "./kms-service";
-export { incrementErrorsMetric, incrementInvocationsMetric } from "./enhanced-metrics";
+export { incrementErrorsMetric, incrementInvocationsMetric, incrementBatchItemFailureMetric } from "./enhanced-metrics";
