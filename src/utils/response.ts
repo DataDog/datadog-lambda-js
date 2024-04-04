@@ -3,5 +3,7 @@ export interface LambdaResponse {
 }
 
 export function isBatchItemFailure(lambdaResponse: any): lambdaResponse is LambdaResponse {
-    return typeof lambdaResponse === 'object' && 'batchItemFailures' in lambdaResponse;
+    return (typeof lambdaResponse === 'object' && 'batchItemFailures' in lambdaResponse &&
+    Array.isArray(lambdaResponse.batchItemFailures) && lambdaResponse.batchItemFailures.some((item: { itemIdentifier: any }) => typeof item.itemIdentifier === 'string')
+    );
 } 
