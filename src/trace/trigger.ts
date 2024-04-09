@@ -141,7 +141,7 @@ export function parseEventSource(event: any) {
     return eventTypes.lambdaUrl;
   }
   if (
-    eventType.isAPIGatewayEvent(event) ||
+    eventType.(event) ||
     eventType.isAPIGatewayEventV2(event) ||
     eventType.isAPIGatewayWebsocketEvent(event)
   ) {
@@ -272,6 +272,7 @@ function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEv
     }
     httpTags["http.url_details.path"] = requestContext.path;
     httpTags["http.method"] = requestContext.httpMethod;
+    httpTags["http.route"] = event.resource;
     if (event.headers?.Referer) {
       httpTags["http.referer"] = event.headers.Referer;
     }
@@ -283,6 +284,7 @@ function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEv
     httpTags["http.url"] = requestContext.domainName;
     httpTags["http.url_details.path"] = requestContext.http.path;
     httpTags["http.method"] = requestContext.http.method;
+    httpTags["http.route"] = event.resource;
     if (event.headers?.Referer) {
       httpTags["http.referer"] = event.headers.Referer;
     }
