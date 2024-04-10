@@ -3,7 +3,7 @@ import nock from "nock";
 
 import { Context, Handler } from "aws-lambda";
 import { datadog, getTraceHeaders, sendDistributionMetric, sendDistributionMetricWithDate } from "./index";
-import { incrementErrorsMetric, incrementInvocationsMetric } from "./metrics/enhanced-metrics";
+import { incrementErrorsMetric, incrementInvocationsMetric, incrementBatchItemFailureMetric } from "./metrics/enhanced-metrics";
 import { LogLevel, setLogLevel } from "./utils";
 import { HANDLER_STREAMING, STREAM_RESPONSE } from "./constants";
 import { PassThrough } from "stream";
@@ -11,11 +11,13 @@ import { DatadogTraceHeaders } from "./trace/context/extractor";
 import { SpanContextWrapper } from "./trace/span-context-wrapper";
 import { TraceSource } from "./trace/trace-context-service";
 import { inflateSync } from "zlib";
+import { LambdaResponse, isBatchItemFailure } from "./utils/response";
 
 jest.mock("./metrics/enhanced-metrics");
 
 const mockedIncrementErrors = incrementErrorsMetric as jest.Mock<typeof incrementErrorsMetric>;
 const mockedIncrementInvocations = incrementInvocationsMetric as jest.Mock<typeof incrementInvocationsMetric>;
+const mockedIncrementBatchItemFailures = incrementBatchItemFailureMetric as jest.Mock<typeof incrementBatchItemFailureMetric>;
 
 const mockARN = "arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda";
 const mockContext = {
@@ -371,6 +373,30 @@ describe("datadog", () => {
 
     expect(mockedIncrementInvocations).toBeCalledWith(expect.anything(), mockContext);
     expect(mockedIncrementErrors).toBeCalledWith(expect.anything(), mockContext);
+  });
+
+  it("increments batch item failures enhanced metric", async () => {
+    const lambdaResponse: LambdaResponse = {
+      batchItemFailures: [
+          { itemIdentifier: 'abc123' }
+      ]
+    };
+
+    const wrapped = datadog(
+     async () => {
+       return lambdaResponse;
+     }
+    );
+    
+    const lambdaResult = await wrapped({}, mockContext, () => {});
+
+    expect(lambdaResult).toEqual(lambdaResponse);
+
+    expect(mockedIncrementBatchItemFailures).toBeCalledTimes(1);
+    expect(mockedIncrementInvocations).toBeCalledTimes(1);
+
+    expect(mockedIncrementBatchItemFailures).toBeCalledWith(expect.anything(), mockContext);
+    expect(mockedIncrementInvocations).toBeCalledWith(expect.anything(), mockContext);
   });
 
   it("doesn't increment errors or invocations with config false setting", async () => {
