@@ -12,6 +12,8 @@ const eventBridgeSQSEvent = require("../../event_samples/eventbridge-sqs.json");
 const webSocketEvent = require("../../event_samples/api-gateway-wss.json");
 const apiGatewayV1 = require("../../event_samples/api-gateway-v1.json");
 const apiGatewayV2 = require("../../event_samples/api-gateway-v2.json");
+const apiGatewayV1Parametrized = require("../../event_samples/api-gateway-v1-parametrized.json");
+const apiGatewayV2Parametrized = require("../../event_samples/api-gateway-v2-parametrized.json");
 const apiGatewayV1RequestAuthorizer = require("../../event_samples/api-gateway-traced-authorizer-request-v1.json");
 const apiGatewayV1RequestAuthorizerCached = require("../../event_samples/api-gateway-traced-authorizer-request-v1-cached.json");
 const apiGatewayV1TokenAuthorizer = require("../../event_samples/api-gateway-traced-authorizer-token-v1.json");
@@ -709,6 +711,60 @@ describe("SpanInferrer", () => {
         "service.name": "r3pmxmplak.execute-api.us-east-2.amazonaws.com",
         "span.type": "http",
         stage: "default",
+      },
+    });
+  });
+
+  it("creates an inferred span for API Gateway V1 events with parameters", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(apiGatewayV1Parametrized, {} as any, {} as SpanContext);
+
+    expect(mockWrapper.startSpan).toBeCalledWith("aws.apigateway", {
+      childOf: {},
+      startTime: 1710529824520,
+      tags: {
+        _inferred_span: { synchronicity: "sync", tag_source: "self" },
+        apiid: "mcwkra0ya4",
+        endpoint: "/dev/user/42",
+        "http.url": "mcwkra0ya4.execute-api.sa-east-1.amazonaws.com/dev/user/42",
+        domain_name: "mcwkra0ya4.execute-api.sa-east-1.amazonaws.com",
+        operation_name: "aws.apigateway",
+        "peer.service": "mock-lambda-service",
+        request_id: undefined,
+        "http.method": "GET",
+        "resource.name": "GET /user/{id}",
+        resource_names: "GET /user/{id}",
+        service: "mcwkra0ya4.execute-api.sa-east-1.amazonaws.com",
+        "service.name": "mcwkra0ya4.execute-api.sa-east-1.amazonaws.com",
+        "span.type": "http",
+        stage: "dev",
+      },
+    });
+  });
+
+  it("creates an inferred span for API Gateway V2 events with parameters", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(apiGatewayV2Parametrized, {} as any, {} as SpanContext);
+
+    expect(mockWrapper.startSpan).toBeCalledWith("aws.apigateway", {
+      childOf: {},
+      startTime: 1710529905066,
+      tags: {
+        _inferred_span: { synchronicity: "sync", tag_source: "self" },
+        apiid: "9vj54we5ih",
+        endpoint: "/user/42",
+        "http.url": "9vj54we5ih.execute-api.sa-east-1.amazonaws.com/user/42",
+        domain_name: "9vj54we5ih.execute-api.sa-east-1.amazonaws.com",
+        operation_name: "aws.apigateway",
+        "peer.service": "mock-lambda-service",
+        request_id: undefined,
+        "http.method": "GET",
+        "resource.name": "GET /user/{id}",
+        resource_names: "GET /user/{id}",
+        service: "9vj54we5ih.execute-api.sa-east-1.amazonaws.com",
+        "service.name": "9vj54we5ih.execute-api.sa-east-1.amazonaws.com",
+        "span.type": "http",
+        stage: "$default",
       },
     });
   });

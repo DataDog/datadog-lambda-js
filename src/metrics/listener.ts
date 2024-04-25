@@ -1,14 +1,12 @@
 import { StatsD } from "hot-shots";
 import { promisify } from "util";
 import { logDebug, logError } from "../utils";
-import { APIClient } from "./api";
-import { flushExtension, isAgentRunning } from "./extension";
+import { flushExtension, isExtensionRunning } from "./extension";
 import { KMSService } from "./kms-service";
 import { writeMetricToStdout } from "./metric-log";
 import { Distribution } from "./model";
-import { Processor } from "./processor";
 
-const metricsBatchSendIntervalMS = 10000; // 10 seconds
+const METRICS_BATCH_SEND_INTERVAL = 10000; // 10 seconds
 
 export interface MetricsConfig {
   /**
@@ -56,10 +54,10 @@ export interface MetricsConfig {
 }
 
 export class MetricsListener {
-  private currentProcessor?: Promise<Processor>;
+  private currentProcessor?: Promise<any>;
   private apiKey: Promise<string>;
   private statsDClient?: StatsD;
-  private isAgentRunning?: boolean = undefined;
+  private isExtensionRunning?: boolean = undefined;
 
   constructor(private kmsClient: KMSService, private config: MetricsConfig) {
     this.apiKey = this.getAPIKey(config);
@@ -67,12 +65,12 @@ export class MetricsListener {
   }
 
   public async onStartInvocation(_: any) {
-    if (this.isAgentRunning === undefined) {
-      this.isAgentRunning = await isAgentRunning();
-      logDebug(`Extension present: ${this.isAgentRunning}`);
+    if (this.isExtensionRunning === undefined) {
+      this.isExtensionRunning = await isExtensionRunning();
+      logDebug(`Extension present: ${this.isExtensionRunning}`);
     }
 
-    if (this.isAgentRunning) {
+    if (this.isExtensionRunning) {
       logDebug(`Using StatsD client`);
 
       this.statsDClient = new StatsD({ host: "127.0.0.1", closingFlushInterval: 1 });
@@ -83,6 +81,7 @@ export class MetricsListener {
 
       return;
     }
+
     this.currentProcessor = this.createProcessor(this.config, this.apiKey);
   }
 
@@ -120,15 +119,11 @@ export class MetricsListener {
         logError("failed to flush metrics", error as Error);
       }
     }
-    try {
-      if (this.isAgentRunning && this.config.localTesting) {
-        logDebug(`Flushing Extension for local test`);
-        await flushExtension();
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        logError("failed to flush extension", error as Error);
-      }
+
+    // Flush only when testing extension locally.
+    // Passing config flag so we can lazy load the request module.
+    if (this.isExtensionRunning) {
+      await flushExtension(this.config.localTesting);
     }
     this.currentProcessor = undefined;
   }
@@ -136,13 +131,20 @@ export class MetricsListener {
   public sendDistributionMetricWithDate(
     name: string,
     value: number,
-    metricTime: Date,
+    metricTime: Date, // TODO: Next breaking change to update to optional or 'Date | undefined'?
     forceAsync: boolean,
     ...tags: string[]
   ) {
-    if (this.isAgentRunning) {
-      this.statsDClient?.distribution(name, value, undefined, tags);
-      return;
+    if (this.isExtensionRunning) {
+      const isMetricTimeValid = Date.parse(metricTime.toString()) > 0;
+      if (isMetricTimeValid) {
+        // Only create the processor to submit metrics to the API when a user provides a valid timestamp as
+        // Dogstatsd does not support timestamps for distributions.
+        this.currentProcessor = this.createProcessor(this.config, this.apiKey);
+      } else {
+        this.statsDClient?.distribution(name, value, undefined, tags);
+        return;
+      }
     }
     if (this.config.logForwarding || forceAsync) {
       writeMetricToStdout(name, value, metricTime, tags);
@@ -167,16 +169,23 @@ export class MetricsListener {
   }
 
   public sendDistributionMetric(name: string, value: number, forceAsync: boolean, ...tags: string[]) {
-    this.sendDistributionMetricWithDate(name, value, new Date(Date.now()), forceAsync, ...tags);
+    // The Extension doesn't support distribution metrics with timestamps. Use sendDistributionMetricWithDate instead.
+    const metricTime = this.isExtensionRunning ? new Date(0) : new Date(Date.now());
+    this.sendDistributionMetricWithDate(name, value, metricTime, forceAsync, ...tags);
   }
 
   private async createProcessor(config: MetricsConfig, apiKey: Promise<string>) {
-    const key = await apiKey;
-    const url = `https://api.${config.siteURL}`;
-    const apiClient = new APIClient(key, url);
-    const processor = new Processor(apiClient, metricsBatchSendIntervalMS, config.shouldRetryMetrics);
-    processor.startProcessing();
-    return processor;
+    if (!this.config.logForwarding) {
+      const { APIClient } = require("./api");
+      const { Processor } = require("./processor");
+
+      const key = await apiKey;
+      const url = `https://api.${config.siteURL}`;
+      const apiClient = new APIClient(key, url);
+      const processor = new Processor(apiClient, METRICS_BATCH_SEND_INTERVAL, config.shouldRetryMetrics);
+      processor.startProcessing();
+      return processor;
+    }
   }
 
   private async getAPIKey(config: MetricsConfig) {
