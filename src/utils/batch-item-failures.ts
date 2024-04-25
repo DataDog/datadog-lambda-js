@@ -1,4 +1,4 @@
-export function isBatchItemFailure (lambdaResponse: any): boolean {
+export function isBatchItemFailure(lambdaResponse: any): boolean {
   return (
     typeof lambdaResponse === "object" &&
     "batchItemFailures" in lambdaResponse &&
@@ -6,6 +6,6 @@ export function isBatchItemFailure (lambdaResponse: any): boolean {
   );
 }
 
-export function batchItemFailureCount (lambdaResponse: any): number {
+export function batchItemFailureCount(lambdaResponse: any): number {
   return lambdaResponse?.batchItemFailures?.length || 0; // Guard clause in case someone calls this without checking isBatchItemFailure
 }
