@@ -82,6 +82,6 @@ export function incrementErrorsMetric(listener: MetricsListener, context: Contex
   incrementEnhancedMetric(listener, "errors", context);
 }
 
-export function incrementBatchItemFailureMetric(listener: MetricsListener, context: Context): void {
-  incrementEnhancedMetric(listener, "batch_item_failures", context);
+export function incrementBatchItemFailureMetric(listener: MetricsListener, count: number, context: Context): void {
+  listener.sendDistributionMetric("aws.lambda.enhanced.batch_item_failures", count, true, ...getEnhancedMetricTags(context));
 }

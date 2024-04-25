@@ -13,6 +13,7 @@ import { TraceConfig, TraceListener } from "./trace";
 import { subscribeToDC } from "./runtime";
 import {
   isBatchItemFailure,
+  batchItemFailureCount,
   logDebug,
   Logger,
   LogLevel,
@@ -201,7 +202,7 @@ export function datadog<TEvent, TResult>(
             incrementErrorsMetric(metricsListener, context);
           }
           if (isBatchItemFailure(localResult)) {
-            incrementBatchItemFailureMetric(metricsListener, context);
+            incrementBatchItemFailureMetric(metricsListener, batchItemFailureCount(localResult), context);
           }
         }
         return localResult;

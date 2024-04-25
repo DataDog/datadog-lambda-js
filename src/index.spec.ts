@@ -22,7 +22,6 @@ import { DatadogTraceHeaders } from "./trace/context/extractor";
 import { SpanContextWrapper } from "./trace/span-context-wrapper";
 import { TraceSource } from "./trace/trace-context-service";
 import { inflateSync } from "zlib";
-import { LambdaResponse } from "./utils/response";
 
 jest.mock("./metrics/enhanced-metrics");
 
@@ -97,6 +96,7 @@ describe("datadog", () => {
 
     mockedIncrementErrors.mockClear();
     mockedIncrementInvocations.mockClear();
+    mockedIncrementBatchItemFailures.mockClear();
   });
   afterEach(() => {
     process.env = oldEnv;
@@ -389,8 +389,8 @@ describe("datadog", () => {
   });
 
   it("increments batch item failures enhanced metric", async () => {
-    const lambdaResponse: LambdaResponse = {
-      batchItemFailures: [{ itemIdentifier: "abc123" }],
+    const lambdaResponse: any = {
+      batchItemFailures: [{ itemIdentifier: "abc123" }, { itemIdentifier: "def456" }],
     };
 
     const wrapped = datadog(async () => {
@@ -404,7 +404,46 @@ describe("datadog", () => {
     expect(mockedIncrementBatchItemFailures).toBeCalledTimes(1);
     expect(mockedIncrementInvocations).toBeCalledTimes(1);
 
-    expect(mockedIncrementBatchItemFailures).toBeCalledWith(expect.anything(), mockContext);
+    expect(mockedIncrementBatchItemFailures).toBeCalledWith(expect.anything(), 2, mockContext);
+    expect(mockedIncrementInvocations).toBeCalledWith(expect.anything(), mockContext);
+  });
+
+  it("sets batch item failures enhanced metric to zero if list is empty", async () => {
+    const lambdaResponse: any = {
+      batchItemFailures: [],
+    };
+
+    const wrapped = datadog(async () => {
+      return lambdaResponse;
+    });
+
+    const lambdaResult = await wrapped({}, mockContext, () => {});
+
+    expect(lambdaResult).toEqual(lambdaResponse);
+
+    expect(mockedIncrementBatchItemFailures).toBeCalledTimes(1);
+    expect(mockedIncrementInvocations).toBeCalledTimes(1);
+
+    expect(mockedIncrementBatchItemFailures).toBeCalledWith(expect.anything(), 0, mockContext);
+    expect(mockedIncrementInvocations).toBeCalledWith(expect.anything(), mockContext);
+  });
+
+  it("doesn't increment batch item failures if it's not a failure response", async () => {
+    const lambdaResponse: any = {
+      foo: "bar",
+    };
+
+    const wrapped = datadog(async () => {
+      return lambdaResponse;
+    });
+
+    const lambdaResult = await wrapped({}, mockContext, () => {});
+
+    expect(lambdaResult).toEqual(lambdaResponse);
+
+    expect(mockedIncrementBatchItemFailures).toBeCalledTimes(0);
+    expect(mockedIncrementInvocations).toBeCalledTimes(1);
+
     expect(mockedIncrementInvocations).toBeCalledWith(expect.anything(), mockContext);
   });
 
