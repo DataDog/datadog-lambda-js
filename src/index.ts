@@ -3,6 +3,7 @@ import { HANDLER_STREAMING, STREAM_RESPONSE } from "./constants";
 import {
   incrementErrorsMetric,
   incrementInvocationsMetric,
+  incrementBatchItemFailureMetric,
   KMSService,
   MetricsConfig,
   MetricsListener,
@@ -10,7 +11,17 @@ import {
 } from "./metrics";
 import { TraceConfig, TraceListener } from "./trace";
 import { subscribeToDC } from "./runtime";
-import { logDebug, Logger, LogLevel, promisifiedHandler, setSandboxInit, setLogger, setLogLevel } from "./utils";
+import {
+  isBatchItemFailure,
+  batchItemFailureCount,
+  logDebug,
+  Logger,
+  LogLevel,
+  promisifiedHandler,
+  setSandboxInit,
+  setLogger,
+  setLogLevel,
+} from "./utils";
 import { getEnhancedMetricTags } from "./metrics/enhanced-metrics";
 import { DatadogTraceHeaders } from "./trace/context/extractor";
 
@@ -189,6 +200,9 @@ export function datadog<TEvent, TResult>(
           );
           if (responseIs5xxError) {
             incrementErrorsMetric(metricsListener, context);
+          }
+          if (isBatchItemFailure(localResult)) {
+            incrementBatchItemFailureMetric(metricsListener, batchItemFailureCount(localResult), context);
           }
         }
         return localResult;
