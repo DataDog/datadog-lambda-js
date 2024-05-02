@@ -1,7 +1,7 @@
-import { Md5 } from "ts-md5";
 import { logDebug } from "../utils";
 import { SampleMode, TraceSource } from "./trace-context-service";
 import { SpanContextWrapper } from "./span-context-wrapper";
+import { Sha256 } from '@aws-crypto/sha256-js';
 
 export interface StepFunctionContext {
   "step_function.execution_name": string;
@@ -151,23 +151,20 @@ export class StepFunctionContextService {
   }
 
   private deterministicMd5HashInBinary(s: string): string {
-    // Md5 here is used here because we don't need a cryptographically secure hashing method but to generate the same trace/span ids as the backend does
-    const hex = Md5.hashStr(s);
+    const hash = new Sha256();
+    hash.update(s);
+    const hex = hash.digestSync().subarray(0, 16);
 
     let binary = "";
-    for (let i = 0; i < hex.length; i++) {
-      const ch = hex.charAt(i);
-      binary = binary + this.hexToBinary(ch);
+    for (const num of hex) {
+      const currentBinary = num.toString(2)
+      binary = binary + currentBinary
     }
 
-    const res = "0" + binary.substring(1, 64);
-    if (res === "0".repeat(64)) {
+    const res = "0" + binary.substring(1, 128);
+    if (res === "0".repeat(128)) {
       return "1";
     }
     return res;
-  }
-
-  private hexToBinary(hex: string) {
-    return parseInt(hex, 16).toString(2).padStart(4, "0");
   }
 }
