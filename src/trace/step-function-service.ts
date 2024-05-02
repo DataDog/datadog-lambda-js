@@ -1,7 +1,7 @@
 import { logDebug } from "../utils";
 import { SampleMode, TraceSource } from "./trace-context-service";
 import { SpanContextWrapper } from "./span-context-wrapper";
-import { Sha256 } from '@aws-crypto/sha256-js';
+import { Sha256 } from "@aws-crypto/sha256-js";
 
 export interface StepFunctionContext {
   "step_function.execution_name": string;
@@ -157,7 +157,7 @@ export class StepFunctionContextService {
 
     let binary = "";
     for (const num of hex) {
-      binary = binary + this.numberToBinaryString(num)
+      binary = binary + this.numberToBinaryString(num);
     }
 
     const res = "0" + binary.substring(1, 128);
