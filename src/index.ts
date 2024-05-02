@@ -24,6 +24,8 @@ import {
 } from "./utils";
 import { getEnhancedMetricTags } from "./metrics/enhanced-metrics";
 import { DatadogTraceHeaders } from "./trace/context/extractor";
+import { SpanWrapper } from "./trace/span-wrapper";
+import { SpanOptions, TracerWrapper } from "./trace/tracer-wrapper";
 
 // Backwards-compatible export, TODO deprecate in next major
 export { DatadogTraceHeaders as TraceHeaders } from "./trace/context/extractor";
@@ -415,4 +417,40 @@ export function getEnvValue(key: string, defaultValue: string): string {
 function getRuntimeTag(): string {
   const version = process.version;
   return `dd_lambda_layer:datadog-node${version}`;
+}
+
+export async function emitTelemetryOnErrorOutsideHandler(
+  error: Error,
+  functionName: string,
+  startTime: number,
+): Promise<void> {
+  const config = getConfig();
+  const metricsListener = new MetricsListener(new KMSService(), config);
+  await metricsListener.onStartInvocation(undefined);
+  if (config.enhancedMetrics) {
+    incrementErrorsMetric(metricsListener);
+  }
+
+  if (getEnvValue("DD_TRACE_ENABLED", "true").toLowerCase() === "true") {
+    const options: SpanOptions = {
+      tags: {
+        service: "aws.lambda",
+        operation_name: "aws.lambda",
+        resource_names: functionName,
+        "resource.name": functionName,
+        "span.type": "serverless",
+        "error.status": 500,
+        "error.type": error.name,
+        "error.message": error.message,
+        "error.stack": error.stack,
+        status: error,
+      },
+      startTime,
+    };
+    const tracerWrapper = new TracerWrapper();
+    const span = new SpanWrapper(tracerWrapper.startSpan("aws.lambda", options), {});
+    span.finish();
+  }
+
+  await metricsListener.onCompleteInvocation();
 }

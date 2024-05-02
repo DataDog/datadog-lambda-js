@@ -55,8 +55,8 @@ describe("getEnhancedMetricTags", () => {
       "account_id:123497598159",
       "functionname:my-test-lambda",
       "resource:my-test-lambda",
-      "cold_start:true",
       "memorysize:128",
+      "cold_start:true",
       "datadog_lambda:vX.X.X",
       "runtime:nodejs20.x",
     ]);
@@ -66,8 +66,8 @@ describe("getEnhancedMetricTags", () => {
     mockedGetProcessVersion.mockReturnValue("v20.9.0");
     expect(getEnhancedMetricTags(mockContextLocal)).toStrictEqual([
       "functionname:my-test-lambda",
-      "cold_start:true",
       "memorysize:128",
+      "cold_start:true",
       "datadog_lambda:vX.X.X",
       "runtime:nodejs20.x",
     ]);
@@ -80,8 +80,8 @@ describe("getEnhancedMetricTags", () => {
       "account_id:123497598159",
       "functionname:my-test-lambda",
       "resource:my-test-lambda",
-      "cold_start:true",
       "memorysize:128",
+      "cold_start:true",
       "datadog_lambda:vX.X.X",
     ]);
   });

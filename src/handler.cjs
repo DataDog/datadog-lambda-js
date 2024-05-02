@@ -3,6 +3,7 @@ const {
   datadogHandlerEnvVar,
   lambdaTaskRootEnvVar,
   traceExtractorEnvVar,
+  emitTelemetryOnErrorOutsideHandler,
   getEnvValue,
 } = require("./index.js");
 const { logDebug, logError } = require("./utils/index.js");
@@ -32,4 +33,9 @@ if (extractorEnv) {
   }
 }
 
-exports.handler = datadog(loadSync(taskRootEnv, handlerEnv), { traceExtractor });
+try {
+  exports.handler = datadog(loadSync(taskRootEnv, handlerEnv), { traceExtractor });
+} catch (error) {
+  emitTelemetryOnErrorOutsideHandler(error, handlerEnv, Date.now());
+  throw error;
+}
