@@ -157,8 +157,7 @@ export class StepFunctionContextService {
 
     let binary = "";
     for (const num of hex) {
-      const currentBinary = num.toString(2)
-      binary = binary + currentBinary
+      binary = binary + this.numberToBinaryString(num)
     }
 
     const res = "0" + binary.substring(1, 128);
@@ -166,5 +165,9 @@ export class StepFunctionContextService {
       return "1";
     }
     return res;
+  }
+
+  private numberToBinaryString(num: number): string {
+    return num.toString(2).padStart(8, "0");
   }
 }

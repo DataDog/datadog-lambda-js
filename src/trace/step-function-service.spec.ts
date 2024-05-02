@@ -194,8 +194,8 @@ describe("StepFunctionContextService", () => {
 
       expect(spanContext).not.toBeNull();
 
-      expect(spanContext?.toTraceId()).toBe("947965466153612645");
-      expect(spanContext?.toSpanId()).toBe("4602916161841036335");
+      expect(spanContext?.toTraceId()).toBe("3661440683");
+      expect(spanContext?.toSpanId()).toBe("2846425757");
       expect(spanContext?.sampleMode()).toBe("1");
       expect(spanContext?.source).toBe("event");
     });
@@ -215,7 +215,7 @@ describe("StepFunctionContextService", () => {
     it("returns the same hash number generated in `logs backend` for a random string", () => {
       const instance = StepFunctionContextService.instance();
       const hash = instance["deterministicMd5HashToBigIntString"]("some_testing_random_string");
-      expect(hash).toEqual("2251275791555400689");
+      expect(hash).toEqual("80506605202309154694697844088692857990");
     });
 
     it("returns the same hash number generated in `logs backend` for execution id # state name # entered time", () => {
@@ -223,7 +223,7 @@ describe("StepFunctionContextService", () => {
       const hash = instance["deterministicMd5HashToBigIntString"](
         "arn:aws:states:sa-east-1:601427271234:express:DatadogStateMachine:acaf1a67-336a-e854-1599-2a627eb2dd8a:c8baf081-31f1-464d-971f-70cb17d01111#step-one#2022-12-08T21:08:19.224Z",
       );
-      expect(hash).toEqual("8034507082463708833");
+      expect(hash).toEqual("80072419077927731656239868244106251139");
     });
   });
 
@@ -232,22 +232,22 @@ describe("StepFunctionContextService", () => {
       [
         "a random string",
         "some_testing_random_string",
-        "0001111100111110001000110110011110010111000110001001001111110001",
+        "00111100100100010000001000010111010011000111001011011001111000000110011101111001100001011100111110110001011111001101110010000110",
       ],
       [
         "an execution id",
         "arn:aws:states:sa-east-1:601427271234:express:DatadogStateMachine:acaf1a67-336a-e854-1599-2a627eb2dd8a:c8baf081-31f1-464d-971f-70cb17d041f4",
-        "0010010000101100100000101011111101111100110110001110111100111101",
+        "01000101001100100100101000010110011101001110110101001100100001000100010111011110010011011100010100101011110110011010110001111110",
       ],
       [
         "another execution id",
         "arn:aws:states:sa-east-1:601427271234:express:DatadogStateMachine:acaf1a67-336a-e854-1599-2a627eb2dd8a:c8baf081-31f1-464d-971f-70cb17d01111",
-        "0010001100110000011011011111010000100111100000110000100100101010",
+        "00101111100011001000100001010011001100000000000101110111001010110100110111010111011001101001111001110001011111000111010010101001",
       ],
       [
         "execution id # state name # entered time",
         "arn:aws:states:sa-east-1:601427271234:express:DatadogStateMachine:acaf1a67-336a-e854-1599-2a627eb2dd8a:c8baf081-31f1-464d-971f-70cb17d01111#step-one#2022-12-08T21:08:19.224Z",
-        "0110111110000000010011011001111101110011100111000000011010100001",
+        "00111100001111010110001100001111111100111110101100000000001000010011110011111110111010000100011111010100111110011000101110000011",
       ],
     ])("returns the same hash number generated in `logs backend` for %s", (_, str, expected) => {
       const instance = StepFunctionContextService.instance();
@@ -276,27 +276,16 @@ describe("StepFunctionContextService", () => {
     });
   });
 
-  describe("hexToBinary", () => {
+  describe("numberToBinaryString", () => {
     const instance = StepFunctionContextService.instance();
     it.each([
-      ["0", "0000"],
-      ["1", "0001"],
-      ["2", "0010"],
-      ["3", "0011"],
-      ["4", "0100"],
-      ["5", "0101"],
-      ["6", "0110"],
-      ["7", "0111"],
-      ["8", "1000"],
-      ["9", "1001"],
-      ["a", "1010"],
-      ["b", "1011"],
-      ["c", "1100"],
-      ["d", "1101"],
-      ["e", "1110"],
-      ["f", "1111"],
+      [0, "00000000"],
+      [1, "00000001"],
+      [2, "00000010"],
+      [3, "00000011"],
+      [4, "00000100"],
     ])("returns the right binary number for %s => %s", (hex, expected) => {
-      const binary = instance["hexToBinary"](hex);
+      const binary = instance["numberToBinaryString"](hex);
       expect(binary).toBe(expected);
     });
   });
