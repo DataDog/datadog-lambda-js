@@ -10,23 +10,28 @@ export class SQSEventTraceExtractor implements EventTraceExtractor {
 
   extract(event: SQSEvent): SpanContextWrapper | null {
     try {
-      let parsedHeaders;
+      // First try to extract trace context from message attributes
       const headers = event?.Records?.[0]?.messageAttributes?._datadog?.stringValue;
       if (headers !== undefined) {
-        parsedHeaders = JSON.parse(headers);
-      } else if (event?.Records?.[0]?.attributes?.AWSTraceHeader !== undefined) {
-        parsedHeaders = XrayService.extraceDDContextFromAWSTraceHeader(event.Records[0].attributes.AWSTraceHeader);
+        const traceContext = this.tracerWrapper.extract(JSON.parse(headers));
+        if (traceContext) {
+          logDebug("Extracted trace context from SQS event messageAttributes", { traceContext, event });
+          return traceContext;
+        } else {
+          logDebug("Failed to extract trace context from messageAttributes", { event });
+        }
       }
-      if (!parsedHeaders) return null;
-
-      const traceContext = this.tracerWrapper.extract(parsedHeaders);
-      if (traceContext === null) {
-        logDebug("Failed to extract trace context from parsed headers", { parsedHeaders, event });
-        return null;
+      // Then try to extract trace context from attributes.AWSTraceHeader. (Upstream Java apps can
+      // pass down Datadog trace context in the attributes.AWSTraceHeader in SQS case)
+      if (event?.Records?.[0]?.attributes?.AWSTraceHeader !== undefined) {
+        const traceContext = XrayService.extraceDDContextFromAWSTraceHeader(event.Records[0].attributes.AWSTraceHeader);
+        if (traceContext) {
+          logDebug("Extracted trace context from SQS event attributes AWSTraceHeader", { traceContext, event });
+          return traceContext;
+        } else {
+          logDebug("No Datadog trace context found from SQS event attributes AWSTraceHeader", { event });
+        }
       }
-
-      logDebug("Extracted trace context from SQS event", { traceContext, event });
-      return traceContext;
     } catch (error) {
       if (error instanceof Error) {
         logDebug("Unable to extract trace context from SQS event", error);
