@@ -443,7 +443,6 @@ export async function emitTelemetryOnErrorOutsideHandler(
         "error.type": error.name,
         "error.message": error.message,
         "error.stack": error.stack,
-        status: error,
       },
       startTime,
     };
