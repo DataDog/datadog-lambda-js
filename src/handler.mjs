@@ -37,7 +37,7 @@ let wrapped_handler;
 try {
   wrapped_handler = datadog(await load(taskRootEnv, handlerEnv), { traceExtractor });
 } catch (error) {
-  emitTelemetryOnErrorOutsideHandler(error, handlerEnv, Date.now());
+  await emitTelemetryOnErrorOutsideHandler(error, handlerEnv, Date.now());
   throw error;
 }
 

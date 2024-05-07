@@ -424,13 +424,6 @@ export async function emitTelemetryOnErrorOutsideHandler(
   functionName: string,
   startTime: number,
 ): Promise<void> {
-  const config = getConfig();
-  const metricsListener = new MetricsListener(new KMSService(), config);
-  await metricsListener.onStartInvocation(undefined);
-  if (config.enhancedMetrics) {
-    incrementErrorsMetric(metricsListener);
-  }
-
   if (getEnvValue("DD_TRACE_ENABLED", "true").toLowerCase() === "true") {
     const options: SpanOptions = {
       tags: {
@@ -451,5 +444,11 @@ export async function emitTelemetryOnErrorOutsideHandler(
     span.finish();
   }
 
+  const config = getConfig();
+  const metricsListener = new MetricsListener(new KMSService(), config);
+  await metricsListener.onStartInvocation(undefined);
+  if (config.enhancedMetrics) {
+    incrementErrorsMetric(metricsListener);
+  }
   await metricsListener.onCompleteInvocation();
 }
