@@ -33,12 +33,12 @@ if (extractorEnv) {
   }
 }
 
-let wrapped_handler;
+let wrappedHandler;
 try {
-  wrapped_handler = datadog(await load(taskRootEnv, handlerEnv), { traceExtractor });
+  wrappedHandler = datadog(await load(taskRootEnv, handlerEnv), { traceExtractor });
 } catch (error) {
   await emitTelemetryOnErrorOutsideHandler(error, handlerEnv, Date.now());
   throw error;
 }
 
-export const handler = wrapped_handler;
+export const handler = wrappedHandler;
