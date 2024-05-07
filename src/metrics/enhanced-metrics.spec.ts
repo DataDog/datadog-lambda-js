@@ -85,4 +85,9 @@ describe("getEnhancedMetricTags", () => {
       "datadog_lambda:vX.X.X",
     ]);
   });
+
+  it("doesn't add context-based tags when context not provided", () => {
+    mockedGetProcessVersion.mockReturnValue("v20.9.0");
+    expect(getEnhancedMetricTags()).toStrictEqual(["cold_start:true", "datadog_lambda:vX.X.X", "runtime:nodejs20.x"]);
+  });
 });
