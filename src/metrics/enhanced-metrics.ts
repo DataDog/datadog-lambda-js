@@ -50,13 +50,13 @@ export function getRuntimeTag(): string | null {
 }
 
 export function getEnhancedMetricTags(context?: Context): string[] {
-  let tags: string[] = [];
+  const tags: string[] = [];
   if (context) {
     let arnTags = [`functionname:${context.functionName}`];
     if (context.invokedFunctionArn) {
       arnTags = parseTagsFromARN(context.invokedFunctionArn, context.functionVersion);
     }
-    tags = [...arnTags, `memorysize:${context.memoryLimitInMB}`];
+    tags.push(...arnTags, `memorysize:${context.memoryLimitInMB}`);
   }
 
   tags.push(...getSandboxInitTags(), getVersionTag());
