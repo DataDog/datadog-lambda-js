@@ -36,6 +36,8 @@ if (extractorEnv) {
 try {
   exports.handler = datadog(loadSync(taskRootEnv, handlerEnv), { traceExtractor });
 } catch (error) {
-  emitTelemetryOnErrorOutsideHandler(error, handlerEnv, Date.now());
+  emitTelemetryOnErrorOutsideHandler(error, handlerEnv, Date.now()).catch(
+    logDebug("failed to error telemetry on error outside handler"),
+  );
   throw error;
 }
