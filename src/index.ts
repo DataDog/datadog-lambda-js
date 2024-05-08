@@ -445,10 +445,10 @@ export async function emitTelemetryOnErrorOutsideHandler(
   }
 
   const config = getConfig();
-  const metricsListener = new MetricsListener(new KMSService(), config);
-  await metricsListener.onStartInvocation(undefined);
   if (config.enhancedMetrics) {
+    const metricsListener = new MetricsListener(new KMSService(), config);
+    await metricsListener.onStartInvocation(undefined);
     incrementErrorsMetric(metricsListener);
+    await metricsListener.onCompleteInvocation();
   }
-  await metricsListener.onCompleteInvocation();
 }
