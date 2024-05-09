@@ -25,10 +25,10 @@ export class SNSSQSEventTraceExtractor implements EventTraceExtractor {
 
           const traceContext = this.tracerWrapper.extract(headers);
           if (traceContext) {
-            logDebug("Extracted trace context from SNS-SQS event", { traceContext, event });
+            logDebug("Extracted trace context from SNS-SQS event");
             return traceContext;
           } else {
-            logDebug("Failed to extract trace context from SNS-SQS event", { event });
+            logDebug("Failed to extract trace context from SNS-SQS event");
           }
         }
       }

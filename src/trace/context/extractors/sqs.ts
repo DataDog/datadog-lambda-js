@@ -15,10 +15,10 @@ export class SQSEventTraceExtractor implements EventTraceExtractor {
       if (headers !== undefined) {
         const traceContext = this.tracerWrapper.extract(JSON.parse(headers));
         if (traceContext) {
-          logDebug("Extracted trace context from SQS event messageAttributes", { traceContext, event });
+          logDebug("Extracted trace context from SQS event messageAttributes");
           return traceContext;
         } else {
-          logDebug("Failed to extract trace context from messageAttributes", { event });
+          logDebug("Failed to extract trace context from messageAttributes");
         }
       }
       // Then try to extract trace context from attributes.AWSTraceHeader. (Upstream Java apps can

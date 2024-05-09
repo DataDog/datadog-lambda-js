@@ -24,10 +24,10 @@ export class SNSEventTraceExtractor implements EventTraceExtractor {
 
         const traceContext = this.tracerWrapper.extract(headers);
         if (traceContext) {
-          logDebug("Extracted trace context from SNS event", { traceContext, event });
+          logDebug("Extracted trace context from SNS event");
           return traceContext;
         } else {
-          logDebug("Failed to extract trace context from SNS event", { event });
+          logDebug("Failed to extract trace context from SNS event");
         }
       }
       // Then try to extract trace context from _X_AMZN_TRACE_ID header (Upstream Java apps can
