@@ -35,7 +35,10 @@ export class SNSEventTraceExtractor implements EventTraceExtractor {
       if (process.env[AMZN_TRACE_ID_ENV_VAR]) {
         const traceContext = XrayService.extraceDDContextFromAWSTraceHeader(process.env[AMZN_TRACE_ID_ENV_VAR]);
         if (traceContext) {
-          logDebug("Extracted Datadog trace context from _X_AMZN_TRACE_ID", { traceContext, event });
+          logDebug("Extracted Datadog trace context from _X_AMZN_TRACE_ID", {
+            traceContext,
+            [AMZN_TRACE_ID_ENV_VAR]: process.env[AMZN_TRACE_ID_ENV_VAR],
+          });
           return traceContext;
         } else {
           logDebug("No Datadog trace context found from _X_AMZN_TRACE_ID", { event });
