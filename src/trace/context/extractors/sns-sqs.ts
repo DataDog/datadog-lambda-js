@@ -37,10 +37,10 @@ export class SNSSQSEventTraceExtractor implements EventTraceExtractor {
       if (event?.Records?.[0]?.attributes?.AWSTraceHeader !== undefined) {
         const traceContext = XrayService.extraceDDContextFromAWSTraceHeader(event.Records[0].attributes.AWSTraceHeader);
         if (traceContext) {
-          logDebug("Extracted trace context from SNS-SQS event attributes.AWSTraceHeader", { traceContext, event });
+          logDebug("Extracted trace context from SNS-SQS event attributes.AWSTraceHeader");
           return traceContext;
         } else {
-          logDebug("No Datadog trace context found from SNS-SQS event attributes.AWSTraceHeader", { event });
+          logDebug("No Datadog trace context found from SNS-SQS event attributes.AWSTraceHeader");
         }
       }
     } catch (error) {
