@@ -76,11 +76,9 @@ if [ "$CONT" != "y" ]; then
     echo "Skipping deployment to GovCloud AWS"
 else
     echo "Ensuring you have access to the AWS GovCloud account"
-    ddsaml2aws login -a govcloud-us1-fed-human-engineering
     aws-vault exec sso-govcloud-us1-fed-engineering -- aws sts get-caller-identity
 
     echo "Publishing layers to GovCloud AWS regions"
-    ddsaml2aws login -a govcloud-us1-fed-human-engineering
     VERSION=$LAYER_VERSION aws-vault exec sso-govcloud-us1-fed-engineering -- ./scripts/publish_layers.sh
 fi
 
