@@ -37,6 +37,7 @@ export interface TraceContext {
   parentId?: string;
   sampleMode: SampleMode;
   source: TraceSource;
+  trace: any;
 }
 
 export type TraceExtractor = (event: any, context: Context) => Promise<TraceContext> | TraceContext;

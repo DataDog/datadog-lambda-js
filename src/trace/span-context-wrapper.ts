@@ -54,6 +54,7 @@ export class SpanContextWrapper implements SpanContext {
           traceId: id(traceId, 10),
           spanId: id(spanId, 10),
           sampling: { priority: samplingPriority },
+          trace: traceContext.trace,
         }),
         source,
       );

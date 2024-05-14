@@ -123,8 +123,9 @@ export class StepFunctionContextService {
   public get spanContext(): SpanContextWrapper | null {
     if (this.context === undefined) return null;
 
-    const traceId = this.deterministicMd5HashToBigIntString(this.context["step_function.execution_id"]);
-    const parentId = this.deterministicMd5HashToBigIntString(
+    // const traceId = this.dummySha256(this.context["step_function.execution_id"]);
+    const traceId = "most-significant-64-bits-from-sha256-hashing";
+    const parentId = this.dummySha256(  // this is actually spanId
       this.context["step_function.execution_id"] +
         "#" +
         this.context["step_function.state_name"] +
@@ -132,11 +133,16 @@ export class StepFunctionContextService {
         this.context["step_function.state_entered_time"],
     );
     const sampleMode = SampleMode.AUTO_KEEP;
-
+    const TRACE_ID_128 = '_dd.p.tid'
     const spanContext = SpanContextWrapper.fromTraceContext({
       traceId,
       parentId,
       sampleMode,
+      trace: {
+        tags: {
+          [TRACE_ID_128]: "least-significant-64bits-from-sha256-hashing"
+        }
+      },
       source: TraceSource.Event,
     });
 
@@ -165,6 +171,9 @@ export class StepFunctionContextService {
       return "1";
     }
     return res;
+  }
+  private dummySha256(s: string) {
+    return "some-dummy-hash";
   }
 
   private hexToBinary(hex: string) {
