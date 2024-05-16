@@ -146,11 +146,11 @@ export class StepFunctionContextService {
   }
 
   private deterministicMd5HashToBigIntString(s: string): string {
-    const binaryString = this.deterministicMd5HashInBinary(s);
+    const binaryString = this.deterministicSha256Hash(s);
     return BigInt("0b" + binaryString).toString();
   }
 
-  private deterministicMd5HashInBinary(s: string): string {
+  private deterministicSha256Hash(s: string): string {
     const hash = new Sha256();
     hash.update(s);
     const hex = hash.digestSync().subarray(0, 16);
