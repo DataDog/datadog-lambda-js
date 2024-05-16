@@ -21,6 +21,7 @@ describe("SQSEventTraceExtractor", () => {
   describe("extract", () => {
     beforeEach(() => {
       mockSpanContext = null;
+      spyTracerWrapper.mockClear();
     });
 
     afterEach(() => {
@@ -128,13 +129,6 @@ describe("SQSEventTraceExtractor", () => {
     });
 
     it("extracts trace context from AWSTraceHeader with valid payload", () => {
-      mockSpanContext = {
-        toTraceId: () => "625397077193750208",
-        toSpanId: () => "6538302989251745223",
-        _sampling: {
-          priority: "1",
-        },
-      };
       const tracerWrapper = new TracerWrapper();
       const payload: SQSEvent = {
         Records: [
@@ -163,11 +157,9 @@ describe("SQSEventTraceExtractor", () => {
       const traceContext = extractor.extract(payload);
       expect(traceContext).not.toBeNull();
 
-      expect(spyTracerWrapper).toHaveBeenCalledWith({
-        "x-datadog-parent-id": "6538302989251745223",
-        "x-datadog-sampling-priority": "1",
-        "x-datadog-trace-id": "625397077193750208",
-      });
+      // Should not use ddtracer extractor. Because 1. it's an unnecessary extra step and
+      // 2. More importantly, DD_TRACE_PROPAGATION_STYLE could cause extraction fail
+      expect(spyTracerWrapper).not.toHaveBeenCalled();
 
       expect(traceContext?.toTraceId()).toBe("625397077193750208");
       expect(traceContext?.toSpanId()).toBe("6538302989251745223");

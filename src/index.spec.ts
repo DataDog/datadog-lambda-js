@@ -8,6 +8,7 @@ import {
   sendDistributionMetric,
   sendDistributionMetricWithDate,
   _metricsQueue,
+  emitTelemetryOnErrorOutsideHandler,
 } from "./index";
 import {
   incrementErrorsMetric,
@@ -21,6 +22,8 @@ import { DatadogTraceHeaders } from "./trace/context/extractor";
 import { SpanContextWrapper } from "./trace/span-context-wrapper";
 import { TraceSource } from "./trace/trace-context-service";
 import { inflateSync } from "zlib";
+import { MetricsListener } from "./metrics/listener";
+import { SpanOptions, TracerWrapper } from "./trace/tracer-wrapper";
 
 jest.mock("./metrics/enhanced-metrics");
 
@@ -534,5 +537,60 @@ describe("sendDistributionMetricWithDate", () => {
   it("enqueues a metric for later processing when metrics listener is not initialized", () => {
     sendDistributionMetricWithDate("metric", 1, new Date(), "first-tag", "second-tag");
     expect(_metricsQueue.length).toBe(1);
+  });
+});
+
+describe("emitTelemetryOnErrorOutsideHandler", () => {
+  let mockedStartSpan = jest.spyOn(TracerWrapper.prototype, "startSpan");
+  beforeEach(() => {
+    jest.spyOn(MetricsListener.prototype, "onStartInvocation").mockImplementation();
+    jest.spyOn(TracerWrapper.prototype, "isTracerAvailable", "get").mockImplementation(() => true);
+  });
+  afterEach(() => {
+    mockedIncrementErrors.mockClear();
+    mockedStartSpan.mockClear();
+  });
+  it("emits a metric when enhanced metrics are enabled", async () => {
+    process.env.DD_ENHANCED_METRICS = "true";
+    await emitTelemetryOnErrorOutsideHandler(new ReferenceError("some error"), "myFunction", Date.now());
+    expect(mockedIncrementErrors).toBeCalledTimes(1);
+  });
+
+  it("does not emit a metric when enhanced metrics are disabled", async () => {
+    process.env.DD_ENHANCED_METRICS = "false";
+    await emitTelemetryOnErrorOutsideHandler(new ReferenceError("some error"), "myFunction", Date.now());
+    expect(mockedIncrementErrors).toBeCalledTimes(0);
+  });
+
+  it("creates a span when tracing is enabled", async () => {
+    process.env.DD_TRACE_ENABLED = "true";
+    const functionName = "myFunction";
+    const startTime = Date.now();
+    const fakeError = new ReferenceError("some error");
+    const spanName = "aws.lambda";
+
+    await emitTelemetryOnErrorOutsideHandler(fakeError, functionName, startTime);
+
+    const options: SpanOptions = {
+      tags: {
+        service: spanName,
+        operation_name: spanName,
+        resource_names: functionName,
+        "resource.name": functionName,
+        "span.type": "serverless",
+        "error.status": 500,
+        "error.type": fakeError.name,
+        "error.message": fakeError.message,
+        "error.stack": fakeError.stack,
+      },
+      startTime,
+    };
+    expect(mockedStartSpan).toBeCalledWith(spanName, options);
+  });
+
+  it("does not create a span when tracing is disabled", async () => {
+    process.env.DD_TRACE_ENABLED = "false";
+    await emitTelemetryOnErrorOutsideHandler(new ReferenceError("some error"), "myFunction", Date.now());
+    expect(mockedStartSpan).toBeCalledTimes(0);
   });
 });

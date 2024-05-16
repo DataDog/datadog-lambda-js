@@ -20,6 +20,7 @@ describe("SNSSQSEventTraceExtractor", () => {
   describe("extract", () => {
     beforeEach(() => {
       mockSpanContext = null;
+      spyTracerWrapper.mockClear();
     });
 
     afterEach(() => {
@@ -42,7 +43,7 @@ describe("SNSSQSEventTraceExtractor", () => {
             messageId: "64812b68-4d9b-4dca-b3fb-9b18f255ee51",
             receiptHandle:
               "AQEBER6aRkfG8092GvkL7FRwCwbQ7LLDW9Tlk/CembqHe+suS2kfFxXiukomvaIN61QoyQMoRgWuV52SDkiQno2u+5hP64BDbmw+e/KR9ayvIfHJ3M6RfyQLaWNWm3hDFBCKTnBMVIxtdx0N9epZZewyokjKcrNYtmCghFgTCvZzsQkowi5rnoHAVHJ3je1c3bDnQ1KLrZFgajDnootYXDwEPuMq5FIxrf4EzTe0S7S+rnRm+GaQfeBLBVAY6dASL9usV3/AFRqDtaI7GKI+0F2NCgLlqj49VlPRz4ldhkGknYlKTZTluAqALWLJS62/J1GQo53Cs3nneJcmu5ajB2zzmhhRXoXINEkLhCD5ujZfcsw9H4xqW69Or4ECvlqx14bUU2rtMIW0QM2p7pEeXnyocymQv6m1te113eYWTVmaJ4I=",
-            body: '{\n  "Type" : "Notification",\n  "MessageId" : "0a0ab23e-4861-5447-82b7-e8094ff3e332",\n  "TopicArn" : "arn:aws:sns:eu-west-1:601427279990:js-library-test-dev-demoTopic-15WGUVRCBMPAA",\n  "Message" : "{\\"hello\\":\\"harv\\",\\"nice of you to join us\\":\\"david\\",\\"anotherThing\\":{\\"foo\\":\\"bar\\",\\"blah\\":null,\\"harv\\":123},\\"vals\\":[{\\"thingOne\\":1},{\\"thingTwo\\":2}],\\"ajTimestamp\\":1639777617957}",\n  "Timestamp" : "2021-12-17T21:46:58.040Z",\n  "SignatureVersion" : "1",\n  "Signature" : "FR35/7E8C3LHEVk/rC4XxXlXwV/5mNkFNPgDhHSnJ2I6hIoSrTROAm7h5xm1PuBkAeFDvq0zofw91ouk9zZyvhdrMLFIIgrjEyNayRmEffmoEAkzLFUsgtQX7MmTl644r4NuWiM0Oiz7jueRvIcKXcZr7Nc6GJcWV1ymec8oOmuHNMisnPMxI07LIQVYSyAfv6P9r2jEWMVIukRoCzwTnRk4bUUYhPSGHI7OC3AsxxXBbv8snqTrLM/4z2rXCf6jHCKNxWeLlm9/45PphCkEyx5BWS4/71KaoMWUWy8+6CCsy+uF3XTCVmvSEYLyEwTSzOY+vCUjazrRW93498i70g==",\n  "SigningCertUrl" : "https://sns.eu-west-1.amazonaws.com/SimpleNotificationService-7ff5318490ec183fbaddaa2a969abfda.pem",\n  "UnsubscribeUrl" : "https://sns.eu-west-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-west-1:601427279990:js-library-test-dev-demoTopic-15WGUVRCBMPAA:1290f550-9a8a-4e8f-a900-8f5f96dcddda",\n  "MessageAttributes" : {\n    "_datadog" : {"Type":"String","Value":"{\\"x-datadog-trace-id\\":\\"2776434475358637757\\",\\"x-datadog-parent-id\\":\\"4493917105238181843\\",\\"x-datadog-sampled\\":\\"1\\",\\"x-datadog-sampling-priority\\":\\"1\\"}"}\n  }\n}',
+            body: '{\n  "Type" : "Notification",\n  "MessageId" : "0a0ab23e-4861-5447-82b7-e8094ff3e332",\n  "TopicArn" : "arn:aws:sns:eu-west-1:601427279990:js-library-test-dev-demoTopic-15WGUVRCBMPAA",\n  "Message" : "{\\"hello\\":\\"harv\\",\\"nice of you to join us\\":\\"david\\",\\"anotherThing\\":{\\"foo\\":\\"bar\\",\\"blah\\":null,\\"harv\\":123},\\"vals\\":[{\\"thingOne\\":1},{\\"thingTwo\\":2}],\\"ajTimestamp\\":1639777617957}",\n  "Timestamp" : "2021-12-17T21:46:58.040Z",\n  "SignatureVersion" : "1",\n  "Signature" : "FR35/7E8C3LHEVk/rC4XxXlXwV/5mNkFNPgDhHSnJ2I6hIoSrTROAm7h5xm1PuBkAeFDvq0zofw91ouk9zZyvhdrMLFIIgrjEyNayRmEffmoEAkzLFUsgtQX7MmTl644r4NuWiM0Oiz7jueRvIcKXcZr7Nc6GJcWV1ymec8oOmuHNMisnPMxI07LIQVYSyAfv6P9r2jEWMVIukRoCzwTnRk4bUUYhPSGHI7OC3AsxxXBbv8snqTrLM/4z2rXCf6jHCKNxWeLlm9/45PphCkEyx5BWS4/71KaoMWUWy8+6CCsy+uF3XTCVmvSEYLyEwTSzOY+vCUjazrRW93498i70g==",\n  "SigningCertUrl" : "https://sns.eu-west-1.amazonaws.com/SimpleNotificationService-************************33ab7e69.pem",\n  "UnsubscribeUrl" : "https://sns.eu-west-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-west-1:601427279990:js-library-test-dev-demoTopic-15WGUVRCBMPAA:1290f550-9a8a-4e8f-a900-8f5f96dcddda",\n  "MessageAttributes" : {\n    "_datadog" : {"Type":"String","Value":"{\\"x-datadog-trace-id\\":\\"2776434475358637757\\",\\"x-datadog-parent-id\\":\\"4493917105238181843\\",\\"x-datadog-sampled\\":\\"1\\",\\"x-datadog-sampling-priority\\":\\"1\\"}"}\n  }\n}',
             attributes: {
               ApproximateReceiveCount: "1",
               SentTimestamp: "1639777618130",
@@ -170,6 +171,46 @@ describe("SNSSQSEventTraceExtractor", () => {
 
       const traceContext = extractor.extract(payload);
       expect(traceContext).toBeNull();
+    });
+    it("extracts trace context from AWSTraceHeader with valid payload", () => {
+      const tracerWrapper = new TracerWrapper();
+      const payload = {
+        Records: [
+          {
+            messageId: "40304cba-041c-4284-808e-8d8692c6cba1",
+            receiptHandle:
+              "AQEBisC4xIjrp5W72r64fIf86ilRqadl6sbkmqbx41BI7P5ov0dJSNaNG97dnmOqSMD+MhXTvvC7HL2i+3viGrC8iNacZXSr9zzZvpFLFYO6jphDRTNJdkEZqSbKUoN5c/Nri5FjA4X52q4pCvW1esADJ2ZcMQQuQ19gsKAEQ0VGkHpH+BeceQtoFc3XT7uJboykfUA6iWT4TyNdJS+O4119ZBdN3U1jZ3PUn8mmTSi+SkTiXPBD9ywu6X8VzkGahueT+P7tJQTZ27mbPKhfrt3kvbFD6z7lqBNQyAPoqHzAThGC3VbZOxth3iqf7kjsFccmSJsxvsBzcVpF6nmobf6dpxwnZTEIrlNpQGrBgoePIHrpWfC6UG6aRTc4zWc30VY6hcg09WjCNGI81KwDfNMDAdJknOhsbY3HtvRQkQncbXgsYXgDDJG3PdIUoI2YScLeWEBMwE/HPCWk0X3K6McczRIHw3PfLaS2eVpjzNlq9I4=",
+            body: '{\n  "Type" : "Notification",\n  "MessageId" : "d968a20b-73c3-5389-ae7a-fcb844faf1c7",\n  "TopicArn" : "arn:aws:sns:us-west-2:425362996713:DdTraceXLambda-snssqschecksNestedStacksnssqschecksNestedStackResource58F786C6-11NORKTA1JFML-snsProducerJavaForPythonNonRawsnssqsproducerjavaforpythonnonrawtopicDDBAB6EA-ZBb8uCZzkS0S",\n  "Message" : "hello from DdTraceXLambda-snssqschec-snssqsproducerjavaforpyt-z0t7yDk3zWt1",\n  "Timestamp" : "2024-05-06T19:52:25.181Z",\n  "SignatureVersion" : "1",\n  "Signature" : "pZIIa0Ae49vUPVSZcR4XCt9K2gMWYBjIJCZbQJo6URKLJOcC4yJNXVzOQAb80tG10lgOq+gMahLaTcuJ5+yFr3LtK/8nl7mdeP7aH6V2VoRubmJuc7P2WUixhubve577MfFMjp1LrkQaa5D/ken6yOjjgxRy32GazYAUEeQ9duldSAuu3omfsljWnZSHoeHkpbVkCrp/KyNGDQKrf+pFxxuxb9yqUzbHa8H80zS9fwOEsBuSqlbyK2Mj68wneqSeuRcZ30l5xyJ82vVjyXEukNcSkt5OcZOYFGqxotIY7MKTr2nrkiFOJAiRsOK34eQyk7eVdWRRfyoxCHVpnImT1Q==",\n  "SigningCertURL" : "https://sns.us-west-2.amazonaws.com/SimpleNotificationService-************************33ab7e69",\n  "UnsubscribeURL" : "https://sns.us-west-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-west-2:425362996713:DdTraceXLambda-snssqschecksNestedStacksnssqschecksNestedStackResource58F786C6-11NORKTA1JFML-snsProducerJavaForPythonNonRawsnssqsproducerjavaforpythonnonrawtopicDDBAB6EA-ZBb8uCZzkS0S:d44c53e8-538c-472f-89e1-89c131d9cd26",\n  "MessageAttributes" : {\n    "JOEYTEST" : {"Type":"String","Value":"test"},\n    "JOEYTEST2" : {"Type":"String","Value":"test2"}\n  }\n}',
+            attributes: {
+              ApproximateReceiveCount: "1",
+              AWSTraceHeader: "Root=1-663934f8-0000000045c5da17458c9910;Parent=18f37c8f541d052f;Sampled=1",
+              SentTimestamp: "1715025145210",
+              SenderId: "AIDAIYLAVTDLUXBIEIX46",
+              ApproximateFirstReceiveTimestamp: "1715025145220",
+            },
+            messageAttributes: {},
+            md5OfBody: "************************33ab7e69",
+            eventSource: "aws:sqs",
+            eventSourceARN:
+              "arn:aws:sqs:us-west-2:425362996713:DdTraceXLambda-snssqschecksNested-snsProducerJavaForPythonNonRawsns-1vws7QPqW8e6",
+            awsRegion: "us-west-2",
+          },
+        ],
+      };
+
+      const extractor = new SNSSQSEventTraceExtractor(tracerWrapper);
+
+      const traceContext = extractor.extract(payload);
+      expect(traceContext).not.toBeNull();
+
+      // Should not use ddtracer extractor. Because 1. it's an unnecessary extra step and
+      // 2. More importantly, DD_TRACE_PROPAGATION_STYLE could cause extraction fail
+      expect(spyTracerWrapper).not.toHaveBeenCalled();
+
+      expect(traceContext?.toTraceId()).toBe("5027664352514971920");
+      expect(traceContext?.toSpanId()).toBe("1797917631284315439");
+      expect(traceContext?.sampleMode()).toBe("1");
+      expect(traceContext?.source).toBe("event");
     });
   });
 });

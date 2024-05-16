@@ -1,4 +1,11 @@
-import { datadog, datadogHandlerEnvVar, lambdaTaskRootEnvVar, traceExtractorEnvVar, getEnvValue } from "./index.js";
+import {
+  datadog,
+  datadogHandlerEnvVar,
+  lambdaTaskRootEnvVar,
+  traceExtractorEnvVar,
+  getEnvValue,
+  emitTelemetryOnErrorOutsideHandler,
+} from "./index.js";
 import { logDebug, logError } from "./utils/index.js";
 import { load } from "./runtime/index.js";
 import { initTracer } from "./runtime/module_importer.js";
@@ -26,4 +33,12 @@ if (extractorEnv) {
   }
 }
 
-export const handler = datadog(await load(taskRootEnv, handlerEnv), { traceExtractor });
+let wrappedHandler;
+try {
+  wrappedHandler = datadog(await load(taskRootEnv, handlerEnv), { traceExtractor });
+} catch (error) {
+  await emitTelemetryOnErrorOutsideHandler(error, handlerEnv, Date.now());
+  throw error;
+}
+
+export const handler = wrappedHandler;

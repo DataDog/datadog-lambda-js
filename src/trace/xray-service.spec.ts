@@ -369,11 +369,9 @@ describe("XrayService", () => {
       const awsTraceId = "Root=1-65f2f78c-0000000008addb5405b376c0;Parent=5abcb7ed643995c7;Sampled=1";
       const ddTraceContext = XrayService.extraceDDContextFromAWSTraceHeader(awsTraceId);
 
-      expect(ddTraceContext).toEqual({
-        [DATADOG_TRACE_ID_HEADER]: "625397077193750208",
-        [DATADOG_PARENT_ID_HEADER]: "6538302989251745223",
-        [DATADOG_SAMPLING_PRIORITY_HEADER]: "1",
-      });
+      expect(ddTraceContext?.toTraceId()).toEqual("625397077193750208");
+      expect(ddTraceContext?.toSpanId()).toEqual("6538302989251745223");
+      expect(ddTraceContext?.sampleMode()).toEqual("1");
     });
 
     it("returns null when AWS trace header is NOT injected by dd-trace", () => {

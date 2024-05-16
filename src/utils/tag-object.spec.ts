@@ -99,6 +99,23 @@ describe("tagObject", () => {
       ["function.request.vals.1", '{"thingTwo":2}'],
     ]);
   });
+  it("handles circular objects", () => {
+    const span = {
+      setTag,
+    };
+    var obj = {
+      key: "value",
+      array: Array<any>(),
+    };
+    obj.array.push(obj);
+    tagObject(span, "lambda_payload", { request: obj }, 1);
+    expect(setTag.mock.calls).toEqual([
+      ["lambda_payload.request.key", "value"],
+      ["lambda_payload.request.array.0.key", "value"],
+      ["lambda_payload.request.array.0.array.0.key", "value"],
+      ["lambda_payload.request.array.0.array.0.array.0.key", "value"],
+    ]);
+  });
   it("redacts common secret keys", () => {
     const span = {
       setTag,
