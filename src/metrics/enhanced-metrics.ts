@@ -49,12 +49,17 @@ export function getRuntimeTag(): string | null {
   return `runtime:${processVersionTagString}`;
 }
 
-export function getEnhancedMetricTags(context: Context): string[] {
-  let arnTags = [`functionname:${context.functionName}`];
-  if (context.invokedFunctionArn) {
-    arnTags = parseTagsFromARN(context.invokedFunctionArn, context.functionVersion);
+export function getEnhancedMetricTags(context?: Context): string[] {
+  const tags: string[] = [];
+  if (context) {
+    let arnTags = [`functionname:${context.functionName}`];
+    if (context.invokedFunctionArn) {
+      arnTags = parseTagsFromARN(context.invokedFunctionArn, context.functionVersion);
+    }
+    tags.push(...arnTags, `memorysize:${context.memoryLimitInMB}`);
   }
-  const tags = [...arnTags, ...getSandboxInitTags(), `memorysize:${context.memoryLimitInMB}`, getVersionTag()];
+
+  tags.push(...getSandboxInitTags(), getVersionTag());
 
   const runtimeTag = getRuntimeTag();
   if (runtimeTag) {
@@ -69,7 +74,7 @@ export function getEnhancedMetricTags(context: Context): string[] {
  * @param context object passed to invocation by AWS
  * @param metricName name of the enhanced metric without namespace prefix, i.e. "invocations" or "errors"
  */
-function incrementEnhancedMetric(listener: MetricsListener, metricName: string, context: Context) {
+function incrementEnhancedMetric(listener: MetricsListener, metricName: string, context?: Context) {
   // Always write enhanced metrics to standard out
   listener.sendDistributionMetric(`aws.lambda.enhanced.${metricName}`, 1, true, ...getEnhancedMetricTags(context));
 }
@@ -78,7 +83,7 @@ export function incrementInvocationsMetric(listener: MetricsListener, context: C
   incrementEnhancedMetric(listener, "invocations", context);
 }
 
-export function incrementErrorsMetric(listener: MetricsListener, context: Context): void {
+export function incrementErrorsMetric(listener: MetricsListener, context?: Context): void {
   incrementEnhancedMetric(listener, "errors", context);
 }
 
