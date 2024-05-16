@@ -123,8 +123,8 @@ export class StepFunctionContextService {
   public get spanContext(): SpanContextWrapper | null {
     if (this.context === undefined) return null;
 
-    const traceId = this.deterministicMd5HashToBigIntString(this.context["step_function.execution_id"]);
-    const parentId = this.deterministicMd5HashToBigIntString(
+    const traceId = this.deterministicSha256HashToBigIntString(this.context["step_function.execution_id"]);
+    const parentId = this.deterministicSha256HashToBigIntString(
       this.context["step_function.execution_id"] +
         "#" +
         this.context["step_function.state_name"] +
@@ -145,7 +145,7 @@ export class StepFunctionContextService {
     return spanContext;
   }
 
-  private deterministicMd5HashToBigIntString(s: string): string {
+  private deterministicSha256HashToBigIntString(s: string): string {
     const binaryString = this.deterministicSha256Hash(s);
     return BigInt("0b" + binaryString).toString();
   }
