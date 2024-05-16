@@ -155,12 +155,12 @@ export class StepFunctionContextService {
     hash.update(s);
     const hex = hash.digestSync().subarray(0, 16);
 
-    let binary = "";
+    let binaryString = "";
     for (const num of hex) {
-      binary = binary + this.numberToBinaryString(num);
+      binaryString = binaryString + this.numberToBinaryString(num);
     }
 
-    const res = "0" + binary.substring(1, 128);
+    const res = "0" + binaryString.substring(1, 64) + "0" + binaryString.substring(65, 128);
     if (res === "0".repeat(128)) {
       return "1";
     }
