@@ -1,3 +1,5 @@
+import { logDebug } from "./log";
+
 const redactableKeys = ["authorization", "x-authorization", "password", "token"];
 
 export function tagObject(currentSpan: any, key: string, obj: any, depth = 0, maxDepth = 10): any {
@@ -6,7 +8,13 @@ export function tagObject(currentSpan: any, key: string, obj: any, depth = 0, ma
     return currentSpan.setTag(key, obj);
   }
   if (depth >= maxDepth) {
-    const strOrUndefined = JSON.stringify(obj);
+    let strOrUndefined;
+    try {
+      strOrUndefined = JSON.stringify(obj);
+    } catch (e) {
+      logDebug(`Unable to stringify object for tagging: ${e}`);
+      return;
+    }
     if (typeof strOrUndefined === "undefined") return;
     return currentSpan.setTag(key, redactVal(key, strOrUndefined.substring(0, 5000)));
   }
