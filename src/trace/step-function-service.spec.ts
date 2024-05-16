@@ -291,7 +291,7 @@ describe("StepFunctionContextService", () => {
     });
   });
 
-  describe("test 64 bits deterministicMd5HashToBigIntString for span id", () => {
+  describe("test 64 bits deterministicSha256HashToBigIntString for span id", () => {
     const instance = StepFunctionContextService.instance();
     it("first test of #1", () => {
       const actual = instance["deterministicSha256HashToBigIntString"](
