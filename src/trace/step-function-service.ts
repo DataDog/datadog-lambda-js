@@ -16,6 +16,9 @@ export interface StepFunctionContext {
   "step_function.state_retry_count": number;
 }
 
+export const _64_BITS = 64;
+export const _128_BITS = 128;
+
 export class StepFunctionContextService {
   private static _instance: StepFunctionContextService;
   public context?: StepFunctionContext;
@@ -123,14 +126,15 @@ export class StepFunctionContextService {
   public get spanContext(): SpanContextWrapper | null {
     if (this.context === undefined) return null;
 
-    const traceId = this.deterministicSha256HashToBigIntString(this.context["step_function.execution_id"]);
+    const traceId = this.deterministicSha256HashToBigIntString(this.context["step_function.execution_id"], _128_BITS); // returning 128 bits traceId
     const parentId = this.deterministicSha256HashToBigIntString(
       this.context["step_function.execution_id"] +
         "#" +
         this.context["step_function.state_name"] +
         "#" +
         this.context["step_function.state_entered_time"],
-    );
+      _64_BITS,
+    ); // returning 64 bits
     const sampleMode = SampleMode.AUTO_KEEP;
 
     const spanContext = SpanContextWrapper.fromTraceContext({
@@ -145,12 +149,14 @@ export class StepFunctionContextService {
     return spanContext;
   }
 
-  private deterministicSha256HashToBigIntString(s: string): string {
-    const binaryString = this.deterministicSha256Hash(s);
+  private deterministicSha256HashToBigIntString(s: string, numberOfBits: number): string {
+    const binaryString = this.deterministicSha256Hash(s, numberOfBits);
     return BigInt("0b" + binaryString).toString();
   }
 
-  private deterministicSha256Hash(s: string): string {
+  private deterministicSha256Hash(s: string, numberOfBits: number): string {
+    // returns 128 bits hash unless mostSignificant64Bits options is set to true.
+
     const hash = new Sha256();
     hash.update(s);
     const hex = hash.digestSync().subarray(0, 16);
@@ -160,7 +166,13 @@ export class StepFunctionContextService {
       binaryString = binaryString + this.numberToBinaryString(num);
     }
 
-    const res = "0" + binaryString.substring(1, 64) + "0" + binaryString.substring(65, 128);
+    let res;
+    if (numberOfBits === _128_BITS) {
+      res = "0" + binaryString.substring(1, 64) + "0" + binaryString.substring(65, 128);
+    } else {
+      // 64 bits
+      res = "0" + binaryString.substring(1, 64);
+    }
     if (res === "0".repeat(128)) {
       return "1";
     }

@@ -37,7 +37,7 @@ describe("StepFunctionEventTraceExtractor", () => {
       expect(traceContext).not.toBeNull();
 
       expect(traceContext?.toTraceId()).toBe("3661440683");
-      expect(traceContext?.toSpanId()).toBe("2846425757");
+      expect(traceContext?.toSpanId()).toBe("5892738536804826142");
       expect(traceContext?.sampleMode()).toBe("1");
       expect(traceContext?.source).toBe("event");
     });
@@ -50,7 +50,7 @@ describe("StepFunctionEventTraceExtractor", () => {
       expect(traceContext).not.toBeNull();
 
       expect(traceContext?.toTraceId()).toBe("3661440683");
-      expect(traceContext?.toSpanId()).toBe("2846425757");
+      expect(traceContext?.toSpanId()).toBe("5892738536804826142");
       expect(traceContext?.sampleMode()).toBe("1");
       expect(traceContext?.source).toBe("event");
     });
