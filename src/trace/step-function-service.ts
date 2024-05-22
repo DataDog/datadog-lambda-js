@@ -16,8 +16,9 @@ export interface StepFunctionContext {
   "step_function.state_retry_count": number;
 }
 
-export const _64_BITS = 64;
-export const _128_BITS = 128;
+export const TRACE_ID = "traceId";
+export const PARENT_ID = "spanId";
+export const DD_P_TID = "_dd.p.tid";
 
 export class StepFunctionContextService {
   private static _instance: StepFunctionContextService;
@@ -126,53 +127,66 @@ export class StepFunctionContextService {
   public get spanContext(): SpanContextWrapper | null {
     if (this.context === undefined) return null;
 
-    const traceId = this.deterministicSha256HashToBigIntString(this.context["step_function.execution_id"], _128_BITS); // returning 128 bits traceId
+    const traceId = this.deterministicSha256HashToBigIntString(this.context["step_function.execution_id"], TRACE_ID);
     const parentId = this.deterministicSha256HashToBigIntString(
       this.context["step_function.execution_id"] +
         "#" +
         this.context["step_function.state_name"] +
         "#" +
         this.context["step_function.state_entered_time"],
-      _64_BITS,
-    ); // returning 64 bits
+      PARENT_ID,
+    );
     const sampleMode = SampleMode.AUTO_KEEP;
+    const _DatadogSpanContext = require("dd-trace/packages/dd-trace/src/opentracing/span_context");
+    const id = require("dd-trace/packages/dd-trace/src/id");
+    console.log(`executionArn is ${this.context["step_function.execution_id"]}`);
+    console.log(`traceId: ${traceId}`);
 
-    const spanContext = SpanContextWrapper.fromTraceContext({
-      traceId,
-      parentId,
-      sampleMode,
-      source: TraceSource.Event,
+    const ddTraceContext = new _DatadogSpanContext({
+      traceId: id(traceId, 10),
+      spanId: id(parentId, 10),
+      sampling: { priority: sampleMode.toString(2) },
     });
+
+    const ptid = this.deterministicSha256HashToBigIntString(this.context["step_function.execution_id"], DD_P_TID);
+    if (ptid === "0".repeat(16)) {
+      return ddTraceContext;
+    }
+    console.log(`ptid: ${ptid}`);
+    ddTraceContext._trace.tags["_dd.p.tid"] = ptid;
+    // ddTraceContext._trace.tags["_dd.p.tid"] = id(higher64BitsTraceId, 10).toString(16);
+    const spanContext = new SpanContextWrapper(ddTraceContext, TraceSource.Event);
 
     if (spanContext === null) return null;
     logDebug(`Extracted trace context from StepFunctionContext`, { traceContext: this.context });
     return spanContext;
   }
 
-  private deterministicSha256HashToBigIntString(s: string, numberOfBits: number): string {
-    const binaryString = this.deterministicSha256Hash(s, numberOfBits);
+  private deterministicSha256HashToBigIntString(s: string, type: string): string {
+    const binaryString = this.deterministicSha256Hash(s, type);
     return BigInt("0b" + binaryString).toString();
   }
 
-  private deterministicSha256Hash(s: string, numberOfBits: number): string {
+  private deterministicSha256Hash(s: string, type: string): string {
     // returns 128 bits hash unless mostSignificant64Bits options is set to true.
 
     const hash = new Sha256();
     hash.update(s);
-    const hex = hash.digestSync().subarray(0, 16);
-
+    const uint8Array = hash.digestSync();
+    let hex;
+    if (type === TRACE_ID) {
+      hex = uint8Array.subarray(8, 16);
+    } else {
+      // type === SPAN_ID || type === DD_P_TID
+      hex = uint8Array.subarray(0, 8);
+    }
+    console.log(hex.toString());
     let binaryString = "";
     for (const num of hex) {
       binaryString = binaryString + this.numberToBinaryString(num);
     }
 
-    let res;
-    if (numberOfBits === _128_BITS) {
-      res = "0" + binaryString.substring(1, 64) + "0" + binaryString.substring(65, 128);
-    } else {
-      // 64 bits
-      res = "0" + binaryString.substring(1, 64);
-    }
+    const res = "0" + binaryString.substring(1, 64);
     if (res === "0".repeat(128)) {
       return "1";
     }
