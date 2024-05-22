@@ -169,16 +169,15 @@ export class StepFunctionContextService {
     const hash = new Sha256();
     hash.update(s);
     const uint8Array = hash.digestSync();
-    let hex;
+    let intArray;
     if (type === TRACE_ID) {
-      hex = uint8Array.subarray(8, 16);
+      intArray = uint8Array.subarray(8, 16);
     } else {
       // type === SPAN_ID || type === DD_P_TID
-      hex = uint8Array.subarray(0, 8);
+      intArray = uint8Array.subarray(0, 8);
     }
-    console.log(hex.toString());
     let binaryString = "";
-    for (const num of hex) {
+    for (const num of intArray) {
       binaryString = binaryString + this.numberToBinaryString(num);
     }
 
