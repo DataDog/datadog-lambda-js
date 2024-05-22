@@ -139,8 +139,6 @@ export class StepFunctionContextService {
     const sampleMode = SampleMode.AUTO_KEEP;
     const _DatadogSpanContext = require("dd-trace/packages/dd-trace/src/opentracing/span_context");
     const id = require("dd-trace/packages/dd-trace/src/id");
-    console.log(`executionArn is ${this.context["step_function.execution_id"]}`);
-    console.log(`traceId: ${traceId}`);
 
     const ddTraceContext = new _DatadogSpanContext({
       traceId: id(traceId, 10),
@@ -152,9 +150,7 @@ export class StepFunctionContextService {
     if (ptid === "0".repeat(16)) {
       return ddTraceContext;
     }
-    console.log(`ptid: ${ptid}`);
-    ddTraceContext._trace.tags["_dd.p.tid"] = ptid;
-    // ddTraceContext._trace.tags["_dd.p.tid"] = id(higher64BitsTraceId, 10).toString(16);
+    ddTraceContext._trace.tags["_dd.p.tid"] = id(ptid, 10).toString(16);
     const spanContext = new SpanContextWrapper(ddTraceContext, TraceSource.Event);
 
     if (spanContext === null) return null;
