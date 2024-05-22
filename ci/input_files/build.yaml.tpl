@@ -95,7 +95,7 @@ integration-test ({{ $runtime.name }}):
   before_script:
     - *install-node
     - EXTERNAL_ID_NAME=integration-test-externalid ROLE_TO_ASSUME=sandbox-integration-test-deployer AWS_ACCOUNT=425362996713 source ./ci/get_secrets.sh
-    - yarn global add serverless --prefix /usr/local
+    - yarn global add serverless@^3.38.0 --prefix /usr/local
     - cd integration_tests && yarn install && cd ..
   script:
     - RUNTIME_PARAM={{ $runtime.node_major_version }} ./scripts/run_integration_tests.sh
