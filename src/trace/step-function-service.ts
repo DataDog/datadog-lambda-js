@@ -183,7 +183,7 @@ export class StepFunctionContextService {
     }
 
     const res = "0" + binaryString.substring(1, 64);
-    if (res === "0".repeat(128)) {
+    if (res === "0".repeat(64)) {
       return "1";
     }
     return res;
