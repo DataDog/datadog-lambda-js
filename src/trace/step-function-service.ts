@@ -147,9 +147,6 @@ export class StepFunctionContextService {
     });
 
     const ptid = this.deterministicSha256HashToBigIntString(this.context["step_function.execution_id"], DD_P_TID);
-    if (ptid === "0".repeat(16)) {
-      return ddTraceContext;
-    }
     ddTraceContext._trace.tags["_dd.p.tid"] = id(ptid, 10).toString(16);
     const spanContext = new SpanContextWrapper(ddTraceContext, TraceSource.Event);
 
