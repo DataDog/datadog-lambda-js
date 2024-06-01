@@ -1,5 +1,6 @@
 export function isBatchItemFailure(lambdaResponse: any): boolean {
   return (
+    lambdaResponse &&
     typeof lambdaResponse === "object" &&
     "batchItemFailures" in lambdaResponse &&
     Array.isArray(lambdaResponse.batchItemFailures)
