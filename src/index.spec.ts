@@ -449,6 +449,23 @@ describe("datadog", () => {
     expect(mockedIncrementInvocations).toBeCalledWith(expect.anything(), mockContext);
   });
 
+  it("doesn't increment batch item failures if its null", async () => {
+    const lambdaResponse: any = null;
+
+    const wrapped = datadog(async () => {
+      return lambdaResponse;
+    });
+
+    const lambdaResult = await wrapped({}, mockContext, () => {});
+
+    expect(lambdaResult).toEqual(lambdaResponse);
+
+    expect(mockedIncrementBatchItemFailures).toBeCalledTimes(0);
+    expect(mockedIncrementInvocations).toBeCalledTimes(1);
+
+    expect(mockedIncrementInvocations).toBeCalledWith(expect.anything(), mockContext);
+  });
+
   it("doesn't increment errors or invocations with config false setting", async () => {
     const handlerError: Handler = (event, context, callback) => {
       throw Error("Some error");
