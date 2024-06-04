@@ -137,7 +137,11 @@ export class StepFunctionContextService {
       PARENT_ID,
     );
     const sampleMode = SampleMode.AUTO_KEEP;
-    const _DatadogSpanContext = require("dd-trace/packages/dd-trace/src/opentracing/span_context");
+    function getDatadogSpanContext() {
+      return require("dd-trace/packages/dd-trace/src/opentracing/span_context");
+    }
+
+    const _DatadogSpanContext = getDatadogSpanContext();
     const id = require("dd-trace/packages/dd-trace/src/id");
 
     const ddTraceContext = new _DatadogSpanContext({
