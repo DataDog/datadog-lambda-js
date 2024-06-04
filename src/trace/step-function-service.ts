@@ -171,10 +171,7 @@ export class StepFunctionContextService {
     if (type === TRACE_ID) {
       intArray = uint8Array.subarray(8, 16);
     }
-    let binaryString = "";
-    for (const num of intArray) {
-      binaryString = binaryString + this.numberToBinaryString(num);
-    }
+    const binaryString = intArray.reduce((acc, num) => acc + this.numberToBinaryString(num), "");
 
     const res = "0" + binaryString.substring(1, 64);
     if (res === "0".repeat(64)) {
