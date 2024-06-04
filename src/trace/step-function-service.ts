@@ -166,12 +166,10 @@ export class StepFunctionContextService {
     const hash = new Sha256();
     hash.update(s);
     const uint8Array = hash.digestSync();
-    let intArray;
+    // type === SPAN_ID || type === DD_P_TID
+    let intArray = uint8Array.subarray(0, 8);
     if (type === TRACE_ID) {
       intArray = uint8Array.subarray(8, 16);
-    } else {
-      // type === SPAN_ID || type === DD_P_TID
-      intArray = uint8Array.subarray(0, 8);
     }
     let binaryString = "";
     for (const num of intArray) {
