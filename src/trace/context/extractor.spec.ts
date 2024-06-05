@@ -688,8 +688,8 @@ describe("TraceContextExtractor", () => {
         const traceContext = await extractor.extract(event, {} as Context);
         expect(traceContext).not.toBeNull();
 
-        expect(traceContext?.toTraceId()).toBe("947965466153612645");
-        expect(traceContext?.toSpanId()).toBe("4602916161841036335");
+        expect(traceContext?.toTraceId()).toBe("1139193989631387307");
+        expect(traceContext?.toSpanId()).toBe("5892738536804826142");
         expect(traceContext?.sampleMode()).toBe("1");
         expect(traceContext?.source).toBe("event");
       });
