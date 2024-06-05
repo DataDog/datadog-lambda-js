@@ -137,26 +137,31 @@ export class StepFunctionContextService {
       PARENT_ID,
     );
     const sampleMode = SampleMode.AUTO_KEEP;
-    function getDatadogSpanContext() {
-      return require("dd-trace/packages/dd-trace/src/opentracing/span_context");
+
+    try {
+      // Try requiring class from the tracer.
+      const _DatadogSpanContext = require("dd-trace/packages/dd-trace/src/opentracing/span_context");
+      const id = require("dd-trace/packages/dd-trace/src/id");
+
+      const ddSpanContext = new _DatadogSpanContext({
+        traceId: id(traceId, 10),
+        spanId: id(parentId, 10),
+        sampling: { priority: sampleMode.toString(2) },
+      });
+
+      const ptid = this.deterministicSha256HashToBigIntString(this.context["step_function.execution_id"], DD_P_TID);
+      ddSpanContext._trace.tags["_dd.p.tid"] = id(ptid, 10).toString(16);
+      if (ddSpanContext === null) return null;
+
+      logDebug(`Extracted trace context from StepFunctionContext`, { traceContext: ddSpanContext });
+
+      return new SpanContextWrapper(ddSpanContext, TraceSource.Event);
+    } catch (error) {
+      if (error instanceof Error) {
+        logDebug("Couldn't generate SpanContext with tracer.", error);
+      }
+      return null;
     }
-
-    const _DatadogSpanContext = getDatadogSpanContext();
-    const id = require("dd-trace/packages/dd-trace/src/id");
-
-    const ddTraceContext = new _DatadogSpanContext({
-      traceId: id(traceId, 10),
-      spanId: id(parentId, 10),
-      sampling: { priority: sampleMode.toString(2) },
-    });
-
-    const ptid = this.deterministicSha256HashToBigIntString(this.context["step_function.execution_id"], DD_P_TID);
-    ddTraceContext._trace.tags["_dd.p.tid"] = id(ptid, 10).toString(16);
-    const spanContext = new SpanContextWrapper(ddTraceContext, TraceSource.Event);
-
-    if (spanContext === null) return null;
-    logDebug(`Extracted trace context from StepFunctionContext`, { traceContext: this.context });
-    return spanContext;
   }
 
   private deterministicSha256HashToBigIntString(s: string, type: string): string {
