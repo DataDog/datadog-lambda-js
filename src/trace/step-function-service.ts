@@ -1,7 +1,7 @@
-import { Md5 } from "ts-md5";
 import { logDebug } from "../utils";
 import { SampleMode, TraceSource } from "./trace-context-service";
 import { SpanContextWrapper } from "./span-context-wrapper";
+import { Sha256 } from "@aws-crypto/sha256-js";
 
 export interface StepFunctionContext {
   "step_function.execution_name": string;
@@ -15,6 +15,10 @@ export interface StepFunctionContext {
   "step_function.state_name": string;
   "step_function.state_retry_count": number;
 }
+
+export const TRACE_ID = "traceId";
+export const PARENT_ID = "spanId";
+export const DD_P_TID = "_dd.p.tid";
 
 export class StepFunctionContextService {
   private static _instance: StepFunctionContextService;
@@ -123,51 +127,69 @@ export class StepFunctionContextService {
   public get spanContext(): SpanContextWrapper | null {
     if (this.context === undefined) return null;
 
-    const traceId = this.deterministicMd5HashToBigIntString(this.context["step_function.execution_id"]);
-    const parentId = this.deterministicMd5HashToBigIntString(
+    const traceId = this.deterministicSha256HashToBigIntString(this.context["step_function.execution_id"], TRACE_ID);
+    const parentId = this.deterministicSha256HashToBigIntString(
       this.context["step_function.execution_id"] +
         "#" +
         this.context["step_function.state_name"] +
         "#" +
         this.context["step_function.state_entered_time"],
+      PARENT_ID,
     );
     const sampleMode = SampleMode.AUTO_KEEP;
 
-    const spanContext = SpanContextWrapper.fromTraceContext({
-      traceId,
-      parentId,
-      sampleMode,
-      source: TraceSource.Event,
-    });
+    try {
+      // Try requiring class from the tracer.
+      const _DatadogSpanContext = require("dd-trace/packages/dd-trace/src/opentracing/span_context");
+      const id = require("dd-trace/packages/dd-trace/src/id");
 
-    if (spanContext === null) return null;
-    logDebug(`Extracted trace context from StepFunctionContext`, { traceContext: this.context });
-    return spanContext;
+      const ddSpanContext = new _DatadogSpanContext({
+        traceId: id(traceId, 10),
+        spanId: id(parentId, 10),
+        sampling: { priority: sampleMode.toString(2) },
+      });
+
+      const ptid = this.deterministicSha256HashToBigIntString(this.context["step_function.execution_id"], DD_P_TID);
+      ddSpanContext._trace.tags["_dd.p.tid"] = id(ptid, 10).toString(16);
+      if (ddSpanContext === null) return null;
+
+      logDebug(`Extracted trace context from StepFunctionContext`, { traceContext: ddSpanContext });
+
+      return new SpanContextWrapper(ddSpanContext, TraceSource.Event);
+    } catch (error) {
+      if (error instanceof Error) {
+        logDebug("Couldn't generate SpanContext with tracer.", error);
+      }
+      return null;
+    }
   }
 
-  private deterministicMd5HashToBigIntString(s: string): string {
-    const binaryString = this.deterministicMd5HashInBinary(s);
+  private deterministicSha256HashToBigIntString(s: string, type: string): string {
+    const binaryString = this.deterministicSha256Hash(s, type);
     return BigInt("0b" + binaryString).toString();
   }
 
-  private deterministicMd5HashInBinary(s: string): string {
-    // Md5 here is used here because we don't need a cryptographically secure hashing method but to generate the same trace/span ids as the backend does
-    const hex = Md5.hashStr(s);
+  private deterministicSha256Hash(s: string, type: string): string {
+    // returns 128 bits hash unless mostSignificant64Bits options is set to true.
 
-    let binary = "";
-    for (let i = 0; i < hex.length; i++) {
-      const ch = hex.charAt(i);
-      binary = binary + this.hexToBinary(ch);
+    const hash = new Sha256();
+    hash.update(s);
+    const uint8Array = hash.digestSync();
+    // type === SPAN_ID || type === DD_P_TID
+    let intArray = uint8Array.subarray(0, 8);
+    if (type === TRACE_ID) {
+      intArray = uint8Array.subarray(8, 16);
     }
+    const binaryString = intArray.reduce((acc, num) => acc + this.numberToBinaryString(num), "");
 
-    const res = "0" + binary.substring(1, 64);
+    const res = "0" + binaryString.substring(1, 64);
     if (res === "0".repeat(64)) {
       return "1";
     }
     return res;
   }
 
-  private hexToBinary(hex: string) {
-    return parseInt(hex, 16).toString(2).padStart(4, "0");
+  private numberToBinaryString(num: number): string {
+    return num.toString(2).padStart(8, "0");
   }
 }

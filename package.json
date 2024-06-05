@@ -25,7 +25,7 @@
     "@types/aws-sdk": "^2.7.0",
     "@types/jest": "^26.0.23",
     "@types/mock-fs": "4.13.0",
-    "@types/node": "^15.6.1",
+    "@types/node": "^20.12.10",
     "@types/promise-retry": "^1.1.3",
     "@types/shimmer": "^1.0.1",
     "dd-trace": "^4.37.0",
@@ -38,12 +38,12 @@
     "typescript": "^4.3.2"
   },
   "dependencies": {
+    "@aws-crypto/sha256-js": "5.2.0",
     "dc-polyfill": "^0.1.3",
     "hot-shots": "8.5.0",
     "promise-retry": "^2.0.1",
     "serialize-error": "^8.1.0",
-    "shimmer": "1.2.1",
-    "ts-md5": "1.3.1"
+    "shimmer": "1.2.1"
   },
   "jest": {
     "verbose": true,

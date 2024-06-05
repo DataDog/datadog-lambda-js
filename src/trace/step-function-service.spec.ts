@@ -1,4 +1,4 @@
-import { StepFunctionContextService } from "./step-function-service";
+import { PARENT_ID, StepFunctionContextService } from "./step-function-service";
 
 describe("StepFunctionContextService", () => {
   const stepFunctionEvent = {
@@ -194,8 +194,8 @@ describe("StepFunctionContextService", () => {
 
       expect(spanContext).not.toBeNull();
 
-      expect(spanContext?.toTraceId()).toBe("947965466153612645");
-      expect(spanContext?.toSpanId()).toBe("4602916161841036335");
+      expect(spanContext?.toTraceId()).toBe("1139193989631387307");
+      expect(spanContext?.toSpanId()).toBe("5892738536804826142");
       expect(spanContext?.sampleMode()).toBe("1");
       expect(spanContext?.source).toBe("event");
     });
@@ -211,54 +211,55 @@ describe("StepFunctionContextService", () => {
     });
   });
 
-  describe("deterministicMd5HashToBigIntString", () => {
+  describe("deterministicSha256HashToBigIntString", () => {
     it("returns the same hash number generated in `logs backend` for a random string", () => {
       const instance = StepFunctionContextService.instance();
-      const hash = instance["deterministicMd5HashToBigIntString"]("some_testing_random_string");
-      expect(hash).toEqual("2251275791555400689");
+      const hash = instance["deterministicSha256HashToBigIntString"]("some_testing_random_string", PARENT_ID);
+      expect(hash).toEqual("4364271812988819936");
     });
 
     it("returns the same hash number generated in `logs backend` for execution id # state name # entered time", () => {
       const instance = StepFunctionContextService.instance();
-      const hash = instance["deterministicMd5HashToBigIntString"](
+      const hash = instance["deterministicSha256HashToBigIntString"](
         "arn:aws:states:sa-east-1:601427271234:express:DatadogStateMachine:acaf1a67-336a-e854-1599-2a627eb2dd8a:c8baf081-31f1-464d-971f-70cb17d01111#step-one#2022-12-08T21:08:19.224Z",
+        PARENT_ID,
       );
-      expect(hash).toEqual("8034507082463708833");
+      expect(hash).toEqual("4340734536022949921");
     });
   });
 
-  describe("deterministicMd5HashInBinary", () => {
+  describe("deterministicSha256Hash", () => {
     it.each([
       [
         "a random string",
         "some_testing_random_string",
-        "0001111100111110001000110110011110010111000110001001001111110001",
+        "0011110010010001000000100001011101001100011100101101100111100000",
       ],
       [
         "an execution id",
         "arn:aws:states:sa-east-1:601427271234:express:DatadogStateMachine:acaf1a67-336a-e854-1599-2a627eb2dd8a:c8baf081-31f1-464d-971f-70cb17d041f4",
-        "0010010000101100100000101011111101111100110110001110111100111101",
+        "0100010100110010010010100001011001110100111011010100110010000100",
       ],
       [
         "another execution id",
         "arn:aws:states:sa-east-1:601427271234:express:DatadogStateMachine:acaf1a67-336a-e854-1599-2a627eb2dd8a:c8baf081-31f1-464d-971f-70cb17d01111",
-        "0010001100110000011011011111010000100111100000110000100100101010",
+        "0010111110001100100010000101001100110000000000010111011100101011",
       ],
       [
         "execution id # state name # entered time",
         "arn:aws:states:sa-east-1:601427271234:express:DatadogStateMachine:acaf1a67-336a-e854-1599-2a627eb2dd8a:c8baf081-31f1-464d-971f-70cb17d01111#step-one#2022-12-08T21:08:19.224Z",
-        "0110111110000000010011011001111101110011100111000000011010100001",
+        "0011110000111101011000110000111111110011111010110000000000100001",
       ],
     ])("returns the same hash number generated in `logs backend` for %s", (_, str, expected) => {
       const instance = StepFunctionContextService.instance();
-      const hash = instance["deterministicMd5HashInBinary"](str);
+      const hash = instance["deterministicSha256Hash"](str, PARENT_ID);
       expect(hash).toEqual(expected);
     });
 
     it("returns a hash always leading with 0", () => {
       const instance = StepFunctionContextService.instance();
       for (let i = 0; i < 20; i++) {
-        const hash = instance["deterministicMd5HashInBinary"](i.toString());
+        const hash = instance["deterministicSha256Hash"](i.toString(), PARENT_ID);
         expect(hash.substring(0, 1)).toMatch("0");
       }
     });
@@ -268,36 +269,44 @@ describe("StepFunctionContextService", () => {
       const times = 20;
       for (let i = 0; i < times; i++) {
         for (let j = i + 1; j < times; j++) {
-          const hash1 = instance["deterministicMd5HashInBinary"](i.toString());
-          const hash2 = instance["deterministicMd5HashInBinary"](j.toString());
+          const hash1 = instance["deterministicSha256Hash"](i.toString(), PARENT_ID);
+          const hash2 = instance["deterministicSha256Hash"](j.toString(), PARENT_ID);
           expect(hash1).not.toMatch(hash2);
         }
       }
     });
   });
 
-  describe("hexToBinary", () => {
+  describe("numberToBinaryString", () => {
     const instance = StepFunctionContextService.instance();
     it.each([
-      ["0", "0000"],
-      ["1", "0001"],
-      ["2", "0010"],
-      ["3", "0011"],
-      ["4", "0100"],
-      ["5", "0101"],
-      ["6", "0110"],
-      ["7", "0111"],
-      ["8", "1000"],
-      ["9", "1001"],
-      ["a", "1010"],
-      ["b", "1011"],
-      ["c", "1100"],
-      ["d", "1101"],
-      ["e", "1110"],
-      ["f", "1111"],
+      [0, "00000000"],
+      [1, "00000001"],
+      [2, "00000010"],
+      [3, "00000011"],
+      [4, "00000100"],
     ])("returns the right binary number for %s => %s", (hex, expected) => {
-      const binary = instance["hexToBinary"](hex);
+      const binary = instance["numberToBinaryString"](hex);
       expect(binary).toBe(expected);
+    });
+  });
+
+  describe("test 64 bits deterministicSha256HashToBigIntString for span id", () => {
+    const instance = StepFunctionContextService.instance();
+    it("first test of #1", () => {
+      const actual = instance["deterministicSha256HashToBigIntString"](
+        "arn:aws:states:sa-east-1:425362996713:stateMachine:MyStateMachine-b276uka1j#lambda#1",
+        PARENT_ID,
+      );
+      expect(actual).toEqual("3711631873188331089");
+    });
+
+    it("test same hashing number is generated as logs-backend for execution id # state name # entered time", () => {
+      const actual = instance["deterministicSha256HashToBigIntString"](
+        "arn:aws:states:sa-east-1:425362996713:stateMachine:MyStateMachine-b276uka1j#lambda#2",
+        PARENT_ID,
+      );
+      expect(actual).toEqual("5759173372325510050");
     });
   });
 });
