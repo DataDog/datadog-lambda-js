@@ -52,6 +52,9 @@ The 6.x.x release introduces support for the node 16 runtime and esm modules.
 
 The 7.x.x release drops support for Node12, and upgrades dd-trace-js to version 3.x
 
+### 9.x.x
+The 9.x.x release changed how Lambda's traceID is hashed if the incoming payload contains Step Functions context object. This change only affects those who uses inject Step Functions context object into Lambda payload.
+
 There is a full migration guide available [here](https://github.com/DataDog/dd-trace-js/blob/master/MIGRATING.md).
 Some changes are more likely to impact Serverless users:
 - `HTTP Operation Name Changed`. HTTP requests will no longer appear as a separate client under `*-http-client`, which polluted the APM service catalog.
