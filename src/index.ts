@@ -421,13 +421,13 @@ function getRuntimeTag(): string {
 
 function getDDTags(): string[] {
   const ddTags = getEnvValue("DD_TAGS", "").split(",");
-  const ddService = getEnvValue("DD_SERVICE", "")
+  const ddService = getEnvValue("DD_SERVICE", "");
   if (ddService.length > 0) {
-    ddTags.push(`service:${ddService}`)
+    ddTags.push(`service:${ddService}`);
   }
-  const ddEnv = getEnvValue("DD_ENV", "")
+  const ddEnv = getEnvValue("DD_ENV", "");
   if (ddEnv.length > 0) {
-    ddTags.push(`env:${ddEnv}`)
+    ddTags.push(`env:${ddEnv}`);
   }
   return ddTags;
 }

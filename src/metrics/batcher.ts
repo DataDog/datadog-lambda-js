@@ -23,7 +23,7 @@ export class Batcher {
    * Convert batched metrics to a list of api compatible metrics
    */
   public toAPIMetrics(tags?: string[]): APIMetric[] {
-    return [...this.metrics.values()].flatMap((metric) => metric.toAPIMetrics(tags))
+    return [...this.metrics.values()].flatMap((metric) => metric.toAPIMetrics(tags));
   }
 
   private getBatchKey(metric: Metric): string {

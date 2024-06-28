@@ -142,9 +142,11 @@ export class MetricsListener {
     if (this.isExtensionRunning) {
       const isMetricTimeValid = Date.parse(metricTime.toString()) > 0;
       if (isMetricTimeValid) {
-        const dateCeiling = new Date(Date.now() - 4 * 60 * 60 * 1000) // 4 hours ago
+        const dateCeiling = new Date(Date.now() - 4 * 60 * 60 * 1000); // 4 hours ago
         if (dateCeiling > metricTime) {
-          logWarning("The timestamp provided is too old to be sent to the Datadog API. Please provide a timestamp within the last 4 hours.");
+          logWarning(
+            "The timestamp provided is too old to be sent to the Datadog API. Please provide a timestamp within the last 4 hours.",
+          );
           return;
         }
         // Only create the processor to submit metrics to the API when a user provides a valid timestamp as
