@@ -34,12 +34,12 @@ export class Processor {
   /**
    * Start processing incoming metrics asynchronously.
    */
-  public startProcessing() {
+  public startProcessing(tags?: string[]) {
     if (this.loopPromise !== undefined) {
       return;
     }
     this.timer.start();
-    this.loopPromise = this.sendMetricsLoop();
+    this.loopPromise = this.sendMetricsLoop(tags);
   }
 
   /**
@@ -62,12 +62,12 @@ export class Processor {
     await this.loopPromise;
   }
 
-  private async sendMetricsLoop() {
+  private async sendMetricsLoop(tags?: string[]) {
     while (!(await this.timer.nextTimeout())) {
       const oldBatcher = this.batcher;
       this.batcher = new Batcher();
 
-      const metrics = oldBatcher.toAPIMetrics();
+      const metrics = oldBatcher.toAPIMetrics(tags);
       if (metrics.length === 0) {
         continue;
       }
@@ -81,7 +81,7 @@ export class Processor {
         }
       }
     }
-    const finalMetrics = this.batcher.toAPIMetrics();
+    const finalMetrics = this.batcher.toAPIMetrics(tags);
     if (finalMetrics.length === 0) {
       return;
     }

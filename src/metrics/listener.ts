@@ -5,6 +5,8 @@ import { flushExtension, isExtensionRunning } from "./extension";
 import { KMSService } from "./kms-service";
 import { writeMetricToStdout } from "./metric-log";
 import { Distribution } from "./model";
+import { Context } from "aws-lambda";
+import { getEnhancedMetricTags } from "./enhanced-metrics";
 
 const METRICS_BATCH_SEND_INTERVAL = 10000; // 10 seconds
 
@@ -58,13 +60,15 @@ export class MetricsListener {
   private apiKey: Promise<string>;
   private statsDClient?: StatsD;
   private isExtensionRunning?: boolean = undefined;
+  private globalTags?: string[] = [];
 
   constructor(private kmsClient: KMSService, private config: MetricsConfig) {
     this.apiKey = this.getAPIKey(config);
     this.config = config;
   }
 
-  public async onStartInvocation(_: any) {
+  public async onStartInvocation(_: any, context?: Context) {
+    this.globalTags = this.getGlobalTags(context);
     if (this.isExtensionRunning === undefined) {
       this.isExtensionRunning = await isExtensionRunning();
       logDebug(`Extension present: ${this.isExtensionRunning}`);
@@ -183,7 +187,7 @@ export class MetricsListener {
       const url = `https://api.${config.siteURL}`;
       const apiClient = new APIClient(key, url);
       const processor = new Processor(apiClient, METRICS_BATCH_SEND_INTERVAL, config.shouldRetryMetrics);
-      processor.startProcessing();
+      processor.startProcessing(this.globalTags);
       return processor;
     }
   }
@@ -201,5 +205,13 @@ export class MetricsListener {
       }
     }
     return "";
+  }
+
+  private getGlobalTags(context?: Context) {
+    const tags = getEnhancedMetricTags(context);
+    if (context?.invokedFunctionArn) {
+      tags.push(`function_arn:${context.invokedFunctionArn}`);
+    }
+    return tags;
   }
 }

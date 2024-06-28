@@ -22,10 +22,8 @@ export class Batcher {
   /**
    * Convert batched metrics to a list of api compatible metrics
    */
-  public toAPIMetrics(): APIMetric[] {
-    return [...this.metrics.values()]
-      .map((metric) => metric.toAPIMetrics()) // No flatMap support yet in node 10
-      .reduce((prev, curr) => prev.concat(curr), []);
+  public toAPIMetrics(tags?: string[]): APIMetric[] {
+    return [...this.metrics.values()].flatMap((metric) => metric.toAPIMetrics(tags))
   }
 
   private getBatchKey(metric: Metric): string {
