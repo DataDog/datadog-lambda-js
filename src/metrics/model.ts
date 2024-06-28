@@ -46,7 +46,7 @@ export class Distribution implements Metric {
       const unixSeconds = Math.floor(point.timestamp.getTime() / 1000);
       return [unixSeconds, [point.value]];
     });
-    if (tags != undefined) {
+    if (tags !== undefined) {
       this.tags = [...this.tags, ...tags];
     }
     return [
