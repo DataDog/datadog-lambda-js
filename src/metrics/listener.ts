@@ -68,7 +68,6 @@ export class MetricsListener {
   }
 
   public async onStartInvocation(_: any, context?: Context) {
-    this.globalTags = this.getGlobalTags(context);
     if (this.isExtensionRunning === undefined) {
       this.isExtensionRunning = await isExtensionRunning();
       logDebug(`Extension present: ${this.isExtensionRunning}`);
@@ -77,6 +76,7 @@ export class MetricsListener {
     if (this.isExtensionRunning) {
       logDebug(`Using StatsD client`);
 
+      this.globalTags = this.getGlobalTags(context);
       this.statsDClient = new StatsD({ host: "127.0.0.1", closingFlushInterval: 1 });
       return;
     }
@@ -152,6 +152,10 @@ export class MetricsListener {
         // Only create the processor to submit metrics to the API when a user provides a valid timestamp as
         // Dogstatsd does not support timestamps for distributions.
         this.currentProcessor = this.createProcessor(this.config, this.apiKey);
+        // Add global tags to metrics sent to the API
+        if (this.globalTags !== undefined && this.globalTags.length > 0) {
+          tags = [...tags, ...this.globalTags];
+        }
       } else {
         this.statsDClient?.distribution(name, value, undefined, tags);
         return;

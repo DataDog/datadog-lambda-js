@@ -19,7 +19,7 @@ export interface MetricKey {
 }
 
 export interface Metric extends MetricKey {
-  toAPIMetrics(tags?: string[]): APIMetric[];
+  toAPIMetrics(): APIMetric[];
   /**
    * Union creates a new metric that is the union of this metric, and another metric.
    */
@@ -40,15 +40,12 @@ export class Distribution implements Metric {
     this.tags = tags;
   }
 
-  public toAPIMetrics(tags?: string[]): APIMetric[] {
+  public toAPIMetrics(): APIMetric[] {
     const points: APIPoint[] = this.points.map((point) => {
       // Convert the milliseconds we get from getTime to seconds for the Datadog API
       const unixSeconds = Math.floor(point.timestamp.getTime() / 1000);
       return [unixSeconds, [point.value]];
     });
-    if (tags !== undefined) {
-      this.tags = [...this.tags, ...tags];
-    }
     return [
       {
         metric: this.name,
