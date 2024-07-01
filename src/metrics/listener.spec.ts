@@ -6,6 +6,7 @@ import { EXTENSION_URL } from "./extension";
 
 import { MetricsListener } from "./listener";
 import StatsDClient from "hot-shots";
+import { Context } from "aws-lambda";
 jest.mock("hot-shots");
 
 const siteURL = "example.com";
@@ -143,7 +144,7 @@ describe("MetricsListener", () => {
     mock({
       "/opt/extensions/datadog-agent": Buffer.from([0]),
     });
-    nock("https://api.example.com").post("/api/v1/distribution_points?api_key=api-key").reply(200, {});
+    const apiScope = nock("https://api.example.com").post("/api/v1/distribution_points?api_key=api-key").reply(200, {});
 
     const distributionMock = jest.fn();
     (StatsDClient as any).mockImplementation(() => {
@@ -152,8 +153,6 @@ describe("MetricsListener", () => {
         close: (callback: any) => callback(undefined),
       };
     });
-
-    jest.spyOn(Date, "now").mockImplementation(() => 1487076708000);
 
     const metricTimeOneMinuteAgo = new Date(Date.now() - 60000);
     const kms = new MockKMS("kms-api-key-decrypted");
@@ -166,8 +165,12 @@ describe("MetricsListener", () => {
       localTesting: true,
       siteURL,
     });
+    const mockARN = "arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda";
+    const mockContext = {
+      invokedFunctionArn: mockARN,
+    } as any as Context;
 
-    await listener.onStartInvocation({});
+    await listener.onStartInvocation({}, mockContext);
     listener.sendDistributionMetricWithDate(
       "my-metric-with-a-timestamp",
       10,
@@ -178,8 +181,9 @@ describe("MetricsListener", () => {
     );
     listener.sendDistributionMetric("my-metric-without-a-timestamp", 10, false, "tag:a", "tag:b");
     await listener.onCompleteInvocation();
+
     expect(flushScope.isDone()).toBeTruthy();
-    expect(nock.isDone()).toBeTruthy();
+    expect(apiScope.isDone()).toBeTruthy();
     expect(distributionMock).toHaveBeenCalledWith("my-metric-without-a-timestamp", 10, undefined, ["tag:a", "tag:b"]);
   });
 
