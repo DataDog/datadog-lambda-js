@@ -187,6 +187,31 @@ describe("MetricsListener", () => {
     expect(distributionMock).toHaveBeenCalledWith("my-metric-without-a-timestamp", 10, undefined, ["tag:a", "tag:b"]);
   });
 
+  it("does not send historical metrics from over 4 hours ago to the API", async () => {
+    mock({
+      "/opt/extensions/datadog-agent": Buffer.from([0]),
+    });
+    const apiScope = nock("https://api.example.com").post("/api/v1/distribution_points?api_key=api-key").reply(200, {});
+
+    const metricTimeFiveHoursAgo = new Date(Date.now() - 5 * 60 * 60 * 1000); // 5 hours ago
+    const kms = new MockKMS("kms-api-key-decrypted");
+    const listener = new MetricsListener(kms as any, {
+      apiKey: "api-key",
+      apiKeyKMS: "",
+      enhancedMetrics: false,
+      logForwarding: false,
+      shouldRetryMetrics: false,
+      localTesting: true,
+      siteURL,
+    });
+
+    await listener.onStartInvocation({});
+    listener.sendDistributionMetricWithDate("my-metric-with-a-timestamp", 10, metricTimeFiveHoursAgo, false);
+    await listener.onCompleteInvocation();
+
+    expect(apiScope.isDone()).toBeFalsy();
+  });
+
   it("logs metrics when logForwarding is enabled with custom timestamp", async () => {
     const spy = jest.spyOn(process.stdout, "write");
     // jest.spyOn(Date, "now").mockImplementation(() => 1487076708000);
