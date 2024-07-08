@@ -219,7 +219,13 @@ export class MetricsListener {
   private getGlobalTags(context?: Context) {
     const tags = getEnhancedMetricTags(context);
     if (context?.invokedFunctionArn) {
-      tags.push(`function_arn:${context.invokedFunctionArn}`);
+      const splitArn = context.invokedFunctionArn.split(":");
+      if (splitArn.length > 7) {
+        // Get rid of the alias
+        splitArn.pop();
+      }
+      const arn = splitArn.join(":");
+      tags.push(`function_arn:${arn}`);
     }
     return tags;
   }
