@@ -9,6 +9,7 @@ import { Context } from "aws-lambda";
 import { getEnhancedMetricTags } from "./enhanced-metrics";
 
 const METRICS_BATCH_SEND_INTERVAL = 10000; // 10 seconds
+const HISTORICAL_METRICS_THRESHOLD_HOURS = 4 * 60 * 60 * 1000; // 4 hours
 
 export interface MetricsConfig {
   /**
@@ -142,7 +143,7 @@ export class MetricsListener {
     if (this.isExtensionRunning) {
       const isMetricTimeValid = Date.parse(metricTime.toString()) > 0;
       if (isMetricTimeValid) {
-        const dateCeiling = new Date(Date.now() - 4 * 60 * 60 * 1000); // 4 hours ago
+        const dateCeiling = new Date(Date.now() - HISTORICAL_METRICS_THRESHOLD_HOURS); // 4 hours ago
         if (dateCeiling > metricTime) {
           logWarning(`Timestamp ${metricTime.toISOString()} is older than 4 hours, not submitting metric ${name}`);
           return;
