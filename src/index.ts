@@ -153,7 +153,7 @@ export function datadog<TEvent, TResult>(
 
     try {
       await traceListener.onStartInvocation(event, context);
-      await metricsListener.onStartInvocation(event);
+      await metricsListener.onStartInvocation(event, context);
       if (finalConfig.enhancedMetrics) {
         incrementInvocationsMetric(metricsListener, context);
       }
@@ -267,7 +267,7 @@ export function extractArgs<TEvent>(isResponseStreamFunction: boolean, ...args: 
  * @param tags The tags associated with the metric. Should be of the format "tag:value".
  */
 export function sendDistributionMetricWithDate(name: string, value: number, metricTime: Date, ...tags: string[]) {
-  tags = [...tags, getRuntimeTag()];
+  tags = [...tags, getRuntimeTag(), ...getDDTags()];
 
   if (currentMetricsListener !== undefined) {
     currentMetricsListener.sendDistributionMetricWithDate(name, value, metricTime, false, ...tags);
@@ -417,6 +417,19 @@ export function getEnvValue(key: string, defaultValue: string): string {
 function getRuntimeTag(): string {
   const version = process.version;
   return `dd_lambda_layer:datadog-node${version}`;
+}
+
+function getDDTags(): string[] {
+  const ddTags = getEnvValue("DD_TAGS", "").split(",");
+  const ddService = getEnvValue("DD_SERVICE", "");
+  if (ddService.length > 0) {
+    ddTags.push(`service:${ddService}`);
+  }
+  const ddEnv = getEnvValue("DD_ENV", "");
+  if (ddEnv.length > 0) {
+    ddTags.push(`env:${ddEnv}`);
+  }
+  return ddTags;
 }
 
 export async function emitTelemetryOnErrorOutsideHandler(

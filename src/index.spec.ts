@@ -555,6 +555,18 @@ describe("sendDistributionMetricWithDate", () => {
     sendDistributionMetricWithDate("metric", 1, new Date(), "first-tag", "second-tag");
     expect(_metricsQueue.length).toBe(1);
   });
+  it("attaches tags from Datadog environment variables to the metric", () => {
+    process.env.DD_TAGS = "foo:bar,hello:world";
+    sendDistributionMetricWithDate("metric", 1, new Date(Date.now() - 1 * 60 * 60 * 1000), "first-tag", "second-tag");
+    expect(_metricsQueue.length).toBe(1);
+    const metricTags = _metricsQueue.pop()?.tags;
+    expect(metricTags).toBeDefined();
+    ["first-tag", "second-tag", `dd_lambda_layer:datadog-node${process.version}`, "foo:bar", "hello:world"].forEach(
+      (tag) => {
+        expect(metricTags?.indexOf(tag)).toBeGreaterThanOrEqual(0);
+      },
+    );
+  });
 });
 
 describe("emitTelemetryOnErrorOutsideHandler", () => {
