@@ -1,4 +1,23 @@
 const esbuild = require('esbuild');
+const ddPlugin = require('dd-trace/esbuild')
+
+const ddTraceExternals = [
+  // esbuild cannot bundle native modules
+  '@datadog/native-metrics',
+
+  // required if you use profiling
+  '@datadog/pprof',
+
+  // required if you use Datadog security features
+  '@datadog/native-appsec',
+  '@datadog/native-iast-taint-tracking',
+  '@datadog/native-iast-rewriter',
+
+  // required if you encounter graphql errors during the build step
+  'graphql/language/visitor',
+  'graphql/language/printer',
+  'graphql/utilities'
+];
 
 const buildESM = esbuild.build({
   entryPoints: ['src/index.ts'],
@@ -8,7 +27,8 @@ const buildESM = esbuild.build({
   platform: 'node',
   target: 'esnext',
   minify: true,
-
+  plugins: [ddPlugin],
+  external: ddTraceExternals,
 }).catch((error) => {
   console.error('ESM build failed:', error);
   process.exit(1);
@@ -22,7 +42,8 @@ const buildCJS = esbuild.build({
   platform: 'node',
   target: 'esnext',
   minify: true,
-  
+  plugins: [ddPlugin],
+  external: ddTraceExternals,
 }).catch((error) => {
   console.error('CJS build failed:', error);
   process.exit(1);
