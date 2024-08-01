@@ -1,5 +1,5 @@
 
-const { logDebug } = require("../utils");
+const { logDebug, updateDDTags } = require("../utils");
 
 // Currently no way to prevent typescript from auto-transpiling import into require,
 // so we expose a wrapper in js
@@ -12,11 +12,9 @@ exports.initTracer = function () {
     // the version provided by the layer
     const path = require.resolve("dd-trace", { paths: ["/var/task/node_modules", ...module.paths] });
     // tslint:disable-next-line:no-var-requires
-    const tracer = require(path).init({
-        tags: {
-            "_dd.origin": "lambda",
-        },
-    });
+    // add lambda tags to DD_TAGS environment variable
+    const ddtags = updateDDTags({"_dd.origin": "lambda"})
+    const tracer = require(path).init({tags: ddtags});
     logDebug("automatically initialized dd-trace");
 
     // Configure the tracer to ignore HTTP calls made from the Lambda Library to the Extension
