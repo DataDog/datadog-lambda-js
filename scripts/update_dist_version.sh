@@ -6,14 +6,14 @@ DD_TRACE_VERSION=$(sed -n -E "s/dd-trace@([0-9]*\.[0-9]*\.[0-9]*):/\1/p" yarn.lo
 echo "Datadog Lambda Library Version ${DATADOG_LAMBDA_VERSION}"
 echo "Datadog Trace Library Version ${DD_TRACE_VERSION}"
 
-MAIN_CONSTANTS=$(cat ./dist/constants.js)
-TRACE_CONSTANTS=$(cat ./dist/trace/constants.js)
+MAIN_CONSTANTS=$(cat ./dist/constants.d.ts)
+TRACE_CONSTANTS=$(cat ./dist/trace/constants.d.ts)
 
 echo "$MAIN_CONSTANTS" |
-  sed "s/\(datadogLambdaVersion =\) \"\(X\.X\.X\)\"/\1 \"$DATADOG_LAMBDA_VERSION\"/" > ./dist/constants.js
+  sed "s/\(datadogLambdaVersion =\) \"\(X\.X\.X\)\"/\1 \"$DATADOG_LAMBDA_VERSION\"/" > ./dist/constants.d.ts
 
 echo "$TRACE_CONSTANTS" |
-  sed "s/\(ddtraceVersion =\) \"\(X\.X\.X\)\"/\1 \"$DD_TRACE_VERSION\"/" > ./dist/trace/constants.js
+  sed "s/\(ddtraceVersion =\) \"\(X\.X\.X\)\"/\1 \"$DD_TRACE_VERSION\"/" > ./dist/trace/constants.d.ts
 
 echo "Copying handler js files"
 cp src/handler.* dist/
