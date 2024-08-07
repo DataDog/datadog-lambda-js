@@ -766,10 +766,10 @@
   dependencies:
     node-gyp-build "^3.9.0"
 
-"@datadog/native-iast-rewriter@2.3.1":
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/@datadog/native-iast-rewriter/-/native-iast-rewriter-2.3.1.tgz#f9d6d858df88f7a8b6e38f0c07e46fca5394da72"
-  integrity sha512-3pmt5G1Ai/+MPyxP7wBerIu/zH/BnAHxEu/EAMr+77IMpK5m7THPDUoWrPRCWcgFBfn0pK5DR7gRItG0wX3e0g==
+"@datadog/native-iast-rewriter@2.4.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@datadog/native-iast-rewriter/-/native-iast-rewriter-2.4.0.tgz#369de141ecb31118882d3339ba6e4d3487c9de97"
+  integrity sha512-vmcPM9h/jfv1vsej0tBglTah/gia4r6cwzWd4EDsSVOjuNdD+a7L2ZcCtYUxRlrETsOfuiblp6D+o921Qcb0MQ==
   dependencies:
     lru-cache "^7.14.0"
     node-gyp-build "^4.5.0"
@@ -2089,13 +2089,13 @@ dc-polyfill@^0.1.3, dc-polyfill@^0.1.4:
   resolved "https://registry.yarnpkg.com/dc-polyfill/-/dc-polyfill-0.1.5.tgz#c21751413ef98320a646a9b5420409f620e6cc3b"
   integrity sha512-vFlX8cfX8vGPnfZnDZHUz9T4PX9Y8JrOTt+MwUjjoH3NnZGHWb+Nm+h/6JrjLYlkxNTzTm9dahSfGToZnXXJ5A==
 
-dd-trace@^4.42.0:
-  version "4.42.0"
-  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-4.42.0.tgz#4720b2f7c80c8570894920dc8b5ee2c9a3cc4950"
-  integrity sha512-nI88n5qQbNK4NtsSTYzNz2B7yszlPJ0jlMbz8h918Ph15WSJ5Ea+RL1Zj4N4G6/rpWjzJAXk+n+iQYF3I9ONkw==
+dd-trace@^4.44.0:
+  version "4.44.0"
+  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-4.44.0.tgz#09106a9344fce1eeec5f500d276ced86c911c1c3"
+  integrity sha512-/eUtOG8DP4a7tBhlMFOwmgozyRx16HgVJcfuqyciCnbuz4mklDHqfABEe7/5Dmc/Pkat8MCJCG4hizN79ekrNA==
   dependencies:
     "@datadog/native-appsec" "8.0.1"
-    "@datadog/native-iast-rewriter" "2.3.1"
+    "@datadog/native-iast-rewriter" "2.4.0"
     "@datadog/native-iast-taint-tracking" "3.0.0"
     "@datadog/native-metrics" "^2.0.0"
     "@datadog/pprof" "5.3.0"
