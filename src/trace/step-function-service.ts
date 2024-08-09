@@ -136,10 +136,10 @@ export class StepFunctionContextService {
     const traceId = this.deterministicSha256HashToBigIntString(this.context["step_function.execution_id"], TRACE_ID);
     const parentId = this.deterministicSha256HashToBigIntString(
       this.context["step_function.execution_id"] +
-      "#" +
-      this.context["step_function.state_name"] +
-      "#" +
-      this.context["step_function.state_entered_time"],
+        "#" +
+        this.context["step_function.state_name"] +
+        "#" +
+        this.context["step_function.state_entered_time"],
       PARENT_ID,
     );
     const sampleMode = SampleMode.AUTO_KEEP;
