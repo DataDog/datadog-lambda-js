@@ -41,6 +41,11 @@ export class StepFunctionContextService {
     // always triggered by the same event.
     if (typeof event !== "object") return;
 
+    // Legacy lambda parsing
+    if (typeof event.Payload === "object") {
+      event = event.Payload;
+    }
+
     // Execution
     const execution = event.Execution;
     if (typeof execution !== "object") {

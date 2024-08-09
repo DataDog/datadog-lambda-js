@@ -55,6 +55,22 @@ describe("StepFunctionEventTraceExtractor", () => {
       expect(traceContext?.source).toBe("event");
     });
 
+    it("extracts trace context with valid legacy lambda payload", () => {
+      // Mimick TraceContextService.extract initialization
+      StepFunctionContextService.instance({ Payload: payload });
+
+      const extractor = new StepFunctionEventTraceExtractor();
+
+      // Payload is sent again for safety in case the instance wasn't previously initialized
+      const traceContext = extractor.extract({ Payload: payload });
+      expect(traceContext).not.toBeNull();
+
+      expect(traceContext?.toTraceId()).toBe("1139193989631387307");
+      expect(traceContext?.toSpanId()).toBe("5892738536804826142");
+      expect(traceContext?.sampleMode()).toBe("1");
+      expect(traceContext?.source).toBe("event");
+    });
+
     it("returns null when StepFunctionContextService.context is undefined", async () => {
       const extractor = new StepFunctionEventTraceExtractor();
 

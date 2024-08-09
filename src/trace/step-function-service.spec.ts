@@ -209,6 +209,21 @@ describe("StepFunctionContextService", () => {
 
       expect(spanContext).toBeNull();
     });
+
+    it("returns a SpanContextWrapper when event is from legacy lambda", () => {
+      const instance = StepFunctionContextService.instance();
+      // Force setting event
+      instance["setContext"]({ Payload: stepFunctionEvent });
+
+      const spanContext = instance.spanContext;
+
+      expect(spanContext).not.toBeNull();
+
+      expect(spanContext?.toTraceId()).toBe("1139193989631387307");
+      expect(spanContext?.toSpanId()).toBe("5892738536804826142");
+      expect(spanContext?.sampleMode()).toBe("1");
+      expect(spanContext?.source).toBe("event");
+    });
   });
 
   describe("deterministicSha256HashToBigIntString", () => {
