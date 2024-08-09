@@ -213,7 +213,7 @@ describe("StepFunctionContextService", () => {
     it("returns a SpanContextWrapper when event is from legacy lambda", () => {
       const instance = StepFunctionContextService.instance();
       // Force setting event
-      instance["setContext"]({"Payload": stepFunctionEvent});
+      instance["setContext"]({ Payload: stepFunctionEvent });
 
       const spanContext = instance.spanContext;
 
