@@ -1,4 +1,4 @@
-import http, { request } from "http";
+import http from "http";
 import https from "https";
 type http = typeof http;
 type https = typeof https;
