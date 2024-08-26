@@ -1,6 +1,10 @@
 import * as shimmer from "shimmer";
 import { inspect } from "util";
 
+type Console = typeof console;
+
+type wrappedConsole = Console & { [K in LogMethod]: { __wrapped?: boolean } };
+
 import { getLogLevel, LogLevel, setLogLevel } from "../utils/log";
 import { TraceContextService } from "./trace-context-service";
 
@@ -10,7 +14,7 @@ type LogMethod = "log" | "info" | "debug" | "error" | "warn" | "trace";
  * Patches console output to include DataDog's trace context.
  * @param contextService Provides up to date tracing context.
  */
-export function patchConsole(cnsle: Console, contextService: TraceContextService) {
+export function patchConsole(cnsle: wrappedConsole, contextService: TraceContextService) {
   patchMethod(cnsle, "log", contextService);
   patchMethod(cnsle, "info", contextService);
   patchMethod(cnsle, "debug", contextService);
@@ -31,7 +35,7 @@ export function unpatchConsole(cnsle: Console) {
   unpatchMethod(cnsle, "trace");
 }
 
-function patchMethod(mod: Console, method: LogMethod, contextService: TraceContextService) {
+function patchMethod(mod: wrappedConsole, method: LogMethod, contextService: TraceContextService) {
   if (mod[method].__wrapped !== undefined) {
     return; // Only patch once
   }
@@ -81,7 +85,7 @@ function patchMethod(mod: Console, method: LogMethod, contextService: TraceConte
     };
   });
 }
-function unpatchMethod(mod: Console, method: LogMethod) {
+function unpatchMethod(mod: wrappedConsole, method: LogMethod) {
   if (mod[method].__wrapped !== undefined) {
     shimmer.unwrap(mod, method);
   }
