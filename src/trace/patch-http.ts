@@ -1,11 +1,18 @@
 import http from "http";
 import https from "https";
+type http = typeof http;
+type https = typeof https;
+
 import * as shimmer from "shimmer";
 import { parse, URL } from "url";
 import { TraceContextService } from "./trace-context-service";
 import { DatadogTraceHeaders } from "./context/extractor";
 
 type RequestCallback = (res: http.IncomingMessage) => void;
+
+type wrappedHttp =
+  | (http & { get: { __wrapped?: boolean }; request: { __wrapped?: boolean } })
+  | (https & { get: { __wrapped?: boolean }; request: { __wrapped?: boolean } });
 
 /**
  * Patches outgoing http calls to include DataDog's tracing headers.
@@ -32,7 +39,7 @@ export function unpatchHttp() {
   unpatchMethod(https, "get");
 }
 
-function patchMethod(mod: typeof http | typeof https, method: "get" | "request", contextService: TraceContextService) {
+function patchMethod(mod: wrappedHttp, method: "get" | "request", contextService: TraceContextService) {
   if (mod[method].__wrapped !== undefined) return; // Only patch once
 
   shimmer.wrap(mod, method, (original) => {
@@ -48,7 +55,7 @@ function patchMethod(mod: typeof http | typeof https, method: "get" | "request",
     return fn as any;
   });
 }
-function unpatchMethod(mod: typeof http | typeof https, method: "get" | "request") {
+function unpatchMethod(mod: wrappedHttp, method: "get" | "request") {
   if (mod[method].__wrapped !== undefined) {
     shimmer.unwrap(mod, method);
   }
