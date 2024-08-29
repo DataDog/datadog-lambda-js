@@ -49,15 +49,16 @@ RUN rm -rf /nodejs/node_modules/@datadog/native-iast-rewriter
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/linuxmusl-x64
 RUN rm -rf /nodejs/node_modules/jsonpath-plus/src/jsonpath.d.ts
 RUN rm -rf /nodejs/node_modules/jsonpath-plus/src/jsonpath-browser.js
-RUN rm -rf /nodejs/node_modules/jsonpath-plus/src/dist/index-browser-umd.min.cjs.map
 RUN rm -rf /nodejs/node_modules/jsonpath-plus/src/dist/index-browser-umd.min.cjs
 RUN rm -rf /nodejs/node_modules/jsonpath-plus/src/dist/index-browser-umd.cjs
-RUN rm -rf /nodejs/node_modules/jsonpath-plus/src/dist/index-browser-esm.min.js.map
 RUN rm -rf /nodejs/node_modules/jsonpath-plus/src/dist/index-browser-esm.min.js
 RUN rm -rf /nodejs/node_modules/jsonpath-plus/src/dist/index-browser-esm.js
 RUN find /nodejs/node_modules -name "*.d.ts" -delete
 RUN find /nodejs/node_modules -name "*.js.map" -delete
+RUN find /nodejs/node_modules -name "*.mjs.map" -delete
+RUN find /nodejs/node_modules -name "*.cjs.map" -delete
 RUN find /nodejs/node_modules -name "*.ts.map" -delete
+RUN find /nodejs/node_modules -name "*.md" -delete
 
 FROM scratch
 COPY --from=builder /nodejs /
