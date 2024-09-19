@@ -34,6 +34,7 @@ RUN rm -rf /nodejs/node_modules/aws-xray-sdk-core/node_modules/aws-sdk
 # Remove heavy files from dd-trace which aren't used in a lambda environment
 RUN rm -rf /nodejs/node_modules/dd-trace/prebuilds
 RUN rm -rf /nodejs/node_modules/dd-trace/dist
+RUN rm -rf /nodejs/node_modules/@datadog/libdatadog
 RUN rm -rf /nodejs/node_modules/@datadog/native-appsec
 RUN rm -rf /nodejs/node_modules/@datadog/native-metrics
 RUN rm -rf /nodejs/node_modules/hdr-histogram-js/build
