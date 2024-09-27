@@ -58,6 +58,7 @@ lint ({{ $runtime.name }}):
   image: registry.ddbuild.io/images/mirror/node:{{ $runtime.node_major_version }}-bullseye
   cache: &{{ $runtime.name }}-cache
   before_script: *node-before-script
+  needs: []
   script: 
     - yarn check-formatting
     - yarn lint
@@ -68,6 +69,7 @@ unit test ({{ $runtime.name }}):
   image: registry.ddbuild.io/images/mirror/node:{{ $runtime.node_major_version }}-bullseye
   cache: &{{ $runtime.name }}-cache
   before_script: *node-before-script
+  needs: []
   script: 
     - yarn build
     - yarn test --ci --forceExit --detectOpenHandles
