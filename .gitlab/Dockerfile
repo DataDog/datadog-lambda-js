@@ -11,10 +11,9 @@ RUN apt-get update && apt-get install -y nodejs
 
 # Install Yarn and Typescript globally
 RUN npm install --global yarn typescript
-RUN yarn global add serverless@^3.38.0 --prefix /usr/local
+RUN yarn global add serverless@^3 --prefix /usr/local
 
 # Install AWS CLI
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-RUN unzip awscliv2.zip
-RUN ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
-RUN aws --version
+ARG AWS_CLI_VERSION=2.17.60
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWS_CLI_VERSION}.zip" -o "awscliv2.zip"
+RUN unzip awscliv2.zip && ./aws/install
