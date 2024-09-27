@@ -10,6 +10,7 @@ ci image:
   stage: build
   image: registry.ddbuild.io/images/docker:20.10
   tags: ["arch:arm64"]
+  needs: []
   # rules:
   #   - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"'
   #     changes:

@@ -17,8 +17,6 @@ NODE_VERSIONS=("16.14" "18.12" "20.9")
 STAGES=('prod', 'sandbox', 'staging')
 
 printf "Starting script...\n\n"
-printf "Installing dependencies\n"
-pip install awscli
 
 publish_layer() {
     region=$1
