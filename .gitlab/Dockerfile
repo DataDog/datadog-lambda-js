@@ -15,4 +15,6 @@ RUN yarn global add serverless@^3.38.0 --prefix /usr/local
 
 # Install AWS CLI
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-RUN unzip awscliv2.zip && ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
+RUN unzip awscliv2.zip
+RUN ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
+RUN aws --version
