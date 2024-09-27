@@ -1,6 +1,24 @@
+variables:
+  DOCKER_TARGET_IMAGE: registry.ddbuild.io/ci/datadog-lambda-js
+  DOCKER_TARGET_VERSION: latest
+
 stages:
   - pre 
   - build
+
+ci image:
+  stage: build
+  image: registry.ddbuild.io/images/docker:20.10
+  tags: ["arch:arm64"]
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - .gitlab/Dockerfile
+      when: on_success
+  variables:
+    DOCKER_TARGET: ${DOCKER_TARGET_IMAGE}:${DOCKER_TARGET_VERSION}
+  script:
+    - docker buildx build --platform linux/amd64,linux/arm64 --no-cache --pull --push --tag ${DOCKER_TARGET} -f .gitlab/Dockerfile .
 
 .go-cache: &go-cache
   key: datadog-lambda-js-go-cache
@@ -13,16 +31,16 @@ generator:
   cache: *go-cache
   script:
     - apk add --no-cache gomplate
-    - gomplate --config ci/config.yaml
+    - gomplate --config .gitlab/config.yaml
   artifacts:
     paths:
-      - ci/*-pipeline.yaml
+      - .gitlab/*-pipeline.yaml
 
 build-layers:
   stage: build
   trigger:
     include:
-      - artifact: ci/build-pipeline.yaml
+      - artifact: .gitlab/build-pipeline.yaml
         job: generator
     strategy: depend
   rules:

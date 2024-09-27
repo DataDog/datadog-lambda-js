@@ -1,0 +1,13 @@
+inputFiles:
+  - .gitlab/input_files/build.yaml.tpl
+
+outputFiles:
+  - .gitlab/build-pipeline.yaml
+
+datasources:
+  runtimes:
+    url: .gitlab/datasources/runtimes.yaml
+  regions:
+    url: .gitlab/datasources/regions.yaml
+  environments:
+    url: .gitlab/datasources/environments.yaml
