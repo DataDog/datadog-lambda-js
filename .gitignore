@@ -10,4 +10,4 @@ package-lock.json
 **/.serverless
 /.idea/
 
-ci/build-*.yaml
+.gitlab/build-*.yaml
