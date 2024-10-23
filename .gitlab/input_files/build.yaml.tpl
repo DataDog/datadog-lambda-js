@@ -60,6 +60,7 @@ lint ({{ $runtime.name }}):
   before_script: *node-before-script
   needs: []
   script: 
+    - yarn --version
     - yarn check-formatting
     - yarn lint
 
