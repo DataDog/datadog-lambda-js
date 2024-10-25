@@ -54,6 +54,7 @@ START
           "_inferred_span.tag_source": "self",
           "_inferred_span.synchronicity": "sync",
           "http.method": "GET",
+          "http.route":"/{proxy+}",
           "stage": "test",
           "http.status_code": "500",
           "_dd.base_service": "integration-tests-js-XXXX-status-code-500s_node20",
