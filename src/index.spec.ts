@@ -643,7 +643,12 @@ describe("detectDuplicateInstallations", () => {
       callback(null); // No error = path exists
     });
 
-    await datadog(async () => {}, { forceWrap: true })();
+    await datadog(
+      async () => {
+        /* empty */
+      },
+      { forceWrap: true },
+    )();
     expect(logWarningMock).toHaveBeenCalledWith(expect.stringContaining("Detected duplicate installations"));
   });
 
@@ -657,7 +662,12 @@ describe("detectDuplicateInstallations", () => {
       }
     });
 
-    await datadog(async () => {}, { forceWrap: true })();
+    await datadog(
+      async () => {
+        /* empty */
+      },
+      { forceWrap: true },
+    )();
     expect(logWarningMock).not.toHaveBeenCalled();
   });
 
@@ -671,7 +681,12 @@ describe("detectDuplicateInstallations", () => {
       }
     });
 
-    await datadog(async () => {}, { forceWrap: true })();
+    await datadog(
+      async () => {
+        /* empty */
+      },
+      { forceWrap: true },
+    )();
     expect(logWarningMock).not.toHaveBeenCalled();
   });
 
@@ -681,7 +696,12 @@ describe("detectDuplicateInstallations", () => {
       callback(new Error("ENOENT")); // Does not exist
     });
 
-    await datadog(async () => {}, { forceWrap: true })();
+    await datadog(
+      async () => {
+        /* empty */
+      },
+      { forceWrap: true },
+    )();
     expect(logWarningMock).not.toHaveBeenCalled();
   });
 });

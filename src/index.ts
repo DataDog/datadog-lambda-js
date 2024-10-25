@@ -131,13 +131,17 @@ export function datadog<TEvent, TResult>(
   const traceListener = new TraceListener(finalConfig);
 
   // Check for duplicate installations of the Lambda library
-  detectDuplicateInstallations().then((duplicateFound) => {
-    if (duplicateFound) {
-      logWarning(
-        `Detected duplicate installations of datadog-lambda-js. This can cause: (1) increased cold start times, (2) broken metrics, and (3) other unexpected behavior. Please use either the Lambda layer version or the package in node_modules, but not both. See: https://docs.datadoghq.com/serverless/aws_lambda/installation/nodejs/?tab=custom`,
-      );
-    }
-  });
+  detectDuplicateInstallations()
+    .then((duplicateFound) => {
+      if (duplicateFound) {
+        logWarning(
+          `Detected duplicate installations of datadog-lambda-js. This can cause: (1) increased cold start times, (2) broken metrics, and (3) other unexpected behavior. Please use either the Lambda layer version or the package in node_modules, but not both. See: https://docs.datadoghq.com/serverless/aws_lambda/installation/nodejs/?tab=custom`,
+        );
+      }
+    })
+    .catch(() => {
+      logDebug("Failed to check for duplicate installations.");
+    });
 
   // Only wrap the handler once unless forced
   const _ddWrappedKey = "_ddWrapped";
