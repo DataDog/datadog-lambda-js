@@ -24,6 +24,7 @@ import { TraceSource } from "./trace/trace-context-service";
 import { inflateSync } from "zlib";
 import { MetricsListener } from "./metrics/listener";
 import { SpanOptions, TracerWrapper } from "./trace/tracer-wrapper";
+import fs from "fs";
 
 jest.mock("./metrics/enhanced-metrics");
 
@@ -621,5 +622,66 @@ describe("emitTelemetryOnErrorOutsideHandler", () => {
     process.env.DD_TRACE_ENABLED = "false";
     await emitTelemetryOnErrorOutsideHandler(new ReferenceError("some error"), "myFunction", Date.now());
     expect(mockedStartSpan).toBeCalledTimes(0);
+  });
+});
+
+describe("detectDuplicateInstallations", () => {
+  jest.mock("fs");
+
+  let fsAccessMock: jest.SpyInstance;
+  let logWarningMock: jest.SpyInstance;
+
+  beforeEach(() => {
+    jest.resetAllMocks();
+    fsAccessMock = jest.spyOn(fs, "access");
+    logWarningMock = jest.spyOn(require("./utils"), "logWarning").mockImplementation(() => {});
+  });
+
+  it("should log warning when duplicate installations are detected", async () => {
+    // Mock fs.access to simulate both paths exist
+    fsAccessMock.mockImplementation((path: string, callback: any) => {
+      callback(null); // No error = path exists
+    });
+
+    await datadog(async () => {}, { forceWrap: true })();
+    expect(logWarningMock).toHaveBeenCalledWith(expect.stringContaining("Detected duplicate installations"));
+  });
+
+  it("should not log warning when only layer installation exists", async () => {
+    // Simulate layerPath exists, localPath does not exist
+    fsAccessMock.mockImplementation((path: string, callback: any) => {
+      if (path.includes("/opt/nodejs")) {
+        callback(null); // Exists
+      } else {
+        callback(new Error("ENOENT")); // Does not exist
+      }
+    });
+
+    await datadog(async () => {}, { forceWrap: true })();
+    expect(logWarningMock).not.toHaveBeenCalled();
+  });
+
+  it("should not log warning when only local installation exists", async () => {
+    // Simulate localPath exists, layerPath does not exist
+    fsAccessMock.mockImplementation((path: string, callback: any) => {
+      if (path.includes("/opt/nodejs")) {
+        callback(new Error("ENOENT")); // Does not exist
+      } else {
+        callback(null); // Exists
+      }
+    });
+
+    await datadog(async () => {}, { forceWrap: true })();
+    expect(logWarningMock).not.toHaveBeenCalled();
+  });
+
+  it("should not log warning when neither installation exists", async () => {
+    // Simulate neither path exists
+    fsAccessMock.mockImplementation((path: string, callback: any) => {
+      callback(new Error("ENOENT")); // Does not exist
+    });
+
+    await datadog(async () => {}, { forceWrap: true })();
+    expect(logWarningMock).not.toHaveBeenCalled();
   });
 });
