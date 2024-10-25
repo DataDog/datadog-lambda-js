@@ -16,6 +16,7 @@ default:
       - runner_system_failure
 
 .node-before-script: &node-before-script
+  - yarn --version
   - echo 'yarn-offline-mirror ".yarn-cache/"' >> .yarnrc
   - echo 'yarn-offline-mirror-pruning true' >> .yarnrc
   - yarn install --frozen-lockfile --no-progress
