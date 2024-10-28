@@ -103,6 +103,9 @@ export const _metricsQueue: MetricsQueue = new MetricsQueue();
 let currentMetricsListener: MetricsListener | undefined;
 let currentTraceListener: TraceListener | undefined;
 
+const LAMBDA_LAYER_PATH = "/opt/nodejs/node_modules/datadog-lambda-js";
+const LAMBDA_LIBRARY_PATH = path.join(process.cwd(), "node_modules/datadog-lambda-js");
+
 if (getEnvValue(coldStartTracingEnvVar, "true").toLowerCase() === "true") {
   subscribeToDC();
 }
@@ -484,15 +487,12 @@ export async function emitTelemetryOnErrorOutsideHandler(
 
 async function detectDuplicateInstallations() {
   try {
-    const layerPath = "/opt/nodejs/node_modules/datadog-lambda-js";
-    const localPath = path.join(process.cwd(), "node_modules/datadog-lambda-js");
-
     const checkPathExistsAsync = (libraryPath: string): Promise<boolean> =>
       new Promise((resolve) => fs.access(libraryPath, (err) => resolve(!err)));
 
     const [layerExists, localExists] = await Promise.all([
-      checkPathExistsAsync(layerPath),
-      checkPathExistsAsync(localPath),
+      checkPathExistsAsync(LAMBDA_LAYER_PATH),
+      checkPathExistsAsync(LAMBDA_LIBRARY_PATH),
     ]);
 
     return layerExists && localExists;
