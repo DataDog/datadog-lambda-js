@@ -78,7 +78,7 @@ export class MetricsListener {
       logDebug(`Using StatsD client`);
 
       this.globalTags = this.getGlobalTags(context);
-      this.statsDClient = new StatsD({ host: "127.0.0.1", closingFlushInterval: 1 });
+      this.statsDClient = new StatsD({ host: "127.0.0.1", closingFlushInterval: 1, maxBufferSize: 1024 });
       return;
     }
     if (this.config.logForwarding) {
