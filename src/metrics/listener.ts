@@ -78,7 +78,8 @@ export class MetricsListener {
       logDebug(`Using StatsD client`);
 
       this.globalTags = this.getGlobalTags(context);
-      this.statsDClient = new StatsD({ host: "127.0.0.1", closingFlushInterval: 1 });
+      // About 200 chars per metric, so 8KB buffer size holds approx 40 metrics per request
+      this.statsDClient = new StatsD({ host: "127.0.0.1", closingFlushInterval: 1, maxBufferSize: 8192 });
       return;
     }
     if (this.config.logForwarding) {
