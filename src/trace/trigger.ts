@@ -290,7 +290,8 @@ function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEv
       httpTags["http.referer"] = event.headers.Referer;
     }
     if (event.routeKey) {
-      httpTags["http.route"] = event.routeKey;
+      // "GET /my/endpoint" => "/my/endpoint"
+      httpTags["http.route"] = event.routeKey.split(" ")[-1];
     }
     return httpTags;
   }

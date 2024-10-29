@@ -28,7 +28,7 @@ describe("parseEventSource", () => {
         "http.url": "r3pmxmplak.execute-api.us-east-2.amazonaws.com",
         "http.url_details.path": "/default/nodejs-apig-function-1G3XMPLZXVXYI",
         "http.method": "GET",
-        "http.route": "ANY /nodejs-apig-function-1G3XMPLZXVXYI",
+        "http.route": "/nodejs-apig-function-1G3XMPLZXVXYI",
       },
       file: "api-gateway-v2.json",
     },
