@@ -275,6 +275,9 @@ function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEv
     if (event.headers?.Referer) {
       httpTags["http.referer"] = event.headers.Referer;
     }
+    if (event.resource) {
+      httpTags["http.route"] = event.resource;
+    }
     return httpTags;
   }
 
@@ -285,6 +288,11 @@ function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEv
     httpTags["http.method"] = requestContext.http.method;
     if (event.headers?.Referer) {
       httpTags["http.referer"] = event.headers.Referer;
+    }
+    if (event.routeKey) {
+      // "GET /my/endpoint" => "/my/endpoint"
+      const array = event.routeKey.split(" ");
+      httpTags["http.route"] = array[array.length - 1];
     }
     return httpTags;
   }

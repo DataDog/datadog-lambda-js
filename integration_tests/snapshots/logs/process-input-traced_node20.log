@@ -48,6 +48,7 @@ START
           "_inferred_span.tag_source": "self",
           "_inferred_span.synchronicity": "sync",
           "http.method": "GET",
+          "http.route":"/{proxy+}",
           "stage": "test",
           "http.status_code": "200",
           "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node20",
