@@ -2,7 +2,7 @@ import { Context } from "aws-lambda";
 
 import { patchHttp, unpatchHttp } from "./patch-http";
 
-import { extractTriggerTags, extractHTTPStatusCodeTag } from "./trigger";
+import { extractTriggerTags, extractHTTPStatusCodeTag, parseEventSource } from "./trigger";
 import { ColdStartTracerConfig, ColdStartTracer } from "./cold-start-tracer";
 import { logDebug, tagObject } from "../utils";
 import { didFunctionColdStart, isProactiveInitialization } from "../utils/cold-start";
@@ -17,6 +17,7 @@ import { TraceContext, TraceContextService, TraceSource } from "./trace-context-
 import { StepFunctionContext, StepFunctionContextService } from "./step-function-service";
 import { XrayService } from "./xray-service";
 import { AUTHORIZING_REQUEST_ID_HEADER } from "./context/extractors/http";
+import { getSpanPointerAttributes } from "../utils/span-pointers";
 export type TraceExtractor = (event: any, context: Context) => Promise<TraceContext> | TraceContext;
 
 export interface TraceConfig {
@@ -80,6 +81,7 @@ export class TraceListener {
   private wrappedCurrentSpan?: SpanWrapper;
   private triggerTags?: { [key: string]: string };
   private lambdaSpanParentContext?: SpanContext;
+  private spanPointerAttributesList: object[] = [];
 
   public get currentTraceHeaders() {
     return this.contextService.currentTraceHeaders;
@@ -131,8 +133,14 @@ export class TraceListener {
 
     this.lambdaSpanParentContext = this.inferredSpan?.span || parentSpanContext;
     this.context = context;
-    this.triggerTags = extractTriggerTags(event, context);
+    const eventSource = parseEventSource(event);
+    this.triggerTags = extractTriggerTags(event, context, eventSource);
     this.stepFunctionContext = StepFunctionContextService.instance().context;
+
+    const result = getSpanPointerAttributes(eventSource, event);
+    if (result) {
+      this.spanPointerAttributesList.push(...result);
+    }
   }
 
   /**
@@ -193,6 +201,12 @@ export class TraceListener {
           this.wrappedCurrentSpan.setTag("error", 1);
           return true;
         }
+      }
+    }
+
+    if (this.wrappedCurrentSpan) {
+      for (const attributes of this.spanPointerAttributesList) {
+        this.wrappedCurrentSpan.span.addSpanPointer(attributes);
       }
     }
     return false;
