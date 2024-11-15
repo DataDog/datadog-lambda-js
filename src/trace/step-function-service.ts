@@ -90,29 +90,26 @@ export class StepFunctionContextService {
     if (stateMachineContext === null) return;
     const { execution_id, state_entered_time, state_name } = stateMachineContext;
 
-    if (event.serverless_version === "string" && event.serverless_version == "v1") {
+    if (event.serverless_version === "string" && event.serverless_version === "v1") {
       const serverless_version = event.serverless_version;
 
       if (event.RootExecutionId === "string") {
-        const root_execution_id = event.RootExecutionId;
-
         this.context = {
           execution_id,
           state_entered_time,
           state_name,
-          root_execution_id,
+          root_execution_id: event.RootExecutionId,
           serverless_version,
         } as StepFunctionRootContext;
       } else if (event.trace_id === "string" && event.dd_p_tid === "string") {
-        const trace_id = event.trace_id;
-        const dd_p_tid = event.dd_p_tid;
+        const ptid = event["x-datadog-tags"]; // todo: parse me properly
 
         this.context = {
           execution_id,
           state_entered_time,
           state_name,
-          trace_id,
-          dd_p_tid,
+          trace_id: event["x-datadog-trace-id"],
+          dd_p_tid: ptid,
           serverless_version,
         } as LambdaRootContext;
       }
@@ -131,8 +128,8 @@ export class StepFunctionContextService {
       traceId = this.deterministicSha256HashToBigIntString(this.context.root_execution_id, TRACE_ID);
       ptid = this.deterministicSha256HashToBigIntString(this.context.root_execution_id, DD_P_TID);
     } else if (isLambdaRootContext(this.context)) {
-      traceId = this.context["trace_id"];
-      ptid = this.context["dd_p_tid"];
+      traceId = this.context.trace_id;
+      ptid = this.context.dd_p_tid;
     } else if (isLegacyContext(this.context)) {
       traceId = this.deterministicSha256HashToBigIntString(this.context.execution_id, TRACE_ID);
       ptid = this.deterministicSha256HashToBigIntString(this.context.execution_id, DD_P_TID);

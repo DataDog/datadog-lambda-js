@@ -1,7 +1,7 @@
 import { PARENT_ID, StepFunctionContextService } from "./step-function-service";
 
 describe("StepFunctionContextService", () => {
-  const stepFunctionEvent = {
+  const legacyStepFunctionEvent = {
     Execution: {
       Id: "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
       Input: {
@@ -40,75 +40,35 @@ describe("StepFunctionContextService", () => {
       ["event is not an object", "event"],
       ["event is missing Execution property", {}],
       [
-        "Execution is missing Name field",
+        "Execution is not defined",
         {
-          ...stepFunctionEvent,
-          Execution: {},
+          ...legacyStepFunctionEvent,
+          Execution: undefined,
         },
       ],
       [
         "Execution Id is not a string",
         {
-          ...stepFunctionEvent,
+          ...legacyStepFunctionEvent,
           Execution: {
-            ...stepFunctionEvent.Execution,
+            ...legacyStepFunctionEvent.Execution,
             Id: 1,
-          },
-        },
-      ],
-      [
-        "Execution Name isn't a string",
-        {
-          ...stepFunctionEvent,
-          Execution: {
-            ...stepFunctionEvent.Execution,
-            Name: 12345,
-          },
-        },
-      ],
-      [
-        "Execution RoleArn isn't a string",
-        {
-          ...stepFunctionEvent,
-          Execution: {
-            ...stepFunctionEvent.Execution,
-            RoleArn: 12345,
-          },
-        },
-      ],
-      [
-        "Execution StartTime isn't a string",
-        {
-          ...stepFunctionEvent,
-          Execution: {
-            ...stepFunctionEvent.Execution,
-            StartTime: 12345,
           },
         },
       ],
       [
         "State is not defined",
         {
-          ...stepFunctionEvent,
+          ...legacyStepFunctionEvent,
           State: undefined,
-        },
-      ],
-      [
-        "State RetryCount is not a number",
-        {
-          ...stepFunctionEvent,
-          State: {
-            ...stepFunctionEvent.State,
-            RetryCount: "1",
-          },
         },
       ],
       [
         "State EnteredTime is not a string",
         {
-          ...stepFunctionEvent,
+          ...legacyStepFunctionEvent,
           State: {
-            ...stepFunctionEvent.State,
+            ...legacyStepFunctionEvent.State,
             EnteredTime: 12345,
           },
         },
@@ -116,36 +76,9 @@ describe("StepFunctionContextService", () => {
       [
         "State Name is not a string",
         {
-          ...stepFunctionEvent,
+          ...legacyStepFunctionEvent,
           State: {
-            ...stepFunctionEvent,
-            Name: 1,
-          },
-        },
-      ],
-      [
-        "StateMachine is undefined",
-        {
-          ...stepFunctionEvent,
-          StateMachine: undefined,
-        },
-      ],
-      [
-        "StateMachine Id is not a string",
-        {
-          ...stepFunctionEvent,
-          StateMachine: {
-            ...stepFunctionEvent.StateMachine,
-            Id: 1,
-          },
-        },
-      ],
-      [
-        "StateMachine Name is not a string",
-        {
-          ...stepFunctionEvent,
-          StateMachine: {
-            ...stepFunctionEvent.StateMachine,
+            ...legacyStepFunctionEvent,
             Name: 1,
           },
         },
@@ -156,26 +89,15 @@ describe("StepFunctionContextService", () => {
       expect(instance.context).toBeUndefined();
     });
 
-    it("sets context from valid event", () => {
+    it("sets context from valid legacy event", () => {
       const instance = StepFunctionContextService.instance();
       // Force setting event
-      instance["setContext"](stepFunctionEvent);
+      instance["setContext"](legacyStepFunctionEvent);
       expect(instance.context).toEqual({
-        "step_function.execution_id":
+        execution_id:
           "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
-        "step_function.execution_input": {
-          MyInput: "MyValue",
-        },
-        "step_function.execution_name": "85a9933e-9e11-83dc-6a61-b92367b6c3be",
-        "step_function.execution_role_arn":
-          "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
-        "step_function.execution_start_time": "2022-12-08T21:08:17.924Z",
-        "step_function.state_entered_time": "2022-12-08T21:08:19.224Z",
-        "step_function.state_machine_arn":
-          "arn:aws:states:sa-east-1:425362996713:stateMachine:logs-to-traces-sequential",
-        "step_function.state_machine_name": "my-state-machine",
-        "step_function.state_name": "step-one",
-        "step_function.state_retry_count": 2,
+        state_entered_time: "2022-12-08T21:08:19.224Z",
+        state_name: "step-one",
       });
     });
   });
@@ -185,10 +107,10 @@ describe("StepFunctionContextService", () => {
       jest.resetModules();
       StepFunctionContextService["_instance"] = undefined as any;
     });
-    it("returns a SpanContextWrapper when event is valid", () => {
+    it("returns a SpanContextWrapper when legacy event is valid", () => {
       const instance = StepFunctionContextService.instance();
       // Force setting event
-      instance["setContext"](stepFunctionEvent);
+      instance["setContext"](legacyStepFunctionEvent);
 
       const spanContext = instance.spanContext;
 
@@ -213,7 +135,7 @@ describe("StepFunctionContextService", () => {
     it("returns a SpanContextWrapper when event is from legacy lambda", () => {
       const instance = StepFunctionContextService.instance();
       // Force setting event
-      instance["setContext"]({ Payload: stepFunctionEvent });
+      instance["setContext"]({ Payload: legacyStepFunctionEvent });
 
       const spanContext = instance.spanContext;
 

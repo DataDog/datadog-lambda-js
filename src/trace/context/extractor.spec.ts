@@ -946,7 +946,7 @@ describe("TraceContextExtractor", () => {
     });
   });
 
-  describe("addTraceContexToXray", () => {
+  describe("addTraceContextToXray", () => {
     beforeEach(() => {
       StepFunctionContextService["_instance"] = undefined as any;
       sentSegment = undefined;
@@ -955,7 +955,7 @@ describe("TraceContextExtractor", () => {
       process.env["AWS_XRAY_DAEMON_ADDRESS"] = undefined;
     });
 
-    it("adds StepFunction context when present over metadata", () => {
+    it("adds legacy StepFunction context when present over metadata", () => {
       jest.spyOn(Date, "now").mockImplementation(() => 1487076708000);
 
       process.env["_X_AMZN_TRACE_ID"] = "Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1";
@@ -1006,7 +1006,7 @@ describe("TraceContextExtractor", () => {
 
       const sentMessage = sentSegment.toString();
       expect(sentMessage).toEqual(
-        '{"format": "json", "version": 1}\n{"id":"11111","trace_id":"1-5e272390-8c398be037738dc042009320","parent_id":"94ae789b969f1cc5","name":"datadog-metadata","start_time":1487076708,"end_time":1487076708,"type":"subsegment","metadata":{"datadog":{"root_span_metadata":{"step_function.execution_name":"85a9933e-9e11-83dc-6a61-b92367b6c3be","step_function.execution_id":"arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf","step_function.execution_input":{"MyInput":"MyValue"},"step_function.execution_role_arn":"arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03","step_function.execution_start_time":"2022-12-08T21:08:17.924Z","step_function.state_entered_time":"2022-12-08T21:08:19.224Z","step_function.state_machine_arn":"arn:aws:states:sa-east-1:425362996713:stateMachine:logs-to-traces-sequential","step_function.state_machine_name":"my-state-machine","step_function.state_name":"step-one","step_function.state_retry_count":2}}}}',
+        '{"format": "json", "version": 1}\n{"id":"11111","trace_id":"1-5e272390-8c398be037738dc042009320","parent_id":"94ae789b969f1cc5","name":"datadog-metadata","start_time":1487076708,"end_time":1487076708,"type":"subsegment","metadata":{"datadog":{"root_span_metadata":{"execution_id":"arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf","state_entered_time":"2022-12-08T21:08:19.224Z","state_name":"step-one"}}}}',
       );
     });
 
