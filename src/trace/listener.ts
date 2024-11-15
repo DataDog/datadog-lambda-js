@@ -71,6 +71,12 @@ export interface TraceConfig {
   coldStartTraceSkipLib: string;
 }
 
+interface SpanPointerAttributes {
+  pointerKind: string;
+  pointerDirection: string;
+  pointerHash: string;
+}
+
 export class TraceListener {
   private contextService: TraceContextService;
   private context?: Context;
@@ -81,7 +87,7 @@ export class TraceListener {
   private wrappedCurrentSpan?: SpanWrapper;
   private triggerTags?: { [key: string]: string };
   private lambdaSpanParentContext?: SpanContext;
-  private spanPointerAttributesList: object[] = [];
+  private spanPointerAttributesList: SpanPointerAttributes[] = [];
 
   public get currentTraceHeaders() {
     return this.contextService.currentTraceHeaders;
@@ -206,7 +212,11 @@ export class TraceListener {
 
     if (this.wrappedCurrentSpan) {
       for (const attributes of this.spanPointerAttributesList) {
-        this.wrappedCurrentSpan.span.addSpanPointer(attributes);
+        this.wrappedCurrentSpan.span.addSpanPointer(
+          attributes.pointerKind,
+          attributes.pointerDirection,
+          attributes.pointerHash,
+        );
       }
     }
     return false;

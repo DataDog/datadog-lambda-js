@@ -1,17 +1,12 @@
 import { eventTypes } from "../trace/trigger";
 import { logDebug } from "./log";
-import {
-  SPAN_LINK_KIND,
-  S3_PTR_KIND,
-  SPAN_POINTER_DIRECTION,
-  generateS3PointerHash,
-} from "dd-trace/packages/dd-trace/src/span_pointers";
+import { S3_PTR_KIND, SPAN_POINTER_DIRECTION } from "dd-trace/packages/dd-trace/src/constants";
+import { generatePointerHash } from "dd-trace/packages/dd-trace/src/util";
 
 interface SpanPointerAttributes {
-  "ptr.kind": string;
-  "ptr.dir": string;
-  "ptr.hash": string;
-  "link.kind": string;
+  pointerKind: string;
+  pointerDirection: string;
+  pointerHash: string;
 }
 
 /**
@@ -40,12 +35,11 @@ export function getSpanPointerAttributes(
 
 function processS3Event(event: any): SpanPointerAttributes[] {
   const records = event.Records || [];
-  const spanPointerAttributesList = [];
-  const linkKind = SPAN_LINK_KIND;
+  const spanPointerAttributesList: SpanPointerAttributes[] = [];
 
   for (const record of records) {
     const eventName = record.eventName;
-    if (!["ObjectCreated:Put", "ObjectCreated:Copy", "ObjectCreated:CompleteMultipartUpload"].includes(eventName)) {
+    if (!eventName.startsWith("ObjectCreated")) {
       continue;
     }
     // Values are stored in the same place, regardless of AWS SDK v2/v3 or the event type.
@@ -53,19 +47,22 @@ function processS3Event(event: any): SpanPointerAttributes[] {
     const s3Event = record?.s3;
     const bucketName = s3Event?.bucket?.name;
     const objectKey = s3Event?.object?.key;
-    const eTag = s3Event?.object?.eTag;
+    let eTag = s3Event?.object?.eTag;
 
     if (!bucketName || !objectKey || !eTag) {
       logDebug("Unable to calculate span pointer hash because of missing parameters.");
       continue;
     }
 
-    const pointerHash = generateS3PointerHash(bucketName, objectKey, eTag);
-    const spanPointerAttributes = {
-      "ptr.kind": S3_PTR_KIND,
-      "ptr.dir": SPAN_POINTER_DIRECTION.UPSTREAM,
-      "ptr.hash": pointerHash,
-      "link.kind": linkKind,
+    // https://github.com/DataDog/dd-span-pointer-rules/blob/main/AWS/S3/Object/README.md
+    if (eTag.startsWith('"') && eTag.endsWith('"')) {
+      eTag = eTag.slice(1, -1);
+    }
+    const pointerHash = generatePointerHash([bucketName, objectKey, eTag]);
+    const spanPointerAttributes: SpanPointerAttributes = {
+      pointerKind: S3_PTR_KIND,
+      pointerDirection: SPAN_POINTER_DIRECTION.UPSTREAM,
+      pointerHash,
     };
     spanPointerAttributesList.push(spanPointerAttributes);
   }

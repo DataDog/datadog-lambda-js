@@ -1,19 +1,24 @@
 import { getSpanPointerAttributes } from "./span-pointers";
 import { eventTypes } from "../trace/trigger";
-import { SPAN_LINK_KIND, S3_PTR_KIND, SPAN_POINTER_DIRECTION } from "dd-trace/packages/dd-trace/src/span_pointers";
-import * as spanPointers from "dd-trace/packages/dd-trace/src/span_pointers";
+import { S3_PTR_KIND, SPAN_POINTER_DIRECTION } from "dd-trace/packages/dd-trace/src/constants";
+import * as util from "dd-trace/packages/dd-trace/src/util";
 
 // Mock the external dependencies
 jest.mock("./log", () => ({
   logDebug: jest.fn(),
 }));
 
+interface SpanPointerAttributes {
+  pointerKind: string;
+  pointerDirection: string;
+  pointerHash: string;
+}
+
 describe("span-pointers utils", () => {
-  const mockS3PointerHash = "mock-hash-123";
+  const mockPointerHash = "mock-hash-123";
 
   beforeEach(() => {
-    // Mock the generateS3PointerHash function
-    jest.spyOn(spanPointers, "generateS3PointerHash").mockReturnValue(mockS3PointerHash);
+    jest.spyOn(util, "generatePointerHash").mockReturnValue(mockPointerHash);
   });
 
   afterEach(() => {
@@ -47,18 +52,17 @@ describe("span-pointers utils", () => {
           ],
         };
 
-        const expected = [
+        const expected: SpanPointerAttributes[] = [
           {
-            "ptr.kind": S3_PTR_KIND,
-            "ptr.dir": SPAN_POINTER_DIRECTION.UPSTREAM,
-            "ptr.hash": mockS3PointerHash,
-            "link.kind": SPAN_LINK_KIND,
+            pointerKind: S3_PTR_KIND,
+            pointerDirection: SPAN_POINTER_DIRECTION.UPSTREAM,
+            pointerHash: mockPointerHash,
           },
         ];
 
         const result = getSpanPointerAttributes(eventTypes.s3, event);
         expect(result).toEqual(expected);
-        expect(spanPointers.generateS3PointerHash).toHaveBeenCalledWith("test-bucket", "test-key", "test-etag");
+        expect(util.generatePointerHash).toHaveBeenCalledWith(["test-bucket", "test-key", "test-etag"]);
       });
 
       it("processes multiple S3 records correctly", () => {
@@ -85,18 +89,16 @@ describe("span-pointers utils", () => {
           ],
         };
 
-        const expected = [
+        const expected: SpanPointerAttributes[] = [
           {
-            "ptr.kind": S3_PTR_KIND,
-            "ptr.dir": SPAN_POINTER_DIRECTION.UPSTREAM,
-            "ptr.hash": mockS3PointerHash,
-            "link.kind": SPAN_LINK_KIND,
+            pointerKind: S3_PTR_KIND,
+            pointerDirection: SPAN_POINTER_DIRECTION.UPSTREAM,
+            pointerHash: mockPointerHash,
           },
           {
-            "ptr.kind": S3_PTR_KIND,
-            "ptr.dir": SPAN_POINTER_DIRECTION.UPSTREAM,
-            "ptr.hash": mockS3PointerHash,
-            "link.kind": SPAN_LINK_KIND,
+            pointerKind: S3_PTR_KIND,
+            pointerDirection: SPAN_POINTER_DIRECTION.UPSTREAM,
+            pointerHash: mockPointerHash,
           },
         ];
 
@@ -134,12 +136,11 @@ describe("span-pointers utils", () => {
           ],
         };
 
-        const expected = [
+        const expected: SpanPointerAttributes[] = [
           {
-            "ptr.kind": S3_PTR_KIND,
-            "ptr.dir": SPAN_POINTER_DIRECTION.UPSTREAM,
-            "ptr.hash": mockS3PointerHash,
-            "link.kind": SPAN_LINK_KIND,
+            pointerKind: S3_PTR_KIND,
+            pointerDirection: SPAN_POINTER_DIRECTION.UPSTREAM,
+            pointerHash: mockPointerHash,
           },
         ];
 
