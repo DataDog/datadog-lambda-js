@@ -21,6 +21,56 @@ describe("StepFunctionContextService", () => {
       Name: "my-state-machine",
     },
   } as const;
+  const lambdaRootStepFunctionEvent = {
+    _datadog: {
+      Execution: {
+        Id: "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
+        Input: {
+          MyInput: "MyValue",
+        },
+        Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
+        RoleArn: "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
+        StartTime: "2022-12-08T21:08:17.924Z",
+      },
+      State: {
+        Name: "step-one",
+        EnteredTime: "2022-12-08T21:08:19.224Z",
+        RetryCount: 2,
+      },
+      StateMachine: {
+        Id: "arn:aws:states:sa-east-1:425362996713:stateMachine:logs-to-traces-sequential",
+        Name: "my-state-machine",
+      },
+      "x-datadog-trace-id": "10593586103637578129",
+      "x-datadog-tags": "_dd.p.dm=-0,_dd.p.tid=6734e7c300000000",
+      "serverless-version": "v1",
+    },
+  } as const;
+  const nestedStepFunctionEvent = {
+    _datadog: {
+      Execution: {
+        Id: "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
+        Input: {
+          MyInput: "MyValue",
+        },
+        Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
+        RoleArn: "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
+        StartTime: "2022-12-08T21:08:17.924Z",
+      },
+      State: {
+        Name: "step-one",
+        EnteredTime: "2022-12-08T21:08:19.224Z",
+        RetryCount: 2,
+      },
+      StateMachine: {
+        Id: "arn:aws:states:sa-east-1:425362996713:stateMachine:logs-to-traces-sequential",
+        Name: "my-state-machine",
+      },
+      RootExecutionId:
+        "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:a1b2c3d4-e5f6-7890-1234-56789abcdef0:9f8e7d6c-5b4a-3c2d-1e0f-123456789abc",
+      "serverless-version": "v1",
+    },
+  } as const;
   describe("instance", () => {
     it("returns the same instance every time", () => {
       const instance1 = StepFunctionContextService.instance();
@@ -100,6 +150,36 @@ describe("StepFunctionContextService", () => {
         state_name: "step-one",
       });
     });
+
+    it("sets context from valid nested event", () => {
+      const instance = StepFunctionContextService.instance();
+      // Force setting event
+      instance["setContext"](nestedStepFunctionEvent);
+      expect(instance.context).toEqual({
+        execution_id:
+          "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
+        state_entered_time: "2022-12-08T21:08:19.224Z",
+        state_name: "step-one",
+        root_execution_id:
+          "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:a1b2c3d4-e5f6-7890-1234-56789abcdef0:9f8e7d6c-5b4a-3c2d-1e0f-123456789abc",
+        serverless_version: "v1",
+      });
+    });
+
+    it("sets context from valid Lambda root event", () => {
+      const instance = StepFunctionContextService.instance();
+      // Force setting event
+      instance["setContext"](lambdaRootStepFunctionEvent);
+      expect(instance.context).toEqual({
+        execution_id:
+          "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
+        state_entered_time: "2022-12-08T21:08:19.224Z",
+        state_name: "step-one",
+        trace_id: "10593586103637578129",
+        dd_p_tid: "6734e7c300000000",
+        serverless_version: "v1",
+      });
+    });
   });
 
   describe("spanContext", () => {
@@ -117,6 +197,36 @@ describe("StepFunctionContextService", () => {
       expect(spanContext).not.toBeNull();
 
       expect(spanContext?.toTraceId()).toBe("1139193989631387307");
+      expect(spanContext?.toSpanId()).toBe("5892738536804826142");
+      expect(spanContext?.sampleMode()).toBe("1");
+      expect(spanContext?.source).toBe("event");
+    });
+
+    it("returns a SpanContextWrapper when nested event is valid", () => {
+      const instance = StepFunctionContextService.instance();
+      // Force setting event
+      instance["setContext"](nestedStepFunctionEvent);
+
+      const spanContext = instance.spanContext;
+
+      expect(spanContext).not.toBeNull();
+
+      expect(spanContext?.toTraceId()).toBe("8676990472248253142");
+      expect(spanContext?.toSpanId()).toBe("5892738536804826142");
+      expect(spanContext?.sampleMode()).toBe("1");
+      expect(spanContext?.source).toBe("event");
+    });
+
+    it("returns a SpanContextWrapper when Lambda root event is valid", () => {
+      const instance = StepFunctionContextService.instance();
+      // Force setting event
+      instance["setContext"](lambdaRootStepFunctionEvent);
+
+      const spanContext = instance.spanContext;
+
+      expect(spanContext).not.toBeNull();
+
+      expect(spanContext?.toTraceId()).toBe("10593586103637578129");
       expect(spanContext?.toSpanId()).toBe("5892738536804826142");
       expect(spanContext?.sampleMode()).toBe("1");
       expect(spanContext?.source).toBe("event");

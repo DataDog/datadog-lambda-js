@@ -3,7 +3,7 @@ import { SampleMode, TraceSource } from "./trace-context-service";
 import { SpanContextWrapper } from "./span-context-wrapper";
 import { Sha256 } from "@aws-crypto/sha256-js";
 
-interface StepFunctionRootContext {
+interface NestedStepFunctionContext {
   execution_id: string;
   state_entered_time: string;
   state_name: string;
@@ -11,7 +11,7 @@ interface StepFunctionRootContext {
   serverless_version: string;
 }
 
-interface LambdaRootContext {
+interface LambdaRootStepFunctionContext {
   execution_id: string;
   state_entered_time: string;
   state_name: string;
@@ -20,24 +20,24 @@ interface LambdaRootContext {
   serverless_version: string;
 }
 
-interface LegacyContext {
+interface LegacyStepFunctionContext {
   execution_id: string;
   state_entered_time: string;
   state_name: string;
 }
 
-export type StepFunctionContext = StepFunctionRootContext | LambdaRootContext | LegacyContext;
+export type StepFunctionContext = NestedStepFunctionContext | LambdaRootStepFunctionContext | LegacyStepFunctionContext;
 
 export const TRACE_ID = "traceId";
 export const PARENT_ID = "spanId";
 export const DD_P_TID = "_dd.p.tid";
 
 // Type Guard Functions
-function isStepFunctionRootContext(obj: any): obj is StepFunctionRootContext {
+function isStepFunctionRootContext(obj: any): obj is NestedStepFunctionContext {
   return typeof obj?.root_execution_id === "string" && typeof obj?.serverless_version === "string";
 }
 
-function isLambdaRootContext(obj: any): obj is LambdaRootContext {
+function isLambdaRootContext(obj: any): obj is LambdaRootStepFunctionContext {
   return (
     typeof obj?.trace_id === "string" &&
     typeof obj?.dd_p_tid === "string" &&
@@ -45,7 +45,7 @@ function isLambdaRootContext(obj: any): obj is LambdaRootContext {
   );
 }
 
-function isLegacyContext(obj: any): obj is LegacyContext {
+function isLegacyContext(obj: any): obj is LegacyStepFunctionContext {
   return (
     typeof obj?.execution_id === "string" &&
     typeof obj?.state_entered_time === "string" &&
@@ -90,31 +90,27 @@ export class StepFunctionContextService {
     if (stateMachineContext === null) return;
     const { execution_id, state_entered_time, state_name } = stateMachineContext;
 
-    if (event.serverless_version === "string" && event.serverless_version === "v1") {
-      const serverless_version = event.serverless_version;
-
-      if (event.RootExecutionId === "string") {
+    if (typeof event["serverless-version"] === "string" && event["serverless-version"] === "v1") {
+      if (typeof event.RootExecutionId === "string") {
         this.context = {
           execution_id,
           state_entered_time,
           state_name,
           root_execution_id: event.RootExecutionId,
-          serverless_version,
-        } as StepFunctionRootContext;
-      } else if (event.trace_id === "string" && event.dd_p_tid === "string") {
-        const ptid = event["x-datadog-tags"]; // todo: parse me properly
-
+          serverless_version: event["serverless-version"],
+        } as NestedStepFunctionContext;
+      } else if (typeof event["x-datadog-trace-id"] === "string" && typeof event["x-datadog-tags"] === "string") {
         this.context = {
           execution_id,
           state_entered_time,
           state_name,
           trace_id: event["x-datadog-trace-id"],
-          dd_p_tid: ptid,
-          serverless_version,
-        } as LambdaRootContext;
+          dd_p_tid: this.parsePTid(event["x-datadog-tags"]),
+          serverless_version: event["serverless-version"],
+        } as LambdaRootStepFunctionContext;
       }
     } else {
-      this.context = { execution_id, state_entered_time, state_name } as LegacyContext;
+      this.context = { execution_id, state_entered_time, state_name } as LegacyStepFunctionContext;
     }
   }
 
@@ -222,5 +218,20 @@ export class StepFunctionContextService {
 
     logDebug("Cannot extract StateMachine context! Invalid execution or state data.");
     return null;
+  }
+
+  /**
+   * Parse a list of trace tags such as [_dd.p.tid=66bcb5eb00000000,_dd.p.dm=-0] and return the
+   * value of the _dd.p.tid tag or an empty string if not found.
+   */
+  private parsePTid(traceTags: string): string {
+    if (traceTags) {
+      for (const tag of traceTags.split(",")) {
+        if (tag.includes("_dd.p.tid=")) {
+          return tag.split("=")[1];
+        }
+      }
+    }
+    return "";
   }
 }
