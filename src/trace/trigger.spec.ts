@@ -109,6 +109,14 @@ describe("parseEventSource", () => {
       },
       file: "sqs.json",
     },
+    {
+      result: {
+        "function_trigger.event_source": "states",
+        "function_trigger.event_source_arn":
+          "arn:aws:states:ca-central-1:425362996713:stateMachine:MyStateMachine-wsx8chv4d",
+      },
+      file: "states.json",
+    },
   ];
 
   const bufferedResponses = [

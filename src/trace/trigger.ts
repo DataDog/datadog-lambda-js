@@ -92,6 +92,18 @@ function extractEventBridgeARN(event: EventBridgeEvent<any, any>) {
   return event.source;
 }
 
+function extractStateMachineARN(event: any) {
+  // Extract Payload if available (Legacy lambda parsing)
+  if (typeof event.Payload === "object") {
+    event = event.Payload;
+  }
+  // Extract _datadog if available (JSONata v1 parsing)
+  if (typeof event._datadog === "object") {
+    event = event._datadog;
+  }
+  return event.StateMachine.Id;
+}
+
 export enum eventTypes {
   apiGateway = "api-gateway",
   applicationLoadBalancer = "application-load-balancer",
@@ -106,6 +118,7 @@ export enum eventTypes {
   s3 = "s3",
   sns = "sns",
   sqs = "sqs",
+  stepFunctions = "states",
 }
 
 export enum eventSubTypes {
@@ -134,7 +147,7 @@ export function parseEventSourceSubType(event: any): eventSubTypes {
  * parseEventSource parses the triggering event to determine the source
  * Possible Returns:
  * api-gateway | application-load-balancer | cloudwatch-logs |
- * cloudwatch-events | cloudfront | dynamodb | kinesis | s3 | sns | sqs
+ * cloudwatch-events | cloudfront | dynamodb | kinesis | s3 | sns | sqs | states
  */
 export function parseEventSource(event: any) {
   if (eventType.isLambdaUrlEvent(event)) {
@@ -185,6 +198,10 @@ export function parseEventSource(event: any) {
 
   if (eventType.isEventBridgeEvent(event)) {
     return eventTypes.eventBridge;
+  }
+
+  if (eventType.isStepFunctionsEvent(event)) {
+    return eventTypes.stepFunctions;
   }
 }
 
@@ -254,6 +271,10 @@ export function parseEventSourceARN(source: string | undefined, event: any, cont
 
   if (source === "eventbridge") {
     eventSourceARN = extractEventBridgeARN(event);
+  }
+
+  if (source === "states") {
+    eventSourceARN = extractStateMachineARN(event);
   }
 
   return eventSourceARN;

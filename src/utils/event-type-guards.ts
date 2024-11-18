@@ -106,3 +106,17 @@ export function isEventBridgeEvent(event: any): event is EventBridgeEvent<any, a
 export function isLambdaUrlEvent(event: any): boolean {
   return event?.requestContext?.domainName?.includes("lambda-url");
 }
+
+export function isStepFunctionsEvent(event: any): boolean {
+  // Extract Payload if available (Legacy lambda parsing)
+  if (typeof event.Payload === "object") {
+    event = event.Payload;
+  }
+  // Extract _datadog if available (JSONata v1 parsing)
+  if (typeof event._datadog === "object") {
+    event = event._datadog;
+  }
+  return (
+    typeof event.Execution === "object" && typeof event.State === "object" && typeof event.StateMachine === "object"
+  );
+}
