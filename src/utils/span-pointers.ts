@@ -1,7 +1,7 @@
 import { eventTypes } from "../trace/trigger";
 import { logDebug } from "./log";
-import { S3_PTR_KIND, SPAN_POINTER_DIRECTION } from "dd-trace/packages/dd-trace/src/constants";
-import { generatePointerHash } from "dd-trace/packages/dd-trace/src/util";
+import { S3_PTR_KIND, DYNAMODB_PTR_KIND, SPAN_POINTER_DIRECTION } from "dd-trace/packages/dd-trace/src/constants";
+import { generatePointerHash, extractPrimaryKeys } from "dd-trace/packages/dd-trace/src/util";
 
 interface SpanPointerAttributes {
   pointerKind: string;
@@ -20,6 +20,7 @@ export function getSpanPointerAttributes(
   eventSource: eventTypes | undefined,
   event: any,
 ): SpanPointerAttributes[] | undefined {
+  console.log('[LIBRARY] getSpanPointerAttributes');
   if (!eventSource) {
     return;
   }
@@ -27,6 +28,8 @@ export function getSpanPointerAttributes(
   switch (eventSource) {
     case eventTypes.s3:
       return processS3Event(event);
+    case eventTypes.dynamoDB:
+      return processDynamoDbEvent(event);
     default:
       logDebug(`Event type ${eventSource} not supported by span pointers.`);
       return;
@@ -68,4 +71,54 @@ function processS3Event(event: any): SpanPointerAttributes[] {
   }
 
   return spanPointerAttributesList;
+}
+
+function processDynamoDbEvent(event: any): SpanPointerAttributes[] {
+  console.log('[LIBRARY] processDynamoDbEvent');
+  const records = event.Records || [];
+  const spanPointerAttributesList: SpanPointerAttributes[] = [];
+
+  for (const record of records) {
+    const eventName = record.eventName;
+    console.log("[LIBRARY] eventName:", eventName);
+    // Process INSERT, MODIFY, REMOVE events
+    if (!["INSERT", "MODIFY", "REMOVE"].includes(eventName)) {
+      continue;
+    }
+
+    const keys = record.dynamodb?.Keys;
+    console.log("[LIBRARY] keys:", keys);
+    const eventSourceARN = record.eventSourceARN;
+    console.log("[LIBRARY] eventSourceARN:", eventSourceARN);
+    const tableName = record.eventSourceARN ? getTableNameFromARN(eventSourceARN) : undefined;
+    console.log("[LIBRARY] tableName:", tableName);
+
+    if (!tableName || !keys) {
+      logDebug("Unable to calculate hash because of missing parameters.");
+      continue;
+    }
+
+    const keyValues = extractPrimaryKeys(keys, keys);
+    console.log("[LIBRARY] keyValues:", keyValues);
+    if (!keyValues) {
+      continue;
+    }
+
+    const pointerHash = generatePointerHash([tableName, ...keyValues]);
+    console.log("[LIBRARY] hash:", pointerHash);
+    const spanPointerAttributes: SpanPointerAttributes = {
+      pointerKind: DYNAMODB_PTR_KIND,
+      pointerDirection: SPAN_POINTER_DIRECTION.UPSTREAM,
+      pointerHash,
+    };
+    spanPointerAttributesList.push(spanPointerAttributes);
+  }
+
+  return spanPointerAttributesList;
+}
+
+function getTableNameFromARN(arn: string): string | undefined {
+  // ARN format: arn:aws:dynamodb:region:account-id:table/table-name/stream/stream-label
+  const match = arn.match(/table\/([^\/]*)/);
+  return match ? match[1] : undefined;
 }
