@@ -76,10 +76,7 @@ export class StepFunctionContextService {
     if (typeof event !== "object") return;
 
     // Extract Payload if available (Legacy lambda parsing)
-    if (
-      typeof event.Payload === "object" &&
-      (typeof event.Payload._datadog === "object" || this.isValidContextObject(event.Payload))
-    ) {
+    if (typeof event?.Payload?._datadog === "object" || this.isValidContextObject(event?.Payload)) {
       event = event.Payload;
     }
 
@@ -216,11 +213,9 @@ export class StepFunctionContextService {
 
   private isValidContextObject(context: any): boolean {
     return (
-      typeof context.Execution === "object" &&
-      typeof context.Execution.Id === "string" &&
-      typeof context.State === "object" &&
-      typeof context.State.EnteredTime === "string" &&
-      typeof context.State.Name === "string"
+      typeof context?.Execution?.Id === "string" &&
+      typeof context?.State?.EnteredTime === "string" &&
+      typeof context?.State?.Name === "string"
     );
   }
 
