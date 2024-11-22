@@ -25,9 +25,6 @@ export function getSpanPointerAttributes(
   switch (eventSource) {
     case eventTypes.s3:
       return processS3Event(event);
-    default:
-      logDebug(`Event type ${eventSource} not supported by span pointers.`);
-      return;
   }
 }
 
