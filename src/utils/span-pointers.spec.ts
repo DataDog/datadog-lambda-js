@@ -1,7 +1,10 @@
 import { getSpanPointerAttributes } from "./span-pointers";
 import { eventTypes } from "../trace/trigger";
-import { S3_PTR_KIND, SPAN_POINTER_DIRECTION } from "dd-trace/packages/dd-trace/src/constants";
-import * as util from "dd-trace/packages/dd-trace/src/util";
+
+// tslint:disable-next-line:no-var-requires
+const { S3_PTR_KIND, SPAN_POINTER_DIRECTION } = require("dd-trace/packages/dd-trace/src/constants");
+// tslint:disable-next-line:no-var-requires
+const util = require("dd-trace/packages/dd-trace/src/util");
 
 // Mock the external dependencies
 jest.mock("./log", () => ({
