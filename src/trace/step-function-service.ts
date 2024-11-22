@@ -76,7 +76,7 @@ export class StepFunctionContextService {
     if (typeof event !== "object") return;
 
     // Extract Payload if available (Legacy lambda parsing)
-    if (typeof event.Payload === "object") {
+    if (typeof event?.Payload?._datadog === "object" || this.isValidContextObject(event?.Payload)) {
       event = event.Payload;
     }
 
@@ -199,25 +199,24 @@ export class StepFunctionContextService {
     state_entered_time: string;
     state_name: string;
   } | null {
-    const execution = event.Execution;
-    const state = event.State;
-
-    if (
-      typeof execution === "object" &&
-      typeof execution.Id === "string" &&
-      typeof state === "object" &&
-      typeof state.EnteredTime === "string" &&
-      typeof state.Name === "string"
-    ) {
+    if (this.isValidContextObject(event)) {
       return {
-        execution_id: execution.Id,
-        state_entered_time: state.EnteredTime,
-        state_name: state.Name,
+        execution_id: event.Execution.Id,
+        state_entered_time: event.State.EnteredTime,
+        state_name: event.State.Name,
       };
     }
 
     logDebug("Cannot extract StateMachine context! Invalid execution or state data.");
     return null;
+  }
+
+  private isValidContextObject(context: any): boolean {
+    return (
+      typeof context?.Execution?.Id === "string" &&
+      typeof context?.State?.EnteredTime === "string" &&
+      typeof context?.State?.Name === "string"
+    );
   }
 
   /**
