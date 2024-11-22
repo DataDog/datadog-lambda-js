@@ -53,7 +53,7 @@ function processS3Event(event: any): SpanPointerAttributes[] {
 
   for (const record of records) {
     const eventName = record.eventName;
-    if (!eventName.startsWith("ObjectCreated")) {
+    if (!eventName || !eventName.startsWith("ObjectCreated")) {
       continue;
     }
     // Values are stored in the same place, regardless of AWS SDK v2/v3 or the event type.

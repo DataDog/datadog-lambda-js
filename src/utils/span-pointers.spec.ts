@@ -51,6 +51,7 @@ describe("span-pointers utils", () => {
                   eTag: "test-etag",
                 },
               },
+              eventName: "ObjectCreated:SomeEventName",
             },
           ],
         };
@@ -79,6 +80,7 @@ describe("span-pointers utils", () => {
                   eTag: "etag1",
                 },
               },
+              eventName: "ObjectCreated:SomeEventName",
             },
             {
               s3: {
@@ -88,6 +90,7 @@ describe("span-pointers utils", () => {
                   eTag: "etag2",
                 },
               },
+              eventName: "ObjectCreated:SomeEventName",
             },
           ],
         };
@@ -135,6 +138,7 @@ describe("span-pointers utils", () => {
                   eTag: "valid-etag",
                 },
               },
+              eventName: "ObjectCreated:SomeEventName",
             },
           ],
         };

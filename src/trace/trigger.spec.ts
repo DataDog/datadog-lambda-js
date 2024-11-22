@@ -174,7 +174,7 @@ describe("parseEventSource", () => {
   it("extracts all trigger tags", () => {
     for (let event of events) {
       const eventData = JSON.parse(readFileSync(`./event_samples/${event.file}`, "utf8"));
-      const eventSource = parseEventSource(event);
+      const eventSource = parseEventSource(eventData);
       const triggerTags = extractTriggerTags(eventData, mockContext, eventSource);
       expect(triggerTags).toEqual(event.result);
     }
@@ -183,7 +183,7 @@ describe("parseEventSource", () => {
   it("extracts the status code if API Gateway, ALB, or Function URL, otherwise do nothing, for buffered functions", () => {
     for (const event of events) {
       const eventData = JSON.parse(readFileSync(`./event_samples/${event.file}`, "utf8"));
-      const eventSource = parseEventSource(event);
+      const eventSource = parseEventSource(eventData);
       const triggerTags = extractTriggerTags(eventData, mockContext, eventSource);
       const isResponseStreamingFunction = false;
       for (const response of bufferedResponses) {
@@ -208,7 +208,7 @@ describe("parseEventSource", () => {
   it("extracts the status code if API Gateway, ALB, or Function URL, otherwise do nothing, for streaming functions", () => {
     for (let event of events) {
       const eventData = JSON.parse(readFileSync(`./event_samples/${event.file}`, "utf8"));
-      const eventSource = parseEventSource(event);
+      const eventSource = parseEventSource(eventData);
       const triggerTags = extractTriggerTags(eventData, mockContext, eventSource);
       const isResponseStreamingFunction = true;
       for (const response of streamingResponses) {
