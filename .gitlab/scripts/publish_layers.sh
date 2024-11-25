@@ -13,7 +13,7 @@ set -e
 AWS_CLI_NODE_VERSIONS=("nodejs16.x" "nodejs18.x" "nodejs20.x" "nodejs22.x")
 LAYER_PATHS=(".layers/datadog_lambda_node16.14.zip" ".layers/datadog_lambda_node18.12.zip" ".layers/datadog_lambda_node20.9.zip" ".layers/datadog_lambda_node22.11.zip")
 LAYERS=("Datadog-Node16-x" "Datadog-Node18-x" "Datadog-Node20-x" "Datadog-Node22-x")
-NODE_VERSIONS=("16.14" "18.12" "20.9 "22.11"")
+NODE_VERSIONS=("16.14" "18.12" "20.9" "22.11")
 STAGES=('prod', 'sandbox', 'staging')
 
 printf "Starting script...\n\n"
