@@ -10,7 +10,8 @@ START
     "resource:integration-tests-js-XXXX-esm_node22",
     "memorysize:1024",
     "cold_start:true",
-    "datadog_lambda:vX.X.X"
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs22.x"
   ],
   "v": 1
 }
@@ -26,7 +27,8 @@ START
     "resource:integration-tests-js-XXXX-esm_node22",
     "memorysize:1024",
     "cold_start:false",
-    "datadog_lambda:vX.X.X"
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs22.x"
   ],
   "v": 1
 }
@@ -42,7 +44,8 @@ START
     "resource:integration-tests-js-XXXX-esm_node22",
     "memorysize:1024",
     "cold_start:false",
-    "datadog_lambda:vX.X.X"
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs22.x"
   ],
   "v": 1
 }

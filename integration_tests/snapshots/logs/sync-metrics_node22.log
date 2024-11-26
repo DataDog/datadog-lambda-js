@@ -10,7 +10,8 @@ START
     "resource:integration-tests-js-XXXX-sync-metrics_node22",
     "memorysize:1024",
     "cold_start:true",
-    "datadog_lambda:vX.X.X"
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs22.x"
   ],
   "v": 1
 }
@@ -28,7 +29,8 @@ START
     "resource:integration-tests-js-XXXX-sync-metrics_node22",
     "memorysize:1024",
     "cold_start:false",
-    "datadog_lambda:vX.X.X"
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs22.x"
   ],
   "v": 1
 }
@@ -47,7 +49,8 @@ XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SQS re
     "resource:integration-tests-js-XXXX-sync-metrics_node22",
     "memorysize:1024",
     "cold_start:false",
-    "datadog_lambda:vX.X.X"
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs22.x"
   ],
   "v": 1
 }

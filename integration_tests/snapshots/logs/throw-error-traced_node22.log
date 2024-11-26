@@ -10,7 +10,8 @@ START
     "resource:integration-tests-js-XXXX-throw-error-traced_node22",
     "memorysize:1024",
     "cold_start:true",
-    "datadog_lambda:vX.X.X"
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs22.x"
   ],
   "v": 1
 }
@@ -24,13 +25,15 @@ START
     "resource:integration-tests-js-XXXX-throw-error-traced_node22",
     "memorysize:1024",
     "cold_start:true",
-    "datadog_lambda:vX.X.X"
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs22.x"
   ],
   "v": 1
 }
 XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at /opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX","    at step (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at Object.next (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX","    at new Promise (<anonymous>)","    at __awaiter (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX"]}
 END Duration: XXXX ms (init: XXXX ms) Memory Used: XXXX MB
 START
+XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at /opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX","    at step (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at Object.next (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX","    at new Promise (<anonymous>)","    at __awaiter (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX"]}
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -41,11 +44,11 @@ START
     "resource:integration-tests-js-XXXX-throw-error-traced_node22",
     "memorysize:1024",
     "cold_start:false",
-    "datadog_lambda:vX.X.X"
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs22.x"
   ],
   "v": 1
 }
-XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at /opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX","    at step (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at Object.next (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX","    at new Promise (<anonymous>)","    at __awaiter (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX"]}
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.errors",
@@ -56,7 +59,8 @@ XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{
     "resource:integration-tests-js-XXXX-throw-error-traced_node22",
     "memorysize:1024",
     "cold_start:false",
-    "datadog_lambda:vX.X.X"
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs22.x"
   ],
   "v": 1
 }
@@ -72,10 +76,12 @@ START
     "resource:integration-tests-js-XXXX-throw-error-traced_node22",
     "memorysize:1024",
     "cold_start:false",
-    "datadog_lambda:vX.X.X"
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs22.x"
   ],
   "v": 1
 }
+XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at /opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX","    at step (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at Object.next (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX","    at new Promise (<anonymous>)","    at __awaiter (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX"]}
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.errors",
@@ -86,9 +92,9 @@ START
     "resource:integration-tests-js-XXXX-throw-error-traced_node22",
     "memorysize:1024",
     "cold_start:false",
-    "datadog_lambda:vX.X.X"
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs22.x"
   ],
   "v": 1
 }
-XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at /opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX","    at step (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at Object.next (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX","    at new Promise (<anonymous>)","    at __awaiter (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX"]}
 END Duration: XXXX ms Memory Used: XXXX MB
