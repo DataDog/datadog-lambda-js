@@ -52,9 +52,9 @@ describe("span-pointers utils", () => {
 
         const expected: SpanPointerAttributes[] = [
           {
-            pointerKind: S3_PTR_KIND,
-            pointerDirection: SPAN_POINTER_DIRECTION.UPSTREAM,
-            pointerHash: mockPointerHash,
+            kind: S3_PTR_KIND,
+            direction: SPAN_POINTER_DIRECTION.UPSTREAM,
+            hash: mockPointerHash,
           },
         ];
 
@@ -91,14 +91,14 @@ describe("span-pointers utils", () => {
 
         const expected: SpanPointerAttributes[] = [
           {
-            pointerKind: S3_PTR_KIND,
-            pointerDirection: SPAN_POINTER_DIRECTION.UPSTREAM,
-            pointerHash: mockPointerHash,
+            kind: S3_PTR_KIND,
+            direction: SPAN_POINTER_DIRECTION.UPSTREAM,
+            hash: mockPointerHash,
           },
           {
-            pointerKind: S3_PTR_KIND,
-            pointerDirection: SPAN_POINTER_DIRECTION.UPSTREAM,
-            pointerHash: mockPointerHash,
+            kind: S3_PTR_KIND,
+            direction: SPAN_POINTER_DIRECTION.UPSTREAM,
+            hash: mockPointerHash,
           },
         ];
 
@@ -139,9 +139,9 @@ describe("span-pointers utils", () => {
 
         const expected: SpanPointerAttributes[] = [
           {
-            pointerKind: S3_PTR_KIND,
-            pointerDirection: SPAN_POINTER_DIRECTION.UPSTREAM,
-            pointerHash: mockPointerHash,
+            kind: S3_PTR_KIND,
+            direction: SPAN_POINTER_DIRECTION.UPSTREAM,
+            hash: mockPointerHash,
           },
         ];
 

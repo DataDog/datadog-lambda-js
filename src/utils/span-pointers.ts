@@ -2,9 +2,9 @@ import { eventTypes } from "../trace/trigger";
 import { logDebug } from "./log";
 
 export interface SpanPointerAttributes {
-  pointerKind: string;
-  pointerDirection: string;
-  pointerHash: string;
+  kind: string;
+  direction: string;
+  hash: string;
 }
 
 /**
@@ -72,9 +72,9 @@ function processS3Event(event: any): SpanPointerAttributes[] {
     }
     const pointerHash = generatePointerHash([bucketName, objectKey, eTag]);
     const spanPointerAttributes: SpanPointerAttributes = {
-      pointerKind: S3_PTR_KIND,
-      pointerDirection: SPAN_POINTER_DIRECTION.UPSTREAM,
-      pointerHash,
+      kind: S3_PTR_KIND,
+      direction: SPAN_POINTER_DIRECTION.UPSTREAM,
+      hash: pointerHash,
     };
     spanPointerAttributesList.push(spanPointerAttributes);
   }

@@ -81,7 +81,7 @@ export class TraceListener {
   private wrappedCurrentSpan?: SpanWrapper;
   private triggerTags?: { [key: string]: string };
   private lambdaSpanParentContext?: SpanContext;
-  private spanPointerAttributesList: SpanPointerAttributes[] = [];
+  private spanPointerAttributesList: SpanPointerAttributes[] | undefined;
 
   public get currentTraceHeaders() {
     return this.contextService.currentTraceHeaders;
@@ -137,10 +137,7 @@ export class TraceListener {
     this.triggerTags = extractTriggerTags(event, context, eventSource);
     this.stepFunctionContext = StepFunctionContextService.instance().context;
 
-    const result = getSpanPointerAttributes(eventSource, event);
-    if (result) {
-      this.spanPointerAttributesList = result;
-    }
+    this.spanPointerAttributesList = getSpanPointerAttributes(eventSource, event);
   }
 
   /**
@@ -204,13 +201,9 @@ export class TraceListener {
       }
     }
 
-    if (this.wrappedCurrentSpan) {
+    if (this.wrappedCurrentSpan && this.spanPointerAttributesList) {
       for (const attributes of this.spanPointerAttributesList) {
-        this.wrappedCurrentSpan.span.addSpanPointer(
-          attributes.pointerKind,
-          attributes.pointerDirection,
-          attributes.pointerHash,
-        );
+        this.wrappedCurrentSpan.span.addSpanPointer(attributes.kind, attributes.direction, attributes.hash);
       }
     }
     return false;
