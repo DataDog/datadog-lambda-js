@@ -1,4 +1,4 @@
-import { getSpanPointerAttributes } from "./span-pointers";
+import { getSpanPointerAttributes, SpanPointerAttributes } from "./span-pointers";
 import { eventTypes } from "../trace/trigger";
 
 // tslint:disable-next-line:no-var-requires
@@ -10,12 +10,6 @@ const util = require("dd-trace/packages/dd-trace/src/util");
 jest.mock("./log", () => ({
   logDebug: jest.fn(),
 }));
-
-interface SpanPointerAttributes {
-  pointerKind: string;
-  pointerDirection: string;
-  pointerHash: string;
-}
 
 describe("span-pointers utils", () => {
   const mockPointerHash = "mock-hash-123";

@@ -17,7 +17,7 @@ import { TraceContext, TraceContextService, TraceSource } from "./trace-context-
 import { StepFunctionContext, StepFunctionContextService } from "./step-function-service";
 import { XrayService } from "./xray-service";
 import { AUTHORIZING_REQUEST_ID_HEADER } from "./context/extractors/http";
-import { getSpanPointerAttributes } from "../utils/span-pointers";
+import { getSpanPointerAttributes, SpanPointerAttributes } from "../utils/span-pointers";
 export type TraceExtractor = (event: any, context: Context) => Promise<TraceContext> | TraceContext;
 
 export interface TraceConfig {
@@ -69,12 +69,6 @@ export interface TraceConfig {
    * Libraries to ignore from cold start traces
    */
   coldStartTraceSkipLib: string;
-}
-
-interface SpanPointerAttributes {
-  pointerKind: string;
-  pointerDirection: string;
-  pointerHash: string;
 }
 
 export class TraceListener {
@@ -145,7 +139,7 @@ export class TraceListener {
 
     const result = getSpanPointerAttributes(eventSource, event);
     if (result) {
-      this.spanPointerAttributesList.push(...result);
+      this.spanPointerAttributesList = result;
     }
   }
 

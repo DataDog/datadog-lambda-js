@@ -1,7 +1,7 @@
 import { eventTypes } from "../trace/trigger";
 import { logDebug } from "./log";
 
-interface SpanPointerAttributes {
+export interface SpanPointerAttributes {
   pointerKind: string;
   pointerDirection: string;
   pointerHash: string;
@@ -33,20 +33,21 @@ function processS3Event(event: any): SpanPointerAttributes[] {
   const spanPointerAttributesList: SpanPointerAttributes[] = [];
 
   // Get dependencies from tracer only when needed
-  let constants;
-  let util;
+  let S3_PTR_KIND;
+  let SPAN_POINTER_DIRECTION;
+  let generatePointerHash;
   try {
-    constants = require("dd-trace/packages/dd-trace/src/constants");
-    util = require("dd-trace/packages/dd-trace/src/util");
+    const constants = require("dd-trace/packages/dd-trace/src/constants");
+    const util = require("dd-trace/packages/dd-trace/src/util");
+
+    ({ S3_PTR_KIND, SPAN_POINTER_DIRECTION } = constants);
+    ({ generatePointerHash } = util);
   } catch (err) {
     if (err instanceof Error) {
       logDebug("Failed to load dd-trace span pointer dependencies", err);
     }
     return spanPointerAttributesList;
   }
-
-  const { S3_PTR_KIND, SPAN_POINTER_DIRECTION } = constants;
-  const { generatePointerHash } = util;
 
   for (const record of records) {
     const eventName = record.eventName;
