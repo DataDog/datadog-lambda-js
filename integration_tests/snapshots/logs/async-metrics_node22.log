@@ -1,0 +1,125 @@
+
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-async-metrics_node22",
+    "resource:integration-tests-js-XXXX-async-metrics_node22",
+    "memorysize:1024",
+    "cold_start:true",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs22.x"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "serverless.integration_test.outside_handler",
+  "t": [
+    "tagkey:tagvalue",
+    "eventsource:outside_handler",
+    "dd_lambda_layer:datadog-nodev22.XX.X"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "serverless.integration_test.execution",
+  "t": [
+    "tagkey:tagvalue",
+    "eventsource:APIGateway",
+    "dd_lambda_layer:datadog-nodev22.XX.X"
+  ],
+  "v": 1
+}
+XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed APIGateway request
+END Duration: XXXX ms (init: XXXX ms) Memory Used: XXXX MB
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-async-metrics_node22",
+    "resource:integration-tests-js-XXXX-async-metrics_node22",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs22.x"
+  ],
+  "v": 1
+}
+XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SNS request
+{
+  "e": XXXX,
+  "m": "serverless.integration_test.records_processed",
+  "t": [
+    "tagkey:tagvalue",
+    "eventsource:SNS",
+    "dd_lambda_layer:datadog-nodev22.XX.X"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "serverless.integration_test.execution",
+  "t": [
+    "tagkey:tagvalue",
+    "eventsource:SNS",
+    "dd_lambda_layer:datadog-nodev22.XX.X"
+  ],
+  "v": 1
+}
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-async-metrics_node22",
+    "resource:integration-tests-js-XXXX-async-metrics_node22",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs22.x"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "serverless.integration_test.records_processed",
+  "t": [
+    "tagkey:tagvalue",
+    "eventsource:SQS",
+    "dd_lambda_layer:datadog-nodev22.XX.X"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "serverless.integration_test.records_processed",
+  "t": [
+    "tagkey:tagvalue",
+    "eventsource:SQS",
+    "dd_lambda_layer:datadog-nodev22.XX.X"
+  ],
+  "v": 1
+}
+XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SQS request
+{
+  "e": XXXX,
+  "m": "serverless.integration_test.execution",
+  "t": [
+    "tagkey:tagvalue",
+    "eventsource:SQS",
+    "dd_lambda_layer:datadog-nodev22.XX.X"
+  ],
+  "v": 1
+}
+END Duration: XXXX ms Memory Used: XXXX MB
