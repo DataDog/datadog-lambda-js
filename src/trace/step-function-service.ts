@@ -139,14 +139,15 @@ export class StepFunctionContextService {
       return null;
     }
 
+    const redrivePostfix = this.context.redrive_count === "0" ? "" : `#${this.context.redrive_count}`;
+
     const parentId = this.deterministicSha256HashToBigIntString(
       this.context.execution_id +
         "#" +
         this.context.state_name +
         "#" +
         this.context.state_entered_time +
-        "#" +
-        this.context.redrive_count,
+        redrivePostfix,
       PARENT_ID,
     );
     const sampleMode = SampleMode.AUTO_KEEP;

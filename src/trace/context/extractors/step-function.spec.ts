@@ -15,6 +15,7 @@ describe("StepFunctionEventTraceExtractor", () => {
         Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
         RoleArn: "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
         StartTime: "2022-12-08T21:08:17.924Z",
+        RedriveCount: "0",
       },
       State: {
         Name: "step-one",
@@ -37,7 +38,7 @@ describe("StepFunctionEventTraceExtractor", () => {
       expect(traceContext).not.toBeNull();
 
       expect(traceContext?.toTraceId()).toBe("1139193989631387307");
-      expect(traceContext?.toSpanId()).toBe("4999533646733506688");
+      expect(traceContext?.toSpanId()).toBe("5892738536804826142");
       expect(traceContext?.sampleMode()).toBe("1");
       expect(traceContext?.source).toBe("event");
     });
@@ -50,7 +51,7 @@ describe("StepFunctionEventTraceExtractor", () => {
       expect(traceContext).not.toBeNull();
 
       expect(traceContext?.toTraceId()).toBe("1139193989631387307");
-      expect(traceContext?.toSpanId()).toBe("4999533646733506688");
+      expect(traceContext?.toSpanId()).toBe("5892738536804826142");
       expect(traceContext?.sampleMode()).toBe("1");
       expect(traceContext?.source).toBe("event");
     });
@@ -66,7 +67,7 @@ describe("StepFunctionEventTraceExtractor", () => {
       expect(traceContext).not.toBeNull();
 
       expect(traceContext?.toTraceId()).toBe("1139193989631387307");
-      expect(traceContext?.toSpanId()).toBe("4999533646733506688");
+      expect(traceContext?.toSpanId()).toBe("5892738536804826142");
       expect(traceContext?.sampleMode()).toBe("1");
       expect(traceContext?.source).toBe("event");
     });
