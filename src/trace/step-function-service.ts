@@ -228,6 +228,7 @@ export class StepFunctionContextService {
   private isValidContextObject(context: any): boolean {
     return (
       typeof context?.Execution?.Id === "string" &&
+      typeof context?.Execution?.RedriveCount === "string" &&
       typeof context?.State?.EnteredTime === "string" &&
       typeof context?.State?.Name === "string"
     );
