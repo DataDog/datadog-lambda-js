@@ -669,7 +669,7 @@ describe("TraceContextExtractor", () => {
             Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
             RoleArn:
               "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
-            RedriveCount: "0",
+            RedriveCount: 0,
             StartTime: "2022-12-08T21:08:17.924Z",
           },
           State: {
@@ -884,7 +884,7 @@ describe("TraceContextExtractor", () => {
           },
           Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
           RoleArn: "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
-          RedriveCount: "0",
+          RedriveCount: 0,
           StartTime: "2022-12-08T21:08:17.924Z",
         },
         State: {
@@ -921,7 +921,7 @@ describe("TraceContextExtractor", () => {
             Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
             RoleArn:
               "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
-            RedriveCount: "0",
+            RedriveCount: 0,
             StartTime: "2022-12-08T21:08:17.924Z",
           },
           State: {
@@ -962,7 +962,7 @@ describe("TraceContextExtractor", () => {
             Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
             RoleArn:
               "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
-            RedriveCount: "0",
+            RedriveCount: 0,
             StartTime: "2022-12-08T21:08:17.924Z",
           },
           State: {
@@ -1003,7 +1003,7 @@ describe("TraceContextExtractor", () => {
             Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
             RoleArn:
               "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
-            RedriveCount: "0",
+            RedriveCount: 0,
             StartTime: "2022-12-08T21:08:17.924Z",
           },
           State: {
@@ -1054,7 +1054,7 @@ describe("TraceContextExtractor", () => {
           },
           Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
           RoleArn: "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
-          RedriveCount: "0",
+          RedriveCount: 0,
           StartTime: "2022-12-08T21:08:17.924Z",
         },
         State: {
