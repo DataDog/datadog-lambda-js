@@ -37,7 +37,7 @@ describe("StepFunctionEventTraceExtractor", () => {
       expect(traceContext).not.toBeNull();
 
       expect(traceContext?.toTraceId()).toBe("1139193989631387307");
-      expect(traceContext?.toSpanId()).toBe("5892738536804826142");
+      expect(traceContext?.toSpanId()).toBe("4999533646733506688");
       expect(traceContext?.sampleMode()).toBe("1");
       expect(traceContext?.source).toBe("event");
     });
@@ -50,7 +50,7 @@ describe("StepFunctionEventTraceExtractor", () => {
       expect(traceContext).not.toBeNull();
 
       expect(traceContext?.toTraceId()).toBe("1139193989631387307");
-      expect(traceContext?.toSpanId()).toBe("5892738536804826142");
+      expect(traceContext?.toSpanId()).toBe("4999533646733506688");
       expect(traceContext?.sampleMode()).toBe("1");
       expect(traceContext?.source).toBe("event");
     });
@@ -66,7 +66,7 @@ describe("StepFunctionEventTraceExtractor", () => {
       expect(traceContext).not.toBeNull();
 
       expect(traceContext?.toTraceId()).toBe("1139193989631387307");
-      expect(traceContext?.toSpanId()).toBe("5892738536804826142");
+      expect(traceContext?.toSpanId()).toBe("4999533646733506688");
       expect(traceContext?.sampleMode()).toBe("1");
       expect(traceContext?.source).toBe("event");
     });
