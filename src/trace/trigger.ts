@@ -344,9 +344,8 @@ function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEv
 /**
  * extractTriggerTags parses the trigger event object for tags to be added to the span metadata
  */
-export function extractTriggerTags(event: any, context: Context) {
+export function extractTriggerTags(event: any, context: Context, eventSource: eventTypes | undefined) {
   let triggerTags: { [key: string]: string } = {};
-  const eventSource = parseEventSource(event);
   if (eventSource) {
     triggerTags["function_trigger.event_source"] = eventSource;
 
