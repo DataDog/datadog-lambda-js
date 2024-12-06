@@ -9,6 +9,7 @@ describe("StepFunctionContextService", () => {
       },
       Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
       RoleArn: "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
+      RedriveCount: 0,
       StartTime: "2022-12-08T21:08:17.924Z",
     },
     State: {
@@ -30,6 +31,7 @@ describe("StepFunctionContextService", () => {
         },
         Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
         RoleArn: "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
+        RedriveCount: 0,
         StartTime: "2022-12-08T21:08:17.924Z",
       },
       State: {
@@ -55,6 +57,7 @@ describe("StepFunctionContextService", () => {
         },
         Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
         RoleArn: "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
+        RedriveCount: 0,
         StartTime: "2022-12-08T21:08:17.924Z",
       },
       State: {
@@ -107,6 +110,16 @@ describe("StepFunctionContextService", () => {
         },
       ],
       [
+        "Execution RedriveCount is not a number",
+        {
+          ...legacyStepFunctionEvent,
+          Execution: {
+            ...legacyStepFunctionEvent.Execution,
+            RedriveCount: "0",
+          },
+        },
+      ],
+      [
         "State is not defined",
         {
           ...legacyStepFunctionEvent,
@@ -146,6 +159,7 @@ describe("StepFunctionContextService", () => {
       expect(instance.context).toEqual({
         execution_id:
           "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
+        redrive_count: "0",
         state_entered_time: "2022-12-08T21:08:19.224Z",
         state_name: "step-one",
       });
@@ -158,6 +172,7 @@ describe("StepFunctionContextService", () => {
       expect(instance.context).toEqual({
         execution_id:
           "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
+        redrive_count: "0",
         state_entered_time: "2022-12-08T21:08:19.224Z",
         state_name: "step-one",
         root_execution_id:
@@ -173,6 +188,7 @@ describe("StepFunctionContextService", () => {
       expect(instance.context).toEqual({
         execution_id:
           "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
+        redrive_count: "0",
         state_entered_time: "2022-12-08T21:08:19.224Z",
         state_name: "step-one",
         trace_id: "10593586103637578129",
