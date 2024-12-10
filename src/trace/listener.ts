@@ -145,7 +145,7 @@ export class TraceListener {
 
     const result = getSpanPointerAttributes(eventSource, event);
     if (result) {
-      this.spanPointerAttributesList.push(...result);
+      this.spanPointerAttributesList = result;
     }
   }
 

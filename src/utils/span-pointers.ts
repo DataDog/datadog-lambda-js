@@ -1,7 +1,8 @@
 import { eventTypes } from "../trace/trigger";
 import { logDebug } from "./log";
 import { S3_PTR_KIND, DYNAMODB_PTR_KIND, SPAN_POINTER_DIRECTION } from "dd-trace/packages/dd-trace/src/constants";
-import { generatePointerHash, extractPrimaryKeys } from "dd-trace/packages/dd-trace/src/util";
+// import { generatePointerHash, extractPrimaryKeys } from "dd-trace/packages/dd-trace/src/util";
+import { generatePointerHash, extractPrimaryKeys } from "dd-trace/packages/datadog-plugin-aws-sdk/src/util";
 
 interface SpanPointerAttributes {
   pointerKind: string;
