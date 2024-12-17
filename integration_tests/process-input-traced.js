@@ -50,6 +50,12 @@ const getRecordIds = tracer.wrap("getRecordIds", (event) => {
         eventType = "SNS";
         recordIds.push(record.Sns.MessageId);
       }
+      if (record.s3) {
+        eventType = "S3";
+        const bucketName = record.s3.bucket.name;
+        const objectKey = record.s3.object.key;
+        recordIds.push(`${bucketName}/${objectKey}`);
+      }
     });
   }
 

@@ -134,6 +134,294 @@ START
         "trace_id":"XXXX",
         "span_id":"XXXX",
         "parent_id":"XXXX",
+        "name": "aws.s3",
+        "resource": "my-bucket-name",
+        "error": 0,
+        "meta": {
+          "_dd.p.tid": "XXXX",
+          "_dd.p.dm": "-0",
+          "service": "remappedS3ServiceName",
+          "runtime-id":"XXXX",
+          "operation_name": "aws.s3",
+          "resource_names": "my-bucket-name",
+          "request_id":"XXXX",
+          "_inferred_span.tag_source": "self",
+          "_inferred_span.synchronicity": "async",
+          "bucketname": "my-bucket-name",
+          "bucket_arn": "arn:aws:s3:::my-bucket-name",
+          "event_name": "ObjectCreated:CompleteMultipartUpload",
+          "object_key": "multipart_object.txt",
+          "object_etag": "09876543210987654321098765432109-2",
+          "_dd.base_service": "integration-tests-js-XXXX-status-code-500s_node16",
+          "language": "javascript"
+        },
+        "metrics": {
+          "_dd.agent_psr": 1,
+          "_dd.top_level": 1,
+          "object_size": 8388608,
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "links": [],
+        "service": "remappedS3ServiceName",
+        "type": "web"
+      },
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "aws.lambda",
+        "resource": "integration-tests-js-XXXX-status-code-500s_node16",
+        "error": 0,
+        "meta": {
+          "_dd.span_links": "[{\"trace_id\":\"00000000000000000000000000000000\",\"span_id\":\"0000000000000000\",\"attributes\":{\"ptr.kind\":\"aws.s3.object\",\"ptr.dir\":\"u\",\"ptr.hash\":\"5e945cd2009d743bdef019835b237969\",\"link.kind\":\"span-pointer\"}}]",
+          "service": "integration-tests-js-XXXX-status-code-500s_node16",
+          "version": "1.0.0",
+          "runtime-id":"XXXX",
+          "function_arn":"XXXX_node16",
+          "function_version": "$LATEST",
+          "request_id":"XXXX",
+          "resource_names": "integration-tests-js-XXXX-status-code-500s_node16",
+          "functionname": "integration-tests-js-XXXX-status-code-500s_node16",
+          "datadog_lambda":"XXXX",
+          "function_trigger.event_source": "s3",
+          "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
+          "_dd.base_service": "integration-tests-js-XXXX-status-code-500s_node16",
+          "language": "javascript"
+        },
+        "metrics": {
+          "cold_start": 0,
+          "_dd.measured": 1,
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "links": [],
+        "service": "aws.lambda",
+        "type": "serverless"
+      }
+    ]
+  ]
+}
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-status-code-500s_node16",
+    "resource:integration-tests-js-XXXX-status-code-500s_node16",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs16.x"
+  ],
+  "v": 1
+}
+{
+  "traces": [
+    [
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "aws.s3",
+        "resource": "my-bucket-name",
+        "error": 0,
+        "meta": {
+          "_dd.p.tid": "XXXX",
+          "_dd.p.dm": "-0",
+          "service": "remappedS3ServiceName",
+          "runtime-id":"XXXX",
+          "operation_name": "aws.s3",
+          "resource_names": "my-bucket-name",
+          "request_id":"XXXX",
+          "_inferred_span.tag_source": "self",
+          "_inferred_span.synchronicity": "async",
+          "bucketname": "my-bucket-name",
+          "bucket_arn": "arn:aws:s3:::my-bucket-name",
+          "event_name": "ObjectCreated:Copy",
+          "object_key": "copied_object.txt",
+          "object_etag": "01234567890123456789012345678901",
+          "_dd.base_service": "integration-tests-js-XXXX-status-code-500s_node16",
+          "language": "javascript"
+        },
+        "metrics": {
+          "_dd.agent_psr": 1,
+          "_dd.top_level": 1,
+          "object_size": 100,
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "links": [],
+        "service": "remappedS3ServiceName",
+        "type": "web"
+      },
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "aws.lambda",
+        "resource": "integration-tests-js-XXXX-status-code-500s_node16",
+        "error": 0,
+        "meta": {
+          "_dd.span_links": "[{\"trace_id\":\"00000000000000000000000000000000\",\"span_id\":\"0000000000000000\",\"attributes\":{\"ptr.kind\":\"aws.s3.object\",\"ptr.dir\":\"u\",\"ptr.hash\":\"9b03fa9d6a34c7b40a2a2907eb0db1f6\",\"link.kind\":\"span-pointer\"}}]",
+          "service": "integration-tests-js-XXXX-status-code-500s_node16",
+          "version": "1.0.0",
+          "runtime-id":"XXXX",
+          "function_arn":"XXXX_node16",
+          "function_version": "$LATEST",
+          "request_id":"XXXX",
+          "resource_names": "integration-tests-js-XXXX-status-code-500s_node16",
+          "functionname": "integration-tests-js-XXXX-status-code-500s_node16",
+          "datadog_lambda":"XXXX",
+          "function_trigger.event_source": "s3",
+          "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
+          "_dd.base_service": "integration-tests-js-XXXX-status-code-500s_node16",
+          "language": "javascript"
+        },
+        "metrics": {
+          "cold_start": 0,
+          "_dd.measured": 1,
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "links": [],
+        "service": "aws.lambda",
+        "type": "serverless"
+      }
+    ]
+  ]
+}
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-status-code-500s_node16",
+    "resource:integration-tests-js-XXXX-status-code-500s_node16",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs16.x"
+  ],
+  "v": 1
+}
+{
+  "traces": [
+    [
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "aws.s3",
+        "resource": "my-bucket-name",
+        "error": 0,
+        "meta": {
+          "_dd.p.tid": "XXXX",
+          "_dd.p.dm": "-0",
+          "service": "remappedS3ServiceName",
+          "runtime-id":"XXXX",
+          "operation_name": "aws.s3",
+          "resource_names": "my-bucket-name",
+          "request_id":"XXXX",
+          "_inferred_span.tag_source": "self",
+          "_inferred_span.synchronicity": "async",
+          "bucketname": "my-bucket-name",
+          "bucket_arn": "arn:aws:s3:::my-bucket-name",
+          "event_name": "ObjectCreated:Put",
+          "object_key": "test_object.txt",
+          "object_etag": "abcdef0123456789abcdef01234567890",
+          "_dd.base_service": "integration-tests-js-XXXX-status-code-500s_node16",
+          "language": "javascript"
+        },
+        "metrics": {
+          "_dd.agent_psr": 1,
+          "_dd.top_level": 1,
+          "object_size": 100,
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "links": [],
+        "service": "remappedS3ServiceName",
+        "type": "web"
+      },
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "aws.lambda",
+        "resource": "integration-tests-js-XXXX-status-code-500s_node16",
+        "error": 0,
+        "meta": {
+          "_dd.span_links": "[{\"trace_id\":\"00000000000000000000000000000000\",\"span_id\":\"0000000000000000\",\"attributes\":{\"ptr.kind\":\"aws.s3.object\",\"ptr.dir\":\"u\",\"ptr.hash\":\"b2229b8289f3e49de4f01af8d228ebd8\",\"link.kind\":\"span-pointer\"}}]",
+          "service": "integration-tests-js-XXXX-status-code-500s_node16",
+          "version": "1.0.0",
+          "runtime-id":"XXXX",
+          "function_arn":"XXXX_node16",
+          "function_version": "$LATEST",
+          "request_id":"XXXX",
+          "resource_names": "integration-tests-js-XXXX-status-code-500s_node16",
+          "functionname": "integration-tests-js-XXXX-status-code-500s_node16",
+          "datadog_lambda":"XXXX",
+          "function_trigger.event_source": "s3",
+          "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
+          "_dd.base_service": "integration-tests-js-XXXX-status-code-500s_node16",
+          "language": "javascript"
+        },
+        "metrics": {
+          "cold_start": 0,
+          "_dd.measured": 1,
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "links": [],
+        "service": "aws.lambda",
+        "type": "serverless"
+      }
+    ]
+  ]
+}
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-status-code-500s_node16",
+    "resource:integration-tests-js-XXXX-status-code-500s_node16",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs16.x"
+  ],
+  "v": 1
+}
+{
+  "traces": [
+    [
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
         "name": "aws.sns",
         "resource": "sns-lambda",
         "error": 0,

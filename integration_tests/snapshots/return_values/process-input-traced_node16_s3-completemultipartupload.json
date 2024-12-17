@@ -1,0 +1,7 @@
+{
+    "message": "hello, dog!",
+    "recordIds": [
+        "my-bucket-name/multipart_object.txt"
+    ],
+    "eventType": "S3"
+}

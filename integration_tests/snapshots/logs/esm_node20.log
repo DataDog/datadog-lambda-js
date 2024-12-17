@@ -8,8 +8,8 @@ START
     "account_id:XXXX",
     "functionname:integration-tests-js-XXXX-esm_node20",
     "resource:integration-tests-js-XXXX-esm_node20",
-    "cold_start:true",
     "memorysize:1024",
+    "cold_start:true",
     "datadog_lambda:vX.X.X",
     "runtime:nodejs20.x"
   ],
@@ -25,8 +25,8 @@ START
     "account_id:XXXX",
     "functionname:integration-tests-js-XXXX-esm_node20",
     "resource:integration-tests-js-XXXX-esm_node20",
-    "cold_start:false",
     "memorysize:1024",
+    "cold_start:false",
     "datadog_lambda:vX.X.X",
     "runtime:nodejs20.x"
   ],
@@ -42,8 +42,59 @@ START
     "account_id:XXXX",
     "functionname:integration-tests-js-XXXX-esm_node20",
     "resource:integration-tests-js-XXXX-esm_node20",
-    "cold_start:false",
     "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs20.x"
+  ],
+  "v": 1
+}
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-esm_node20",
+    "resource:integration-tests-js-XXXX-esm_node20",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs20.x"
+  ],
+  "v": 1
+}
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-esm_node20",
+    "resource:integration-tests-js-XXXX-esm_node20",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs20.x"
+  ],
+  "v": 1
+}
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-esm_node20",
+    "resource:integration-tests-js-XXXX-esm_node20",
+    "memorysize:1024",
+    "cold_start:false",
     "datadog_lambda:vX.X.X",
     "runtime:nodejs20.x"
   ],
