@@ -2,7 +2,7 @@ import { getSpanPointerAttributes, SpanPointerAttributes } from "./span-pointers
 import { eventTypes } from "../trace/trigger";
 
 // tslint:disable-next-line:no-var-requires
-const { S3_PTR_KIND, SPAN_POINTER_DIRECTION } = require("dd-trace/packages/dd-trace/src/constants");
+const { DYNAMODB_PTR_KIND, S3_PTR_KIND, SPAN_POINTER_DIRECTION } = require("dd-trace/packages/dd-trace/src/constants");
 // tslint:disable-next-line:no-var-requires
 const util = require("dd-trace/packages/datadog-plugin-aws-sdk/src/util");
 
@@ -147,6 +147,198 @@ describe("span-pointers utils", () => {
 
         const result = getSpanPointerAttributes(eventTypes.s3, event);
         expect(result).toEqual(expected);
+      });
+    });
+
+    describe("DynamoDB event processing", () => {
+      const mockPrimaryKey1 = "mock-key-1";
+      const mockPrimaryValue1 = "mock-value-1";
+      const mockPrimaryKey2 = "mock-key-2";
+      const mockPrimaryValue2 = "mock-value-2";
+      const mockTableName = "mock-table-name";
+      const mockEventSourceArn = `arn:aws:dynamodb:us-east-1:123467890:table/${mockTableName}/stream/2024-11-19T16:00:00.000`;
+
+      it("processes Dynamo record with one primary key correctly", () => {
+        const event = {
+          Records: [
+            {
+              dynamodb: {
+                Keys: {
+                  mockPrimaryKey1: {
+                    S: mockPrimaryValue1,
+                  },
+                },
+              },
+              eventName: "INSERT",
+              eventSourceARN: mockEventSourceArn,
+            },
+          ],
+        };
+
+        const expected: SpanPointerAttributes[] = [
+          {
+            kind: DYNAMODB_PTR_KIND,
+            direction: SPAN_POINTER_DIRECTION.UPSTREAM,
+            hash: mockPointerHash,
+          },
+        ];
+
+        const result = getSpanPointerAttributes(eventTypes.dynamoDB, event);
+        expect(result).toEqual(expected);
+        expect(util.generatePointerHash).toHaveBeenCalledWith([
+          mockTableName,
+          mockPrimaryKey1,
+          mockPrimaryValue1,
+          "",
+          "",
+        ]);
+      });
+
+      it("processes Dynamo record with two primary keys correctly", () => {
+        const event = {
+          Records: [
+            {
+              dynamodb: {
+                Keys: {
+                  mockPrimaryKey1: {
+                    S: mockPrimaryValue1,
+                  },
+                  mockPrimaryKey2: {
+                    S: mockPrimaryValue2,
+                  },
+                },
+              },
+              eventName: "MODIFY",
+              eventSourceARN: mockEventSourceArn,
+            },
+          ],
+        };
+
+        const expected: SpanPointerAttributes[] = [
+          {
+            kind: DYNAMODB_PTR_KIND,
+            direction: SPAN_POINTER_DIRECTION.UPSTREAM,
+            hash: mockPointerHash,
+          },
+          {
+            kind: DYNAMODB_PTR_KIND,
+            direction: SPAN_POINTER_DIRECTION.UPSTREAM,
+            hash: mockPointerHash,
+          },
+        ];
+
+        const result = getSpanPointerAttributes(eventTypes.dynamoDB, event);
+        expect(result).toEqual(expected);
+        expect(util.generatePointerHash).toHaveBeenCalledWith([
+          mockTableName,
+          mockPrimaryKey1,
+          mockPrimaryValue1,
+          mockPrimaryKey2,
+          mockPrimaryValue2,
+        ]);
+      });
+
+      it("processes multiple DynamoDB records correctly", () => {
+        const event = {
+          Records: [
+            {
+              dynamodb: {
+                Keys: {
+                  mockPrimaryKey1: {
+                    S: mockPrimaryValue1,
+                  },
+                },
+              },
+              eventName: "MODIFY",
+              eventSourceARN: mockEventSourceArn,
+            },
+            {
+              dynamodb: {
+                Keys: {
+                  mockPrimaryKey2: {
+                    S: mockPrimaryValue2,
+                  },
+                },
+              },
+              eventName: "DELETE",
+              eventSourceARN: mockEventSourceArn,
+            },
+          ],
+        };
+
+        const expected: SpanPointerAttributes[] = [
+          {
+            kind: S3_PTR_KIND,
+            direction: SPAN_POINTER_DIRECTION.UPSTREAM,
+            hash: mockPointerHash,
+          },
+          {
+            kind: S3_PTR_KIND,
+            direction: SPAN_POINTER_DIRECTION.UPSTREAM,
+            hash: mockPointerHash,
+          },
+        ];
+
+        const result = getSpanPointerAttributes(eventTypes.s3, event);
+        expect(result).toEqual(expected);
+        expect(util.generatePointerHash).toHaveBeenCalledWith([
+          mockTableName,
+          mockPrimaryKey1,
+          mockPrimaryValue1,
+          mockPrimaryKey2,
+          mockPrimaryValue2,
+        ]);
+      });
+
+      it("handles empty Records array", () => {
+        const event = { Records: [] };
+        const result = getSpanPointerAttributes(eventTypes.dynamoDB, event);
+        expect(result).toEqual([]);
+      });
+
+      it("handles missing Records property", () => {
+        const event = {};
+        const result = getSpanPointerAttributes(eventTypes.dynamoDB, event);
+        expect(result).toEqual([]);
+      });
+
+      it("skips invalid records but processes valid ones", () => {
+        const event = {
+          Records: [
+            {
+              // Invalid record missing s3 property
+            },
+            {
+              dynamodb: {
+                Keys: {
+                  mockPrimaryKey1: {
+                    S: mockPrimaryValue1,
+                  },
+                },
+              },
+              eventName: "MODIFY",
+              eventSourceARN: mockEventSourceArn,
+            },
+          ],
+        };
+
+        const expected: SpanPointerAttributes[] = [
+          {
+            kind: S3_PTR_KIND,
+            direction: SPAN_POINTER_DIRECTION.UPSTREAM,
+            hash: mockPointerHash,
+          },
+        ];
+
+        const result = getSpanPointerAttributes(eventTypes.s3, event);
+        expect(result).toEqual(expected);
+        expect(util.generatePointerHash).toHaveBeenCalledWith([
+          mockTableName,
+          mockPrimaryKey1,
+          mockPrimaryValue1,
+          "",
+          "",
+        ]);
       });
     });
   });
