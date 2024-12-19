@@ -739,10 +739,10 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@datadog/libdatadog@^0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@datadog/libdatadog/-/libdatadog-0.2.2.tgz#ac02c76ac9a38250dca740727c7cdf00244ce3d3"
-  integrity sha512-rTWo96mEPTY5UbtGoFj8/wY0uKSViJhsPg/Z6aoFWBFXQ8b45Ix2e/yvf92AAwrhG+gPLTxEqTXh3kef2dP8Ow==
+"@datadog/libdatadog@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@datadog/libdatadog/-/libdatadog-0.3.0.tgz#2fc1e2695872840bc8c356f66acf675da428d6f0"
+  integrity sha512-TbP8+WyXfh285T17FnLeLUOPl4SbkRYMqKgcmknID2mXHNrbt5XJgW9bnDgsrrtu31Q7FjWWw2WolgRLWyzLRA==
 
 "@datadog/native-appsec@8.3.0":
   version "8.3.0"
@@ -751,10 +751,10 @@
   dependencies:
     node-gyp-build "^3.9.0"
 
-"@datadog/native-iast-rewriter@2.5.0":
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/@datadog/native-iast-rewriter/-/native-iast-rewriter-2.5.0.tgz#b613defe86e78168f750d1f1662d4ffb3cf002e6"
-  integrity sha512-WRu34A3Wwp6oafX8KWNAbedtDaaJO+nzfYQht7pcJKjyC2ggfPeF7SoP+eDo9wTn4/nQwEOscSR4hkJqTRlpXQ==
+"@datadog/native-iast-rewriter@2.6.1":
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/@datadog/native-iast-rewriter/-/native-iast-rewriter-2.6.1.tgz#5e5393628c73c57dcf08256299c0e8cf71deb14f"
+  integrity sha512-zv7cr/MzHg560jhAnHcO7f9pLi4qaYrBEcB+Gla0xkVouYSDsp8cGXIGG4fiGdAMHdt7SpDNS6+NcEAqD/v8Ig==
   dependencies:
     lru-cache "^7.14.0"
     node-gyp-build "^4.5.0"
@@ -766,10 +766,10 @@
   dependencies:
     node-gyp-build "^3.9.0"
 
-"@datadog/native-metrics@^3.0.1":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@datadog/native-metrics/-/native-metrics-3.0.1.tgz#dc276c93785c0377a048e316f23b7c8ff3acfa84"
-  integrity sha512-0GuMyYyXf+Qpb/F+Fcekz58f2mO37lit9U3jMbWY/m8kac44gCPABzL5q3gWbdH+hWgqYfQoEYsdNDGSrKfwoQ==
+"@datadog/native-metrics@^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@datadog/native-metrics/-/native-metrics-3.1.0.tgz#c2378841accd9fdd6866d0e49bdf6e3d76e79f22"
+  integrity sha512-yOBi4x0OQRaGNPZ2bx9TGvDIgEdQ8fkudLTFAe7gEM1nAlvFmbE5YfpH8WenEtTSEBwojSau06m2q7axtEEmCg==
   dependencies:
     node-addon-api "^6.1.0"
     node-gyp-build "^3.9.0"
@@ -2103,16 +2103,16 @@ dc-polyfill@^0.1.3, dc-polyfill@^0.1.4:
   resolved "https://registry.yarnpkg.com/dc-polyfill/-/dc-polyfill-0.1.6.tgz#c2940fa68ffb24a7bf127cc6cfdd15b39f0e7f02"
   integrity sha512-UV33cugmCC49a5uWAApM+6Ev9ZdvIUMTrtCO9fj96TPGOQiea54oeO3tiEVdVeo3J9N2UdJEmbS4zOkkEA35uQ==
 
-dd-trace@^4.50.0:
-  version "4.50.0"
-  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-4.50.0.tgz#bddd46fba44414fcb199d7c76f406d885fc17a8c"
-  integrity sha512-3aEM4aEE4hqaG2gbcn6z/+YZ+pggBZYcZ7FOjh77KOoelShjRW1FlQ+mLs2Y8X5m03xqWY1Uv20yy9QkUNBKnQ==
+dd-trace@^4.53.0:
+  version "4.53.0"
+  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-4.53.0.tgz#40636982dba4093490a207d93b8c828b4cd98ef8"
+  integrity sha512-O+avRjowULaLBMelCdQrDqSOdoc7Ux+nz1aG/GomHlPmJxFpXw/5baV/ICNpfsJ/QQFwWcxI+f62WRfolJl2BQ==
   dependencies:
-    "@datadog/libdatadog" "^0.2.2"
+    "@datadog/libdatadog" "^0.3.0"
     "@datadog/native-appsec" "8.3.0"
-    "@datadog/native-iast-rewriter" "2.5.0"
+    "@datadog/native-iast-rewriter" "2.6.1"
     "@datadog/native-iast-taint-tracking" "3.2.0"
-    "@datadog/native-metrics" "^3.0.1"
+    "@datadog/native-metrics" "^3.1.0"
     "@datadog/pprof" "5.4.1"
     "@datadog/sketches-js" "^2.1.0"
     "@isaacs/ttlcache" "^1.4.1"
@@ -2122,7 +2122,6 @@ dd-trace@^4.50.0:
     dc-polyfill "^0.1.4"
     ignore "^5.2.4"
     import-in-the-middle "1.11.2"
-    int64-buffer "^0.1.9"
     istanbul-lib-coverage "3.2.0"
     jest-docblock "^29.7.0"
     koalas "^1.0.2"
@@ -2130,15 +2129,15 @@ dd-trace@^4.50.0:
     lodash.sortby "^4.7.0"
     lru-cache "^7.14.0"
     module-details-from-path "^1.0.3"
-    msgpack-lite "^0.1.26"
     opentracing ">=0.12.1"
-    path-to-regexp "^0.1.10"
+    path-to-regexp "^0.1.12"
     pprof-format "^2.1.0"
     protobufjs "^7.2.5"
     retry "^0.13.1"
     rfdc "^1.3.1"
     semver "^7.5.4"
     shell-quote "^1.8.1"
+    source-map "^0.7.4"
     tlhunter-sorted-set "^0.1.0"
 
 debug@4, debug@^4.1.0, debug@^4.1.1, debug@^4.3.1:
@@ -2288,11 +2287,6 @@ esutils@^2.0.2:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/esutils/-/esutils-2.0.3.tgz#74d2eb4de0b8da1293711910d50775b9b710ef64"
   integrity sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==
-
-event-lite@^0.1.1:
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/event-lite/-/event-lite-0.1.3.tgz#3dfe01144e808ac46448f0c19b4ab68e403a901d"
-  integrity sha512-8qz9nOz5VeD2z96elrEKD2U433+L3DWdUdDkOINLGOJvx1GsMBbMn0aCeu28y8/e85A6mCigBiFlYMnTBEGlSw==
 
 events@1.1.1:
   version "1.1.1"
@@ -2553,7 +2547,7 @@ ieee754@1.1.13:
   resolved "https://registry.yarnpkg.com/ieee754/-/ieee754-1.1.13.tgz#ec168558e95aa181fd87d37f55c32bbcb6708b84"
   integrity sha512-4vf7I2LYV/HaWerSo3XmlMkp5eZ83i+/CDluXi/IGTs/O1sejBNhTtnxzmRZfvOUqj7lZjqHkeTvpgSFDlWZTg==
 
-ieee754@^1.1.4, ieee754@^1.1.8:
+ieee754@^1.1.4:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/ieee754/-/ieee754-1.2.1.tgz#8eb7a10a63fff25d15a57b001586d177d1b0d352"
   integrity sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==
@@ -2598,11 +2592,6 @@ inherits@2, inherits@^2.0.3:
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/inherits/-/inherits-2.0.4.tgz#0fa2c64f932917c3433a0ded55363aae37416b7c"
   integrity sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==
-
-int64-buffer@^0.1.9:
-  version "0.1.10"
-  resolved "https://registry.yarnpkg.com/int64-buffer/-/int64-buffer-0.1.10.tgz#277b228a87d95ad777d07c13832022406a473423"
-  integrity sha512-v7cSY1J8ydZ0GyjUHqF+1bshJ6cnEVLo9EnjB8p+4HDRPZc9N5jjmvUV7NvEsqQOKyH0pmIBFWXVQbiS0+OBbA==
 
 is-arguments@^1.0.4:
   version "1.1.1"
@@ -3375,16 +3364,6 @@ ms@^2.1.3:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.3.tgz#574c8138ce1d2b5861f0b44579dbadd60c6615b2"
   integrity sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==
 
-msgpack-lite@^0.1.26:
-  version "0.1.26"
-  resolved "https://registry.yarnpkg.com/msgpack-lite/-/msgpack-lite-0.1.26.tgz#dd3c50b26f059f25e7edee3644418358e2a9ad89"
-  integrity sha512-SZ2IxeqZ1oRFGo0xFGbvBJWMp3yLIY9rlIJyxy8CGrwZn1f0ZK4r6jV/AM1r0FZMDUkWkglOk/eeKIL9g77Nxw==
-  dependencies:
-    event-lite "^0.1.1"
-    ieee754 "^1.1.8"
-    int64-buffer "^0.1.9"
-    isarray "^1.0.0"
-
 nan@^2.16.0:
   version "2.22.0"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.22.0.tgz#31bc433fc33213c97bad36404bb68063de604de3"
@@ -3526,10 +3505,10 @@ path-parse@^1.0.7:
   resolved "https://registry.yarnpkg.com/path-parse/-/path-parse-1.0.7.tgz#fbc114b60ca42b30d9daf5858e4bd68bbedb6735"
   integrity sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==
 
-path-to-regexp@^0.1.10:
-  version "0.1.11"
-  resolved "https://registry.yarnpkg.com/path-to-regexp/-/path-to-regexp-0.1.11.tgz#a527e662c89efc4646dbfa8100bf3e847e495761"
-  integrity sha512-c0t+KCuUkO/YDLPG4WWzEwx3J5F/GHXsD1h/SNZfySqAIKe/BaP95x8fWtOfRJokpS5yYHRJjMtYlXD8jxnpbw==
+path-to-regexp@^0.1.12:
+  version "0.1.12"
+  resolved "https://registry.yarnpkg.com/path-to-regexp/-/path-to-regexp-0.1.12.tgz#d5e1a12e478a976d432ef3c58d534b9923164bb7"
+  integrity sha512-RA1GjUVMnvYFxuqovrEqZoxxW5NUZqbwKtYz/Tt7nXerk0LbLblQmrsgdeOxV5SFHf0UDggjS/bSeOZwt1pmEQ==
 
 picocolors@^1.0.0, picocolors@^1.1.0:
   version "1.1.1"
