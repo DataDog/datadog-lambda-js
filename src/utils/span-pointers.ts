@@ -38,7 +38,7 @@ function processS3Event(event: any): SpanPointerAttributes[] {
   let generatePointerHash;
   try {
     const constants = require("dd-trace/packages/dd-trace/src/constants");
-    const util = require("dd-trace/packages/dd-trace/src/util");
+    const util = require("dd-trace/packages/datadog-plugin-aws-sdk/src/util");
 
     ({ S3_PTR_KIND, SPAN_POINTER_DIRECTION } = constants);
     ({ generatePointerHash } = util);
