@@ -19,6 +19,19 @@ XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed APIGat
 HTTP POST https://api.datadoghq.com/api/v1/distribution_points?api_key=XXXX TraceHeaders: ["x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
 END Duration: XXXX ms (init: XXXX ms) Memory Used: XXXX MB
 START
+XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] {"status":"error","message":"datadog:can't send metrics, datadog lambda handler not set up."}
+XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed undefined request
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] {"status":"error","message":"datadog:can't send metrics, datadog lambda handler not set up."}
+XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed undefined request
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] {"status":"error","message":"datadog:can't send metrics, datadog lambda handler not set up."}
+XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed undefined request
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed undefined request
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -34,10 +47,10 @@ START
   ],
   "v": 1
 }
-XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed undefined request
 HTTP POST https://api.datadoghq.com/api/v1/distribution_points?api_key=XXXX TraceHeaders: ["x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
 END Duration: XXXX ms Memory Used: XXXX MB
 START
+XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed undefined request
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -53,7 +66,6 @@ START
   ],
   "v": 1
 }
-XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed undefined request
 HTTP POST https://api.datadoghq.com/api/v1/distribution_points?api_key=XXXX TraceHeaders: ["x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
 END Duration: XXXX ms Memory Used: XXXX MB
 START
@@ -95,7 +107,6 @@ XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SNS re
 HTTP POST https://api.datadoghq.com/api/v1/distribution_points?api_key=XXXX TraceHeaders: ["x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
 END Duration: XXXX ms Memory Used: XXXX MB
 START
-XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SQS request
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -111,5 +122,6 @@ XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SQS re
   ],
   "v": 1
 }
+XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SQS request
 HTTP POST https://api.datadoghq.com/api/v1/distribution_points?api_key=XXXX TraceHeaders: ["x-datadog-parent-id:XXXX","x-datadog-sampling-priority:-1","x-datadog-trace-id:XXXX"]
 END Duration: XXXX ms Memory Used: XXXX MB
