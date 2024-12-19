@@ -218,11 +218,6 @@ describe("span-pointers utils", () => {
             direction: SPAN_POINTER_DIRECTION.UPSTREAM,
             hash: mockPointerHash,
           },
-          {
-            kind: DYNAMODB_PTR_KIND,
-            direction: SPAN_POINTER_DIRECTION.UPSTREAM,
-            hash: mockPointerHash,
-          },
         ];
 
         const result = getSpanPointerAttributes(eventTypes.dynamoDB, event);
@@ -258,7 +253,7 @@ describe("span-pointers utils", () => {
                   },
                 },
               },
-              eventName: "DELETE",
+              eventName: "REMOVE",
               eventSourceARN: mockEventSourceArn,
             },
           ],
@@ -266,25 +261,32 @@ describe("span-pointers utils", () => {
 
         const expected: SpanPointerAttributes[] = [
           {
-            kind: S3_PTR_KIND,
+            kind: DYNAMODB_PTR_KIND,
             direction: SPAN_POINTER_DIRECTION.UPSTREAM,
             hash: mockPointerHash,
           },
           {
-            kind: S3_PTR_KIND,
+            kind: DYNAMODB_PTR_KIND,
             direction: SPAN_POINTER_DIRECTION.UPSTREAM,
             hash: mockPointerHash,
           },
         ];
 
-        const result = getSpanPointerAttributes(eventTypes.s3, event);
+        const result = getSpanPointerAttributes(eventTypes.dynamoDB, event);
         expect(result).toEqual(expected);
         expect(util.generatePointerHash).toHaveBeenCalledWith([
           mockTableName,
           "someKey1",
           Buffer.from(mockPrimaryValue1),
+          "",
+          "",
+        ]);
+        expect(util.generatePointerHash).toHaveBeenCalledWith([
+          mockTableName,
           "someKey2",
           Buffer.from(mockPrimaryValue2),
+          "",
+          "",
         ]);
       });
 
@@ -304,7 +306,7 @@ describe("span-pointers utils", () => {
         const event = {
           Records: [
             {
-              // Invalid record missing s3 property
+              // Invalid record missing dynamodb property
             },
             {
               dynamodb: {
@@ -322,13 +324,13 @@ describe("span-pointers utils", () => {
 
         const expected: SpanPointerAttributes[] = [
           {
-            kind: S3_PTR_KIND,
+            kind: DYNAMODB_PTR_KIND,
             direction: SPAN_POINTER_DIRECTION.UPSTREAM,
             hash: mockPointerHash,
           },
         ];
 
-        const result = getSpanPointerAttributes(eventTypes.s3, event);
+        const result = getSpanPointerAttributes(eventTypes.dynamoDB, event);
         expect(result).toEqual(expected);
         expect(util.generatePointerHash).toHaveBeenCalledWith([
           mockTableName,
