@@ -1,0 +1,23 @@
+{
+  "Records": [
+    {
+      "eventID": "0123456789abcdef09123456789abcdef",
+      "eventName": "REMOVE",
+      "eventVersion": "1.1",
+      "eventSource": "aws:dynamodb",
+      "awsRegion": "us-east-1",
+      "dynamodb": {
+        "ApproximateCreationDateTime": 1734555118,
+        "Keys": {
+          "someKeyColumnName": {
+            "S": "someValue"
+          }
+        },
+        "SequenceNumber": "123456789012345678901234567",
+        "SizeBytes": 37,
+        "StreamViewType": "KEYS_ONLY"
+      },
+      "eventSourceARN": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000"
+    }
+  ]
+}

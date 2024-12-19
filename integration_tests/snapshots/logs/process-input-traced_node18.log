@@ -187,6 +187,462 @@ START
         "trace_id":"XXXX",
         "span_id":"XXXX",
         "parent_id":"XXXX",
+        "name": "aws.dynamodb",
+        "resource": "MODIFY someTableName",
+        "error": 0,
+        "meta": {
+          "_dd.p.tid": "XXXX",
+          "_dd.p.dm": "-0",
+          "service": "remappedDynamoDbServiceName",
+          "runtime-id":"XXXX",
+          "operation_name": "aws.dynamodb",
+          "tablename": "someTableName",
+          "resource_names": "MODIFY someTableName",
+          "request_id":"XXXX",
+          "_inferred_span.tag_source": "self",
+          "_inferred_span.synchronicity": "async",
+          "event_name": "MODIFY",
+          "event_version": "1.1",
+          "event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
+          "event_id": "0123456789abcdef09123456789abcdef",
+          "stream_view_type": "KEYS_ONLY",
+          "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node18",
+          "language": "javascript"
+        },
+        "metrics": {
+          "_dd.agent_psr": 1,
+          "_dd.top_level": 1,
+          "size_bytes": 37,
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "links": [],
+        "service": "remappedDynamoDbServiceName",
+        "type": "web"
+      },
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "aws.lambda",
+        "resource": "integration-tests-js-XXXX-process-input-traced_node18",
+        "error": 0,
+        "meta": {
+          "_dd.span_links": "[{\"trace_id\":\"00000000000000000000000000000000\",\"span_id\":\"0000000000000000\",\"attributes\":{\"ptr.kind\":\"aws.dynamodb.item\",\"ptr.dir\":\"u\",\"ptr.hash\":\"a23821b540813527937fbe833d70a005\",\"link.kind\":\"span-pointer\"}}]",
+          "service": "integration-tests-js-XXXX-process-input-traced_node18",
+          "version": "1.0.0",
+          "runtime-id":"XXXX",
+          "function_arn":"XXXX_node18",
+          "function_version": "$LATEST",
+          "request_id":"XXXX",
+          "resource_names": "integration-tests-js-XXXX-process-input-traced_node18",
+          "functionname": "integration-tests-js-XXXX-process-input-traced_node18",
+          "datadog_lambda":"XXXX",
+          "function_trigger.event_source": "dynamodb",
+          "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
+          "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node18",
+          "language": "javascript"
+        },
+        "metrics": {
+          "cold_start": 0,
+          "_dd.measured": 1,
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "links": [],
+        "service": "aws.lambda",
+        "type": "serverless"
+      },
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "getRecordIds",
+        "resource": "getRecordIds",
+        "error": 0,
+        "meta": {
+          "service": "integration-tests-js-XXXX-process-input-traced_node18",
+          "version": "1.0.0",
+          "runtime-id":"XXXX",
+          "language": "javascript"
+        },
+        "metrics": {
+          "_dd.measured": 1,
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "links": [],
+        "service": "integration-tests-js-XXXX-process-input-traced_node18"
+      },
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "getAPIGatewayRequestId",
+        "resource": "getAPIGatewayRequestId",
+        "error": 0,
+        "meta": {
+          "service": "integration-tests-js-XXXX-process-input-traced_node18",
+          "version": "1.0.0",
+          "runtime-id":"XXXX",
+          "language": "javascript"
+        },
+        "metrics": {
+          "_dd.measured": 1,
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "links": [],
+        "service": "integration-tests-js-XXXX-process-input-traced_node18"
+      }
+    ]
+  ]
+}
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-process-input-traced_node18",
+    "resource:integration-tests-js-XXXX-process-input-traced_node18",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs18.x"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "serverless.integration_test.execution",
+  "t": [
+    "function:process-input-traced",
+    "dd_lambda_layer:datadog-nodev18.XX.X"
+  ],
+  "v": 1
+}
+{
+  "traces": [
+    [
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "aws.dynamodb",
+        "resource": "REMOVE someTableName",
+        "error": 0,
+        "meta": {
+          "_dd.p.tid": "XXXX",
+          "_dd.p.dm": "-0",
+          "service": "remappedDynamoDbServiceName",
+          "runtime-id":"XXXX",
+          "operation_name": "aws.dynamodb",
+          "tablename": "someTableName",
+          "resource_names": "REMOVE someTableName",
+          "request_id":"XXXX",
+          "_inferred_span.tag_source": "self",
+          "_inferred_span.synchronicity": "async",
+          "event_name": "REMOVE",
+          "event_version": "1.1",
+          "event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
+          "event_id": "0123456789abcdef09123456789abcdef",
+          "stream_view_type": "KEYS_ONLY",
+          "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node18",
+          "language": "javascript"
+        },
+        "metrics": {
+          "_dd.agent_psr": 1,
+          "_dd.top_level": 1,
+          "size_bytes": 37,
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "links": [],
+        "service": "remappedDynamoDbServiceName",
+        "type": "web"
+      },
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "aws.lambda",
+        "resource": "integration-tests-js-XXXX-process-input-traced_node18",
+        "error": 0,
+        "meta": {
+          "_dd.span_links": "[{\"trace_id\":\"00000000000000000000000000000000\",\"span_id\":\"0000000000000000\",\"attributes\":{\"ptr.kind\":\"aws.dynamodb.item\",\"ptr.dir\":\"u\",\"ptr.hash\":\"a23821b540813527937fbe833d70a005\",\"link.kind\":\"span-pointer\"}}]",
+          "service": "integration-tests-js-XXXX-process-input-traced_node18",
+          "version": "1.0.0",
+          "runtime-id":"XXXX",
+          "function_arn":"XXXX_node18",
+          "function_version": "$LATEST",
+          "request_id":"XXXX",
+          "resource_names": "integration-tests-js-XXXX-process-input-traced_node18",
+          "functionname": "integration-tests-js-XXXX-process-input-traced_node18",
+          "datadog_lambda":"XXXX",
+          "function_trigger.event_source": "dynamodb",
+          "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
+          "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node18",
+          "language": "javascript"
+        },
+        "metrics": {
+          "cold_start": 0,
+          "_dd.measured": 1,
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "links": [],
+        "service": "aws.lambda",
+        "type": "serverless"
+      },
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "getRecordIds",
+        "resource": "getRecordIds",
+        "error": 0,
+        "meta": {
+          "service": "integration-tests-js-XXXX-process-input-traced_node18",
+          "version": "1.0.0",
+          "runtime-id":"XXXX",
+          "language": "javascript"
+        },
+        "metrics": {
+          "_dd.measured": 1,
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "links": [],
+        "service": "integration-tests-js-XXXX-process-input-traced_node18"
+      },
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "getAPIGatewayRequestId",
+        "resource": "getAPIGatewayRequestId",
+        "error": 0,
+        "meta": {
+          "service": "integration-tests-js-XXXX-process-input-traced_node18",
+          "version": "1.0.0",
+          "runtime-id":"XXXX",
+          "language": "javascript"
+        },
+        "metrics": {
+          "_dd.measured": 1,
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "links": [],
+        "service": "integration-tests-js-XXXX-process-input-traced_node18"
+      }
+    ]
+  ]
+}
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-process-input-traced_node18",
+    "resource:integration-tests-js-XXXX-process-input-traced_node18",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs18.x"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "serverless.integration_test.execution",
+  "t": [
+    "function:process-input-traced",
+    "dd_lambda_layer:datadog-nodev18.XX.X"
+  ],
+  "v": 1
+}
+{
+  "traces": [
+    [
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "aws.dynamodb",
+        "resource": "INSERT someTableName",
+        "error": 0,
+        "meta": {
+          "_dd.p.tid": "XXXX",
+          "_dd.p.dm": "-0",
+          "service": "remappedDynamoDbServiceName",
+          "runtime-id":"XXXX",
+          "operation_name": "aws.dynamodb",
+          "tablename": "someTableName",
+          "resource_names": "INSERT someTableName",
+          "request_id":"XXXX",
+          "_inferred_span.tag_source": "self",
+          "_inferred_span.synchronicity": "async",
+          "event_name": "INSERT",
+          "event_version": "1.1",
+          "event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
+          "event_id": "0123456789abcdef09123456789abcdef",
+          "stream_view_type": "KEYS_ONLY",
+          "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node18",
+          "language": "javascript"
+        },
+        "metrics": {
+          "_dd.agent_psr": 1,
+          "_dd.top_level": 1,
+          "size_bytes": 37,
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "links": [],
+        "service": "remappedDynamoDbServiceName",
+        "type": "web"
+      },
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "aws.lambda",
+        "resource": "integration-tests-js-XXXX-process-input-traced_node18",
+        "error": 0,
+        "meta": {
+          "_dd.span_links": "[{\"trace_id\":\"00000000000000000000000000000000\",\"span_id\":\"0000000000000000\",\"attributes\":{\"ptr.kind\":\"aws.dynamodb.item\",\"ptr.dir\":\"u\",\"ptr.hash\":\"843472b4a65c45fcc3f14939c6cae6d1\",\"link.kind\":\"span-pointer\"}}]",
+          "service": "integration-tests-js-XXXX-process-input-traced_node18",
+          "version": "1.0.0",
+          "runtime-id":"XXXX",
+          "function_arn":"XXXX_node18",
+          "function_version": "$LATEST",
+          "request_id":"XXXX",
+          "resource_names": "integration-tests-js-XXXX-process-input-traced_node18",
+          "functionname": "integration-tests-js-XXXX-process-input-traced_node18",
+          "datadog_lambda":"XXXX",
+          "function_trigger.event_source": "dynamodb",
+          "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
+          "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node18",
+          "language": "javascript"
+        },
+        "metrics": {
+          "cold_start": 0,
+          "_dd.measured": 1,
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "links": [],
+        "service": "aws.lambda",
+        "type": "serverless"
+      },
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "getRecordIds",
+        "resource": "getRecordIds",
+        "error": 0,
+        "meta": {
+          "service": "integration-tests-js-XXXX-process-input-traced_node18",
+          "version": "1.0.0",
+          "runtime-id":"XXXX",
+          "language": "javascript"
+        },
+        "metrics": {
+          "_dd.measured": 1,
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "links": [],
+        "service": "integration-tests-js-XXXX-process-input-traced_node18"
+      },
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
+        "name": "getAPIGatewayRequestId",
+        "resource": "getAPIGatewayRequestId",
+        "error": 0,
+        "meta": {
+          "service": "integration-tests-js-XXXX-process-input-traced_node18",
+          "version": "1.0.0",
+          "runtime-id":"XXXX",
+          "language": "javascript"
+        },
+        "metrics": {
+          "_dd.measured": 1,
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
+        },
+        "start":XXXX,
+        "duration":XXXX,
+        "links": [],
+        "service": "integration-tests-js-XXXX-process-input-traced_node18"
+      }
+    ]
+  ]
+}
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-process-input-traced_node18",
+    "resource:integration-tests-js-XXXX-process-input-traced_node18",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs18.x"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "serverless.integration_test.execution",
+  "t": [
+    "function:process-input-traced",
+    "dd_lambda_layer:datadog-nodev18.XX.X"
+  ],
+  "v": 1
+}
+{
+  "traces": [
+    [
+      {
+        "trace_id":"XXXX",
+        "span_id":"XXXX",
+        "parent_id":"XXXX",
         "name": "aws.s3",
         "resource": "my-bucket-name",
         "error": 0,
