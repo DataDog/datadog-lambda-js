@@ -151,11 +151,9 @@ describe("span-pointers utils", () => {
     });
 
     describe("DynamoDB event processing", () => {
-      const mockPrimaryKey1 = "mock-key-1";
-      const mockPrimaryValue1 = "mock-value-1";
-      const mockPrimaryKey2 = "mock-key-2";
-      const mockPrimaryValue2 = "mock-value-2";
-      const mockTableName = "mock-table-name";
+      const mockPrimaryValue1 = "mockPrimaryValue1";
+      const mockPrimaryValue2 = "mockPrimaryValue2";
+      const mockTableName = "mockTableName";
       const mockEventSourceArn = `arn:aws:dynamodb:us-east-1:123467890:table/${mockTableName}/stream/2024-11-19T16:00:00.000`;
 
       it("processes Dynamo record with one primary key correctly", () => {
@@ -164,7 +162,7 @@ describe("span-pointers utils", () => {
             {
               dynamodb: {
                 Keys: {
-                  mockPrimaryKey1: {
+                  someKey1: {
                     S: mockPrimaryValue1,
                   },
                 },
@@ -187,8 +185,8 @@ describe("span-pointers utils", () => {
         expect(result).toEqual(expected);
         expect(util.generatePointerHash).toHaveBeenCalledWith([
           mockTableName,
-          mockPrimaryKey1,
-          mockPrimaryValue1,
+          "someKey1",
+          Buffer.from(mockPrimaryValue1),
           "",
           "",
         ]);
@@ -200,10 +198,10 @@ describe("span-pointers utils", () => {
             {
               dynamodb: {
                 Keys: {
-                  mockPrimaryKey1: {
+                  someKey1: {
                     S: mockPrimaryValue1,
                   },
-                  mockPrimaryKey2: {
+                  someKey2: {
                     S: mockPrimaryValue2,
                   },
                 },
@@ -231,10 +229,10 @@ describe("span-pointers utils", () => {
         expect(result).toEqual(expected);
         expect(util.generatePointerHash).toHaveBeenCalledWith([
           mockTableName,
-          mockPrimaryKey1,
-          mockPrimaryValue1,
-          mockPrimaryKey2,
-          mockPrimaryValue2,
+          "someKey1",
+          Buffer.from(mockPrimaryValue1),
+          "someKey2",
+          Buffer.from(mockPrimaryValue2),
         ]);
       });
 
@@ -244,7 +242,7 @@ describe("span-pointers utils", () => {
             {
               dynamodb: {
                 Keys: {
-                  mockPrimaryKey1: {
+                  someKey1: {
                     S: mockPrimaryValue1,
                   },
                 },
@@ -255,7 +253,7 @@ describe("span-pointers utils", () => {
             {
               dynamodb: {
                 Keys: {
-                  mockPrimaryKey2: {
+                  someKey2: {
                     S: mockPrimaryValue2,
                   },
                 },
@@ -283,10 +281,10 @@ describe("span-pointers utils", () => {
         expect(result).toEqual(expected);
         expect(util.generatePointerHash).toHaveBeenCalledWith([
           mockTableName,
-          mockPrimaryKey1,
-          mockPrimaryValue1,
-          mockPrimaryKey2,
-          mockPrimaryValue2,
+          "someKey1",
+          Buffer.from(mockPrimaryValue1),
+          "someKey2",
+          Buffer.from(mockPrimaryValue2),
         ]);
       });
 
@@ -311,7 +309,7 @@ describe("span-pointers utils", () => {
             {
               dynamodb: {
                 Keys: {
-                  mockPrimaryKey1: {
+                  someKey1: {
                     S: mockPrimaryValue1,
                   },
                 },
@@ -334,8 +332,8 @@ describe("span-pointers utils", () => {
         expect(result).toEqual(expected);
         expect(util.generatePointerHash).toHaveBeenCalledWith([
           mockTableName,
-          mockPrimaryKey1,
-          mockPrimaryValue1,
+          "someKey1",
+          Buffer.from(mockPrimaryValue1),
           "",
           "",
         ]);
