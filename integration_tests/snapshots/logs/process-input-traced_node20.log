@@ -158,6 +158,21 @@ END Duration: XXXX ms (init: XXXX ms) Memory Used: XXXX MB
 START
 {
   "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-process-input-traced_node20",
+    "resource:integration-tests-js-XXXX-process-input-traced_node20",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs20.x"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
   "m": "serverless.integration_test.execution",
   "t": [
     "function:process-input-traced",
@@ -215,6 +230,7 @@ START
         "resource": "integration-tests-js-XXXX-process-input-traced_node20",
         "error": 0,
         "meta": {
+          "_dd.span_links": "[{\"trace_id\":\"00000000000000000000000000000000\",\"span_id\":\"0000000000000000\",\"attributes\":{\"ptr.kind\":\"aws.dynamodb.item\",\"ptr.dir\":\"u\",\"ptr.hash\":\"a23821b540813527937fbe833d70a005\",\"link.kind\":\"span-pointer\"}}]",
           "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
           "runtime-id":"XXXX",
@@ -292,7 +308,21 @@ START
 }
 END Duration: XXXX ms Memory Used: XXXX MB
 START
-END Duration: XXXX ms Memory Used: XXXX MB
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-process-input-traced_node20",
+    "resource:integration-tests-js-XXXX-process-input-traced_node20",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs20.x"
+  ],
+  "v": 1
+}
 {
   "e": XXXX,
   "m": "serverless.integration_test.execution",
@@ -352,6 +382,7 @@ END Duration: XXXX ms Memory Used: XXXX MB
         "resource": "integration-tests-js-XXXX-process-input-traced_node20",
         "error": 0,
         "meta": {
+          "_dd.span_links": "[{\"trace_id\":\"00000000000000000000000000000000\",\"span_id\":\"0000000000000000\",\"attributes\":{\"ptr.kind\":\"aws.dynamodb.item\",\"ptr.dir\":\"u\",\"ptr.hash\":\"a23821b540813527937fbe833d70a005\",\"link.kind\":\"span-pointer\"}}]",
           "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
           "runtime-id":"XXXX",
@@ -427,7 +458,23 @@ END Duration: XXXX ms Memory Used: XXXX MB
     ]
   ]
 }
+END Duration: XXXX ms Memory Used: XXXX MB
 START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-process-input-traced_node20",
+    "resource:integration-tests-js-XXXX-process-input-traced_node20",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs20.x"
+  ],
+  "v": 1
+}
 {
   "e": XXXX,
   "m": "serverless.integration_test.execution",
@@ -487,6 +534,7 @@ START
         "resource": "integration-tests-js-XXXX-process-input-traced_node20",
         "error": 0,
         "meta": {
+          "_dd.span_links": "[{\"trace_id\":\"00000000000000000000000000000000\",\"span_id\":\"0000000000000000\",\"attributes\":{\"ptr.kind\":\"aws.dynamodb.item\",\"ptr.dir\":\"u\",\"ptr.hash\":\"843472b4a65c45fcc3f14939c6cae6d1\",\"link.kind\":\"span-pointer\"}}]",
           "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
           "runtime-id":"XXXX",

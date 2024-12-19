@@ -111,8 +111,22 @@ START
   ]
 }
 END Duration: XXXX ms (init: XXXX ms) Memory Used: XXXX MB
-
 START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-status-code-500s_node22",
+    "resource:integration-tests-js-XXXX-status-code-500s_node22",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs22.x"
+  ],
+  "v": 1
+}
 {
   "traces": [
     [
@@ -163,6 +177,7 @@ START
         "resource": "integration-tests-js-XXXX-status-code-500s_node22",
         "error": 0,
         "meta": {
+          "_dd.span_links": "[{\"trace_id\":\"00000000000000000000000000000000\",\"span_id\":\"0000000000000000\",\"attributes\":{\"ptr.kind\":\"aws.dynamodb.item\",\"ptr.dir\":\"u\",\"ptr.hash\":\"a23821b540813527937fbe833d70a005\",\"link.kind\":\"span-pointer\"}}]",
           "service": "integration-tests-js-XXXX-status-code-500s_node22",
           "version": "1.0.0",
           "runtime-id":"XXXX",
@@ -178,7 +193,7 @@ START
           "language": "javascript"
         },
         "metrics": {
-          "cold_start": 1,
+          "cold_start": 0,
           "_dd.measured": 1,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
@@ -192,8 +207,23 @@ START
     ]
   ]
 }
-END Duration: XXXX ms (init: XXXX ms) Memory Used: XXXX MB
+END Duration: XXXX ms Memory Used: XXXX MB
 START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-status-code-500s_node22",
+    "resource:integration-tests-js-XXXX-status-code-500s_node22",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs22.x"
+  ],
+  "v": 1
+}
 {
   "traces": [
     [
@@ -244,6 +274,7 @@ START
         "resource": "integration-tests-js-XXXX-status-code-500s_node22",
         "error": 0,
         "meta": {
+          "_dd.span_links": "[{\"trace_id\":\"00000000000000000000000000000000\",\"span_id\":\"0000000000000000\",\"attributes\":{\"ptr.kind\":\"aws.dynamodb.item\",\"ptr.dir\":\"u\",\"ptr.hash\":\"a23821b540813527937fbe833d70a005\",\"link.kind\":\"span-pointer\"}}]",
           "service": "integration-tests-js-XXXX-status-code-500s_node22",
           "version": "1.0.0",
           "runtime-id":"XXXX",
@@ -275,6 +306,21 @@ START
 }
 END Duration: XXXX ms Memory Used: XXXX MB
 START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-status-code-500s_node22",
+    "resource:integration-tests-js-XXXX-status-code-500s_node22",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs22.x"
+  ],
+  "v": 1
+}
 {
   "traces": [
     [
@@ -325,6 +371,7 @@ START
         "resource": "integration-tests-js-XXXX-status-code-500s_node22",
         "error": 0,
         "meta": {
+          "_dd.span_links": "[{\"trace_id\":\"00000000000000000000000000000000\",\"span_id\":\"0000000000000000\",\"attributes\":{\"ptr.kind\":\"aws.dynamodb.item\",\"ptr.dir\":\"u\",\"ptr.hash\":\"843472b4a65c45fcc3f14939c6cae6d1\",\"link.kind\":\"span-pointer\"}}]",
           "service": "integration-tests-js-XXXX-status-code-500s_node22",
           "version": "1.0.0",
           "runtime-id":"XXXX",
@@ -643,7 +690,6 @@ START
   ]
 }
 END Duration: XXXX ms Memory Used: XXXX MB
-
 START
 {
   "e": XXXX,
@@ -654,7 +700,7 @@ START
     "functionname:integration-tests-js-XXXX-status-code-500s_node22",
     "resource:integration-tests-js-XXXX-status-code-500s_node22",
     "memorysize:1024",
-    "cold_start:true",
+    "cold_start:false",
     "datadog_lambda:vX.X.X",
     "runtime:nodejs22.x"
   ],
@@ -724,7 +770,7 @@ START
           "language": "javascript"
         },
         "metrics": {
-          "cold_start": 1,
+          "cold_start": 0,
           "_dd.measured": 1,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
@@ -738,7 +784,7 @@ START
     ]
   ]
 }
-END Duration: XXXX ms (init: XXXX ms) Memory Used: XXXX MB
+END Duration: XXXX ms Memory Used: XXXX MB
 START
 {
   "e": XXXX,
