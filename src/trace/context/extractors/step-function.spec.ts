@@ -13,7 +13,6 @@ describe("StepFunctionEventTraceExtractor", () => {
         RoleArn:
           "arn:aws:iam::425362996713:role/service-role/StepFunctions-abhinav-activity-state-machine-role-22jpbgl6j",
         StartTime: "2024-12-04T19:38:04.069Z",
-        RedriveCount: 0,
       },
       State: {
         Name: "Lambda Invoke",
