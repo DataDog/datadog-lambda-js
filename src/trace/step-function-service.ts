@@ -215,7 +215,7 @@ export class StepFunctionContextService {
     if (this.isValidContextObject(event)) {
       return {
         execution_id: event.Execution.Id,
-        redrive_count: event.Execution.RedriveCount.toString(),
+        redrive_count: (event.Execution.RedriveCount ?? "0").toString(),
         state_entered_time: event.State.EnteredTime,
         state_name: event.State.Name,
       };
@@ -228,7 +228,6 @@ export class StepFunctionContextService {
   private isValidContextObject(context: any): boolean {
     return (
       typeof context?.Execution?.Id === "string" &&
-      typeof context?.Execution?.RedriveCount === "number" &&
       typeof context?.State?.EnteredTime === "string" &&
       typeof context?.State?.Name === "string"
     );

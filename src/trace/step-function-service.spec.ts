@@ -110,16 +110,6 @@ describe("StepFunctionContextService", () => {
         },
       ],
       [
-        "Execution RedriveCount is not a number",
-        {
-          ...legacyStepFunctionEvent,
-          Execution: {
-            ...legacyStepFunctionEvent.Execution,
-            RedriveCount: "0",
-          },
-        },
-      ],
-      [
         "State is not defined",
         {
           ...legacyStepFunctionEvent,
