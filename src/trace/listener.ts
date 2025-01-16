@@ -213,7 +213,7 @@ export class TraceListener {
         try {
           this.inferredSpan.span.addSpanPointer(attributes.kind, attributes.direction, attributes.hash);
         } catch (e) {
-          logDebug("Failed to add span pointer")
+          logDebug("Failed to add span pointer");
         }
       }
     }
