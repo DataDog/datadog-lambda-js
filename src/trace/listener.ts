@@ -208,9 +208,9 @@ export class TraceListener {
       }
     }
 
-    if (this.wrappedCurrentSpan && this.spanPointerAttributesList) {
+    if (this.inferredSpan && this.spanPointerAttributesList) {
       for (const attributes of this.spanPointerAttributesList) {
-        this.wrappedCurrentSpan.span.addSpanPointer(attributes.kind, attributes.direction, attributes.hash);
+        this.inferredSpan.span.addSpanPointer(attributes.kind, attributes.direction, attributes.hash);
       }
     }
     return false;
