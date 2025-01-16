@@ -69,6 +69,11 @@ export interface TraceConfig {
    * Libraries to ignore from cold start traces
    */
   coldStartTraceSkipLib: string;
+  /**
+   * Whether to enable span pointers
+   * @default true
+   */
+  addSpanPointers: boolean;
 }
 
 export class TraceListener {
@@ -137,7 +142,9 @@ export class TraceListener {
     this.triggerTags = extractTriggerTags(event, context, eventSource);
     this.stepFunctionContext = StepFunctionContextService.instance().context;
 
-    this.spanPointerAttributesList = getSpanPointerAttributes(eventSource, event);
+    if (this.config.addSpanPointers) {
+      this.spanPointerAttributesList = getSpanPointerAttributes(eventSource, event);
+    }
   }
 
   /**
