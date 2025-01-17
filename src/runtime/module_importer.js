@@ -14,7 +14,7 @@ function compileCache () {
 
     process.once('exit', () => {
         if (blobStore.isDirty()) {
-        blobStore.save()
+            blobStore.save()
         }
         nativeCompileCache.uninstall()
     })
