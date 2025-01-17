@@ -61,7 +61,7 @@ RUN find /nodejs/node_modules -name "*.cjs.map" -delete
 RUN find /nodejs/node_modules -name "*.ts.map" -delete
 RUN find /nodejs/node_modules -name "*.md" -delete
 
-# Warm up compile cache
+# Warm up v8 compile cache
 RUN node -e "require('/nodejs/node_modules/datadog-lambda-js/runtime/module_importer').initTracer()"
 
 FROM scratch
