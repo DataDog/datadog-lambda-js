@@ -43,7 +43,8 @@
     "hot-shots": "8.5.0",
     "promise-retry": "^2.0.1",
     "serialize-error": "^8.1.0",
-    "shimmer": "1.2.1"
+    "shimmer": "1.2.1",
+    "v8-compile-cache": "^2.4.0"
   },
   "jest": {
     "verbose": true,
