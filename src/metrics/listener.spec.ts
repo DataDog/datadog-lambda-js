@@ -11,8 +11,10 @@ jest.mock("hot-shots");
 
 jest.mock("aws-sdk/clients/secretsmanager", () => {
   return jest.fn().mockImplementation(() => ({
-    getSecretValue: jest.fn().mockResolvedValue({
-      SecretString: "api-key-secret",
+    getSecretValue: jest.fn().mockReturnValue({
+      promise: jest.fn().mockResolvedValue({
+        SecretString: "api-key-secret",
+      }),
     }),
   }));
 });
