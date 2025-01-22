@@ -226,8 +226,8 @@ export class MetricsListener {
         const secretsManager = new secretsClient();
         const secret = await secretsManager.getSecretValue({ SecretId: config.apiKeySecretARN }).promise();
         if (secret === undefined || secret.SecretString === undefined) {
-          console.log("=================== TODO DYLAN delete")
-          console.log({secret})
+          console.log("=================== TODO DYLAN delete");
+          console.log({ secret });
         }
         return secret.SecretString;
       } catch (error) {
