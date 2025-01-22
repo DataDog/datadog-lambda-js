@@ -224,7 +224,11 @@ export class MetricsListener {
       try {
         const secretsClient = require("aws-sdk/clients/secretsmanager");
         const secretsManager = new secretsClient();
-        const secret = await secretsManager.getSecretValue({ SecretId: config.apiKeySecretARN });
+        const secret = await secretsManager.getSecretValue({ SecretId: config.apiKeySecretARN }).promise();
+        if (secret === undefined || secret.SecretString === undefined) {
+          console.log("=================== TODO DYLAN delete")
+          console.log({secret})
+        }
         return secret.SecretString;
       } catch (error) {
         logError("couldn't get secrets manager api key", error as Error);
