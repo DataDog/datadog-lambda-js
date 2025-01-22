@@ -31,7 +31,7 @@ import { SpanOptions, TracerWrapper } from "./trace/tracer-wrapper";
 export { DatadogTraceHeaders as TraceHeaders } from "./trace/context/extractor";
 export const apiKeyEnvVar = "DD_API_KEY";
 export const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
-export const apiKeySecretARNEnvVar = "DD_API_KEY_SECRET_ARN"
+export const apiKeySecretARNEnvVar = "DD_API_KEY_SECRET_ARN";
 export const captureLambdaPayloadEnvVar = "DD_CAPTURE_LAMBDA_PAYLOAD";
 export const captureLambdaPayloadMaxDepthEnvVar = "DD_CAPTURE_LAMBDA_PAYLOAD_MAX_DEPTH";
 export const traceManagedServicesEnvVar = "DD_TRACE_MANAGED_SERVICES";

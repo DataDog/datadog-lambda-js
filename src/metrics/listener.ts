@@ -227,7 +227,7 @@ export class MetricsListener {
         const secret = await secretsManager.getSecretValue({ SecretId: config.apiKeySecretARN });
         return secret.SecretString;
       } catch (error) {
-        logError("couldn't get secrets api key", error as Error);
+        logError("couldn't get secrets manager api key", error as Error);
       }
     }
     return "";
