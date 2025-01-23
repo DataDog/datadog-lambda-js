@@ -9,6 +9,16 @@ import StatsDClient from "hot-shots";
 import { Context } from "aws-lambda";
 jest.mock("hot-shots");
 
+jest.mock("aws-sdk/clients/secretsmanager", () => {
+  return jest.fn().mockImplementation(() => ({
+    getSecretValue: jest.fn().mockReturnValue({
+      promise: jest.fn().mockResolvedValue({
+        SecretString: "api-key-secret",
+      }),
+    }),
+  }));
+});
+
 const siteURL = "example.com";
 
 class MockKMS {
@@ -34,6 +44,7 @@ describe("MetricsListener", () => {
     const listener = new MetricsListener(kms as any, {
       apiKey: "api-key",
       apiKeyKMS: "kms-api-key-encrypted",
+      apiKeySecretARN: "api-key-secret-arn",
       enhancedMetrics: false,
       logForwarding: false,
       shouldRetryMetrics: false,
@@ -54,6 +65,7 @@ describe("MetricsListener", () => {
     const listener = new MetricsListener(kms as any, {
       apiKey: "",
       apiKeyKMS: "kms-api-key-encrypted",
+      apiKeySecretARN: "api-key-secret-arn",
       enhancedMetrics: false,
       logForwarding: false,
       shouldRetryMetrics: false,
@@ -67,11 +79,35 @@ describe("MetricsListener", () => {
 
     expect(nock.isDone()).toBeTruthy();
   });
+
+  it("extracts the API Key from the secret manager to send a metric", async () => {
+    nock("https://api.example.com").post("/api/v1/distribution_points?api_key=api-key-secret").reply(200, {});
+
+    const kms = new MockKMS("kms-api-key-decrypted");
+    const listener = new MetricsListener(kms as any, {
+      apiKey: "",
+      apiKeyKMS: "",
+      apiKeySecretARN: "api-key-secret-arn",
+      enhancedMetrics: false,
+      logForwarding: false,
+      shouldRetryMetrics: false,
+      localTesting: false,
+      siteURL,
+    });
+
+    await listener.onStartInvocation({});
+    listener.sendDistributionMetricWithDate("my-metric", 10, new Date(), false, "tag:a", "tag:b");
+    await listener.onCompleteInvocation();
+
+    expect(nock.isDone()).toBeTruthy();
+  });
+
   it("doesn't throw an error if it can't get a valid apiKey", async () => {
     const kms = new MockKMS("kms-api-key-decrypted", new Error("The error"));
     const listener = new MetricsListener(kms as any, {
       apiKey: "",
       apiKeyKMS: "kms-api-key-encrypted",
+      apiKeySecretARN: "api-key-secret-arn",
       enhancedMetrics: false,
       logForwarding: false,
       shouldRetryMetrics: false,
@@ -91,6 +127,7 @@ describe("MetricsListener", () => {
     const listener = new MetricsListener(kms as any, {
       apiKey: "api-key",
       apiKeyKMS: "kms-api-key-encrypted",
+      apiKeySecretARN: "api-key-secret-arn",
       enhancedMetrics: false,
       logForwarding: true,
       shouldRetryMetrics: false,
@@ -124,6 +161,7 @@ describe("MetricsListener", () => {
     const listener = new MetricsListener(kms as any, {
       apiKey: "api-key",
       apiKeyKMS: "",
+      apiKeySecretARN: "api-key-secret-arn",
       enhancedMetrics: false,
       logForwarding: true,
       shouldRetryMetrics: false,
@@ -159,6 +197,7 @@ describe("MetricsListener", () => {
     const listener = new MetricsListener(kms as any, {
       apiKey: "api-key",
       apiKeyKMS: "",
+      apiKeySecretARN: "api-key-secret-arn",
       enhancedMetrics: false,
       logForwarding: false,
       shouldRetryMetrics: false,
@@ -198,6 +237,7 @@ describe("MetricsListener", () => {
     const listener = new MetricsListener(kms as any, {
       apiKey: "api-key",
       apiKeyKMS: "",
+      apiKeySecretARN: "api-key-secret-arn",
       enhancedMetrics: false,
       logForwarding: false,
       shouldRetryMetrics: false,
@@ -219,6 +259,7 @@ describe("MetricsListener", () => {
     const listener = new MetricsListener(kms as any, {
       apiKey: "api-key",
       apiKeyKMS: "kms-api-key-encrypted",
+      apiKeySecretARN: "api-key-secret-arn",
       enhancedMetrics: false,
       logForwarding: true,
       shouldRetryMetrics: false,
