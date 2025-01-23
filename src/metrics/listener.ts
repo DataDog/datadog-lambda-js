@@ -222,10 +222,10 @@ export class MetricsListener {
 
     if (config.apiKeySecretARN !== "") {
       try {
-        const secretsClient = require("aws-sdk/clients/secretsmanager");
-        const secretsManager = new secretsClient();
+        const { default: SecretsManager } = await import("aws-sdk/clients/secretsmanager");
+        const secretsManager = new SecretsManager();
         const secret = await secretsManager.getSecretValue({ SecretId: config.apiKeySecretARN }).promise();
-        return secret.SecretString;
+        return secret?.SecretString ?? "";
       } catch (error) {
         logError("couldn't get secrets manager api key", error as Error);
       }
