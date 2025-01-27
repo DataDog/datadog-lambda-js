@@ -25,7 +25,7 @@ Besides the environment variables supported by dd-trace-js, the datadog-lambda-j
 | -------------------- | ------------ | ------------- |
 | DD_ENCODE_AUTHORIZER_CONTEXT      | When set to `true` for Lambda authorizers, the tracing context will be encoded into the response for propagation. Supported for NodeJS and Python. | `true` |
 | DD_DECODE_AUTHORIZER_CONTEXT      | When set to `true` for Lambdas that are authorized via Lambda authorizers, it will parse and use the encoded tracing context (if found). Supported for NodeJS and Python. | `true` |
-| DD_COLD_START_TRACING | Set to `false` to disable Cold Start Tracing. Used in NodeJS and Python. | `true` |
+| DD_COLD_START_TRACING | When true (default), tracing occurs during cold start which creates many child spans. When false, only one cold start span is created. Used in NodeJS and Python. | `true` |
 | DD_MIN_COLD_START_DURATION |  Sets the minimum duration (in milliseconds) for a module load event to be traced via Cold Start Tracing. Number. | `3` |
 | DD_COLD_START_TRACE_SKIP_LIB | optionally skip creating Cold Start Spans for a comma-separated list of libraries. Useful to limit depth or skip known libraries. | `./opentracing/tracer` |
 | DD_CAPTURE_LAMBDA_PAYLOAD | [Captures incoming and outgoing AWS Lambda payloads][1] in the Datadog APM spans for Lambda invocations. | `false` |
