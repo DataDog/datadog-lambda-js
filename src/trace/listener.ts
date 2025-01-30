@@ -208,10 +208,14 @@ export class TraceListener {
       }
     }
 
-    if (this.inferredSpan && this.spanPointerAttributesList) {
+    let rootSpan = this.inferredSpan;
+    if (!rootSpan) {
+      rootSpan = this.wrappedCurrentSpan;
+    }
+    if (this.spanPointerAttributesList) {
       for (const attributes of this.spanPointerAttributesList) {
         try {
-          this.inferredSpan.span.addSpanPointer(attributes.kind, attributes.direction, attributes.hash);
+          rootSpan.span.addSpanPointer(attributes.kind, attributes.direction, attributes.hash);
         } catch (e) {
           logDebug("Failed to add span pointer");
         }
