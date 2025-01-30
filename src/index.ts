@@ -31,6 +31,7 @@ import { SpanOptions, TracerWrapper } from "./trace/tracer-wrapper";
 export { DatadogTraceHeaders as TraceHeaders } from "./trace/context/extractor";
 export const apiKeyEnvVar = "DD_API_KEY";
 export const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
+export const apiKeySecretARNEnvVar = "DD_API_KEY_SECRET_ARN";
 export const captureLambdaPayloadEnvVar = "DD_CAPTURE_LAMBDA_PAYLOAD";
 export const captureLambdaPayloadMaxDepthEnvVar = "DD_CAPTURE_LAMBDA_PAYLOAD_MAX_DEPTH";
 export const traceManagedServicesEnvVar = "DD_TRACE_MANAGED_SERVICES";
@@ -77,6 +78,7 @@ export type Config = MetricsConfig & TraceConfig & GlobalConfig;
 export const defaultConfig: Config = {
   apiKey: "",
   apiKeyKMS: "",
+  apiKeySecretARN: "",
   autoPatchHTTP: true,
   captureLambdaPayload: false,
   captureLambdaPayloadMaxDepth: 10,
@@ -344,6 +346,10 @@ function getConfig(userConfig?: Partial<Config>): Config {
 
   if (config.apiKeyKMS === "") {
     config.apiKeyKMS = getEnvValue(apiKeyKMSEnvVar, "");
+  }
+
+  if (config.apiKeySecretARN === "") {
+    config.apiKeySecretARN = getEnvValue(apiKeySecretARNEnvVar, "");
   }
 
   if (userConfig === undefined || userConfig.injectLogContext === undefined) {
