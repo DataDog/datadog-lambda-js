@@ -114,7 +114,7 @@ function processDynamoDbEvent(event: any): SpanPointerAttributes[] {
 
     const keys = record.dynamodb?.Keys;
     const eventSourceARN = record.eventSourceARN;
-    const tableName = record.eventSourceARN ? getTableNameFromARN(eventSourceARN) : undefined;
+    const tableName = eventSourceARN ? getTableNameFromARN(eventSourceARN) : undefined;
 
     if (!tableName || !keys) {
       logDebug("Unable to calculate hash because of missing parameters.");
