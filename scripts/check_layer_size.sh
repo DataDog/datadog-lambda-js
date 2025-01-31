@@ -9,7 +9,7 @@
 
 # 7 mb size limit
 MAX_LAYER_COMPRESSED_SIZE_KB=$(expr 7 \* 1024)
-MAX_LAYER_UNCOMPRESSED_SIZE_KB=$(expr 18 \* 1024)
+MAX_LAYER_UNCOMPRESSED_SIZE_KB=$(expr 19 \* 1024)
 
 
 LAYER_FILES_PREFIX="datadog_lambda_node"

@@ -34,6 +34,7 @@ import fs from "fs";
 export { DatadogTraceHeaders as TraceHeaders } from "./trace/context/extractor";
 export const apiKeyEnvVar = "DD_API_KEY";
 export const apiKeyKMSEnvVar = "DD_KMS_API_KEY";
+export const apiKeySecretARNEnvVar = "DD_API_KEY_SECRET_ARN";
 export const captureLambdaPayloadEnvVar = "DD_CAPTURE_LAMBDA_PAYLOAD";
 export const captureLambdaPayloadMaxDepthEnvVar = "DD_CAPTURE_LAMBDA_PAYLOAD_MAX_DEPTH";
 export const traceManagedServicesEnvVar = "DD_TRACE_MANAGED_SERVICES";
@@ -53,6 +54,7 @@ export const coldStartTracingEnvVar = "DD_COLD_START_TRACING";
 export const minColdStartTraceDurationEnvVar = "DD_MIN_COLD_START_DURATION";
 export const coldStartTraceSkipLibEnvVar = "DD_COLD_START_TRACE_SKIP_LIB";
 export const localTestingEnvVar = "DD_LOCAL_TESTING";
+export const addSpanPointersEnvVar = "DD_TRACE_AWS_ADD_SPAN_POINTERS";
 
 interface GlobalConfig {
   /**
@@ -79,6 +81,7 @@ export type Config = MetricsConfig & TraceConfig & GlobalConfig;
 export const defaultConfig: Config = {
   apiKey: "",
   apiKeyKMS: "",
+  apiKeySecretARN: "",
   autoPatchHTTP: true,
   captureLambdaPayload: false,
   captureLambdaPayloadMaxDepth: 10,
@@ -96,6 +99,7 @@ export const defaultConfig: Config = {
   minColdStartTraceDuration: 3,
   coldStartTraceSkipLib: "",
   localTesting: false,
+  addSpanPointers: true,
 } as const;
 
 export const _metricsQueue: MetricsQueue = new MetricsQueue();
@@ -363,6 +367,10 @@ function getConfig(userConfig?: Partial<Config>): Config {
     config.apiKeyKMS = getEnvValue(apiKeyKMSEnvVar, "");
   }
 
+  if (config.apiKeySecretARN === "") {
+    config.apiKeySecretARN = getEnvValue(apiKeySecretARNEnvVar, "");
+  }
+
   if (userConfig === undefined || userConfig.injectLogContext === undefined) {
     const result = getEnvValue(logInjectionEnvVar, "true").toLowerCase();
     config.injectLogContext = result === "true";
@@ -423,6 +431,11 @@ function getConfig(userConfig?: Partial<Config>): Config {
     // but the extension allows it, so we must as well
     // @ts-ignore-next-line
     config.localTesting = result === "true" || result === "1";
+  }
+
+  if (userConfig === undefined || userConfig.addSpanPointers === undefined) {
+    const result = getEnvValue(addSpanPointersEnvVar, "true").toLowerCase();
+    config.addSpanPointers = result === "true";
   }
 
   return config;

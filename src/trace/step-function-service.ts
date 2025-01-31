@@ -3,22 +3,59 @@ import { SampleMode, TraceSource } from "./trace-context-service";
 import { SpanContextWrapper } from "./span-context-wrapper";
 import { Sha256 } from "@aws-crypto/sha256-js";
 
-export interface StepFunctionContext {
-  "step_function.execution_name": string;
-  "step_function.execution_id": string;
-  "step_function.execution_input": object;
-  "step_function.execution_role_arn": string;
-  "step_function.execution_start_time": string;
-  "step_function.state_machine_name": string;
-  "step_function.state_machine_arn": string;
-  "step_function.state_entered_time": string;
-  "step_function.state_name": string;
-  "step_function.state_retry_count": number;
+interface NestedStepFunctionContext {
+  execution_id: string;
+  redrive_count: string;
+  state_entered_time: string;
+  state_name: string;
+  root_execution_id: string;
+  serverless_version: string;
 }
+
+interface LambdaRootStepFunctionContext {
+  execution_id: string;
+  redrive_count: string;
+  state_entered_time: string;
+  state_name: string;
+  trace_id: string;
+  dd_p_tid: string;
+  serverless_version: string;
+}
+
+interface LegacyStepFunctionContext {
+  execution_id: string;
+  redrive_count: string;
+  state_entered_time: string;
+  state_name: string;
+}
+
+export type StepFunctionContext = NestedStepFunctionContext | LambdaRootStepFunctionContext | LegacyStepFunctionContext;
 
 export const TRACE_ID = "traceId";
 export const PARENT_ID = "spanId";
 export const DD_P_TID = "_dd.p.tid";
+
+// Type Guard Functions
+function isStepFunctionRootContext(obj: any): obj is NestedStepFunctionContext {
+  return typeof obj?.root_execution_id === "string" && typeof obj?.serverless_version === "string";
+}
+
+function isLambdaRootContext(obj: any): obj is LambdaRootStepFunctionContext {
+  return (
+    typeof obj?.trace_id === "string" &&
+    typeof obj?.dd_p_tid === "string" &&
+    typeof obj?.serverless_version === "string"
+  );
+}
+
+function isLegacyContext(obj: any): obj is LegacyStepFunctionContext {
+  return (
+    typeof obj?.execution_id === "string" &&
+    typeof obj?.state_entered_time === "string" &&
+    typeof obj?.state_name === "string" &&
+    obj?.serverless_version === undefined
+  );
+}
 
 export class StepFunctionContextService {
   private static _instance: StepFunctionContextService;
@@ -41,104 +78,76 @@ export class StepFunctionContextService {
     // always triggered by the same event.
     if (typeof event !== "object") return;
 
-    // Legacy lambda parsing
-    if (typeof event.Payload === "object") {
+    // Extract Payload if available (Legacy lambda parsing)
+    if (typeof event?.Payload?._datadog === "object" || this.isValidContextObject(event?.Payload)) {
       event = event.Payload;
     }
 
-    // Execution
-    const execution = event.Execution;
-    if (typeof execution !== "object") {
-      logDebug("event.Execution is not an object.");
-      return;
-    }
-    const executionID = execution.Id;
-    if (typeof executionID !== "string") {
-      logDebug("event.Execution.Id is not a string.");
-      return;
-    }
-    const executionInput = execution.Input;
-    const executionName = execution.Name;
-    if (typeof executionName !== "string") {
-      logDebug("event.Execution.Name is not a string.");
-      return;
-    }
-    const executionRoleArn = execution.RoleArn;
-    if (typeof executionRoleArn !== "string") {
-      logDebug("event.Execution.RoleArn is not a string.");
-      return;
-    }
-    const executionStartTime = execution.StartTime;
-    if (typeof executionStartTime !== "string") {
-      logDebug("event.Execution.StartTime is not a string.");
-      return;
+    // Extract _datadog if available (JSONata v1 parsing)
+    if (typeof event._datadog === "object") {
+      event = event._datadog;
     }
 
-    // State
-    const state = event.State;
-    if (typeof state !== "object") {
-      logDebug("event.State is not an object.");
-      return;
-    }
-    const stateRetryCount = state.RetryCount;
-    if (typeof stateRetryCount !== "number") {
-      logDebug("event.State.RetryCount is not a number.");
-      return;
-    }
-    const stateEnteredTime = state.EnteredTime;
-    if (typeof stateEnteredTime !== "string") {
-      logDebug("event.State.EnteredTime is not a string.");
-      return;
-    }
-    const stateName = state.Name;
-    if (typeof stateName !== "string") {
-      logDebug("event.State.Name is not a string.");
-      return;
-    }
+    // Extract the common context variables
+    const stateMachineContext = this.extractStateMachineContext(event);
+    if (stateMachineContext === null) return;
+    const { execution_id, redrive_count, state_entered_time, state_name } = stateMachineContext;
 
-    // StateMachine
-    const stateMachine = event.StateMachine;
-    if (typeof stateMachine !== "object") {
-      logDebug("event.StateMachine is not an object.");
-      return;
+    if (typeof event["serverless-version"] === "string" && event["serverless-version"] === "v1") {
+      if (typeof event.RootExecutionId === "string") {
+        this.context = {
+          execution_id,
+          redrive_count,
+          state_entered_time,
+          state_name,
+          root_execution_id: event.RootExecutionId,
+          serverless_version: event["serverless-version"],
+        } as NestedStepFunctionContext;
+      } else if (typeof event["x-datadog-trace-id"] === "string" && typeof event["x-datadog-tags"] === "string") {
+        this.context = {
+          execution_id,
+          redrive_count,
+          state_entered_time,
+          state_name,
+          trace_id: event["x-datadog-trace-id"],
+          dd_p_tid: this.parsePTid(event["x-datadog-tags"]),
+          serverless_version: event["serverless-version"],
+        } as LambdaRootStepFunctionContext;
+      }
+    } else {
+      this.context = { execution_id, redrive_count, state_entered_time, state_name } as LegacyStepFunctionContext;
     }
-    const stateMachineArn = stateMachine.Id;
-    if (typeof stateMachineArn !== "string") {
-      logDebug("event.StateMachine.Id is not a string.");
-      return;
-    }
-    const stateMachineName = stateMachine.Name;
-    if (typeof stateMachineName !== "string") {
-      logDebug("event.StateMachine.Name is not a string.");
-      return;
-    }
-
-    const context = {
-      "step_function.execution_name": executionName,
-      "step_function.execution_id": executionID,
-      "step_function.execution_input": executionInput ?? {},
-      "step_function.execution_role_arn": executionRoleArn,
-      "step_function.execution_start_time": executionStartTime,
-      "step_function.state_entered_time": stateEnteredTime,
-      "step_function.state_machine_arn": stateMachineArn,
-      "step_function.state_machine_name": stateMachineName,
-      "step_function.state_name": stateName,
-      "step_function.state_retry_count": stateRetryCount,
-    };
-
-    this.context = context;
   }
 
   public get spanContext(): SpanContextWrapper | null {
     if (this.context === undefined) return null;
 
-    const traceId = this.deterministicSha256HashToBigIntString(this.context["step_function.execution_id"], TRACE_ID);
+    let traceId: string;
+    let ptid: string;
+
+    if (isStepFunctionRootContext(this.context)) {
+      traceId = this.deterministicSha256HashToBigIntString(this.context.root_execution_id, TRACE_ID);
+      ptid = this.deterministicSha256HashToBigIntString(this.context.root_execution_id, DD_P_TID);
+    } else if (isLambdaRootContext(this.context)) {
+      traceId = this.context.trace_id;
+      ptid = this.context.dd_p_tid;
+    } else if (isLegacyContext(this.context)) {
+      traceId = this.deterministicSha256HashToBigIntString(this.context.execution_id, TRACE_ID);
+      ptid = this.deterministicSha256HashToBigIntString(this.context.execution_id, DD_P_TID);
+    } else {
+      logDebug("StepFunctionContext doesn't match any known formats!");
+      return null;
+    }
+
+    const redrivePostfix = this.context.redrive_count === "0" ? "" : `#${this.context.redrive_count}`;
+
     const parentId = this.deterministicSha256HashToBigIntString(
-      this.context["step_function.execution_id"] +
+      this.context.execution_id +
         "#" +
-        this.context["step_function.state_name"] +
+        this.context.state_name +
         "#" +
-        this.context["step_function.state_entered_time"],
+        this.context.state_entered_time +
+        redrivePostfix,
       PARENT_ID,
     );
     const sampleMode = SampleMode.AUTO_KEEP;
@@ -154,7 +163,6 @@ export class StepFunctionContextService {
         sampling: { priority: sampleMode.toString(2) },
       });
 
-      const ptid = this.deterministicSha256HashToBigIntString(this.context["step_function.execution_id"], DD_P_TID);
       ddSpanContext._trace.tags["_dd.p.tid"] = id(ptid, 10).toString(16);
       if (ddSpanContext === null) return null;
 
@@ -175,7 +183,7 @@ export class StepFunctionContextService {
   }
 
   private deterministicSha256Hash(s: string, type: string): string {
-    // returns 128 bits hash unless mostSignificant64Bits options is set to true.
+    // returns upper or lower 64 bits of the hash
 
     const hash = new Sha256();
     hash.update(s);
@@ -196,5 +204,47 @@ export class StepFunctionContextService {
 
   private numberToBinaryString(num: number): string {
     return num.toString(2).padStart(8, "0");
+  }
+
+  private extractStateMachineContext(event: any): {
+    execution_id: string;
+    redrive_count: string;
+    state_entered_time: string;
+    state_name: string;
+  } | null {
+    if (this.isValidContextObject(event)) {
+      return {
+        execution_id: event.Execution.Id,
+        redrive_count: (event.Execution.RedriveCount ?? "0").toString(),
+        state_entered_time: event.State.EnteredTime,
+        state_name: event.State.Name,
+      };
+    }
+
+    logDebug("Cannot extract StateMachine context! Invalid execution or state data.");
+    return null;
+  }
+
+  private isValidContextObject(context: any): boolean {
+    return (
+      typeof context?.Execution?.Id === "string" &&
+      typeof context?.State?.EnteredTime === "string" &&
+      typeof context?.State?.Name === "string"
+    );
+  }
+
+  /**
+   * Parse a list of trace tags such as [_dd.p.tid=66bcb5eb00000000,_dd.p.dm=-0] and return the
+   * value of the _dd.p.tid tag or an empty string if not found.
+   */
+  private parsePTid(traceTags: string): string {
+    if (traceTags) {
+      for (const tag of traceTags.split(",")) {
+        if (tag.includes("_dd.p.tid=")) {
+          return tag.split("=")[1];
+        }
+      }
+    }
+    return "";
   }
 }

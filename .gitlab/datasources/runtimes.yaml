@@ -8,3 +8,6 @@ runtimes:
   - name: "node20"
     node_version: "20.9"
     node_major_version: "20"
+  - name: "node22"
+    node_version: "22.11"
+    node_major_version: "22"

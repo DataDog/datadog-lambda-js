@@ -17,6 +17,7 @@ describe("parseEventSource", () => {
         "http.url": "id.execute-api.us-east-1.amazonaws.com",
         "http.url_details.path": "/my/path",
         "http.method": "GET",
+        "http.route": "/my/path",
       },
       file: "api-gateway-v1.json",
     },
@@ -27,6 +28,7 @@ describe("parseEventSource", () => {
         "http.url": "r3pmxmplak.execute-api.us-east-2.amazonaws.com",
         "http.url_details.path": "/default/nodejs-apig-function-1G3XMPLZXVXYI",
         "http.method": "GET",
+        "http.route": "/nodejs-apig-function-1G3XMPLZXVXYI",
       },
       file: "api-gateway-v2.json",
     },
@@ -107,6 +109,14 @@ describe("parseEventSource", () => {
       },
       file: "sqs.json",
     },
+    {
+      result: {
+        "function_trigger.event_source": "states",
+        "function_trigger.event_source_arn":
+          "arn:aws:states:ca-central-1:425362996713:stateMachine:MyStateMachine-wsx8chv4d",
+      },
+      file: "states.json",
+    },
   ];
 
   const bufferedResponses = [
@@ -164,7 +174,8 @@ describe("parseEventSource", () => {
   it("extracts all trigger tags", () => {
     for (let event of events) {
       const eventData = JSON.parse(readFileSync(`./event_samples/${event.file}`, "utf8"));
-      const triggerTags = extractTriggerTags(eventData, mockContext);
+      const eventSource = parseEventSource(eventData);
+      const triggerTags = extractTriggerTags(eventData, mockContext, eventSource);
       expect(triggerTags).toEqual(event.result);
     }
   });
@@ -172,7 +183,8 @@ describe("parseEventSource", () => {
   it("extracts the status code if API Gateway, ALB, or Function URL, otherwise do nothing, for buffered functions", () => {
     for (const event of events) {
       const eventData = JSON.parse(readFileSync(`./event_samples/${event.file}`, "utf8"));
-      const triggerTags = extractTriggerTags(eventData, mockContext);
+      const eventSource = parseEventSource(eventData);
+      const triggerTags = extractTriggerTags(eventData, mockContext, eventSource);
       const isResponseStreamingFunction = false;
       for (const response of bufferedResponses) {
         const statusCode = extractHTTPStatusCodeTag(triggerTags, response.responseBody, isResponseStreamingFunction);
@@ -196,7 +208,8 @@ describe("parseEventSource", () => {
   it("extracts the status code if API Gateway, ALB, or Function URL, otherwise do nothing, for streaming functions", () => {
     for (let event of events) {
       const eventData = JSON.parse(readFileSync(`./event_samples/${event.file}`, "utf8"));
-      const triggerTags = extractTriggerTags(eventData, mockContext);
+      const eventSource = parseEventSource(eventData);
+      const triggerTags = extractTriggerTags(eventData, mockContext, eventSource);
       const isResponseStreamingFunction = true;
       for (const response of streamingResponses) {
         const statusCode = extractHTTPStatusCodeTag(triggerTags, response.responseBody, isResponseStreamingFunction);

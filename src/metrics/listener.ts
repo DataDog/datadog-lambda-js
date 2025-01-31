@@ -29,6 +29,10 @@ export interface MetricsConfig {
    */
   apiKeyKMS: string;
   /**
+   * An api key stored in secrets manager used to talk to the Datadog API.
+   */
+  apiKeySecretARN: string;
+  /**
    * The site of the Datadog URL to send to. This should either be 'datadoghq.com', (default),
    * or 'datadoghq.eu', for customers in the eu.
    * @default "datadoghq.com"
@@ -78,7 +82,8 @@ export class MetricsListener {
       logDebug(`Using StatsD client`);
 
       this.globalTags = this.getGlobalTags(context);
-      this.statsDClient = new StatsD({ host: "127.0.0.1", closingFlushInterval: 1 });
+      // About 200 chars per metric, so 8KB buffer size holds approx 40 metrics per request
+      this.statsDClient = new StatsD({ host: "127.0.0.1", closingFlushInterval: 1, maxBufferSize: 8192 });
       return;
     }
     if (this.config.logForwarding) {
@@ -212,6 +217,17 @@ export class MetricsListener {
         return await this.kmsClient.decrypt(config.apiKeyKMS);
       } catch (error) {
         logError("couldn't decrypt kms api key", error as Error);
+      }
+    }
+
+    if (config.apiKeySecretARN !== "") {
+      try {
+        const { default: secretsClient } = await import("aws-sdk/clients/secretsmanager");
+        const secretsManager = new secretsClient();
+        const secret = await secretsManager.getSecretValue({ SecretId: config.apiKeySecretARN }).promise();
+        return secret?.SecretString ?? "";
+      } catch (error) {
+        logError("couldn't get secrets manager api key", error as Error);
       }
     }
     return "";

@@ -669,6 +669,7 @@ describe("TraceContextExtractor", () => {
             Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
             RoleArn:
               "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
+            RedriveCount: 0,
             StartTime: "2022-12-08T21:08:17.924Z",
           },
           State: {
@@ -874,8 +875,8 @@ describe("TraceContextExtractor", () => {
       expect(extractor).toBeInstanceOf(_class);
     });
 
-    it("returns StepFunctionEventTraceExtractor when event contains StepFunctionContext", () => {
-      const event = {
+    it("returns StepFunctionEventTraceExtractor when event contains LegacyStepFunctionContext", () => {
+      const legacyStepFunctionEvent = {
         Execution: {
           Id: "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
           Input: {
@@ -883,6 +884,7 @@ describe("TraceContextExtractor", () => {
           },
           Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
           RoleArn: "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
+          RedriveCount: 0,
           StartTime: "2022-12-08T21:08:17.924Z",
         },
         State: {
@@ -900,10 +902,92 @@ describe("TraceContextExtractor", () => {
       const traceContextExtractor = new TraceContextExtractor(tracerWrapper, {} as TraceConfig);
 
       // Mimick TraceContextService.extract initialization
-      const instance = StepFunctionContextService.instance(event);
+      const instance = StepFunctionContextService.instance(legacyStepFunctionEvent);
       traceContextExtractor["stepFunctionContextService"] = instance;
 
-      const extractor = traceContextExtractor["getTraceEventExtractor"](event);
+      const extractor = traceContextExtractor["getTraceEventExtractor"](legacyStepFunctionEvent);
+
+      expect(extractor).toBeInstanceOf(StepFunctionEventTraceExtractor);
+    });
+
+    it("returns StepFunctionEventTraceExtractor when event contains LambdaRootStepFunctionContext", () => {
+      const lambdaRootStepFunctionEvent = {
+        _datadog: {
+          Execution: {
+            Id: "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
+            Input: {
+              MyInput: "MyValue",
+            },
+            Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
+            RoleArn:
+              "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
+            RedriveCount: 0,
+            StartTime: "2022-12-08T21:08:17.924Z",
+          },
+          State: {
+            Name: "step-one",
+            EnteredTime: "2022-12-08T21:08:19.224Z",
+            RetryCount: 2,
+          },
+          StateMachine: {
+            Id: "arn:aws:states:sa-east-1:425362996713:stateMachine:logs-to-traces-sequential",
+            Name: "my-state-machine",
+          },
+          "x-datadog-trace-id": "10593586103637578129",
+          "x-datadog-tags": "_dd.p.dm=-0,_dd.p.tid=6734e7c300000000",
+          "serverless-version": "v1",
+        },
+      };
+
+      const tracerWrapper = new TracerWrapper();
+      const traceContextExtractor = new TraceContextExtractor(tracerWrapper, {} as TraceConfig);
+
+      // Mimick TraceContextService.extract initialization
+      const instance = StepFunctionContextService.instance(lambdaRootStepFunctionEvent);
+      traceContextExtractor["stepFunctionContextService"] = instance;
+
+      const extractor = traceContextExtractor["getTraceEventExtractor"](lambdaRootStepFunctionEvent);
+
+      expect(extractor).toBeInstanceOf(StepFunctionEventTraceExtractor);
+    });
+
+    it("returns StepFunctionEventTraceExtractor when event contains NestedStepFunctionContext", () => {
+      const nestedStepFunctionEvent = {
+        _datadog: {
+          Execution: {
+            Id: "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
+            Input: {
+              MyInput: "MyValue",
+            },
+            Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
+            RoleArn:
+              "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
+            RedriveCount: 0,
+            StartTime: "2022-12-08T21:08:17.924Z",
+          },
+          State: {
+            Name: "step-one",
+            EnteredTime: "2022-12-08T21:08:19.224Z",
+            RetryCount: 2,
+          },
+          StateMachine: {
+            Id: "arn:aws:states:sa-east-1:425362996713:stateMachine:logs-to-traces-sequential",
+            Name: "my-state-machine",
+          },
+          RootExecutionId:
+            "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:a1b2c3d4-e5f6-7890-1234-56789abcdef0:9f8e7d6c-5b4a-3c2d-1e0f-123456789abc",
+          "serverless-version": "v1",
+        },
+      };
+
+      const tracerWrapper = new TracerWrapper();
+      const traceContextExtractor = new TraceContextExtractor(tracerWrapper, {} as TraceConfig);
+
+      // Mimick TraceContextService.extract initialization
+      const instance = StepFunctionContextService.instance(nestedStepFunctionEvent);
+      traceContextExtractor["stepFunctionContextService"] = instance;
+
+      const extractor = traceContextExtractor["getTraceEventExtractor"](nestedStepFunctionEvent);
 
       expect(extractor).toBeInstanceOf(StepFunctionEventTraceExtractor);
     });
@@ -919,6 +1003,7 @@ describe("TraceContextExtractor", () => {
             Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
             RoleArn:
               "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
+            RedriveCount: 0,
             StartTime: "2022-12-08T21:08:17.924Z",
           },
           State: {
@@ -946,7 +1031,7 @@ describe("TraceContextExtractor", () => {
     });
   });
 
-  describe("addTraceContexToXray", () => {
+  describe("addTraceContextToXray", () => {
     beforeEach(() => {
       StepFunctionContextService["_instance"] = undefined as any;
       sentSegment = undefined;
@@ -955,7 +1040,7 @@ describe("TraceContextExtractor", () => {
       process.env["AWS_XRAY_DAEMON_ADDRESS"] = undefined;
     });
 
-    it("adds StepFunction context when present over metadata", () => {
+    it("adds legacy StepFunction context when present over metadata", () => {
       jest.spyOn(Date, "now").mockImplementation(() => 1487076708000);
 
       process.env["_X_AMZN_TRACE_ID"] = "Root=1-5e272390-8c398be037738dc042009320;Parent=94ae789b969f1cc5;Sampled=1";
@@ -969,6 +1054,7 @@ describe("TraceContextExtractor", () => {
           },
           Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
           RoleArn: "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
+          RedriveCount: 0,
           StartTime: "2022-12-08T21:08:17.924Z",
         },
         State: {
@@ -1006,7 +1092,7 @@ describe("TraceContextExtractor", () => {
 
       const sentMessage = sentSegment.toString();
       expect(sentMessage).toEqual(
-        '{"format": "json", "version": 1}\n{"id":"11111","trace_id":"1-5e272390-8c398be037738dc042009320","parent_id":"94ae789b969f1cc5","name":"datadog-metadata","start_time":1487076708,"end_time":1487076708,"type":"subsegment","metadata":{"datadog":{"root_span_metadata":{"step_function.execution_name":"85a9933e-9e11-83dc-6a61-b92367b6c3be","step_function.execution_id":"arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf","step_function.execution_input":{"MyInput":"MyValue"},"step_function.execution_role_arn":"arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03","step_function.execution_start_time":"2022-12-08T21:08:17.924Z","step_function.state_entered_time":"2022-12-08T21:08:19.224Z","step_function.state_machine_arn":"arn:aws:states:sa-east-1:425362996713:stateMachine:logs-to-traces-sequential","step_function.state_machine_name":"my-state-machine","step_function.state_name":"step-one","step_function.state_retry_count":2}}}}',
+        '{"format": "json", "version": 1}\n{"id":"11111","trace_id":"1-5e272390-8c398be037738dc042009320","parent_id":"94ae789b969f1cc5","name":"datadog-metadata","start_time":1487076708,"end_time":1487076708,"type":"subsegment","metadata":{"datadog":{"root_span_metadata":{"execution_id":"arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf","redrive_count":"0","state_entered_time":"2022-12-08T21:08:19.224Z","state_name":"step-one"}}}}',
       );
     });
 

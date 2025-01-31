@@ -2,7 +2,7 @@ import { Context } from "aws-lambda";
 
 import { patchHttp, unpatchHttp } from "./patch-http";
 
-import { extractTriggerTags, extractHTTPStatusCodeTag } from "./trigger";
+import { extractTriggerTags, extractHTTPStatusCodeTag, parseEventSource } from "./trigger";
 import { ColdStartTracerConfig, ColdStartTracer } from "./cold-start-tracer";
 import { logDebug, tagObject } from "../utils";
 import { didFunctionColdStart, isProactiveInitialization } from "../utils/cold-start";
@@ -17,6 +17,7 @@ import { TraceContext, TraceContextService, TraceSource } from "./trace-context-
 import { StepFunctionContext, StepFunctionContextService } from "./step-function-service";
 import { XrayService } from "./xray-service";
 import { AUTHORIZING_REQUEST_ID_HEADER } from "./context/extractors/http";
+import { getSpanPointerAttributes, SpanPointerAttributes } from "../utils/span-pointers";
 export type TraceExtractor = (event: any, context: Context) => Promise<TraceContext> | TraceContext;
 
 export interface TraceConfig {
@@ -68,6 +69,11 @@ export interface TraceConfig {
    * Libraries to ignore from cold start traces
    */
   coldStartTraceSkipLib: string;
+  /**
+   * Whether to enable span pointers
+   * @default true
+   */
+  addSpanPointers: boolean;
 }
 
 export class TraceListener {
@@ -80,6 +86,7 @@ export class TraceListener {
   private wrappedCurrentSpan?: SpanWrapper;
   private triggerTags?: { [key: string]: string };
   private lambdaSpanParentContext?: SpanContext;
+  private spanPointerAttributesList: SpanPointerAttributes[] | undefined;
 
   public get currentTraceHeaders() {
     return this.contextService.currentTraceHeaders;
@@ -131,8 +138,13 @@ export class TraceListener {
 
     this.lambdaSpanParentContext = this.inferredSpan?.span || parentSpanContext;
     this.context = context;
-    this.triggerTags = extractTriggerTags(event, context);
+    const eventSource = parseEventSource(event);
+    this.triggerTags = extractTriggerTags(event, context, eventSource);
     this.stepFunctionContext = StepFunctionContextService.instance().context;
+
+    if (this.config.addSpanPointers) {
+      this.spanPointerAttributesList = getSpanPointerAttributes(eventSource, event);
+    }
   }
 
   /**
@@ -192,6 +204,20 @@ export class TraceListener {
         if (statusCode?.length === 3 && statusCode?.startsWith("5")) {
           this.wrappedCurrentSpan.setTag("error", 1);
           return true;
+        }
+      }
+    }
+
+    let rootSpan = this.inferredSpan;
+    if (!rootSpan) {
+      rootSpan = this.wrappedCurrentSpan;
+    }
+    if (this.spanPointerAttributesList) {
+      for (const attributes of this.spanPointerAttributesList) {
+        try {
+          rootSpan.span.addSpanPointer(attributes.kind, attributes.direction, attributes.hash);
+        } catch (e) {
+          logDebug("Failed to add span pointer");
         }
       }
     }
