@@ -626,22 +626,20 @@ describe("emitTelemetryOnErrorOutsideHandler", () => {
 });
 
 describe("detectDuplicateInstallations", () => {
-  jest.mock("fs");
+  jest.mock("fs/promises");
 
   let fsAccessMock: jest.SpyInstance;
   let logWarningMock: jest.SpyInstance;
 
   beforeEach(() => {
     jest.resetAllMocks();
-    fsAccessMock = jest.spyOn(fs, "access");
+    fsAccessMock = jest.spyOn(fs.promises, "access");
     logWarningMock = jest.spyOn(require("./utils"), "logWarning").mockImplementation(() => {});
   });
 
   it("should log warning when duplicate installations are detected", async () => {
-    // Mock fs.access to simulate both paths exist
-    fsAccessMock.mockImplementation((path: string, callback: any) => {
-      callback(null); // No error = path exists
-    });
+    // Mock fs.promises.access to simulate both paths exist
+    fsAccessMock.mockResolvedValue(undefined); // undefined (no error) = path exists
 
     await datadog(
       async () => {
@@ -654,12 +652,11 @@ describe("detectDuplicateInstallations", () => {
 
   it("should not log warning when only layer installation exists", async () => {
     // Simulate layerPath exists, localPath does not exist
-    fsAccessMock.mockImplementation((path: string, callback: any) => {
+    fsAccessMock.mockImplementation((path: string) => {
       if (path.includes("/opt/nodejs")) {
-        callback(null); // Exists
-      } else {
-        callback(new Error("ENOENT")); // Does not exist
+        return Promise.resolve(); // Exists
       }
+      return Promise.reject(new Error("ENOENT")); // Does not exist
     });
 
     await datadog(
@@ -673,12 +670,11 @@ describe("detectDuplicateInstallations", () => {
 
   it("should not log warning when only local installation exists", async () => {
     // Simulate localPath exists, layerPath does not exist
-    fsAccessMock.mockImplementation((path: string, callback: any) => {
+    fsAccessMock.mockImplementation((path: string) => {
       if (path.includes("/opt/nodejs")) {
-        callback(new Error("ENOENT")); // Does not exist
-      } else {
-        callback(null); // Exists
+        return Promise.reject(new Error("ENOENT")); // Does not exist
       }
+      return Promise.resolve(); // Exists
     });
 
     await datadog(
@@ -692,9 +688,7 @@ describe("detectDuplicateInstallations", () => {
 
   it("should not log warning when neither installation exists", async () => {
     // Simulate neither path exists
-    fsAccessMock.mockImplementation((path: string, callback: any) => {
-      callback(new Error("ENOENT")); // Does not exist
-    });
+    fsAccessMock.mockRejectedValue(new Error("ENOENT")); // Does not exist
 
     await datadog(
       async () => {

@@ -500,8 +500,14 @@ export async function emitTelemetryOnErrorOutsideHandler(
 
 async function detectDuplicateInstallations() {
   try {
-    const checkPathExistsAsync = (libraryPath: string): Promise<boolean> =>
-      new Promise((resolve) => fs.access(libraryPath, (err) => resolve(!err)));
+    const checkPathExistsAsync = async (libraryPath: string): Promise<boolean> => {
+      try {
+        await fs.promises.access(libraryPath);
+        return true;
+      } catch {
+        return false;
+      }
+    };
 
     const [layerExists, localExists] = await Promise.all([
       checkPathExistsAsync(LAMBDA_LAYER_PATH),
