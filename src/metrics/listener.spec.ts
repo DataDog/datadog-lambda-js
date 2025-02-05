@@ -9,14 +9,12 @@ import StatsDClient from "hot-shots";
 import { Context } from "aws-lambda";
 jest.mock("hot-shots");
 
-jest.mock("aws-sdk/clients/secretsmanager", () => {
-  return jest.fn().mockImplementation(() => ({
-    getSecretValue: jest.fn().mockReturnValue({
-      promise: jest.fn().mockResolvedValue({
-        SecretString: "api-key-secret",
-      }),
-    }),
-  }));
+jest.mock("@aws-sdk/client-secrets-manager", () => {
+  return {
+    SecretsManager: jest.fn().mockImplementation(() => ({
+      getSecretValue: jest.fn().mockResolvedValue({ SecretString: "api-key-secret" }),
+    })),
+  };
 });
 
 const siteURL = "example.com";
