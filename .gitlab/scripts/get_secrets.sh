@@ -21,21 +21,11 @@ fi
 
 printf "Getting AWS External ID...\n"
 
-EXTERNAL_ID=$(aws ssm get-parameter \
-    --region us-east-1 \
-    --name "ci.datadog-lambda-js.$EXTERNAL_ID_NAME" \
-    --with-decryption \
-    --query "Parameter.Value" \
-    --out text)
+EXTERNAL_ID=$(vault kv get -field=$EXTERNAL_ID_NAME kv/k8s/gitlab-runner/datadog-lambda-js/secrets)
 
 printf "Getting DD API KEY...\n"
 
-export DD_API_KEY=$(aws ssm get-parameter \
-    --region us-east-1 \
-    --name ci.datadog-lambda-js.dd-api-key \
-    --with-decryption \
-    --query "Parameter.Value" \
-    --out text)
+export DD_API_KEY=$(vault kv get -field=dd-api-key kv/k8s/gitlab-runner/datadog-lambda-js/secrets)
 
 printf "Assuming role...\n"
 
