@@ -11,7 +11,18 @@ export class SQSEventTraceExtractor implements EventTraceExtractor {
   extract(event: SQSEvent): SpanContextWrapper | null {
     try {
       // First try to extract trace context from message attributes
-      const headers = event?.Records?.[0]?.messageAttributes?._datadog?.stringValue;
+      let headers = event?.Records?.[0]?.messageAttributes?._datadog?.stringValue;
+
+      if (!headers) {
+        // Then try to get from binary value. This happens when SNS->SQS, but SNS has raw message delivery enabled.
+        // In this case, SNS maps any messageAttributes to the SQS messageAttributes.
+        // We can at least get trace context from SQS, but we won't be able to create the SNS inferred span.
+        const encodedTraceContext = event?.Records?.[0]?.messageAttributes?._datadog?.binaryValue;
+        if (encodedTraceContext) {
+          headers = Buffer.from(encodedTraceContext, "base64").toString("ascii");
+        }
+      }
+
       if (headers !== undefined) {
         const traceContext = this.tracerWrapper.extract(JSON.parse(headers));
         if (traceContext) {
