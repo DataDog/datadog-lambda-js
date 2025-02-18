@@ -6,6 +6,7 @@ import { Sha256 } from "@aws-crypto/sha256-js";
 interface NestedStepFunctionContext {
   execution_id: string;
   redrive_count: string;
+  retry_count: string;
   state_entered_time: string;
   state_name: string;
   root_execution_id: string;
@@ -15,6 +16,7 @@ interface NestedStepFunctionContext {
 interface LambdaRootStepFunctionContext {
   execution_id: string;
   redrive_count: string;
+  retry_count: string;
   state_entered_time: string;
   state_name: string;
   trace_id: string;
@@ -25,6 +27,7 @@ interface LambdaRootStepFunctionContext {
 interface LegacyStepFunctionContext {
   execution_id: string;
   redrive_count: string;
+  retry_count: string;
   state_entered_time: string;
   state_name: string;
 }
@@ -91,13 +94,14 @@ export class StepFunctionContextService {
     // Extract the common context variables
     const stateMachineContext = this.extractStateMachineContext(event);
     if (stateMachineContext === null) return;
-    const { execution_id, redrive_count, state_entered_time, state_name } = stateMachineContext;
+    const { execution_id, redrive_count, retry_count, state_entered_time, state_name } = stateMachineContext;
 
     if (typeof event["serverless-version"] === "string" && event["serverless-version"] === "v1") {
       if (typeof event.RootExecutionId === "string") {
         this.context = {
           execution_id,
           redrive_count,
+          retry_count,
           state_entered_time,
           state_name,
           root_execution_id: event.RootExecutionId,
@@ -107,6 +111,7 @@ export class StepFunctionContextService {
         this.context = {
           execution_id,
           redrive_count,
+          retry_count,
           state_entered_time,
           state_name,
           trace_id: event["x-datadog-trace-id"],
@@ -115,7 +120,13 @@ export class StepFunctionContextService {
         } as LambdaRootStepFunctionContext;
       }
     } else {
-      this.context = { execution_id, redrive_count, state_entered_time, state_name } as LegacyStepFunctionContext;
+      this.context = {
+        execution_id,
+        redrive_count,
+        retry_count,
+        state_entered_time,
+        state_name,
+      } as LegacyStepFunctionContext;
     }
   }
 
@@ -139,17 +150,16 @@ export class StepFunctionContextService {
       return null;
     }
 
-    const redrivePostfix = this.context.redrive_count === "0" ? "" : `#${this.context.redrive_count}`;
+    const countsSuffix =
+      this.context.retry_count !== "0" && this.context.redrive_count !== "0"
+        ? `#${this.context.retry_count}#${this.context.redrive_count}`
+        : "";
 
     const parentId = this.deterministicSha256HashToBigIntString(
-      this.context.execution_id +
-        "#" +
-        this.context.state_name +
-        "#" +
-        this.context.state_entered_time +
-        redrivePostfix,
+      `${this.context.execution_id}#${this.context.state_name}#${this.context.state_entered_time}${countsSuffix}`,
       PARENT_ID,
     );
+
     const sampleMode = SampleMode.AUTO_KEEP;
 
     try {
@@ -209,6 +219,7 @@ export class StepFunctionContextService {
   private extractStateMachineContext(event: any): {
     execution_id: string;
     redrive_count: string;
+    retry_count: string;
     state_entered_time: string;
     state_name: string;
   } | null {
@@ -216,6 +227,7 @@ export class StepFunctionContextService {
       return {
         execution_id: event.Execution.Id,
         redrive_count: (event.Execution.RedriveCount ?? "0").toString(),
+        retry_count: (event.State.RetryCount ?? "0").toString(),
         state_entered_time: event.State.EnteredTime,
         state_name: event.State.Name,
       };
