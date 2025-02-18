@@ -85,6 +85,63 @@ describe("SQSEventTraceExtractor", () => {
       expect(traceContext?.source).toBe("event");
     });
 
+    it("extracts trace context from _datadog binaryValue when raw message delivery is used", () => {
+      mockSpanContext = {
+        toTraceId: () => "1234567890",
+        toSpanId: () => "0987654321",
+        _sampling: {
+          priority: "1",
+        },
+      };
+      const tracerWrapper = new TracerWrapper();
+
+      const ddHeaders = {
+        "x-datadog-trace-id": "1234567890",
+        "x-datadog-parent-id": "0987654321",
+        "x-datadog-sampled": "1",
+        "x-datadog-sampling-priority": "1",
+      };
+      const ddHeadersString = JSON.stringify(ddHeaders);
+      const ddHeadersBase64 = Buffer.from(ddHeadersString, "ascii").toString("base64");
+
+      const payload: SQSEvent = {
+        Records: [
+          {
+            messageId: "abc-123",
+            receiptHandle: "MessageReceiptHandle",
+            body: "Hello from SQS!",
+            attributes: {
+              ApproximateReceiveCount: "1",
+              SentTimestamp: "1523232000000",
+              SenderId: "123456789012",
+              ApproximateFirstReceiveTimestamp: "1523232000001",
+            },
+            messageAttributes: {
+              _datadog: {
+                binaryValue: ddHeadersBase64,
+                dataType: "Binary",
+              },
+            },
+            md5OfBody: "x",
+            eventSource: "aws:sqs",
+            eventSourceARN: "arn:aws:sqs:us-east-1:123456789012:MyQueue",
+            awsRegion: "us-east-1",
+          },
+        ],
+      };
+
+      const extractor = new SQSEventTraceExtractor(tracerWrapper);
+      const traceContext = extractor.extract(payload);
+      expect(traceContext).not.toBeNull();
+
+      expect(spyTracerWrapper).toHaveBeenCalledWith(ddHeaders);
+
+      expect(traceContext?.toTraceId()).toBe("1234567890");
+      expect(traceContext?.toSpanId()).toBe("0987654321");
+      expect(traceContext?.sampleMode()).toBe("1");
+      expect(traceContext?.source).toBe("event");
+    });
+
     it.each([
       ["Records", {}],
       ["Records first entry", { Records: [] }],
