@@ -151,7 +151,7 @@ export class StepFunctionContextService {
     }
 
     const countsSuffix =
-      this.context.retry_count !== "0" && this.context.redrive_count !== "0"
+      this.context.retry_count !== "0" || this.context.redrive_count !== "0"
         ? `#${this.context.retry_count}#${this.context.redrive_count}`
         : "";
 
