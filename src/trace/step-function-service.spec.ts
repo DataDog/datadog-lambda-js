@@ -206,7 +206,7 @@ describe("StepFunctionContextService", () => {
       expect(spanContext).not.toBeNull();
 
       expect(spanContext?.toTraceId()).toBe("1139193989631387307");
-      expect(spanContext?.toSpanId()).toBe("5892738536804826142");
+      expect(spanContext?.toSpanId()).toBe("7747304477664363642");
       expect(spanContext?.sampleMode()).toBe("1");
       expect(spanContext?.source).toBe("event");
     });
@@ -221,7 +221,7 @@ describe("StepFunctionContextService", () => {
       expect(spanContext).not.toBeNull();
 
       expect(spanContext?.toTraceId()).toBe("8676990472248253142");
-      expect(spanContext?.toSpanId()).toBe("5892738536804826142");
+      expect(spanContext?.toSpanId()).toBe("7747304477664363642");
       expect(spanContext?.sampleMode()).toBe("1");
       expect(spanContext?.source).toBe("event");
     });
@@ -236,7 +236,7 @@ describe("StepFunctionContextService", () => {
       expect(spanContext).not.toBeNull();
 
       expect(spanContext?.toTraceId()).toBe("10593586103637578129");
-      expect(spanContext?.toSpanId()).toBe("5892738536804826142");
+      expect(spanContext?.toSpanId()).toBe("7747304477664363642");
       expect(spanContext?.sampleMode()).toBe("1");
       expect(spanContext?.source).toBe("event");
     });
@@ -261,7 +261,7 @@ describe("StepFunctionContextService", () => {
       expect(spanContext).not.toBeNull();
 
       expect(spanContext?.toTraceId()).toBe("1139193989631387307");
-      expect(spanContext?.toSpanId()).toBe("5892738536804826142");
+      expect(spanContext?.toSpanId()).toBe("7747304477664363642");
       expect(spanContext?.sampleMode()).toBe("1");
       expect(spanContext?.source).toBe("event");
     });

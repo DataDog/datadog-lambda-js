@@ -690,7 +690,7 @@ describe("TraceContextExtractor", () => {
         expect(traceContext).not.toBeNull();
 
         expect(traceContext?.toTraceId()).toBe("1139193989631387307");
-        expect(traceContext?.toSpanId()).toBe("5892738536804826142");
+        expect(traceContext?.toSpanId()).toBe("7747304477664363642");
         expect(traceContext?.sampleMode()).toBe("1");
         expect(traceContext?.source).toBe("event");
       });

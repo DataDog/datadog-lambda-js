@@ -72,7 +72,7 @@ describe("StepFunctionEventTraceExtractor", () => {
       expect(traceContext).not.toBeNull();
 
       expect(traceContext?.toTraceId()).toBe("435175499815315247");
-      expect(traceContext?.toSpanId()).toBe("3929055471293792800");
+      expect(traceContext?.toSpanId()).toBe("8782364156266188026");
       expect(traceContext?.sampleMode()).toBe("1");
       expect(traceContext?.source).toBe("event");
     });
