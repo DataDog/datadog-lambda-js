@@ -6,7 +6,7 @@
 [![Slack](https://chat.datadoghq.com/badge.svg?bg=632CA6)](https://chat.datadoghq.com/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](https://github.com/DataDog/datadog-lambda-js/blob/main/LICENSE)
 
-Datadog Lambda Library for Node.js (16.x, 18.x, and 20.x) enables enhanced Lambda metrics, distributed tracing, and custom metric submission from AWS Lambda functions.
+Datadog Lambda Library for Node.js (18.x, 20.x, and 22.x) enables enhanced Lambda metrics, distributed tracing, and custom metric submission from AWS Lambda functions.
 
 ## Installation
 
@@ -51,6 +51,10 @@ The 6.x.x release introduces support for the node 16 runtime and esm modules.
 ### 7.x.x
 
 The 7.x.x release drops support for Node12, and upgrades dd-trace-js to version 3.x
+
+### 8.x.x
+
+The 8.x.x release drops support for Node14, and upgrades dd-trace-js to version 4.x
 
 ### 9.x.x
 The 9.x.x release changed how Lambda's traceID is hashed if the incoming payload contains Step Functions context object. This change only affects those who uses inject Step Functions context object into Lambda payload.
