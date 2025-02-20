@@ -11,7 +11,7 @@ set -e
 LAYER_DIR=".layers"
 LAYER_FILES_PREFIX="datadog_lambda_node"
 
-export NODE_VERSIONS=("16.14" "18.12" "20.9" "22.11")
+export NODE_VERSIONS=("18.12" "20.9" "22.11")
 
 if [ -z "$NODE_VERSION" ]; then
     echo "Node version not specified, running for all node versions."

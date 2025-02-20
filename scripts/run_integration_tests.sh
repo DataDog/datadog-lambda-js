@@ -29,12 +29,11 @@ mismatch_found=false
 # [0]: serverless runtime name
 # [1]: nodejs version
 # [2]: random 8-character ID to avoid collisions with other runs
-node16=("nodejs16.x" "16.14" $(xxd -l 4 -c 4 -p < /dev/random))
 node18=("nodejs18.x" "18.12" $(xxd -l 4 -c 4 -p < /dev/random))
 node20=("nodejs20.x" "20.9" $(xxd -l 4 -c 4 -p < /dev/random))
 node22=("nodejs22.x" "22.11" $(xxd -l 4 -c 4 -p < /dev/random))
 
-PARAMETERS_SETS=("node16" "node18" "node20" "node22")
+PARAMETERS_SETS=("node18" "node20" "node22")
 
 if [ -z "$RUNTIME_PARAM" ]; then
     echo "Node version not specified, running for all node versions."
