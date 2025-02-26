@@ -690,7 +690,7 @@ describe("TraceContextExtractor", () => {
         expect(traceContext).not.toBeNull();
 
         expect(traceContext?.toTraceId()).toBe("1139193989631387307");
-        expect(traceContext?.toSpanId()).toBe("5892738536804826142");
+        expect(traceContext?.toSpanId()).toBe("7747304477664363642");
         expect(traceContext?.sampleMode()).toBe("1");
         expect(traceContext?.source).toBe("event");
       });
@@ -1092,7 +1092,7 @@ describe("TraceContextExtractor", () => {
 
       const sentMessage = sentSegment.toString();
       expect(sentMessage).toEqual(
-        '{"format": "json", "version": 1}\n{"id":"11111","trace_id":"1-5e272390-8c398be037738dc042009320","parent_id":"94ae789b969f1cc5","name":"datadog-metadata","start_time":1487076708,"end_time":1487076708,"type":"subsegment","metadata":{"datadog":{"root_span_metadata":{"execution_id":"arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf","redrive_count":"0","state_entered_time":"2022-12-08T21:08:19.224Z","state_name":"step-one"}}}}',
+        '{"format": "json", "version": 1}\n{"id":"11111","trace_id":"1-5e272390-8c398be037738dc042009320","parent_id":"94ae789b969f1cc5","name":"datadog-metadata","start_time":1487076708,"end_time":1487076708,"type":"subsegment","metadata":{"datadog":{"root_span_metadata":{"execution_id":"arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf","redrive_count":"0","retry_count":"2","state_entered_time":"2022-12-08T21:08:19.224Z","state_name":"step-one"}}}}',
       );
     });
 

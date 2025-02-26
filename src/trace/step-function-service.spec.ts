@@ -150,6 +150,7 @@ describe("StepFunctionContextService", () => {
         execution_id:
           "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
         redrive_count: "0",
+        retry_count: "2",
         state_entered_time: "2022-12-08T21:08:19.224Z",
         state_name: "step-one",
       });
@@ -163,6 +164,7 @@ describe("StepFunctionContextService", () => {
         execution_id:
           "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
         redrive_count: "0",
+        retry_count: "2",
         state_entered_time: "2022-12-08T21:08:19.224Z",
         state_name: "step-one",
         root_execution_id:
@@ -179,6 +181,7 @@ describe("StepFunctionContextService", () => {
         execution_id:
           "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
         redrive_count: "0",
+        retry_count: "2",
         state_entered_time: "2022-12-08T21:08:19.224Z",
         state_name: "step-one",
         trace_id: "10593586103637578129",
@@ -203,7 +206,7 @@ describe("StepFunctionContextService", () => {
       expect(spanContext).not.toBeNull();
 
       expect(spanContext?.toTraceId()).toBe("1139193989631387307");
-      expect(spanContext?.toSpanId()).toBe("5892738536804826142");
+      expect(spanContext?.toSpanId()).toBe("7747304477664363642");
       expect(spanContext?.sampleMode()).toBe("1");
       expect(spanContext?.source).toBe("event");
     });
@@ -218,7 +221,7 @@ describe("StepFunctionContextService", () => {
       expect(spanContext).not.toBeNull();
 
       expect(spanContext?.toTraceId()).toBe("8676990472248253142");
-      expect(spanContext?.toSpanId()).toBe("5892738536804826142");
+      expect(spanContext?.toSpanId()).toBe("7747304477664363642");
       expect(spanContext?.sampleMode()).toBe("1");
       expect(spanContext?.source).toBe("event");
     });
@@ -233,7 +236,7 @@ describe("StepFunctionContextService", () => {
       expect(spanContext).not.toBeNull();
 
       expect(spanContext?.toTraceId()).toBe("10593586103637578129");
-      expect(spanContext?.toSpanId()).toBe("5892738536804826142");
+      expect(spanContext?.toSpanId()).toBe("7747304477664363642");
       expect(spanContext?.sampleMode()).toBe("1");
       expect(spanContext?.source).toBe("event");
     });
@@ -258,7 +261,7 @@ describe("StepFunctionContextService", () => {
       expect(spanContext).not.toBeNull();
 
       expect(spanContext?.toTraceId()).toBe("1139193989631387307");
-      expect(spanContext?.toSpanId()).toBe("5892738536804826142");
+      expect(spanContext?.toSpanId()).toBe("7747304477664363642");
       expect(spanContext?.sampleMode()).toBe("1");
       expect(spanContext?.source).toBe("event");
     });
