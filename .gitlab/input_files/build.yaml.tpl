@@ -175,3 +175,31 @@ publish npm package:
     - *node-before-script
   script:
     - .gitlab/scripts/publish_npm.sh
+
+{{ range $environment := (ds "environments").environments }}
+
+{{ if eq $environment.name "prod" }}signed {{ end }}layer bundle:
+  stage: {{ if eq $environment.name "prod" }}sign{{ else }}build{{ end }}
+  image: ${CI_DOCKER_TARGET_IMAGE}:${CI_DOCKER_TARGET_VERSION}
+  tags: ["arch:amd64"]
+  rules:
+    - if: '"{{ $environment.name }}" =~ /^sandbox/'
+    - if: '$CI_COMMIT_TAG =~ /^v.*/'
+  needs:
+    {{ range $runtime := (ds "runtimes").runtimes }}
+    - {{ if eq $environment.name "prod" }}sign{{ else }}build{{ end }} layer ({{ $runtime.name }})
+    {{ end }}
+  dependencies:
+    {{ range $runtime := (ds "runtimes").runtimes }}
+    - {{ if eq $environment.name "prod" }}sign{{ else }}build{{ end }} layer ({{ $runtime.name }})
+    {{ end }}
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - datadog_lambda_js-{{ if eq $environment.name "prod"}}signed-{{ end }}bundle-${CI_JOB_ID}/
+    name: datadog_lambda_js-{{ if eq $environment.name "prod"}}signed-{{ end }}bundle-${CI_JOB_ID}
+  script:
+    - rm -rf datadog_lambda_js-{{ if eq $environment.name "prod"}}signed-{{ end }}bundle-${CI_JOB_ID}
+    - mkdir -p datadog_lambda_js-{{ if eq $environment.name "prod"}}signed-{{ end }}bundle-${CI_JOB_ID}
+    - cp .layers/datadog_lambda_node*.zip datadog_lambda_js-{{ if eq $environment.name "prod"}}signed-{{ end }}bundle-${CI_JOB_ID}
+{{ end }}

@@ -95,14 +95,18 @@ if [[ "$STAGE" =~ ^(staging|sandbox)$ ]]; then
 else
     # Running on prod
     if [ -z "$CI_COMMIT_TAG" ]; then
-        printf "[Error] No CI_COMMIT_TAG found.\n"
-        printf "Exiting script...\n"
-        exit 1
+        # this happens during manual govcloud releases.
+        if [ -z "$VERSION" ]; then
+            printf "[Error] No CI_COMMIT_TAG or VERSION found.\n"
+            printf "Exiting script...\n"
+            exit 1
+        else
+            printf "Using provided VERSION: $VERSION\n"
+        fi
     else
         printf "Tag found in environment: $CI_COMMIT_TAG\n"
+        VERSION=$(echo "${CI_COMMIT_TAG##*v}" | cut -d. -f2)
     fi
-
-    VERSION=$(echo "${CI_COMMIT_TAG##*v}" | cut -d. -f2)
 fi
 
 # Target layer version
