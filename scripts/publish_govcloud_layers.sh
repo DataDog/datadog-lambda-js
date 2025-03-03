@@ -45,8 +45,6 @@ if [ "$ENVIRONMENT" = "us1-staging-fed" ]; then
 # region=us-gov-west-1
 
     export STAGE="sandbox"
-    export ADD_LAYER_VERSION_PERMISSIONS=0
-    export AUTOMATICALLY_BUMP_VERSION=1
     if [[ ! "$PACKAGE_NAME" =~ ^datadog_lambda_js-(signed-)?bundle-[0-9]+$ ]]; then
         echo "[ERROR]: Unexpected package name: $PACKAGE_NAME"
         exit 1
@@ -64,8 +62,6 @@ elif [ $ENVIRONMENT = "us1-fed" ]; then
 # region=us-gov-west-1
 
     export STAGE="prod"
-    export ADD_LAYER_VERSION_PERMISSIONS=1
-    export AUTOMATICALLY_BUMP_VERSION=0
     if [[ ! "$PACKAGE_NAME" =~ ^datadog_lambda_js-signed-bundle-[0-9]+$ ]]; then
         echo "[ERROR]: Unexpected package name: $PACKAGE_NAME"
         exit 1
