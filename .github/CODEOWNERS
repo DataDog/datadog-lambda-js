@@ -1,1 +1,2 @@
-* @DataDog/serverless-aws
+*             @DataDog/serverless-aws
+src/trace/*   @DataDog/apm-serverless
