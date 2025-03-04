@@ -13,6 +13,8 @@ LAYER_FILES_PREFIX="datadog_lambda_node"
 
 export NODE_VERSIONS=("18.12" "20.9" "22.11")
 
+echo "$CI_ENABLE_CONTAINER_IMAGE_BUILD"
+
 if [ -z "$NODE_VERSION" ]; then
     echo "Node version not specified, running for all node versions."
 else
