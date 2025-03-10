@@ -231,7 +231,7 @@ export class MetricsListener {
           secretsParams = {
             useFipsEndpoint: isGovRegion,
             region,
-          }
+          };
         }
         const secretsManager = new SecretsManager(secretsParams);
         const secret = await secretsManager.getSecretValue({ SecretId: config.apiKeySecretARN });

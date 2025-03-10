@@ -141,7 +141,7 @@ describe("MetricsListener", () => {
 
       expect(secretsManagerSpy).toHaveBeenCalledWith({
         useFipsEndpoint: true,
-        region: "us-gov-west-1"
+        region: "us-gov-west-1",
       });
 
       secretsManagerSpy.mockRestore();
