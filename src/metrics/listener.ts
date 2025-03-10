@@ -7,6 +7,7 @@ import { writeMetricToStdout } from "./metric-log";
 import { Distribution } from "./model";
 import { Context } from "aws-lambda";
 import { getEnhancedMetricTags } from "./enhanced-metrics";
+import { SecretsManagerClientConfig } from "@aws-sdk/client-secrets-manager";
 
 const METRICS_BATCH_SEND_INTERVAL = 10000; // 10 seconds
 const HISTORICAL_METRICS_THRESHOLD_HOURS = 4 * 60 * 60 * 1000; // 4 hours
@@ -223,7 +224,16 @@ export class MetricsListener {
     if (config.apiKeySecretARN !== "") {
       try {
         const { SecretsManager } = await import("@aws-sdk/client-secrets-manager");
-        const secretsManager = new SecretsManager();
+        const region = process.env.AWS_REGION;
+        let secretsParams: SecretsManagerClientConfig = {};
+        if (region) {
+          const isGovRegion = region.startsWith("us-gov-");
+          secretsParams = {
+            useFipsEndpoint: isGovRegion,
+            region,
+          }
+        }
+        const secretsManager = new SecretsManager(secretsParams);
         const secret = await secretsManager.getSecretValue({ SecretId: config.apiKeySecretARN });
         return secret?.SecretString ?? "";
       } catch (error) {
