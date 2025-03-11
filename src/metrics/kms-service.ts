@@ -17,7 +17,7 @@ export class KMSService {
     const region = process.env.AWS_REGION;
     const isGovRegion = region !== undefined && region.startsWith("us-gov-");
     if (isGovRegion) {
-      logDebug("Govcloud region detected. Using FIPs endpoints for secrets management.")
+      logDebug("Govcloud region detected. Using FIPs endpoints for secrets management.");
     }
     let kmsClientParams = {};
     if (isGovRegion) {
