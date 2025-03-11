@@ -12,6 +12,16 @@ export class KMSService {
     const buffer = Buffer.from(ciphertext, "base64");
     let kms;
 
+    const region = process.env.AWS_REGION;
+    const isGovRegion = region !== undefined && region.startsWith("us-gov-");
+    let kmsClientParams = {}
+    if (isGovRegion) {
+      // Endpoints: https://docs.aws.amazon.com/general/latest/gr/kms.html
+      kmsClientParams = {
+        endpoint: `https://kms-fips.${region}.amazonaws.com`,
+      }
+    }
+
     // Explicitly try/catch this require to appease esbuild and ts compiler
     // otherwise users would need to mark this as `external`
     // see https://github.com/DataDog/datadog-lambda-js/pull/409
@@ -20,11 +30,12 @@ export class KMSService {
     } catch (err) {
       if ((err as any).code === "MODULE_NOT_FOUND") {
         // Node 18
-        return this.decryptV3(buffer);
+        return this.decryptV3(buffer, kmsClientParams);
       }
     }
     try {
-      const kmsClient = new kms();
+      // Configure KMS client to use FIPS endpoint
+      const kmsClient = new kms(kmsClientParams);
 
       // When the API key is encrypted using the AWS console, the function name is added as an encryption context.
       // When the API key is encrypted using the AWS CLI, no encryption context is added.
@@ -50,7 +61,7 @@ export class KMSService {
   }
 
   // Node 18 or AWS SDK V3
-  public async decryptV3(buffer: Buffer): Promise<string> {
+  public async decryptV3(buffer: Buffer, kmsClientParams: any): Promise<string> {
     // tslint:disable-next-line: variable-name one-variable-per-declaration
     let KMSClient, DecryptCommand;
     // Explicitly try/catch this require to appease esbuild and ts compiler
@@ -61,7 +72,8 @@ export class KMSService {
     } catch (e) {
       throw Error("Can't load AWS SDK v2 or v3 to decrypt KMS key, custom metrics may not be sent");
     }
-    const kmsClient = new KMSClient();
+
+    const kmsClient = new KMSClient(kmsClientParams);
     let result;
     try {
       const decryptCommand = new DecryptCommand({ CiphertextBlob: buffer });
