@@ -14,12 +14,12 @@ export class KMSService {
 
     const region = process.env.AWS_REGION;
     const isGovRegion = region !== undefined && region.startsWith("us-gov-");
-    let kmsClientParams = {}
+    let kmsClientParams = {};
     if (isGovRegion) {
       // Endpoints: https://docs.aws.amazon.com/general/latest/gr/kms.html
       kmsClientParams = {
         endpoint: `https://kms-fips.${region}.amazonaws.com`,
-      }
+      };
     }
 
     // Explicitly try/catch this require to appease esbuild and ts compiler

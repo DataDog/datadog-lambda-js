@@ -129,8 +129,8 @@ describe("KMSService", () => {
       jest.mock("aws-sdk/clients/kms", () => mockKmsConstructor);
       mockKmsConstructor.mockImplementation(() => ({
         decrypt: () => ({
-          promise: () => Promise.resolve({ Plaintext: Buffer.from(EXPECTED_RESULT) })
-        })
+          promise: () => Promise.resolve({ Plaintext: Buffer.from(EXPECTED_RESULT) }),
+        }),
       }));
 
       // Create service and call decrypt
@@ -139,9 +139,8 @@ describe("KMSService", () => {
 
       // Verify FIPS endpoint was used
       expect(mockKmsConstructor).toHaveBeenCalledWith({
-        endpoint: "https://kms-fips.us-gov-west-1.amazonaws.com"
+        endpoint: "https://kms-fips.us-gov-west-1.amazonaws.com",
       });
-
     } finally {
       process.env.AWS_REGION = "us-east-1";
       jest.restoreAllMocks();
