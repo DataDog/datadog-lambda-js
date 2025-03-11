@@ -225,15 +225,10 @@ export class MetricsListener {
       try {
         const { SecretsManager } = await import("@aws-sdk/client-secrets-manager");
         const region = process.env.AWS_REGION;
-        let secretsParams: SecretsManagerClientConfig = {};
-        if (region) {
-          const isGovRegion = region.startsWith("us-gov-");
-          secretsParams = {
-            useFipsEndpoint: isGovRegion,
-            region,
-          };
-        }
-        const secretsManager = new SecretsManager(secretsParams);
+        const isGovRegion = region !== undefined && region.startsWith("us-gov-");
+        const secretsManager = new SecretsManager({
+          useFipsEndpoint: isGovRegion,
+        });
         const secret = await secretsManager.getSecretValue({ SecretId: config.apiKeySecretARN });
         return secret?.SecretString ?? "";
       } catch (error) {
