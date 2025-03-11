@@ -1,6 +1,8 @@
 // In order to avoid the layer adding the 40mb aws-sdk to a deployment, (which is always available
 // in the Lambda environment anyway), we use require to import the SDK.
 
+import { logDebug } from "../utils";
+
 export class KMSService {
   private encryptionContext;
 
@@ -14,6 +16,9 @@ export class KMSService {
 
     const region = process.env.AWS_REGION;
     const isGovRegion = region !== undefined && region.startsWith("us-gov-");
+    if (isGovRegion) {
+      logDebug("Govcloud region detected. Using FIPs endpoints for secrets management.")
+    }
     let kmsClientParams = {};
     if (isGovRegion) {
       // Endpoints: https://docs.aws.amazon.com/general/latest/gr/kms.html
