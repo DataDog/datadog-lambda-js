@@ -224,7 +224,7 @@ export class MetricsListener {
     if (config.apiKeySecretARN !== "") {
       try {
         const { SecretsManager } = await import("@aws-sdk/client-secrets-manager");
-        const secretRegion = config.apiKeySecretARN.split(':')[3];
+        const secretRegion = config.apiKeySecretARN.split(":")[3];
         const lambdaRegion = process.env.AWS_REGION;
         const isGovRegion = lambdaRegion !== undefined && lambdaRegion.startsWith("us-gov-");
         const secretsManager = new SecretsManager({
