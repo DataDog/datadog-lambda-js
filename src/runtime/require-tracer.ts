@@ -5,13 +5,17 @@ export class RequireNode {
   public filename: string
   public startTime: number
   public endTime: number
+  public startMemory: number
+  public endMemory: number
   public children: RequireNode[]
 
-  constructor(id: string, filename: string, startTime: number) {
+  constructor(id: string, filename: string, startTime: number, startMemory: number) {
     this.id = id
     this.filename = filename
     this.startTime = startTime
     this.endTime = startTime
+    this.startMemory = startMemory
+    this.endMemory = startMemory
     this.children = []
   }
 
@@ -27,8 +31,9 @@ let rootNodes: RequireNode[] = []
 const requireStack: RequireNode[] = []
 const pushNode = (data: any) => {
   const startTime = Date.now()
+  const startMemory = process.memoryUsage().heapUsed
 
-  const reqNode = new RequireNode(data.request, data.filename, startTime)
+  const reqNode = new RequireNode(data.request, data.filename, startTime, startMemory)
   const maybeParent = requireStack[requireStack.length - 1]
 
   if (maybeParent) {
@@ -38,10 +43,10 @@ const pushNode = (data: any) => {
 }
 
 const popNode = () => {
-  const endTime = Date.now()
   const reqNode = requireStack.pop()
   if (reqNode){
-    reqNode.endTime = endTime
+    reqNode.endTime = Date.now()
+    reqNode.endMemory = process.memoryUsage().heapUsed
   }
   if (requireStack.length <= 0 && reqNode) {
     rootNodes.push(reqNode)

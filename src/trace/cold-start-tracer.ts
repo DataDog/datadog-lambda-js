@@ -92,6 +92,7 @@ export class ColdStartTracer {
         resource_names: reqNode.id,
         "resource.name": reqNode.id,
         filename: reqNode.filename,
+        "memory.consumption": reqNode.endMemory - reqNode.startMemory,
       },
       startTime: reqNode.startTime,
     };
