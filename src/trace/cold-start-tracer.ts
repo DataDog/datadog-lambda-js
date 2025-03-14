@@ -78,7 +78,8 @@ export class ColdStartTracer {
 
   private traceTree(reqNode: RequireNode, parentSpan: SpanWrapper | undefined): void {
     if (reqNode.endTime - reqNode.startTime < this.minDuration) {
-      return;
+      console.log("[Would have been skipped]" + reqNode.filename);
+      // return;
     }
 
     if (this.ignoreLibs.includes(reqNode.id)) {
@@ -102,11 +103,14 @@ export class ColdStartTracer {
       this.tracerWrapper.startSpan(this.coldStartSpanOperationName(reqNode.filename), options),
       {},
     );
-    if (reqNode.endTime - reqNode.startTime > this.minDuration) {
-      for (const node of reqNode.children || []) {
-        this.traceTree(node, newSpan);
-      }
+    if (reqNode.endTime - reqNode.startTime < 1) {
+      console.log(`Duration of ${reqNode.filename} boosted to 1ms`);
+      reqNode.endTime = reqNode.startTime + 1; // Ensure that spans have a duration of at least 1ms
     }
+    for (const node of reqNode.children || []) {
+      this.traceTree(node, newSpan);
+    }
+
     newSpan?.finish(reqNode.endTime);
   }
 }
