@@ -128,7 +128,7 @@ describe("MetricsListener", () => {
       const listener = new MetricsListener(kms as any, {
         apiKey: "",
         apiKeyKMS: "",
-        apiKeySecretARN: "api-key-secret-arn",
+        apiKeySecretARN: "arn:aws:secretsmanager:us-gov-west-1:1234567890:secret:key-name-123ABC",
         enhancedMetrics: false,
         logForwarding: false,
         shouldRetryMetrics: false,
@@ -141,6 +141,39 @@ describe("MetricsListener", () => {
 
       expect(secretsManagerSpy).toHaveBeenCalledWith({
         useFipsEndpoint: true,
+        region: "us-gov-west-1",
+      });
+
+      secretsManagerSpy.mockRestore();
+    } finally {
+      process.env.AWS_REGION = "us-east-1";
+    }
+  });
+
+  it("uses correct secrets region", async () => {
+    try {
+      process.env.AWS_REGION = "us-east-1";
+      const secretsManagerModule = require("@aws-sdk/client-secrets-manager");
+      const secretsManagerSpy = jest.spyOn(secretsManagerModule, "SecretsManager");
+
+      const kms = new MockKMS("kms-api-key-decrypted");
+      const listener = new MetricsListener(kms as any, {
+        apiKey: "",
+        apiKeyKMS: "",
+        apiKeySecretARN: "arn:aws:secretsmanager:ap-west-1:1234567890:secret:key-name-123ABC",
+        enhancedMetrics: false,
+        logForwarding: false,
+        shouldRetryMetrics: false,
+        localTesting: false,
+        siteURL,
+      });
+
+      await listener.onStartInvocation({});
+      await listener.onCompleteInvocation();
+
+      expect(secretsManagerSpy).toHaveBeenCalledWith({
+        useFipsEndpoint: false,
+        region: "ap-west-1",
       });
 
       secretsManagerSpy.mockRestore();
