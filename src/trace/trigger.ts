@@ -392,10 +392,7 @@ export function extractHTTPStatusCodeTag(
   if (result === undefined && !isResponseStreamFunction) {
     return "502";
   } else if (resultStatusCode) {
-    // Type check the statusCode if available
-    if (typeof resultStatusCode === "number") {
-      return resultStatusCode.toString();
-    }
+    return resultStatusCode.toString();
   } else {
     return "200";
   }

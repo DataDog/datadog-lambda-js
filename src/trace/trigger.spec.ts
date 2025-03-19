@@ -129,6 +129,13 @@ describe("parseEventSource", () => {
     },
     {
       responseBody: {
+        statusCode: "201",
+        body: '"String status code case!"',
+      },
+      expectedStatusCode: "201",
+    },
+    {
+      responseBody: {
         statusCode: 404,
         body: '"NOT FOUND"',
       },
