@@ -395,6 +395,8 @@ export function extractHTTPStatusCodeTag(
     // Type check the statusCode if available
     if (typeof resultStatusCode === "number") {
       return resultStatusCode.toString();
+    } else if (typeof resultStatusCode === "string") {
+      return resultStatusCode;
     }
   } else {
     return "200";
