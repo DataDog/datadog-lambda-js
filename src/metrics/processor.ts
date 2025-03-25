@@ -1,6 +1,6 @@
 import promiseRetry from "promise-retry";
 
-import { logError, Timer } from "../utils";
+import { logError, logWarning, Timer } from "../utils";
 import { Client } from "./api";
 import { Batcher } from "./batcher";
 import { Metric } from "./model";
@@ -77,6 +77,10 @@ export class Processor {
       } catch {
         // Failed to send metrics, keep the old batch alive if retrying is enabled
         if (this.shouldRetryOnFail) {
+          const metricsReceivedWhileSending = this.batcher.toAPIMetrics();
+          if (metricsReceivedWhileSending.length > 0) {
+            logWarning(`Failed to send metrics to Datadog, retrying at next interval. ${metricsReceivedWhileSending.length} netrics received will be lost`);
+          }
           this.batcher = oldBatcher;
         }
       }
