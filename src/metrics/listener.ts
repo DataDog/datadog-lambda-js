@@ -146,25 +146,26 @@ export class MetricsListener {
     forceAsync: boolean,
     ...tags: string[]
   ) {
-    if (!this.isExtensionRunning) {
-      this.statsDClient?.distribution(name, value, undefined, tags);
-      return;
-    }
     // The extension adds global tags, but for logs and intake they must be added manually
     if (this.globalTags !== undefined && this.globalTags.length > 0) {
       tags = [...tags, ...this.globalTags];
     }
-    const isMetricTimeValid = Date.parse(metricTime.toString()) > 0;
-    if (isMetricTimeValid) {
-      const dateCeiling = new Date(Date.now() - HISTORICAL_METRICS_THRESHOLD_HOURS); // 4 hours ago
-      if (dateCeiling > metricTime) {
-        logWarning(`Timestamp ${metricTime.toISOString()} is older than 4 hours, not submitting metric ${name}`);
+    if (this.isExtensionRunning) {
+      const isMetricTimeValid = Date.parse(metricTime.toString()) > 0;
+      if (isMetricTimeValid) {
+        const dateCeiling = new Date(Date.now() - HISTORICAL_METRICS_THRESHOLD_HOURS); // 4 hours ago
+        if (dateCeiling > metricTime) {
+          logWarning(`Timestamp ${metricTime.toISOString()} is older than 4 hours, not submitting metric ${name}`);
+          return;
+        }
+        // Only create the processor to submit metrics to the API when a user provides a valid timestamp as
+        // Dogstatsd does not support timestamps for distributions.
+        if (this.currentProcessor === undefined) {
+          this.currentProcessor = this.createProcessor(this.config, this.apiKey);
+        }
+      } else {
+        this.statsDClient?.distribution(name, value, undefined, tags);
         return;
-      }
-      // Only create the processor to submit metrics to the API when a user provides a valid timestamp as
-      // Dogstatsd does not support timestamps for distributions.
-      if (this.currentProcessor === undefined) {
-        this.currentProcessor = this.createProcessor(this.config, this.apiKey);
       }
     }
 
