@@ -79,7 +79,9 @@ export class Processor {
         if (this.shouldRetryOnFail) {
           const metricsReceivedWhileSending = this.batcher.toAPIMetrics();
           if (metricsReceivedWhileSending.length > 0) {
-            logWarning(`Failed to send metrics to Datadog, retrying at next interval. ${metricsReceivedWhileSending.length} netrics received will be lost`);
+            logWarning(
+              `Failed to send metrics to Datadog, retrying at next interval. ${metricsReceivedWhileSending.length} netrics received will be lost`,
+            );
           }
           this.batcher = oldBatcher;
         }
