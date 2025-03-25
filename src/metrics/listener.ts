@@ -146,29 +146,30 @@ export class MetricsListener {
     forceAsync: boolean,
     ...tags: string[]
   ) {
-    if (this.isExtensionRunning) {
-      const isMetricTimeValid = Date.parse(metricTime.toString()) > 0;
-      if (isMetricTimeValid) {
-        const dateCeiling = new Date(Date.now() - HISTORICAL_METRICS_THRESHOLD_HOURS); // 4 hours ago
-        if (dateCeiling > metricTime) {
-          logWarning(`Timestamp ${metricTime.toISOString()} is older than 4 hours, not submitting metric ${name}`);
-          return;
-        }
-        // Only create the processor to submit metrics to the API when a user provides a valid timestamp as
-        // Dogstatsd does not support timestamps for distributions.
-        this.currentProcessor = this.createProcessor(this.config, this.apiKey);
-        // Add global tags to metrics sent to the API
-        if (this.globalTags !== undefined && this.globalTags.length > 0) {
-          tags = [...tags, ...this.globalTags];
-        }
-      } else {
-        this.statsDClient?.distribution(name, value, undefined, tags);
-        return;
-      }
-    }
     if (this.config.logForwarding || forceAsync) {
       writeMetricToStdout(name, value, metricTime, tags);
       return;
+    }
+    if (!this.isExtensionRunning) {
+      this.statsDClient?.distribution(name, value, undefined, tags);
+      return;
+    }
+    const isMetricTimeValid = Date.parse(metricTime.toString()) > 0;
+    if (isMetricTimeValid) {
+      const dateCeiling = new Date(Date.now() - HISTORICAL_METRICS_THRESHOLD_HOURS); // 4 hours ago
+      if (dateCeiling > metricTime) {
+        logWarning(`Timestamp ${metricTime.toISOString()} is older than 4 hours, not submitting metric ${name}`);
+        return;
+      }
+      // Only create the processor to submit metrics to the API when a user provides a valid timestamp as
+      // Dogstatsd does not support timestamps for distributions.
+      if (this.currentProcessor === undefined) {
+        this.currentProcessor = this.createProcessor(this.config, this.apiKey);
+      }
+      // Add global tags to metrics sent to the API
+      if (this.globalTags !== undefined && this.globalTags.length > 0) {
+        tags = [...tags, ...this.globalTags];
+      }
     }
 
     const dist = new Distribution(name, [{ timestamp: metricTime, value }], ...tags);
