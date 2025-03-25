@@ -146,10 +146,6 @@ export class MetricsListener {
     forceAsync: boolean,
     ...tags: string[]
   ) {
-    // The extension adds global tags, but for logs and intake they must be added manually
-    if (this.globalTags !== undefined && this.globalTags.length > 0) {
-      tags = [...tags, ...this.globalTags];
-    }
     if (this.isExtensionRunning) {
       const isMetricTimeValid = Date.parse(metricTime.toString()) > 0;
       if (isMetricTimeValid) {
@@ -163,25 +159,27 @@ export class MetricsListener {
         if (this.currentProcessor === undefined) {
           this.currentProcessor = this.createProcessor(this.config, this.apiKey);
         }
+        // Add global tags to metrics sent to the API
+        if (this.globalTags !== undefined && this.globalTags.length > 0) {
+          tags = [...tags, ...this.globalTags];
+        }
       } else {
         this.statsDClient?.distribution(name, value, undefined, tags);
         return;
       }
     }
-
     if (this.config.logForwarding || forceAsync) {
       writeMetricToStdout(name, value, metricTime, tags);
       return;
     }
+
+    const dist = new Distribution(name, [{ timestamp: metricTime, value }], ...tags);
 
     if (!this.apiKey) {
       const errorMessage = "api key not configured, see https://dtdg.co/sls-node-metrics";
       logError(errorMessage);
       return;
     }
-
-    const dist = new Distribution(name, [{ timestamp: metricTime, value }], ...tags);
-
     if (this.currentProcessor !== undefined) {
       // tslint:disable-next-line: no-floating-promises
       this.currentProcessor.then((processor) => {
