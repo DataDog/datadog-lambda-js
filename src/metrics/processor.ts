@@ -80,7 +80,7 @@ export class Processor {
           const metricsReceivedWhileSending = this.batcher.toAPIMetrics();
           if (metricsReceivedWhileSending.length > 0) {
             logWarning(
-              `Failed to send metrics to Datadog, retrying at next interval. ${metricsReceivedWhileSending.length} netrics received will be lost`,
+              `Failed to send metrics to Datadog, retrying at next interval. ${metricsReceivedWhileSending.length} metrics received will be lost`,
             );
           }
           this.batcher = oldBatcher;
