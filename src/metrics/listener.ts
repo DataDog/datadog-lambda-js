@@ -156,7 +156,9 @@ export class MetricsListener {
         }
         // Only create the processor to submit metrics to the API when a user provides a valid timestamp as
         // Dogstatsd does not support timestamps for distributions.
-        this.currentProcessor = this.createProcessor(this.config, this.apiKey);
+        if (this.currentProcessor === undefined) {
+          this.currentProcessor = this.createProcessor(this.config, this.apiKey);
+        }
         // Add global tags to metrics sent to the API
         if (this.globalTags !== undefined && this.globalTags.length > 0) {
           tags = [...tags, ...this.globalTags];
