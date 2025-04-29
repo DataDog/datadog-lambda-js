@@ -106,8 +106,8 @@ describe("HTTPEventTraceExtractor", () => {
       const tracerWrapper = new TracerWrapper();
       const payload = {
         multiValueHeaders: {
-          "X-Datadog-Trace-Id":      ["123", "789"],
-          "X-Datadog-Parent-Id":     ["456"],
+          "X-Datadog-Trace-Id": ["123", "789"],
+          "X-Datadog-Parent-Id": ["456"],
           "X-Datadog-Sampling-Priority": ["1"],
         },
       };
@@ -116,8 +116,8 @@ describe("HTTPEventTraceExtractor", () => {
 
       expect(traceContext).not.toBeNull();
       expect(spyTracerWrapper).toHaveBeenCalledWith({
-        "x-datadog-trace-id":      "123",
-        "x-datadog-parent-id":     "456",
+        "x-datadog-trace-id": "123",
+        "x-datadog-parent-id": "456",
         "x-datadog-sampling-priority": "1",
       });
 
@@ -125,7 +125,6 @@ describe("HTTPEventTraceExtractor", () => {
       expect(traceContext?.toSpanId()).toBe("456");
       expect(traceContext?.sampleMode()).toBe("1");
     });
-
 
     it("extracts trace context from payload with authorizer", () => {
       mockSpanContext = {
