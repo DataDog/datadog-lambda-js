@@ -97,6 +97,36 @@ describe("HTTPEventTraceExtractor", () => {
       expect(traceContext?.source).toBe("event");
     });
 
+    it("extracts trace context from payload with multiValueHeaders", () => {
+      mockSpanContext = {
+        toTraceId: () => "123",
+        toSpanId: () => "456",
+        _sampling: { priority: "1" },
+      };
+      const tracerWrapper = new TracerWrapper();
+      const payload = {
+        multiValueHeaders: {
+          "X-Datadog-Trace-Id":      ["123", "789"],
+          "X-Datadog-Parent-Id":     ["456"],
+          "X-Datadog-Sampling-Priority": ["1"],
+        },
+      };
+      const extractor = new HTTPEventTraceExtractor(tracerWrapper);
+      const traceContext = extractor.extract(payload);
+
+      expect(traceContext).not.toBeNull();
+      expect(spyTracerWrapper).toHaveBeenCalledWith({
+        "x-datadog-trace-id":      "123",
+        "x-datadog-parent-id":     "456",
+        "x-datadog-sampling-priority": "1",
+      });
+
+      expect(traceContext?.toTraceId()).toBe("123");
+      expect(traceContext?.toSpanId()).toBe("456");
+      expect(traceContext?.sampleMode()).toBe("1");
+    });
+
+
     it("extracts trace context from payload with authorizer", () => {
       mockSpanContext = {
         toTraceId: () => "2389589954026090296",
