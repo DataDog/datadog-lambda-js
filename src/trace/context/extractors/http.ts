@@ -41,11 +41,17 @@ export class HTTPEventTraceExtractor implements EventTraceExtractor {
       }
     }
 
-    const headers = event.headers;
+    const headers = event.headers ?? event.multiValueHeaders;
     const lowerCaseHeaders: { [key: string]: string } = {};
 
-    for (const key of Object.keys(headers)) {
-      lowerCaseHeaders[key.toLowerCase()] = headers[key];
+    for (const [key, val] of Object.entries(headers)) {
+      if (Array.isArray(val)) {
+        // MultiValueHeaders: take the first value
+        lowerCaseHeaders[key.toLowerCase()] = val[0] ?? "";
+      } else if (typeof val === "string") {
+        // Single‐value header
+        lowerCaseHeaders[key.toLowerCase()] = val;
+      }
     }
 
     const traceContext = this.tracerWrapper.extract(lowerCaseHeaders);
