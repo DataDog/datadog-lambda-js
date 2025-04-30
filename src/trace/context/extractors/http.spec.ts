@@ -1,5 +1,6 @@
 import { TracerWrapper } from "../../tracer-wrapper";
 import { HTTPEventSubType, HTTPEventTraceExtractor } from "./http";
+const albMultivalueHeadersEvent = require("../../../../event_samples/application-load-balancer-multivalue-headers.json");
 
 let mockSpanContext: any = null;
 
@@ -124,6 +125,37 @@ describe("HTTPEventTraceExtractor", () => {
       expect(traceContext?.toTraceId()).toBe("123");
       expect(traceContext?.toSpanId()).toBe("456");
       expect(traceContext?.sampleMode()).toBe("1");
+    });
+
+    it("flattens a real ALB multiValueHeaders payload into a lowercase, single-value map", () => {
+      const tracerWrapper = new TracerWrapper();
+      const extractor = new HTTPEventTraceExtractor(tracerWrapper);
+
+      spyTracerWrapper.mockClear();
+      extractor.extract(albMultivalueHeadersEvent);
+      expect(spyTracerWrapper).toHaveBeenCalled();
+
+      const captured = spyTracerWrapper.mock.calls[0][0] as Record<string, string>;
+
+      expect(captured).toEqual({
+        accept: "*/*",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        connection: "keep-alive",
+        host: "nhulston-test-0987654321.us-east-1.elb.amazonaws.com",
+        "sec-fetch-mode": "cors",
+        "user-agent": "node",
+        traceparent: "00-68126c4300000000125a7f065cf9a530-1c6dcc8ab8a6e99d-01",
+        tracestate: "dd=t.dm:-0;t.tid:68126c4300000000;s:1;p:1c6dcc8ab8a6e99d",
+        "x-amzn-trace-id": "Root=1-68126c45-01b175997ab51c4c47a2d643",
+        "x-datadog-tags": "_dd.p.tid=68126c4300000000,_dd.p.dm=-0",
+        "x-datadog-sampling-priority": "1",
+        "x-datadog-trace-id": "0987654321",
+        "x-datadog-parent-id": "1234567890",
+        "x-forwarded-for": "18.204.55.6",
+        "x-forwarded-port": "80",
+        "x-forwarded-proto": "http",
+      });
     });
 
     it("extracts trace context from payload with authorizer", () => {
