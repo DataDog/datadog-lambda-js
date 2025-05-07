@@ -109,7 +109,7 @@ export class MetricsListener {
       }
       if (this.isExtensionRunning) {
         logDebug(`Flushing statsD`);
-        // TODO
+        await this.statsDClient.flush();
       }
     } catch (error) {
       // This can fail for a variety of reasons, from the API not being reachable,

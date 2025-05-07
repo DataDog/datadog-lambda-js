@@ -11,6 +11,7 @@ export class LambdaDogStatsD {
   private static readonly TAG_SUB = "_";
 
   private readonly socket: dgram.Socket;
+  private readonly pendingSends = new Set<Promise<void>>();
 
   constructor() {
     this.socket = dgram.createSocket(LambdaDogStatsD.SOCKET_TYPE);
@@ -57,13 +58,26 @@ export class LambdaDogStatsD {
 
   private send(packet: string) {
     const msg = Buffer.from(packet, LambdaDogStatsD.ENCODING);
-    this.socket.send(msg, LambdaDogStatsD.PORT, LambdaDogStatsD.HOST, (err) => {
-      if (err) {
-        // TODO error handling
-        console.log("[temp] err name:", err?.name);
-        console.log("[temp] err cause:", err?.cause);
-        console.log("[temp] err message:", err?.message);
-      }
+    const promise = new Promise<void>((resolve) => {
+      this.socket.send(msg, LambdaDogStatsD.PORT, LambdaDogStatsD.HOST, (err) => {
+        if (err) {
+          // TODO error handling
+          console.log("[temp] err name:", err?.name);
+          console.log("[temp] err cause:", err?.cause);
+          console.log("[temp] err message:", err?.message);
+        }
+
+        resolve();
+      });
     });
+
+    this.pendingSends.add(promise);
+    promise.finally(() => this.pendingSends.delete(promise));
+  }
+
+  /** Block until all in-flight sends have settled */
+  public async flush(): Promise<void> {
+    await Promise.allSettled(this.pendingSends);
+    this.pendingSends.clear();
   }
 }
