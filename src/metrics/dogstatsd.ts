@@ -9,6 +9,8 @@ export class LambdaDogStatsD {
   private static readonly SOCKET_TYPE: SocketType = "udp4";
   private static readonly TAG_RE = /[^\w\d_\-:\/\.]/gu;
   private static readonly TAG_SUB = "_";
+  // The maximum amount to wait while flushing pending sends, so we don't block forever.
+  private static readonly MAX_FLUSH_TIMEOUT = 1000;
 
   private readonly socket: dgram.Socket;
   private readonly pendingSends = new Set<Promise<void>>();
@@ -77,7 +79,10 @@ export class LambdaDogStatsD {
 
   /** Block until all in-flight sends have settled */
   public async flush(): Promise<void> {
-    await Promise.allSettled(this.pendingSends);
+    const allSettled = Promise.allSettled(this.pendingSends);
+    const maxTimeout = new Promise((resolve) => setTimeout(resolve, LambdaDogStatsD.MAX_FLUSH_TIMEOUT));
+
+    await Promise.race([allSettled, maxTimeout]);
     this.pendingSends.clear();
   }
 }
