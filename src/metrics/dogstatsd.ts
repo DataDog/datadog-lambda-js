@@ -63,10 +63,7 @@ export class LambdaDogStatsD {
     const promise = new Promise<void>((resolve) => {
       this.socket.send(msg, LambdaDogStatsD.PORT, LambdaDogStatsD.HOST, (err) => {
         if (err) {
-          // TODO error handling
-          console.log("[temp] err name:", err?.name);
-          console.log("[temp] err cause:", err?.cause);
-          console.log("[temp] err message:", err?.message);
+          console.debug(`Unable to send metric packet: ${err.message}`);
         }
 
         resolve();
