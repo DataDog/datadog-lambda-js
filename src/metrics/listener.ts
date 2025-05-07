@@ -81,6 +81,9 @@ export class MetricsListener {
 
     if (this.isExtensionRunning) {
       logDebug(`Using StatsD client`);
+      if (this.statsDClient) {
+        return;
+      }
 
       this.globalTags = this.getGlobalTags(context);
       // About 200 chars per metric, so 8KB buffer size holds approx 40 metrics per request
@@ -108,20 +111,6 @@ export class MetricsListener {
         await promisify(setImmediate)();
 
         await processor.flush();
-      }
-      if (this.statsDClient !== undefined) {
-        logDebug(`Flushing statsD`);
-
-        // Make sure all stats are flushed to extension
-        await new Promise<void>((resolve, reject) => {
-          this.statsDClient?.close((error) => {
-            if (error !== undefined) {
-              reject(error);
-            }
-            resolve();
-          });
-        });
-        this.statsDClient = undefined;
       }
     } catch (error) {
       // This can fail for a variety of reasons, from the API not being reachable,
