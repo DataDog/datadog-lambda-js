@@ -40,7 +40,7 @@ export class LambdaDogStatsD {
    * Send a distribution value, optionally setting tags and timestamp.
    * Timestamp is seconds since epoch.
    */
-  public distribution(metric: string, value: number, tags?: string[], timestamp?: number): void {
+  public distribution(metric: string, value: number, timestamp?: number, tags?: string[]): void {
     this.report(metric, "d", value, tags, timestamp);
   }
 
