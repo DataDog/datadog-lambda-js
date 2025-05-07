@@ -15,7 +15,6 @@ ts-jest,dev,MIT,Copyright (c) 2016-2018 Kulshekhar Kabra
 tslint,dev,Apache-2.0,"Copyright 2013-2019 Palantir Technologies, Inc."
 typescript,dev,Apache-2.0,Copyright (c) Microsoft Corporation.
 dc-polyfill,import,MIT,"Copyright (c) 2023 Datadog, Inc."
-hot-shots,import,MIT,Copyright 2011 Steve Ivy. All rights reserved.
 promise-retry,import,MIT,Copyright (c) 2014 IndigoUnited
 serialize-error,import,MIT,Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
 shimmer,import,BSD-2-Clause,"Copyright (c) 2013-2019, Forrest L Norvell"
