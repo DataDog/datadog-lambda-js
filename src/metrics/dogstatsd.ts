@@ -2,7 +2,10 @@ import * as dgram from "node:dgram";
 import { SocketType } from "node:dgram";
 
 export class LambdaDogStatsD {
+  private static readonly HOST = "localhost";
+  private static readonly PORT = 8125;
   private static readonly MIN_SEND_BUFFER_SIZE = 32 * 1024;
+  private static readonly ENCODING: BufferEncoding = "utf8";
   private static readonly SOCKET_TYPE: SocketType = "udp4";
   private static readonly TAG_RE = /[^\w\d_\-:\/\.]/gu;
   private static readonly TAG_SUB = "_";
@@ -53,6 +56,14 @@ export class LambdaDogStatsD {
   }
 
   private send(packet: string) {
-    // TODO
+    const msg = Buffer.from(packet, LambdaDogStatsD.ENCODING);
+    this.socket.send(msg, LambdaDogStatsD.PORT, LambdaDogStatsD.HOST, (err) => {
+      if (err) {
+        // TODO error handling
+        console.log("[temp] err name:", err?.name);
+        console.log("[temp] err cause:", err?.cause);
+        console.log("[temp] err message:", err?.message);
+      }
+    });
   }
 }
