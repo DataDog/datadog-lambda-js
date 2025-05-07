@@ -1,5 +1,6 @@
 import * as dgram from "node:dgram";
 import { SocketType } from "node:dgram";
+import { logDebug } from "../utils";
 
 export class LambdaDogStatsD {
   private static readonly HOST = "localhost";
@@ -29,7 +30,7 @@ export class LambdaDogStatsD {
       const currentSize = sock.getSendBufferSize();
       if (currentSize <= LambdaDogStatsD.MIN_SEND_BUFFER_SIZE) {
         sock.setSendBufferSize(LambdaDogStatsD.MIN_SEND_BUFFER_SIZE);
-        console.debug(`Socket send buffer increased to ${LambdaDogStatsD.MIN_SEND_BUFFER_SIZE / 1024}kb`);
+        logDebug(`Socket send buffer increased to ${LambdaDogStatsD.MIN_SEND_BUFFER_SIZE / 1024}kb`);
       }
     } catch {
       // ignore
@@ -63,7 +64,7 @@ export class LambdaDogStatsD {
     const promise = new Promise<void>((resolve) => {
       this.socket.send(msg, LambdaDogStatsD.PORT, LambdaDogStatsD.HOST, (err) => {
         if (err) {
-          console.debug(`Unable to send metric packet: ${err.message}`);
+          logDebug(`Unable to send metric packet: ${err.message}`);
         }
 
         resolve();
