@@ -1,4 +1,3 @@
-import { StatsD } from "hot-shots";
 import { promisify } from "util";
 import { logDebug, logError, logWarning } from "../utils";
 import { flushExtension, isExtensionRunning } from "./extension";
@@ -7,7 +6,7 @@ import { writeMetricToStdout } from "./metric-log";
 import { Distribution } from "./model";
 import { Context } from "aws-lambda";
 import { getEnhancedMetricTags } from "./enhanced-metrics";
-import { SecretsManagerClientConfig } from "@aws-sdk/client-secrets-manager";
+import { LambdaDogStatsD } from "./dogstatsd";
 
 const METRICS_BATCH_SEND_INTERVAL = 10000; // 10 seconds
 const HISTORICAL_METRICS_THRESHOLD_HOURS = 4 * 60 * 60 * 1000; // 4 hours
@@ -64,13 +63,14 @@ export interface MetricsConfig {
 export class MetricsListener {
   private currentProcessor?: Promise<any>;
   private apiKey: Promise<string>;
-  private statsDClient?: StatsD;
+  private statsDClient: LambdaDogStatsD;
   private isExtensionRunning?: boolean = undefined;
   private globalTags?: string[] = [];
 
   constructor(private kmsClient: KMSService, private config: MetricsConfig) {
     this.apiKey = this.getAPIKey(config);
     this.config = config;
+    this.statsDClient = new LambdaDogStatsD();
   }
 
   public async onStartInvocation(_: any, context?: Context) {
@@ -83,8 +83,6 @@ export class MetricsListener {
       logDebug(`Using StatsD client`);
 
       this.globalTags = this.getGlobalTags(context);
-      // About 200 chars per metric, so 8KB buffer size holds approx 40 metrics per request
-      this.statsDClient = new StatsD({ host: "127.0.0.1", closingFlushInterval: 1, maxBufferSize: 8192 });
       return;
     }
     if (this.config.logForwarding) {
@@ -109,19 +107,9 @@ export class MetricsListener {
 
         await processor.flush();
       }
-      if (this.statsDClient !== undefined) {
+      if (this.isExtensionRunning) {
         logDebug(`Flushing statsD`);
-
-        // Make sure all stats are flushed to extension
-        await new Promise<void>((resolve, reject) => {
-          this.statsDClient?.close((error) => {
-            if (error !== undefined) {
-              reject(error);
-            }
-            resolve();
-          });
-        });
-        this.statsDClient = undefined;
+        // TODO
       }
     } catch (error) {
       // This can fail for a variety of reasons, from the API not being reachable,
@@ -146,33 +134,29 @@ export class MetricsListener {
     forceAsync: boolean,
     ...tags: string[]
   ) {
+    // If extension is running, use dogstatsd (FIPS compliant)
     if (this.isExtensionRunning) {
-      const isMetricTimeValid = Date.parse(metricTime.toString()) > 0;
-      if (isMetricTimeValid) {
-        const dateCeiling = new Date(Date.now() - HISTORICAL_METRICS_THRESHOLD_HOURS); // 4 hours ago
-        if (dateCeiling > metricTime) {
-          logWarning(`Timestamp ${metricTime.toISOString()} is older than 4 hours, not submitting metric ${name}`);
-          return;
-        }
-        // Only create the processor to submit metrics to the API when a user provides a valid timestamp as
-        // Dogstatsd does not support timestamps for distributions.
-        if (this.currentProcessor === undefined) {
-          this.currentProcessor = this.createProcessor(this.config, this.apiKey);
-        }
-        // Add global tags to metrics sent to the API
-        if (this.globalTags !== undefined && this.globalTags.length > 0) {
-          tags = [...tags, ...this.globalTags];
-        }
-      } else {
-        this.statsDClient?.distribution(name, value, undefined, tags);
+      const dateCeiling = new Date(Date.now() - HISTORICAL_METRICS_THRESHOLD_HOURS); // 4 hours ago
+      if (dateCeiling > metricTime) {
+        logWarning(`Timestamp ${metricTime.toISOString()} is older than 4 hours, not submitting metric ${name}`);
         return;
       }
+
+      this.statsDClient?.distribution(name, value, tags, metricTime.getSeconds());
+      return;
     }
+
+    // If no extension + logForwarding, write to stdout (FIPS compliant)
     if (this.config.logForwarding || forceAsync) {
       writeMetricToStdout(name, value, metricTime, tags);
       return;
     }
 
+    // Otherwise, send directly to DD API (not FIPs compliant!)
+    // Add global tags to metrics sent to the API
+    if (this.globalTags !== undefined && this.globalTags.length > 0) {
+      tags = [...tags, ...this.globalTags];
+    }
     const dist = new Distribution(name, [{ timestamp: metricTime, value }], ...tags);
 
     if (!this.apiKey) {
@@ -191,9 +175,7 @@ export class MetricsListener {
   }
 
   public sendDistributionMetric(name: string, value: number, forceAsync: boolean, ...tags: string[]) {
-    // The Extension doesn't support distribution metrics with timestamps. Use sendDistributionMetricWithDate instead.
-    const metricTime = this.isExtensionRunning ? new Date(0) : new Date(Date.now());
-    this.sendDistributionMetricWithDate(name, value, metricTime, forceAsync, ...tags);
+    this.sendDistributionMetricWithDate(name, value, new Date(), forceAsync, ...tags);
   }
 
   private async createProcessor(config: MetricsConfig, apiKey: Promise<string>) {
