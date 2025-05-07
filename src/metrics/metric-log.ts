@@ -2,7 +2,7 @@
 export function buildMetricLog(name: string, value: number, metricTime: Date, tags: string[]) {
   return `${JSON.stringify({
     // Date.now() returns Unix time in milliseconds, we convert to seconds for DD API submission
-    e: metricTime.getTime() / 1000,
+    e: Math.floor(metricTime.getTime() / 1000),
     m: name,
     t: tags,
     v: value,
