@@ -72,7 +72,7 @@ export class LambdaDogStatsD {
     });
 
     this.pendingSends.add(promise);
-    promise.finally(() => this.pendingSends.delete(promise));
+    void promise.finally(() => this.pendingSends.delete(promise));
   }
 
   /** Block until all in-flight sends have settled */
