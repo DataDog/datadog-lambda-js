@@ -78,9 +78,15 @@ export class LambdaDogStatsD {
   /** Block until all in-flight sends have settled */
   public async flush(): Promise<void> {
     const allSettled = Promise.allSettled(this.pendingSends);
-    const maxTimeout = new Promise((resolve) => setTimeout(resolve, LambdaDogStatsD.MAX_FLUSH_TIMEOUT));
+    const maxTimeout = new Promise<"timeout">((resolve) => {
+      setTimeout(() => resolve("timeout"), LambdaDogStatsD.MAX_FLUSH_TIMEOUT);
+    });
 
-    await Promise.race([allSettled, maxTimeout]);
+    const winner = await Promise.race([allSettled, maxTimeout]);
+    if (winner === "timeout") {
+      logDebug("Timed out before sending all metric payloads");
+    }
+
     this.pendingSends.clear();
   }
 }
