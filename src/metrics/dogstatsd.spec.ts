@@ -15,6 +15,7 @@ describe("LambdaDogStatsD", () => {
       send: mockSend,
       getSendBufferSize: jest.fn().mockReturnValue(64 * 1024),
       setSendBufferSize: jest.fn(),
+      bind: jest.fn(),
     });
   });
 
@@ -68,6 +69,7 @@ describe("LambdaDogStatsD", () => {
       send: jest.fn(), // never calls callback
       getSendBufferSize: jest.fn(),
       setSendBufferSize: jest.fn(),
+      bind: jest.fn(),
     });
 
     const client = new LambdaDogStatsD();

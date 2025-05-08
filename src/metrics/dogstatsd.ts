@@ -18,7 +18,10 @@ export class LambdaDogStatsD {
 
   constructor() {
     this.socket = dgram.createSocket(LambdaDogStatsD.SOCKET_TYPE);
-    LambdaDogStatsD.ensureMinSendBufferSize(this.socket);
+    // Bind to a local port so we can set the socket’s send buffer size
+    this.socket.bind(0, () => {
+      LambdaDogStatsD.ensureMinSendBufferSize(this.socket);
+    });
   }
 
   private static ensureMinSendBufferSize(sock: dgram.Socket): void {
@@ -33,7 +36,7 @@ export class LambdaDogStatsD {
         logDebug(`Socket send buffer increased to ${LambdaDogStatsD.MIN_SEND_BUFFER_SIZE / 1024}kb`);
       }
     } catch {
-      // ignore
+      logDebug("Unable to set socket's send buffer size")
     }
   }
 
