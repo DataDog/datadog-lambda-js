@@ -44,6 +44,19 @@ describe("LambdaDogStatsD", () => {
     );
   });
 
+  it("rounds timestamp", async () => {
+    const client = new LambdaDogStatsD();
+    client.distribution("metric2", 2, 12345.678);
+    await client.flush();
+
+    expect(mockSend).toHaveBeenCalledWith(
+      Buffer.from("metric2:2|d|T12345", "utf8"),
+      8125,
+      "127.0.0.1",
+      expect.any(Function),
+    );
+  });
+
   it("flush() resolves immediately when there are no sends", async () => {
     const client = new LambdaDogStatsD();
     await expect(client.flush()).resolves.toBeUndefined();

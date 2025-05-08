@@ -53,6 +53,11 @@ export class LambdaDogStatsD {
     if (value == null) {
       return;
     }
+
+    if (timestamp) {
+      timestamp = Math.floor(timestamp);
+    }
+
     const serializedTags = tags && tags.length ? `|#${this.normalizeTags(tags).join(",")}` : "";
     const timestampPart = timestamp != null ? `|T${timestamp}` : "";
     const payload = `${metric}:${value}|${metricType}${serializedTags}${timestampPart}`;

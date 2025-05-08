@@ -142,7 +142,7 @@ export class MetricsListener {
         return;
       }
 
-      const secondsSinceEpoch = Math.floor(metricTime.getTime() / 1000);
+      const secondsSinceEpoch = metricTime.getTime() / 1000;
       this.statsDClient.distribution(name, value, secondsSinceEpoch, tags);
       return;
     }
