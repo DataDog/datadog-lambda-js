@@ -36,7 +36,7 @@ export class LambdaDogStatsD {
         logDebug(`Socket send buffer increased to ${LambdaDogStatsD.MIN_SEND_BUFFER_SIZE / 1024}kb`);
       }
     } catch {
-      logDebug("Unable to set socket's send buffer size")
+      logDebug("Unable to set socket's send buffer size");
     }
   }
 
