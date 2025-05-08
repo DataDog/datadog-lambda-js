@@ -7,6 +7,7 @@ import { Distribution } from "./model";
 import { Context } from "aws-lambda";
 import { getEnhancedMetricTags } from "./enhanced-metrics";
 import { LambdaDogStatsD } from "./dogstatsd";
+import { FIPS_MODE_ENABLED } from "../utils/fips";
 
 const METRICS_BATCH_SEND_INTERVAL = 10000; // 10 seconds
 const HISTORICAL_METRICS_THRESHOLD_HOURS = 4 * 60 * 60 * 1000; // 4 hours
@@ -154,6 +155,13 @@ export class MetricsListener {
     }
 
     // Otherwise, send directly to DD API (not FIPs compliant!)
+    if (FIPS_MODE_ENABLED) {
+      logDebug(
+        "FIPS mode is enabled, so sending metrics via the Datadog API is not possible. (1) Install the extension, (2) enable log forwarding, or (3) disable FIPS mode.",
+      );
+      return;
+    }
+
     // Add global tags to metrics sent to the API
     if (this.globalTags !== undefined && this.globalTags.length > 0) {
       tags = [...tags, ...this.globalTags];
@@ -210,10 +218,8 @@ export class MetricsListener {
       try {
         const { SecretsManager } = await import("@aws-sdk/client-secrets-manager");
         const secretRegion = config.apiKeySecretARN.split(":")[3];
-        const lambdaRegion = process.env.AWS_REGION;
-        const isGovRegion = lambdaRegion !== undefined && lambdaRegion.startsWith("us-gov-");
         const secretsManager = new SecretsManager({
-          useFipsEndpoint: isGovRegion,
+          useFipsEndpoint: FIPS_MODE_ENABLED,
           region: secretRegion,
         });
         const secret = await secretsManager.getSecretValue({ SecretId: config.apiKeySecretARN });
