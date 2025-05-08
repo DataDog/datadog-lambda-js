@@ -27,7 +27,7 @@ describe("LambdaDogStatsD", () => {
     client.distribution("metric", 1);
     await client.flush();
 
-    expect(mockSend).toHaveBeenCalledWith(Buffer.from("metric:1|d", "utf8"), 8125, "localhost", expect.any(Function));
+    expect(mockSend).toHaveBeenCalledWith(Buffer.from("metric:1|d", "utf8"), 8125, "127.0.0.1", expect.any(Function));
   });
 
   it("sends with tags (sanitized) and timestamp", async () => {
@@ -39,7 +39,7 @@ describe("LambdaDogStatsD", () => {
     expect(mockSend).toHaveBeenCalledWith(
       Buffer.from("metric2:2|d|#tag1,bad_tag|T12345", "utf8"),
       8125,
-      "localhost",
+      "127.0.0.1",
       expect.any(Function),
     );
   });

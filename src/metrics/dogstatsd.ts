@@ -3,7 +3,7 @@ import { SocketType } from "node:dgram";
 import { logDebug } from "../utils";
 
 export class LambdaDogStatsD {
-  private static readonly HOST = "localhost";
+  private static readonly HOST = "127.0.0.1";
   private static readonly PORT = 8125;
   private static readonly MIN_SEND_BUFFER_SIZE = 32 * 1024;
   private static readonly ENCODING: BufferEncoding = "utf8";
@@ -54,8 +54,8 @@ export class LambdaDogStatsD {
       return;
     }
     const serializedTags = tags && tags.length ? `|#${this.normalizeTags(tags).join(",")}` : "";
-    const timeStampPart = timestamp != null ? `|T${timestamp}` : "";
-    const payload = `${metric}:${value}|${metricType}${serializedTags}${timeStampPart}`;
+    const timestampPart = timestamp != null ? `|T${timestamp}` : "";
+    const payload = `${metric}:${value}|${metricType}${serializedTags}${timestampPart}`;
     this.send(payload);
   }
 
