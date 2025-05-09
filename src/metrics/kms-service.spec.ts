@@ -122,22 +122,27 @@ describe("KMSService", () => {
   });
 
   it("configures FIPS endpoint for GovCloud regions", async () => {
+    jest.resetModules();
+
+    jest.mock("../utils/fips", () => ({
+      AWS_REGION: "us-gov-west-1",
+      FIPS_MODE_ENABLED: true,
+    }));
+
+    const mockKmsConstructor = jest.fn().mockImplementation(() => ({
+      decrypt: () => ({
+        promise: () => Promise.resolve({ Plaintext: Buffer.from(EXPECTED_RESULT) }),
+      }),
+    }));
+    jest.mock("aws-sdk/clients/kms", () => mockKmsConstructor);
+
+    // tslint:disable-next-line:no-shadowed-variable
+    const { KMSService } = require("./kms-service");
+
     try {
-      process.env.AWS_REGION = "us-gov-west-1";
-
-      const mockKmsConstructor = jest.fn();
-      jest.mock("aws-sdk/clients/kms", () => mockKmsConstructor);
-      mockKmsConstructor.mockImplementation(() => ({
-        decrypt: () => ({
-          promise: () => Promise.resolve({ Plaintext: Buffer.from(EXPECTED_RESULT) }),
-        }),
-      }));
-
-      // Create service and call decrypt
       const kmsService = new KMSService();
       await kmsService.decrypt(ENCRYPTED_KEY);
 
-      // Verify FIPS endpoint was used
       expect(mockKmsConstructor).toHaveBeenCalledWith({
         endpoint: "https://kms-fips.us-gov-west-1.amazonaws.com",
       });

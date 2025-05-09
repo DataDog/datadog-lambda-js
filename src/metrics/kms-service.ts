@@ -2,6 +2,7 @@
 // in the Lambda environment anyway), we use require to import the SDK.
 
 import { logDebug } from "../utils";
+import { AWS_REGION, FIPS_MODE_ENABLED } from "../utils/fips";
 
 export class KMSService {
   private encryptionContext;
@@ -14,16 +15,12 @@ export class KMSService {
     const buffer = Buffer.from(ciphertext, "base64");
     let kms;
 
-    const region = process.env.AWS_REGION;
-    const isGovRegion = region !== undefined && region.startsWith("us-gov-");
-    if (isGovRegion) {
-      logDebug("Govcloud region detected. Using FIPs endpoints for secrets management.");
-    }
     let kmsClientParams = {};
-    if (isGovRegion) {
+    if (FIPS_MODE_ENABLED) {
+      logDebug("FIPS mode is enabled, Using FIPS endpoints for secrets management.");
       // Endpoints: https://docs.aws.amazon.com/general/latest/gr/kms.html
       kmsClientParams = {
-        endpoint: `https://kms-fips.${region}.amazonaws.com`,
+        endpoint: `https://kms-fips.${AWS_REGION}.amazonaws.com`,
       };
     }
 
