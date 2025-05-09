@@ -34,7 +34,7 @@ describe("fips.ts", () => {
     expect(FIPS_MODE_ENABLED).toBe(true);
   });
 
-  it("respects DD_LAMBDA_FIPS_MODE=false override in GovCloud (logs not enabled)", () => {
+  it("disables FIPS mode when DD_LAMBDA_FIPS_MODE=false in GovCloud region", () => {
     process.env.AWS_REGION = "us-gov-east-1";
     process.env.DD_LAMBDA_FIPS_MODE = "false";
 
