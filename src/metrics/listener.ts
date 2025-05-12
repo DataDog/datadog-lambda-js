@@ -63,7 +63,7 @@ export interface MetricsConfig {
 
 export class MetricsListener {
   private currentProcessor?: Promise<any>;
-  private apiKey: Promise<string> | undefined;
+  private apiKey?: Promise<string>;
   private statsDClient: LambdaDogStatsD;
   private isExtensionRunning?: boolean = undefined;
   private globalTags?: string[] = [];
