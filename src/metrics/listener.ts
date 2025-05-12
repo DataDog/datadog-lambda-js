@@ -63,18 +63,24 @@ export interface MetricsConfig {
 
 export class MetricsListener {
   private currentProcessor?: Promise<any>;
-  private apiKey: Promise<string>;
+  private apiKey?: Promise<string>;
   private statsDClient: LambdaDogStatsD;
   private isExtensionRunning?: boolean = undefined;
   private globalTags?: string[] = [];
 
   constructor(private kmsClient: KMSService, private config: MetricsConfig) {
-    this.apiKey = this.getAPIKey(config);
     this.config = config;
     this.statsDClient = new LambdaDogStatsD();
   }
 
   public async onStartInvocation(_: any, context?: Context) {
+    // We get the API key in onStartInvocation rather than in the constructor because in busy functions,
+    // initialization may occur more than 5 minutes before the first invocation (due to proactive initialization),
+    // resulting in AWS errors: https://github.com/aws/aws-sdk-js-v3/issues/5192#issuecomment-2073243617
+    if (!this.apiKey) {
+      this.apiKey = this.getAPIKey(this.config);
+    }
+
     if (this.isExtensionRunning === undefined) {
       this.isExtensionRunning = await isExtensionRunning();
       logDebug(`Extension present: ${this.isExtensionRunning}`);
