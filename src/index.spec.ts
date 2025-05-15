@@ -24,6 +24,7 @@ import { TraceSource } from "./trace/trace-context-service";
 import { inflateSync } from "zlib";
 import { MetricsListener } from "./metrics/listener";
 import { SpanOptions, TracerWrapper } from "./trace/tracer-wrapper";
+import fs from "fs";
 
 jest.mock("./metrics/enhanced-metrics");
 
@@ -620,5 +621,80 @@ describe("emitTelemetryOnErrorOutsideHandler", () => {
     process.env.DD_TRACE_ENABLED = "false";
     await emitTelemetryOnErrorOutsideHandler(new ReferenceError("some error"), "myFunction", Date.now());
     expect(mockedStartSpan).toBeCalledTimes(0);
+  });
+});
+
+describe("detectDuplicateInstallations", () => {
+  jest.mock("fs/promises");
+
+  let fsAccessMock: jest.SpyInstance;
+  let logWarningMock: jest.SpyInstance;
+
+  beforeEach(() => {
+    jest.resetAllMocks();
+    fsAccessMock = jest.spyOn(fs.promises, "access");
+    logWarningMock = jest.spyOn(require("./utils"), "logWarning").mockImplementation(() => {});
+  });
+
+  it("should log warning when duplicate installations are detected", async () => {
+    // Mock fs.promises.access to simulate both paths exist
+    fsAccessMock.mockResolvedValue(undefined); // undefined (no error) = path exists
+
+    await datadog(
+      async () => {
+        /* empty */
+      },
+      { forceWrap: true },
+    )();
+    expect(logWarningMock).toHaveBeenCalledWith(expect.stringContaining("Detected duplicate installations"));
+  });
+
+  it("should not log warning when only layer installation exists", async () => {
+    // Simulate layerPath exists, localPath does not exist
+    fsAccessMock.mockImplementation((path: string) => {
+      if (path.includes("/opt/nodejs")) {
+        return Promise.resolve(); // Exists
+      }
+      return Promise.reject(new Error("ENOENT")); // Does not exist
+    });
+
+    await datadog(
+      async () => {
+        /* empty */
+      },
+      { forceWrap: true },
+    )();
+    expect(logWarningMock).not.toHaveBeenCalled();
+  });
+
+  it("should not log warning when only local installation exists", async () => {
+    // Simulate localPath exists, layerPath does not exist
+    fsAccessMock.mockImplementation((path: string) => {
+      if (path.includes("/opt/nodejs")) {
+        return Promise.reject(new Error("ENOENT")); // Does not exist
+      }
+      return Promise.resolve(); // Exists
+    });
+
+    await datadog(
+      async () => {
+        /* empty */
+      },
+      { forceWrap: true },
+    )();
+    expect(logWarningMock).not.toHaveBeenCalled();
+  });
+
+  it("should not log warning when neither installation exists", async () => {
+    // Simulate neither path exists
+    fsAccessMock.mockRejectedValue(new Error("ENOENT")); // Does not exist
+
+    await datadog(
+      async () => {
+        /* empty */
+      },
+      { forceWrap: true },
+    )();
+    expect(logWarningMock).not.toHaveBeenCalled();
   });
 });
