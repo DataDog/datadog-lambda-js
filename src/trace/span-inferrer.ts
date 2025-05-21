@@ -119,6 +119,7 @@ export class SpanInferrer {
       "span.type": "http",
       "resource.name": resourceName,
       "peer.service": this.service,
+      "span.kind": "server",
       apiid: apiId,
       _inferred_span: {
         tag_source: "self",
@@ -217,6 +218,7 @@ export class SpanInferrer {
       "span.type": "http",
       "resource.name": resourceName,
       "peer.service": this.service,
+      "span.kind": "server",
       _inferred_span: {
         tag_source: "self",
         synchronicity: "sync",
@@ -254,6 +256,7 @@ export class SpanInferrer {
       "span.type": "web",
       "resource.name": resourceName,
       "peer.service": this.service,
+      "span.kind": "server",
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -476,6 +479,7 @@ export class SpanInferrer {
       "span.type": "web",
       "resource.name": bucketName,
       "peer.service": this.service,
+      "span.kind": "server",
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
