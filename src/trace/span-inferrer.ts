@@ -82,7 +82,9 @@ export class SpanInferrer {
   }
 
   static determineServiceName(specificKey: string, genericKey: string, extractedKey: string, fallback: string): string {
-    return this.serviceMapping[specificKey] || this.serviceMapping[genericKey] || fallback;
+    return this.serviceMapping[specificKey] || 
+           this.serviceMapping[genericKey] || 
+           (extractedKey?.trim() ? extractedKey : fallback);
   }
 
   createInferredSpanForApiGateway(
@@ -241,9 +243,6 @@ export class SpanInferrer {
     const { eventSourceARN, eventName, eventVersion, eventID, dynamodb } = referenceRecord;
     const [tableArn, tableName] = eventSourceARN?.split("/") || ["", ""];
     const resourceName = `${eventName} ${tableName}`;
-
-    //REMOVE
-    //ADD HARDCODED DEFAULT AND EXTRACTED SERVICE NAME
     const serviceName = SpanInferrer.determineServiceName(tableName, "lambda_dynamodb", tableName, "dynamodb");
     options.tags = {
       operation_name: "aws.dynamodb",
@@ -299,9 +298,6 @@ export class SpanInferrer {
 
     const topicName = TopicArn?.split(":").pop() || "";
     const resourceName = topicName;
-
-    //REMOVE
-    //ADD HARDCODED DEFAULT AND EXTRACTED SERVICE NAME
     const serviceName = SpanInferrer.determineServiceName(topicName, "lambda_sns", topicName, "sns");
     options.tags = {
       operation_name: "aws.sns",
@@ -354,9 +350,6 @@ export class SpanInferrer {
     } = referenceRecord;
     const queueName = eventSourceARN?.split(":").pop() || "";
     const resourceName = queueName;
-
-    //REMOVE
-    //ADD HARDCODED DEFAULT AND EXTRACTED SERVICE NAME
     const serviceName = SpanInferrer.determineServiceName(queueName, "lambda_sqs", queueName, "sqs");
     options.tags = {
       operation_name: "aws.sqs",
@@ -424,9 +417,6 @@ export class SpanInferrer {
     } = referenceRecord;
     const streamName = eventSourceARN?.split(":").pop() || "";
     const shardId = eventID.split(":").pop();
-
-    //REMOVE
-    //ADD HARDCODED DEFAULT AND EXTRACTED SERVICE NAME
     const serviceName = SpanInferrer.determineServiceName(streamName, "lambda_kinesis", streamName, "kinesis");
     options.tags = {
       operation_name: "aws.kinesis",
@@ -476,9 +466,6 @@ export class SpanInferrer {
       eventTime,
       eventName,
     } = referenceRecord;
-
-    //REMOVE
-    //ADD HARDCODED DEFAULT AND EXTRACTED SERVICE NAME
     const serviceName = SpanInferrer.determineServiceName(bucketName, "lambda_s3", bucketName, "s3");
     options.tags = {
       operation_name: "aws.s3",
@@ -517,9 +504,6 @@ export class SpanInferrer {
   ): SpanWrapper {
     const options: SpanOptions = {};
     const { time, source } = event as EventBridgeEvent<any, any>;
-
-    //REMOVE
-    //ADD HARDCODED DEFAULT AND EXTRACTED SERVICE NAME
     const serviceName = SpanInferrer.determineServiceName(source, "lambda_eventbridge", source, "eventbridge");
     options.tags = {
       operation_name: "aws.eventbridge",
