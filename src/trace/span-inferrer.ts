@@ -81,7 +81,7 @@ export class SpanInferrer {
     return "sync";
   }
 
-  static determineServiceName(specificKey: string, genericKey: string, fallback: string): string {
+  static determineServiceName(specificKey: string, genericKey: string, extractedKey: string, fallback: string): string {
     return this.serviceMapping[specificKey] || this.serviceMapping[genericKey] || fallback;
   }
 
@@ -104,7 +104,7 @@ export class SpanInferrer {
     }
     const resourceName = [method || domain, resourcePath].join(" ");
     const apiId = event.requestContext.apiId || "";
-    const serviceName = SpanInferrer.determineServiceName(apiId, "lambda_api_gateway", domain);
+    const serviceName = SpanInferrer.determineServiceName(apiId, "lambda_api_gateway", domain, "api_gateway");
 
     options.tags = {
       operation_name: "aws.apigateway",
@@ -201,7 +201,7 @@ export class SpanInferrer {
     }
     const resourceName = [method || domain, path].join(" ");
     const apiId: string = event.requestContext.apiId || "";
-    const serviceName: string = SpanInferrer.determineServiceName(apiId, "lambda_url", domain);
+    const serviceName: string = SpanInferrer.determineServiceName(apiId, "lambda_url", domain, "lambda_url");
 
     options.tags = {
       operation_name: "aws.lambda.url",
@@ -241,7 +241,10 @@ export class SpanInferrer {
     const { eventSourceARN, eventName, eventVersion, eventID, dynamodb } = referenceRecord;
     const [tableArn, tableName] = eventSourceARN?.split("/") || ["", ""];
     const resourceName = `${eventName} ${tableName}`;
-    const serviceName = SpanInferrer.determineServiceName(tableName, "lambda_dynamodb", "aws.dynamodb");
+
+    //REMOVE
+    //ADD HARDCODED DEFAULT AND EXTRACTED SERVICE NAME
+    const serviceName = SpanInferrer.determineServiceName(tableName, "lambda_dynamodb", tableName, "dynamodb");
     options.tags = {
       operation_name: "aws.dynamodb",
       tablename: tableName,
@@ -296,7 +299,10 @@ export class SpanInferrer {
 
     const topicName = TopicArn?.split(":").pop() || "";
     const resourceName = topicName;
-    const serviceName = SpanInferrer.determineServiceName(topicName, "lambda_sns", "sns");
+
+    //REMOVE
+    //ADD HARDCODED DEFAULT AND EXTRACTED SERVICE NAME
+    const serviceName = SpanInferrer.determineServiceName(topicName, "lambda_sns", topicName, "sns");
     options.tags = {
       operation_name: "aws.sns",
       resource_names: resourceName,
@@ -306,6 +312,7 @@ export class SpanInferrer {
       "span.type": "sns",
       "resource.name": resourceName,
       "peer.service": this.service,
+      "span.kind": "server",
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -347,7 +354,10 @@ export class SpanInferrer {
     } = referenceRecord;
     const queueName = eventSourceARN?.split(":").pop() || "";
     const resourceName = queueName;
-    const serviceName = SpanInferrer.determineServiceName(queueName, "lambda_sqs", "sqs");
+
+    //REMOVE
+    //ADD HARDCODED DEFAULT AND EXTRACTED SERVICE NAME
+    const serviceName = SpanInferrer.determineServiceName(queueName, "lambda_sqs", queueName, "sqs");
     options.tags = {
       operation_name: "aws.sqs",
       resource_names: resourceName,
@@ -357,6 +367,7 @@ export class SpanInferrer {
       "span.type": "web",
       "resource.name": resourceName,
       "peer.service": this.service,
+      "span.kind": "server",
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -413,7 +424,10 @@ export class SpanInferrer {
     } = referenceRecord;
     const streamName = eventSourceARN?.split(":").pop() || "";
     const shardId = eventID.split(":").pop();
-    const serviceName = SpanInferrer.determineServiceName(streamName, "lambda_kinesis", "kinesis");
+
+    //REMOVE
+    //ADD HARDCODED DEFAULT AND EXTRACTED SERVICE NAME
+    const serviceName = SpanInferrer.determineServiceName(streamName, "lambda_kinesis", streamName, "kinesis");
     options.tags = {
       operation_name: "aws.kinesis",
       resource_names: streamName,
@@ -423,6 +437,7 @@ export class SpanInferrer {
       "span.type": "web",
       "resource.name": streamName,
       "peer.service": this.service,
+      "span.kind": "server",
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",
@@ -461,7 +476,10 @@ export class SpanInferrer {
       eventTime,
       eventName,
     } = referenceRecord;
-    const serviceName = SpanInferrer.determineServiceName(bucketName, "lambda_s3", "s3");
+
+    //REMOVE
+    //ADD HARDCODED DEFAULT AND EXTRACTED SERVICE NAME
+    const serviceName = SpanInferrer.determineServiceName(bucketName, "lambda_s3", bucketName, "s3");
     options.tags = {
       operation_name: "aws.s3",
       resource_names: bucketName,
@@ -499,7 +517,10 @@ export class SpanInferrer {
   ): SpanWrapper {
     const options: SpanOptions = {};
     const { time, source } = event as EventBridgeEvent<any, any>;
-    const serviceName = SpanInferrer.determineServiceName(source, "lambda_eventbridge", "eventbridge");
+
+    //REMOVE
+    //ADD HARDCODED DEFAULT AND EXTRACTED SERVICE NAME
+    const serviceName = SpanInferrer.determineServiceName(source, "lambda_eventbridge", source, "eventbridge");
     options.tags = {
       operation_name: "aws.eventbridge",
       resource_names: source,
@@ -509,6 +530,7 @@ export class SpanInferrer {
       "span.type": "web",
       "resource.name": source,
       "peer.service": this.service,
+      "span.kind": "server",
       _inferred_span: {
         tag_source: "self",
         synchronicity: "async",

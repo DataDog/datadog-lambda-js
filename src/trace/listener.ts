@@ -319,10 +319,15 @@ export class TraceListener {
       options.childOf = this.lambdaSpanParentContext;
     }
     options.type = "serverless";
-    options.service = "aws.lambda";
+
     if (this.context) {
       options.resource = this.context.functionName;
+      
+      options.service = this.context.functionName || "aws.lambda";
+      return this.tracerWrapper.wrap(this.context.functionName, options, func); //REMOVE
     }
+
+    options.service = "aws.lambda";
     return this.tracerWrapper.wrap("aws.lambda", options, func);
   }
 }
