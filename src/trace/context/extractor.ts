@@ -75,7 +75,8 @@ export class TraceContextExtractor {
   private getTraceEventExtractor(event: any): EventTraceExtractor | undefined {
     if (!event || typeof event !== "object") return;
 
-    if (event.headers !== null && typeof event.headers === "object") {
+    const headers = event.headers ?? event.multiValueHeaders;
+    if (headers !== null && typeof headers === "object") {
       return new HTTPEventTraceExtractor(this.tracerWrapper, this.config.decodeAuthorizerContext);
     }
 
