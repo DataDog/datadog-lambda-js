@@ -289,7 +289,7 @@ function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEv
   if (eventType.isAPIGatewayEvent(event)) {
     const requestContext = event.requestContext;
     if (requestContext.domainName) {
-      httpTags["http.url"] = requestContext.domainName;
+      httpTags["http.url"] = `https://${requestContext.domainName}`;
     }
     httpTags["http.url_details.path"] = requestContext.path;
     httpTags["http.method"] = requestContext.httpMethod;
@@ -304,7 +304,7 @@ function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEv
 
   if (eventType.isAPIGatewayEventV2(event)) {
     const requestContext = event.requestContext;
-    httpTags["http.url"] = requestContext.domainName;
+    httpTags["http.url"] = `https://${requestContext.domainName}`;
     httpTags["http.url_details.path"] = requestContext.http.path;
     httpTags["http.method"] = requestContext.http.method;
     if (event.headers?.Referer) {
@@ -330,7 +330,7 @@ function extractHTTPTags(event: APIGatewayEvent | APIGatewayProxyEventV2 | ALBEv
   if (eventType.isLambdaUrlEvent(event)) {
     const requestContext = event.requestContext;
     if (requestContext.domainName) {
-      httpTags["http.url"] = requestContext.domainName;
+      httpTags["http.url"] = `https://${requestContext.domainName}`;
     }
     httpTags["http.url_details.path"] = requestContext.http.path;
     httpTags["http.method"] = requestContext.http.method;
