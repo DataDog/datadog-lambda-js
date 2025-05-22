@@ -418,7 +418,7 @@ export class SpanInferrer {
       eventVersion,
       eventID,
     } = referenceRecord;
-    const streamName = eventSourceARN?.split(":").pop() || "";
+    const streamName = (eventSourceARN?.split(":").pop() || "").replace(/^stream\//, '');
     const shardId = eventID.split(":").pop();
     const serviceName = SpanInferrer.determineServiceName(streamName, "lambda_kinesis", streamName, "kinesis");
     options.tags = {
