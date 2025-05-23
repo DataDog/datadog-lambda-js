@@ -94,6 +94,7 @@ export class SpanInferrer {
     const options: SpanOptions = {};
     const domain = event.requestContext.domainName || "";
     const path = event.rawPath || event.requestContext.path || event.requestContext.routeKey;
+    const httpUrl = `https://${domain}${path}`;
     const resourcePath = this.getResourcePath(event);
 
     let method;
@@ -108,7 +109,7 @@ export class SpanInferrer {
 
     options.tags = {
       operation_name: "aws.apigateway",
-      "http.url": domain + path,
+      "http.url": httpUrl,
       endpoint: path,
       resource_names: resourceName,
       request_id: context?.awsRequestId,
@@ -193,6 +194,7 @@ export class SpanInferrer {
     const options: SpanOptions = {};
     const domain: string = event.requestContext.domainName || "";
     const path = event.rawPath;
+    const httpUrl = `https://${domain}${path}`;
     let method;
     if (event.requestContext.httpMethod) {
       method = event.requestContext.httpMethod;
@@ -205,7 +207,7 @@ export class SpanInferrer {
 
     options.tags = {
       operation_name: "aws.lambda.url",
-      "http.url": domain + path,
+      "http.url": httpUrl,
       endpoint: path,
       "http.method": event.requestContext.http.method,
       resource_names: resourceName,

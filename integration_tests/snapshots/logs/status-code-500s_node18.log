@@ -46,7 +46,7 @@ START
           "service": "remappedApiGatewayServiceName",
           "runtime-id":"XXXX",
           "operation_name": "aws.apigateway",
-          "http.url": "undefined",
+          "http.url": "https://undefined",
           "resource_names": "GET /{proxy+}",
           "request_id":"XXXX",
           "apiid":"XXXX",
