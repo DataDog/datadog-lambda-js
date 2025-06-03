@@ -3,6 +3,7 @@ name: update-deps
 on:
   schedule:
     - cron: "0 10 * * *" # Run at 10 am every day
+  workflow_dispatch:
 
 jobs:
   check:
