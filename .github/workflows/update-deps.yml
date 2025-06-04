@@ -3,14 +3,24 @@ name: update-deps
 on:
   schedule:
     - cron: "0 10 * * *" # Run at 10 am every day
+  workflow_dispatch:
 
 jobs:
   check:
     runs-on: ubuntu-latest
+    environment:
+      name: protected-main-env
     steps:
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@df432ceedc7162793a195dd1713ff69aefc7379e # v2.0.6
+        with:
+          app-id: ${{ secrets.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+
       - uses: actions/checkout@v2
         with:
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          token: ${{ steps.generate_token.outputs.token }}
 
       - uses: actions/setup-node@v3
         with:
