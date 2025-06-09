@@ -121,8 +121,8 @@ export function promisifiedHandler<TEvent, TResult>(handler: Handler<TEvent, TRe
     if (asyncProm !== undefined && typeof asyncProm.then === "function") {
       // Mimics behaviour of lambda runtime, the first method of returning a result always wins.
       promise = Promise.race([callbackProm, asyncProm]);
-    } else if (asyncProm === undefined) {
-      // Handler returned undefined (also happens when missing return statement), resolve immediately
+    } else if (asyncProm === undefined && handler.length < 3) {
+      // Handler returned undefined and doesn't take a callback parameter, resolve immediately
       promise = Promise.resolve(undefined);
     }
     return promise;
