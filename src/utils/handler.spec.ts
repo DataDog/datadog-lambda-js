@@ -296,4 +296,33 @@ describe("wrap", () => {
 
     expect(calledOriginalHandler).toBeFalsy();
   });
+
+  it("completes when handler returns undefined", async () => {
+    const handler: Handler = (event, context) => {
+      // No return statement, implicitly returns undefined
+    };
+
+    let calledStart = false;
+    let calledComplete = false;
+    let calledOriginalHandler = false;
+
+    const wrappedHandler = wrap(
+      handler,
+      async () => {
+        calledStart = true;
+      },
+      async () => {
+        calledComplete = true;
+      },
+    );
+
+    const result = await wrappedHandler({}, mockContext, () => {
+      calledOriginalHandler = true;
+    });
+
+    expect(result).toEqual(undefined);
+    expect(calledStart).toBeTruthy();
+    expect(calledComplete).toBeTruthy();
+    expect(calledOriginalHandler).toBeFalsy();
+  });
 });
