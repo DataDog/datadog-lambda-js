@@ -24,7 +24,7 @@
     "@aws-sdk/client-secrets-manager": "^3.721.0",
     "@types/aws-lambda": "^8.10.136",
     "@types/aws-sdk": "^2.7.0",
-    "@types/jest": "^26.0.23",
+    "@types/jest": "^27.5.2",
     "@types/mock-fs": "4.13.0",
     "@types/node": "^20.12.10",
     "@types/promise-retry": "^1.1.3",
