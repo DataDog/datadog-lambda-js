@@ -121,8 +121,8 @@ function processDynamoDbEvent(event: any): SpanPointerAttributes[] {
       continue;
     }
 
-    const keyNamesSet = new Set(Object.keys(keys));
-    const primaryKeysAndValues = extractPrimaryKeys(keyNamesSet, keys);
+    const keyNames = Object.keys(keys);
+    const primaryKeysAndValues = extractPrimaryKeys(keyNames, keys);
     if (!primaryKeysAndValues) {
       continue;
     }
