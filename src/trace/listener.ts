@@ -322,6 +322,7 @@ export class TraceListener {
     options.service = "aws.lambda";
     if (this.context) {
       options.resource = this.context.functionName;
+      options.service = this.context.functionName;
     }
     return this.tracerWrapper.wrap("aws.lambda", options, func);
   }
