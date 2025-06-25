@@ -14,7 +14,7 @@ describe("parseEventSource", () => {
       result: {
         "function_trigger.event_source": "api-gateway",
         "function_trigger.event_source_arn": "arn:aws:apigateway:us-east-1::/restapis/id/stages/$default",
-        "http.url": "id.execute-api.us-east-1.amazonaws.com",
+        "http.url": "https://id.execute-api.us-east-1.amazonaws.com",
         "http.url_details.path": "/my/path",
         "http.method": "GET",
         "http.route": "/my/path",
@@ -25,7 +25,7 @@ describe("parseEventSource", () => {
       result: {
         "function_trigger.event_source": "api-gateway",
         "function_trigger.event_source_arn": "arn:aws:apigateway:us-east-1::/restapis/r3pmxmplak/stages/default",
-        "http.url": "r3pmxmplak.execute-api.us-east-2.amazonaws.com",
+        "http.url": "https://r3pmxmplak.execute-api.us-east-2.amazonaws.com",
         "http.url_details.path": "/default/nodejs-apig-function-1G3XMPLZXVXYI",
         "http.method": "GET",
         "http.route": "/nodejs-apig-function-1G3XMPLZXVXYI",
@@ -35,7 +35,7 @@ describe("parseEventSource", () => {
     {
       result: {
         "function_trigger.event_source": "lambda-function-url",
-        "http.url": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com",
+        "http.url": "https://a8hyhsshac.lambda-url.eu-south-1.amazonaws.com",
         "http.url_details.path": "/",
         "http.method": "GET",
       },
