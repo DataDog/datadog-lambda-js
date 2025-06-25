@@ -82,8 +82,8 @@ export class SpanInferrer {
   }
 
   static determineServiceName(specificKey: string, genericKey: string, extractedKey: string, fallback: string): string {
-    return this.serviceMapping[specificKey] || 
-           this.serviceMapping[genericKey] || 
+    return this.serviceMapping[specificKey] ||
+           this.serviceMapping[genericKey] ||
            (extractedKey?.trim() ? extractedKey : fallback);
   }
 
