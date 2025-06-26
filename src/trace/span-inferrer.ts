@@ -82,9 +82,11 @@ export class SpanInferrer {
   }
 
   static determineServiceName(specificKey: string, genericKey: string, extractedKey: string, fallback: string): string {
-    return this.serviceMapping[specificKey] ||
-           this.serviceMapping[genericKey] ||
-           (extractedKey?.trim() ? extractedKey : fallback);
+    return (
+      this.serviceMapping[specificKey] ||
+      this.serviceMapping[genericKey] ||
+      (extractedKey?.trim() ? extractedKey : fallback)
+    );
   }
 
   createInferredSpanForApiGateway(
@@ -420,7 +422,7 @@ export class SpanInferrer {
       eventVersion,
       eventID,
     } = referenceRecord;
-    const streamName = (eventSourceARN?.split(":").pop() || "").replace(/^stream\//, '');
+    const streamName = (eventSourceARN?.split(":").pop() || "").replace(/^stream\//, "");
     const shardId = eventID.split(":").pop();
     const serviceName = SpanInferrer.determineServiceName(streamName, "lambda_kinesis", streamName, "aws.kinesis");
     options.tags = {
