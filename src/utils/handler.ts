@@ -124,6 +124,9 @@ export function promisifiedHandler<TEvent, TResult>(handler: Handler<TEvent, TRe
     } else if (asyncProm === undefined && handler.length < 3) {
       // Handler returned undefined and doesn't take a callback parameter, resolve immediately
       promise = Promise.resolve(undefined);
+    } else {
+      // Handler returned a value directly, resolve with that value
+      promise = Promise.resolve(asyncProm);
     }
     return promise;
   };
