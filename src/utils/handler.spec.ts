@@ -325,4 +325,34 @@ describe("wrap", () => {
     expect(calledComplete).toBeTruthy();
     expect(calledOriginalHandler).toBeFalsy();
   });
+
+  it("completes when handler returns a value directly (sync handler)", async () => {
+    const handler = (event: any, context: Context) => {
+      // Return a value directly without using callback or promise
+      return { statusCode: 200, body: "Sync response" };
+    };
+
+    let calledStart = false;
+    let calledComplete = false;
+    let calledOriginalHandler = false;
+
+    const wrappedHandler = wrap(
+      handler as any,
+      async () => {
+        calledStart = true;
+      },
+      async () => {
+        calledComplete = true;
+      },
+    );
+
+    const result = await wrappedHandler({}, mockContext, () => {
+      calledOriginalHandler = true;
+    });
+
+    expect(result).toEqual({ statusCode: 200, body: "Sync response" });
+    expect(calledStart).toBeTruthy();
+    expect(calledComplete).toBeTruthy();
+    expect(calledOriginalHandler).toBeFalsy();
+  });
 });
