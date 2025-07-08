@@ -35,6 +35,7 @@ START
           "http.url": "https://undefined",
           "resource_names": "GET /{proxy+}",
           "request_id":"XXXX",
+          "span.kind": "server",
           "apiid":"XXXX",
           "_inferred_span.tag_source": "self",
           "_inferred_span.synchronicity": "sync",
@@ -48,6 +49,7 @@ START
         "metrics": {
           "_dd.agent_psr": 1,
           "_dd.top_level": 1,
+          "_dd.measured": 1,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
         },
@@ -81,7 +83,6 @@ START
           "http.method": "GET",
           "http.route": "/{proxy+}",
           "http.status_code": "200",
-          "_dd.base_service": "integration-tests-js-XXXX-esm_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -93,7 +94,7 @@ START
         "start":XXXX,
         "duration":XXXX,
         "links": [],
-        "service": "aws.lambda",
+        "service": "integration-tests-js-XXXX-esm_node20",
         "type": "serverless"
       }
     ]
@@ -137,6 +138,7 @@ START
           "tablename": "someTableName",
           "resource_names": "MODIFY someTableName",
           "request_id":"XXXX",
+          "span.kind": "server",
           "_inferred_span.tag_source": "self",
           "_inferred_span.synchronicity": "async",
           "event_name": "MODIFY",
@@ -150,6 +152,7 @@ START
         "metrics": {
           "_dd.agent_psr": 1,
           "_dd.top_level": 1,
+          "_dd.measured": 1,
           "size_bytes": 37,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
@@ -181,7 +184,6 @@ START
           "dd_trace": "",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
-          "_dd.base_service": "integration-tests-js-XXXX-esm_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -193,7 +195,7 @@ START
         "start":XXXX,
         "duration":XXXX,
         "links": [],
-        "service": "aws.lambda",
+        "service": "integration-tests-js-XXXX-esm_node20",
         "type": "serverless"
       }
     ]
@@ -237,6 +239,7 @@ START
           "tablename": "someTableName",
           "resource_names": "REMOVE someTableName",
           "request_id":"XXXX",
+          "span.kind": "server",
           "_inferred_span.tag_source": "self",
           "_inferred_span.synchronicity": "async",
           "event_name": "REMOVE",
@@ -250,6 +253,7 @@ START
         "metrics": {
           "_dd.agent_psr": 1,
           "_dd.top_level": 1,
+          "_dd.measured": 1,
           "size_bytes": 37,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
@@ -281,7 +285,6 @@ START
           "dd_trace": "",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
-          "_dd.base_service": "integration-tests-js-XXXX-esm_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -293,7 +296,7 @@ START
         "start":XXXX,
         "duration":XXXX,
         "links": [],
-        "service": "aws.lambda",
+        "service": "integration-tests-js-XXXX-esm_node20",
         "type": "serverless"
       }
     ]
@@ -337,6 +340,7 @@ START
           "tablename": "someTableName",
           "resource_names": "INSERT someTableName",
           "request_id":"XXXX",
+          "span.kind": "server",
           "_inferred_span.tag_source": "self",
           "_inferred_span.synchronicity": "async",
           "event_name": "INSERT",
@@ -350,6 +354,7 @@ START
         "metrics": {
           "_dd.agent_psr": 1,
           "_dd.top_level": 1,
+          "_dd.measured": 1,
           "size_bytes": 37,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
@@ -381,7 +386,6 @@ START
           "dd_trace": "",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
-          "_dd.base_service": "integration-tests-js-XXXX-esm_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -393,7 +397,7 @@ START
         "start":XXXX,
         "duration":XXXX,
         "links": [],
-        "service": "aws.lambda",
+        "service": "integration-tests-js-XXXX-esm_node20",
         "type": "serverless"
       }
     ]
@@ -436,6 +440,7 @@ START
           "operation_name": "aws.s3",
           "resource_names": "my-bucket-name",
           "request_id":"XXXX",
+          "span.kind": "server",
           "_inferred_span.tag_source": "self",
           "_inferred_span.synchronicity": "async",
           "bucketname": "my-bucket-name",
@@ -449,6 +454,7 @@ START
         "metrics": {
           "_dd.agent_psr": 1,
           "_dd.top_level": 1,
+          "_dd.measured": 1,
           "object_size": 8388608,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
@@ -480,7 +486,6 @@ START
           "dd_trace": "",
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
-          "_dd.base_service": "integration-tests-js-XXXX-esm_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -492,7 +497,7 @@ START
         "start":XXXX,
         "duration":XXXX,
         "links": [],
-        "service": "aws.lambda",
+        "service": "integration-tests-js-XXXX-esm_node20",
         "type": "serverless"
       }
     ]
@@ -535,6 +540,7 @@ START
           "operation_name": "aws.s3",
           "resource_names": "my-bucket-name",
           "request_id":"XXXX",
+          "span.kind": "server",
           "_inferred_span.tag_source": "self",
           "_inferred_span.synchronicity": "async",
           "bucketname": "my-bucket-name",
@@ -548,6 +554,7 @@ START
         "metrics": {
           "_dd.agent_psr": 1,
           "_dd.top_level": 1,
+          "_dd.measured": 1,
           "object_size": 100,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
@@ -579,7 +586,6 @@ START
           "dd_trace": "",
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
-          "_dd.base_service": "integration-tests-js-XXXX-esm_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -591,7 +597,7 @@ START
         "start":XXXX,
         "duration":XXXX,
         "links": [],
-        "service": "aws.lambda",
+        "service": "integration-tests-js-XXXX-esm_node20",
         "type": "serverless"
       }
     ]
@@ -634,6 +640,7 @@ START
           "operation_name": "aws.s3",
           "resource_names": "my-bucket-name",
           "request_id":"XXXX",
+          "span.kind": "server",
           "_inferred_span.tag_source": "self",
           "_inferred_span.synchronicity": "async",
           "bucketname": "my-bucket-name",
@@ -647,6 +654,7 @@ START
         "metrics": {
           "_dd.agent_psr": 1,
           "_dd.top_level": 1,
+          "_dd.measured": 1,
           "object_size": 100,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
@@ -678,7 +686,6 @@ START
           "dd_trace": "",
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
-          "_dd.base_service": "integration-tests-js-XXXX-esm_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -690,7 +697,7 @@ START
         "start":XXXX,
         "duration":XXXX,
         "links": [],
-        "service": "aws.lambda",
+        "service": "integration-tests-js-XXXX-esm_node20",
         "type": "serverless"
       }
     ]
@@ -732,6 +739,7 @@ START
           "operation_name": "aws.sns",
           "resource_names": "sns-lambda",
           "request_id":"XXXX",
+          "span.kind": "server",
           "_inferred_span.tag_source": "self",
           "_inferred_span.synchronicity": "async",
           "type": "Notification",
@@ -746,6 +754,7 @@ START
         "metrics": {
           "_dd.agent_psr": 1,
           "_dd.top_level": 1,
+          "_dd.measured": 1,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
         },
@@ -776,7 +785,6 @@ START
           "dd_trace": "",
           "function_trigger.event_source": "sns",
           "function_trigger.event_source_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda",
-          "_dd.base_service": "integration-tests-js-XXXX-esm_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -788,7 +796,7 @@ START
         "start":XXXX,
         "duration":XXXX,
         "links": [],
-        "service": "aws.lambda",
+        "service": "integration-tests-js-XXXX-esm_node20",
         "type": "serverless"
       }
     ]
@@ -830,6 +838,7 @@ START
           "operation_name": "aws.sqs",
           "resource_names": "my-queue",
           "request_id":"XXXX",
+          "span.kind": "server",
           "_inferred_span.tag_source": "self",
           "_inferred_span.synchronicity": "async",
           "queuename": "my-queue",
@@ -842,6 +851,7 @@ START
         "metrics": {
           "_dd.agent_psr": 1,
           "_dd.top_level": 1,
+          "_dd.measured": 1,
           "retry_count": 1,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
@@ -873,7 +883,6 @@ START
           "dd_trace": "",
           "function_trigger.event_source": "sqs",
           "function_trigger.event_source_arn": "arn:aws:sqs:us-east-2:123456789012:my-queue",
-          "_dd.base_service": "integration-tests-js-XXXX-esm_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -885,7 +894,7 @@ START
         "start":XXXX,
         "duration":XXXX,
         "links": [],
-        "service": "aws.lambda",
+        "service": "integration-tests-js-XXXX-esm_node20",
         "type": "serverless"
       }
     ]
