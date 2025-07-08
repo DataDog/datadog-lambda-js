@@ -43,6 +43,7 @@ START
           "stage": "test",
           "domain_name": "",
           "http.status_code": "200",
+          "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-esm_node22",
           "language": "javascript"
         },
@@ -83,6 +84,7 @@ START
           "http.method": "GET",
           "http.route": "/{proxy+}",
           "http.status_code": "200",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -146,6 +148,7 @@ START
           "event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
           "event_id": "0123456789abcdef09123456789abcdef",
           "stream_view_type": "KEYS_ONLY",
+          "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-esm_node22",
           "language": "javascript"
         },
@@ -184,6 +187,7 @@ START
           "dd_trace": "",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -247,6 +251,7 @@ START
           "event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
           "event_id": "0123456789abcdef09123456789abcdef",
           "stream_view_type": "KEYS_ONLY",
+          "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-esm_node22",
           "language": "javascript"
         },
@@ -285,6 +290,7 @@ START
           "dd_trace": "",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -348,6 +354,7 @@ START
           "event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
           "event_id": "0123456789abcdef09123456789abcdef",
           "stream_view_type": "KEYS_ONLY",
+          "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-esm_node22",
           "language": "javascript"
         },
@@ -386,6 +393,7 @@ START
           "dd_trace": "",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -448,6 +456,7 @@ START
           "event_name": "ObjectCreated:CompleteMultipartUpload",
           "object_key": "multipart_object.txt",
           "object_etag": "09876543210987654321098765432109-2",
+          "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-esm_node22",
           "language": "javascript"
         },
@@ -486,6 +495,7 @@ START
           "dd_trace": "",
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -548,6 +558,7 @@ START
           "event_name": "ObjectCreated:Copy",
           "object_key": "copied_object.txt",
           "object_etag": "01234567890123456789012345678901",
+          "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-esm_node22",
           "language": "javascript"
         },
@@ -586,6 +597,7 @@ START
           "dd_trace": "",
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -648,6 +660,7 @@ START
           "event_name": "ObjectCreated:Put",
           "object_key": "test_object.txt",
           "object_etag": "abcdef0123456789abcdef01234567890",
+          "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-esm_node22",
           "language": "javascript"
         },
@@ -686,6 +699,7 @@ START
           "dd_trace": "",
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -748,6 +762,7 @@ START
           "topicname": "sns-lambda",
           "topic_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda",
           "event_subscription_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda:21be56ed-a058-49f5-8c98-aedd2564c486",
+          "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-esm_node22",
           "language": "javascript"
         },
@@ -785,6 +800,7 @@ START
           "dd_trace": "",
           "function_trigger.event_source": "sns",
           "function_trigger.event_source_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -845,6 +861,7 @@ START
           "event_source_arn": "arn:aws:sqs:us-east-2:123456789012:my-queue",
           "receipt_handle": "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
           "sender_id": "AIDAIENQZJOLO23YVJ4VO",
+          "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-esm_node22",
           "language": "javascript"
         },
@@ -883,6 +900,7 @@ START
           "dd_trace": "",
           "function_trigger.event_source": "sqs",
           "function_trigger.event_source_arn": "arn:aws:sqs:us-east-2:123456789012:my-queue",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
