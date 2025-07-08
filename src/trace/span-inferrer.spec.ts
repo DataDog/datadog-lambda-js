@@ -74,50 +74,67 @@ describe("SpanInferrer", () => {
   it("determines service name correctly based on specific key", () => {
     process.env.DD_SERVICE_MAPPING = "key1:value1,key2:value2";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
-    const serviceName = SpanInferrer.determineServiceName("key1", "key2", "fallback");
+    const serviceName = SpanInferrer.determineServiceName("key1", "key2", "extractedKey", "fallback");
     expect(serviceName).toBe("value1");
   });
 
   it("determines service name correctly based on generic key when specific key is not in service mapping", () => {
     process.env.DD_SERVICE_MAPPING = "key1:value1,key2:value2";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
-    const serviceName = SpanInferrer.determineServiceName("non_existent_key", "key2", "fallback");
+    const serviceName = SpanInferrer.determineServiceName("non_existent_key", "key2", "extractedKey", "fallback");
     expect(serviceName).toBe("value2");
   });
 
-  it("falls back to fallback value when neither specific nor generic key is in service mapping", () => {
+  it("determines service name correctly based on extracted key when no service mapping", () => {
     process.env.DD_SERVICE_MAPPING = "key1:value1,key2:value2";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
-    const serviceName = SpanInferrer.determineServiceName("non_existent_key", "another_non_existent_key", "fallback");
+    const serviceName = SpanInferrer.determineServiceName(
+      "non_existent_key",
+      "another_non_existent_key",
+      "extractedKey",
+      "fallback",
+    );
+    expect(serviceName).toBe("extractedKey");
+  });
+
+  it("falls back to fallback value when no service mapping is set and no extracted key is provided", () => {
+    process.env.DD_SERVICE_MAPPING = "key1:value1,key2:value2";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    const serviceName = SpanInferrer.determineServiceName(
+      "non_existent_key",
+      "another_non_existent_key",
+      "",
+      "fallback",
+    );
     expect(serviceName).toBe("fallback");
   });
 
-  it("falls back to default span service name when service mapping has incorrect delimiters", () => {
+  it("extracts service name from event when service mapping has incorrect delimiters", () => {
     process.env.DD_SERVICE_MAPPING = "key1-value1,key2=value2";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
-    expect(getStartSpanServiceTag(1)).toBe("sns");
+    expect(getStartSpanServiceTag(1)).toBe("ExampleTopic");
   });
 
-  it("falls back to default span service name when service mapping has no value for a key", () => {
+  it("extracts service name from event when service mapping has no value for a key", () => {
     process.env.DD_SERVICE_MAPPING = "key1:value1,key2:";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
-    expect(getStartSpanServiceTag(1)).toBe("sns");
+    expect(getStartSpanServiceTag(1)).toBe("ExampleTopic");
   });
 
-  it("falls back to default span service name when service mapping has no key", () => {
+  it("extracts service name from event when service mapping has no key", () => {
     process.env.DD_SERVICE_MAPPING = "key1:value1,:value2";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
-    expect(getStartSpanServiceTag(1)).toBe("sns");
+    expect(getStartSpanServiceTag(1)).toBe("ExampleTopic");
   });
 
-  it("falls back to default span service name when service mapping is not set", () => {
+  it("extracts service name from event when service mapping is not set", () => {
     delete process.env.DD_SERVICE_MAPPING;
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
-    expect(getStartSpanServiceTag(1)).toBe("sns");
+    expect(getStartSpanServiceTag(1)).toBe("ExampleTopic");
   });
 
   it("handles mappings without a value", () => {
@@ -191,7 +208,7 @@ describe("SpanInferrer", () => {
     modifiedSnsEvent.Records[0].Sns.TopicArn = "arn:aws:sns:us-east-1:123456789012:DifferentTopic";
     inferrer.createInferredSpan(modifiedSnsEvent, {} as any, {} as SpanContext);
 
-    expect(getStartSpanServiceTag(1)).toBe("sns");
+    expect(getStartSpanServiceTag(1)).toBe("ExampleTopic");
     expect(getStartSpanServiceTag(2)).toBe("new-name");
   });
 
@@ -221,7 +238,7 @@ describe("SpanInferrer", () => {
     inferrer.createInferredSpan(modifiedDdbEvent, {} as any, {} as SpanContext);
 
     expect(getStartSpanServiceTag(1)).toBe("new-name");
-    expect(getStartSpanServiceTag(2)).toBe("sqs");
+    expect(getStartSpanServiceTag(2)).toBe("DifferentQueue");
   });
 
   it("remaps all ddb inferred span service name based on DD_SERVICE_MAPPING", () => {
@@ -251,7 +268,7 @@ describe("SpanInferrer", () => {
     inferrer.createInferredSpan(modifiedDdbEvent, {} as any, {} as SpanContext);
 
     expect(getStartSpanServiceTag(1)).toBe("new-name");
-    expect(getStartSpanServiceTag(2)).toBe("aws.dynamodb");
+    expect(getStartSpanServiceTag(2)).toBe("DifferentTableWithStream");
   });
 
   it("remaps all kinesis inferred span service name based on DD_SERVICE_MAPPING", () => {
@@ -279,7 +296,7 @@ describe("SpanInferrer", () => {
     inferrer.createInferredSpan(modifiedKinesisEvent, {} as any, {} as SpanContext);
 
     expect(getStartSpanServiceTag(1)).toBe("new-name");
-    expect(getStartSpanServiceTag(2)).toBe("kinesis");
+    expect(getStartSpanServiceTag(2)).toBe("DIFFERENT_EXAMPLE");
   });
 
   it("remaps sns sqs inferred spans service names based on DD_SERVICE_MAPPING", () => {
@@ -317,7 +334,7 @@ describe("SpanInferrer", () => {
     inferrer.createInferredSpan(modifiedDdbEvent, {} as any, {} as SpanContext);
 
     expect(getStartSpanServiceTag(1)).toBe("new-name");
-    expect(getStartSpanServiceTag(2)).toBe("eventbridge");
+    expect(getStartSpanServiceTag(2)).toBe("my.different.event");
   });
 
   it("remaps all API Gateway inferred span service names based on DD_SERVICE_MAPPING", () => {
@@ -395,7 +412,7 @@ describe("SpanInferrer", () => {
     inferrer.createInferredSpan(modifiedS3Event, {} as any, {} as SpanContext);
 
     expect(getStartSpanServiceTag(1)).toBe("new-name");
-    expect(getStartSpanServiceTag(2)).toBe("s3");
+    expect(getStartSpanServiceTag(2)).toBe("different-example-bucket");
   });
 
   it("creates an inferred span for sns events", () => {
@@ -414,8 +431,9 @@ describe("SpanInferrer", () => {
         request_id: undefined,
         "resource.name": "ExampleTopic",
         resource_names: "ExampleTopic",
-        service: "sns",
-        "service.name": "sns",
+        service: "ExampleTopic",
+        "service.name": "ExampleTopic",
+        "span.kind": "server",
         "span.type": "sns",
         subject: "example subject",
         topic_arn: "arn:aws:sns:us-east-1:123456789012:ExampleTopic",
@@ -444,8 +462,9 @@ describe("SpanInferrer", () => {
         resource_names: "MyQueue",
         retry_count: 1,
         sender_id: "123456789012",
-        service: "sqs",
-        "service.name": "sqs",
+        service: "MyQueue",
+        "service.name": "MyQueue",
+        "span.kind": "server",
         "span.type": "web",
       },
     });
@@ -471,9 +490,10 @@ describe("SpanInferrer", () => {
         request_id: undefined,
         "resource.name": "INSERT ExampleTableWithStream",
         resource_names: "INSERT ExampleTableWithStream",
-        service: "aws.dynamodb",
-        "service.name": "aws.dynamodb",
+        service: "ExampleTableWithStream",
+        "service.name": "ExampleTableWithStream",
         size_bytes: 26,
+        "span.kind": "server",
         "span.type": "web",
         stream_view_type: "NEW_AND_OLD_IMAGES",
       },
@@ -499,9 +519,10 @@ describe("SpanInferrer", () => {
         request_id: undefined,
         "resource.name": "EXAMPLE",
         resource_names: "EXAMPLE",
-        service: "kinesis",
-        "service.name": "kinesis",
+        service: "EXAMPLE",
+        "service.name": "EXAMPLE",
         shardid: "49545115243490985018280067714973144582180062593244200961",
+        "span.kind": "server",
         "span.type": "web",
         streamname: "EXAMPLE",
       },
@@ -526,8 +547,9 @@ describe("SpanInferrer", () => {
             request_id: undefined,
             "resource.name": "js-library-test-dev-demoTopic-15WGUVRCBMPAA",
             resource_names: "js-library-test-dev-demoTopic-15WGUVRCBMPAA",
-            service: "sns",
-            "service.name": "sns",
+            service: "js-library-test-dev-demoTopic-15WGUVRCBMPAA",
+            "service.name": "js-library-test-dev-demoTopic-15WGUVRCBMPAA",
+            "span.kind": "server",
             "span.type": "sns",
             subject: undefined,
             topic_arn: "arn:aws:sns:eu-west-1:601427279990:js-library-test-dev-demoTopic-15WGUVRCBMPAA",
@@ -554,8 +576,9 @@ describe("SpanInferrer", () => {
             resource_names: "aj-js-library-test-dev-demo-queue",
             retry_count: 1,
             sender_id: "AIDAIOA2GYWSHW4E2VXIO",
-            service: "sqs",
-            "service.name": "sqs",
+            service: "aj-js-library-test-dev-demo-queue",
+            "service.name": "aj-js-library-test-dev-demo-queue",
+            "span.kind": "server",
             "span.type": "web",
           },
         },
@@ -577,8 +600,9 @@ describe("SpanInferrer", () => {
         request_id: undefined,
         "resource.name": "my.event",
         resource_names: "my.event",
-        service: "eventbridge",
-        "service.name": "eventbridge",
+        service: "my.event",
+        "service.name": "my.event",
+        "span.kind": "server",
         "span.type": "web",
       },
     });
@@ -601,8 +625,9 @@ describe("SpanInferrer", () => {
             request_id: undefined,
             "resource.name": "my.Source",
             resource_names: "my.Source",
-            service: "eventbridge",
-            "service.name": "eventbridge",
+            service: "my.Source",
+            "service.name": "my.Source",
+            "span.kind": "server",
             "span.type": "web",
           },
         },
@@ -625,8 +650,9 @@ describe("SpanInferrer", () => {
             resource_names: "lambda-eb-sqs-lambda-dev-demo-queue",
             retry_count: 1,
             sender_id: "AIDAJXNJGGKNS7OSV23OI",
-            service: "sqs",
-            "service.name": "sqs",
+            service: "lambda-eb-sqs-lambda-dev-demo-queue",
+            "service.name": "lambda-eb-sqs-lambda-dev-demo-queue",
+            "span.kind": "server",
             "span.type": "web",
           },
         },
@@ -656,6 +682,7 @@ describe("SpanInferrer", () => {
         resource_names: "08se3mvh28.execute-api.eu-west-1.amazonaws.com $connect",
         service: "08se3mvh28.execute-api.eu-west-1.amazonaws.com",
         "service.name": "08se3mvh28.execute-api.eu-west-1.amazonaws.com",
+        "span.kind": "server",
         "span.type": "http",
       },
     });
@@ -682,6 +709,7 @@ describe("SpanInferrer", () => {
         resource_names: "GET /path",
         service: "id.execute-api.us-east-1.amazonaws.com",
         "service.name": "id.execute-api.us-east-1.amazonaws.com",
+        "span.kind": "server",
         "span.type": "http",
         stage: "$default",
       },
@@ -709,6 +737,7 @@ describe("SpanInferrer", () => {
         resource_names: "GET /default/nodejs-apig-function-1G3XMPLZXVXYI",
         service: "r3pmxmplak.execute-api.us-east-2.amazonaws.com",
         "service.name": "r3pmxmplak.execute-api.us-east-2.amazonaws.com",
+        "span.kind": "server",
         "span.type": "http",
         stage: "default",
       },
@@ -736,6 +765,7 @@ describe("SpanInferrer", () => {
         resource_names: "GET /user/{id}",
         service: "mcwkra0ya4.execute-api.sa-east-1.amazonaws.com",
         "service.name": "mcwkra0ya4.execute-api.sa-east-1.amazonaws.com",
+        "span.kind": "server",
         "span.type": "http",
         stage: "dev",
       },
@@ -763,6 +793,7 @@ describe("SpanInferrer", () => {
         resource_names: "GET /user/{id}",
         service: "9vj54we5ih.execute-api.sa-east-1.amazonaws.com",
         "service.name": "9vj54we5ih.execute-api.sa-east-1.amazonaws.com",
+        "span.kind": "server",
         "span.type": "http",
         stage: "$default",
       },
@@ -791,6 +822,7 @@ describe("SpanInferrer", () => {
         resource_names: "GET /",
         service: "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com",
         "service.name": "a8hyhsshac.lambda-url.eu-south-1.amazonaws.com",
+        "span.kind": "server",
         "span.type": "http",
       },
     });
@@ -816,8 +848,9 @@ describe("SpanInferrer", () => {
         request_id: undefined,
         "resource.name": "example-bucket",
         resource_names: "example-bucket",
-        service: "s3",
-        "service.name": "s3",
+        service: "example-bucket",
+        "service.name": "example-bucket",
+        "span.kind": "server",
         "span.type": "web",
       },
     });
@@ -876,6 +909,7 @@ describe("Authorizer Spans", () => {
           resource_names: "POST /hello",
           service: "3gsxz7lha4.execute-api.eu-west-1.amazonaws.com",
           "service.name": "3gsxz7lha4.execute-api.eu-west-1.amazonaws.com",
+          "span.kind": "server",
           "span.type": "http",
           stage: "dev",
         },
@@ -900,6 +934,7 @@ describe("Authorizer Spans", () => {
           resource_names: "POST /hello",
           service: "3gsxz7lha4.execute-api.eu-west-1.amazonaws.com",
           "service.name": "3gsxz7lha4.execute-api.eu-west-1.amazonaws.com",
+          "span.kind": "server",
           "span.type": "http",
           stage: "dev",
         },
@@ -929,6 +964,7 @@ describe("Authorizer Spans", () => {
           resource_names: "POST /hello",
           service: "3gsxz7lha4.execute-api.eu-west-1.amazonaws.com",
           "service.name": "3gsxz7lha4.execute-api.eu-west-1.amazonaws.com",
+          "span.kind": "server",
           "span.type": "http",
           stage: "dev",
         },
@@ -958,6 +994,7 @@ describe("Authorizer Spans", () => {
           resource_names: "GET /hi",
           service: "4dyr9xqip7.execute-api.eu-west-1.amazonaws.com",
           "service.name": "4dyr9xqip7.execute-api.eu-west-1.amazonaws.com",
+          "span.kind": "server",
           "span.type": "http",
           stage: "dev",
         },
@@ -982,6 +1019,7 @@ describe("Authorizer Spans", () => {
           resource_names: "GET /hi",
           service: "4dyr9xqip7.execute-api.eu-west-1.amazonaws.com",
           "service.name": "4dyr9xqip7.execute-api.eu-west-1.amazonaws.com",
+          "span.kind": "server",
           "span.type": "http",
           stage: "dev",
         },
@@ -1011,6 +1049,7 @@ describe("Authorizer Spans", () => {
           resource_names: "GET /hi",
           service: "4dyr9xqip7.execute-api.eu-west-1.amazonaws.com",
           "service.name": "4dyr9xqip7.execute-api.eu-west-1.amazonaws.com",
+          "span.kind": "server",
           "span.type": "http",
           stage: "dev",
         },
@@ -1040,6 +1079,7 @@ describe("Authorizer Spans", () => {
           resource_names: "GET /hello",
           service: "l9flvsey83.execute-api.eu-west-1.amazonaws.com",
           "service.name": "l9flvsey83.execute-api.eu-west-1.amazonaws.com",
+          "span.kind": "server",
           "span.type": "http",
           stage: "$default",
         },
@@ -1069,6 +1109,7 @@ describe("Authorizer Spans", () => {
           resource_names: "GET /hello",
           service: "l9flvsey83.execute-api.eu-west-1.amazonaws.com",
           "service.name": "l9flvsey83.execute-api.eu-west-1.amazonaws.com",
+          "span.kind": "server",
           "span.type": "http",
           stage: "$default",
         },
@@ -1099,6 +1140,7 @@ describe("Authorizer Spans", () => {
           resource_names: "85fj5nw29d.execute-api.eu-west-1.amazonaws.com $connect",
           service: "85fj5nw29d.execute-api.eu-west-1.amazonaws.com",
           "service.name": "85fj5nw29d.execute-api.eu-west-1.amazonaws.com",
+          "span.kind": "server",
           "span.type": "http",
         },
       },
@@ -1123,6 +1165,7 @@ describe("Authorizer Spans", () => {
           resource_names: "85fj5nw29d.execute-api.eu-west-1.amazonaws.com $connect",
           service: "85fj5nw29d.execute-api.eu-west-1.amazonaws.com",
           "service.name": "85fj5nw29d.execute-api.eu-west-1.amazonaws.com",
+          "span.kind": "server",
           "span.type": "http",
         },
       },
@@ -1152,6 +1195,7 @@ describe("Authorizer Spans", () => {
           resource_names: "85fj5nw29d.execute-api.eu-west-1.amazonaws.com hello",
           service: "85fj5nw29d.execute-api.eu-west-1.amazonaws.com",
           "service.name": "85fj5nw29d.execute-api.eu-west-1.amazonaws.com",
+          "span.kind": "server",
           "span.type": "http",
         },
       },

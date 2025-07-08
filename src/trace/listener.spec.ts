@@ -113,7 +113,7 @@ describe("TraceListener", () => {
       "aws.lambda",
       {
         resource: "my-Lambda",
-        service: "aws.lambda",
+        service: "my-Lambda",
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
@@ -153,7 +153,7 @@ describe("TraceListener", () => {
       "aws.lambda",
       {
         resource: "my-Lambda",
-        service: "aws.lambda",
+        service: "my-Lambda",
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
@@ -186,7 +186,7 @@ describe("TraceListener", () => {
       "aws.lambda",
       {
         resource: "my-Lambda",
-        service: "aws.lambda",
+        service: "my-Lambda",
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
@@ -227,7 +227,7 @@ describe("TraceListener", () => {
       "aws.lambda",
       {
         resource: "my-Lambda",
-        service: "aws.lambda",
+        service: "my-Lambda",
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
@@ -258,7 +258,7 @@ describe("TraceListener", () => {
       "aws.lambda",
       {
         resource: "my-Lambda",
-        service: "aws.lambda",
+        service: "my-Lambda",
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
@@ -287,7 +287,7 @@ describe("TraceListener", () => {
       "aws.lambda",
       {
         resource: "my-Lambda",
-        service: "aws.lambda",
+        service: "my-Lambda",
         tags: {
           cold_start: true,
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",

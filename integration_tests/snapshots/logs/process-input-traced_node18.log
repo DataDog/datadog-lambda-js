@@ -43,6 +43,7 @@ START
           "http.url": "https://undefined",
           "resource_names": "GET /{proxy+}",
           "request_id":"XXXX",
+          "span.kind": "server",
           "apiid":"XXXX",
           "_inferred_span.tag_source": "self",
           "_inferred_span.synchronicity": "sync",
@@ -50,12 +51,14 @@ START
           "stage": "test",
           "domain_name": "",
           "http.status_code": "200",
+          "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node18",
           "language": "javascript"
         },
         "metrics": {
           "_dd.agent_psr": 1,
           "_dd.top_level": 1,
+          "_dd.measured": 1,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
         },
@@ -90,7 +93,7 @@ START
           "api_gateway_request_id": "41b45ea3-70b5-11e6-b7bd-69b5aaebc7d9",
           "event_type": "APIGateway",
           "http.status_code": "200",
-          "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node18",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -102,7 +105,7 @@ START
         "start":XXXX,
         "duration":XXXX,
         "links": [],
-        "service": "aws.lambda",
+        "service": "integration-tests-js-XXXX-process-input-traced_node18",
         "type": "serverless"
       },
       {
@@ -116,6 +119,7 @@ START
           "service": "integration-tests-js-XXXX-process-input-traced_node18",
           "version": "1.0.0",
           "runtime-id":"XXXX",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -141,6 +145,7 @@ START
           "runtime-id":"XXXX",
           "api_gateway_request_id": "41b45ea3-70b5-11e6-b7bd-69b5aaebc7d9",
           "event_type": "APIGateway",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -202,6 +207,7 @@ START
           "tablename": "someTableName",
           "resource_names": "MODIFY someTableName",
           "request_id":"XXXX",
+          "span.kind": "server",
           "_inferred_span.tag_source": "self",
           "_inferred_span.synchronicity": "async",
           "event_name": "MODIFY",
@@ -209,12 +215,14 @@ START
           "event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
           "event_id": "0123456789abcdef09123456789abcdef",
           "stream_view_type": "KEYS_ONLY",
+          "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node18",
           "language": "javascript"
         },
         "metrics": {
           "_dd.agent_psr": 1,
           "_dd.top_level": 1,
+          "_dd.measured": 1,
           "size_bytes": 37,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
@@ -245,7 +253,7 @@ START
           "dd_trace": "",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
-          "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node18",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -257,7 +265,7 @@ START
         "start":XXXX,
         "duration":XXXX,
         "links": [],
-        "service": "aws.lambda",
+        "service": "integration-tests-js-XXXX-process-input-traced_node18",
         "type": "serverless"
       },
       {
@@ -271,6 +279,7 @@ START
           "service": "integration-tests-js-XXXX-process-input-traced_node18",
           "version": "1.0.0",
           "runtime-id":"XXXX",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -294,6 +303,7 @@ START
           "service": "integration-tests-js-XXXX-process-input-traced_node18",
           "version": "1.0.0",
           "runtime-id":"XXXX",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -355,6 +365,7 @@ START
           "tablename": "someTableName",
           "resource_names": "REMOVE someTableName",
           "request_id":"XXXX",
+          "span.kind": "server",
           "_inferred_span.tag_source": "self",
           "_inferred_span.synchronicity": "async",
           "event_name": "REMOVE",
@@ -362,12 +373,14 @@ START
           "event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
           "event_id": "0123456789abcdef09123456789abcdef",
           "stream_view_type": "KEYS_ONLY",
+          "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node18",
           "language": "javascript"
         },
         "metrics": {
           "_dd.agent_psr": 1,
           "_dd.top_level": 1,
+          "_dd.measured": 1,
           "size_bytes": 37,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
@@ -398,7 +411,7 @@ START
           "dd_trace": "",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
-          "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node18",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -410,7 +423,7 @@ START
         "start":XXXX,
         "duration":XXXX,
         "links": [],
-        "service": "aws.lambda",
+        "service": "integration-tests-js-XXXX-process-input-traced_node18",
         "type": "serverless"
       },
       {
@@ -424,6 +437,7 @@ START
           "service": "integration-tests-js-XXXX-process-input-traced_node18",
           "version": "1.0.0",
           "runtime-id":"XXXX",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -447,6 +461,7 @@ START
           "service": "integration-tests-js-XXXX-process-input-traced_node18",
           "version": "1.0.0",
           "runtime-id":"XXXX",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -508,6 +523,7 @@ START
           "tablename": "someTableName",
           "resource_names": "INSERT someTableName",
           "request_id":"XXXX",
+          "span.kind": "server",
           "_inferred_span.tag_source": "self",
           "_inferred_span.synchronicity": "async",
           "event_name": "INSERT",
@@ -515,12 +531,14 @@ START
           "event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
           "event_id": "0123456789abcdef09123456789abcdef",
           "stream_view_type": "KEYS_ONLY",
+          "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node18",
           "language": "javascript"
         },
         "metrics": {
           "_dd.agent_psr": 1,
           "_dd.top_level": 1,
+          "_dd.measured": 1,
           "size_bytes": 37,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
@@ -551,7 +569,7 @@ START
           "dd_trace": "",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
-          "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node18",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -563,7 +581,7 @@ START
         "start":XXXX,
         "duration":XXXX,
         "links": [],
-        "service": "aws.lambda",
+        "service": "integration-tests-js-XXXX-process-input-traced_node18",
         "type": "serverless"
       },
       {
@@ -577,6 +595,7 @@ START
           "service": "integration-tests-js-XXXX-process-input-traced_node18",
           "version": "1.0.0",
           "runtime-id":"XXXX",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -600,6 +619,7 @@ START
           "service": "integration-tests-js-XXXX-process-input-traced_node18",
           "version": "1.0.0",
           "runtime-id":"XXXX",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -660,6 +680,7 @@ START
           "operation_name": "aws.s3",
           "resource_names": "my-bucket-name",
           "request_id":"XXXX",
+          "span.kind": "server",
           "_inferred_span.tag_source": "self",
           "_inferred_span.synchronicity": "async",
           "bucketname": "my-bucket-name",
@@ -667,12 +688,14 @@ START
           "event_name": "ObjectCreated:CompleteMultipartUpload",
           "object_key": "multipart_object.txt",
           "object_etag": "09876543210987654321098765432109-2",
+          "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node18",
           "language": "javascript"
         },
         "metrics": {
           "_dd.agent_psr": 1,
           "_dd.top_level": 1,
+          "_dd.measured": 1,
           "object_size": 8388608,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
@@ -704,7 +727,7 @@ START
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
           "event_type": "S3",
-          "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node18",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -716,7 +739,7 @@ START
         "start":XXXX,
         "duration":XXXX,
         "links": [],
-        "service": "aws.lambda",
+        "service": "integration-tests-js-XXXX-process-input-traced_node18",
         "type": "serverless"
       },
       {
@@ -732,6 +755,7 @@ START
           "runtime-id":"XXXX",
           "record_event_type": "S3",
           "record_ids":"XXXX/multipart_object.txt",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -792,6 +816,7 @@ START
           "operation_name": "aws.s3",
           "resource_names": "my-bucket-name",
           "request_id":"XXXX",
+          "span.kind": "server",
           "_inferred_span.tag_source": "self",
           "_inferred_span.synchronicity": "async",
           "bucketname": "my-bucket-name",
@@ -799,12 +824,14 @@ START
           "event_name": "ObjectCreated:Copy",
           "object_key": "copied_object.txt",
           "object_etag": "01234567890123456789012345678901",
+          "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node18",
           "language": "javascript"
         },
         "metrics": {
           "_dd.agent_psr": 1,
           "_dd.top_level": 1,
+          "_dd.measured": 1,
           "object_size": 100,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
@@ -836,7 +863,7 @@ START
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
           "event_type": "S3",
-          "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node18",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -848,7 +875,7 @@ START
         "start":XXXX,
         "duration":XXXX,
         "links": [],
-        "service": "aws.lambda",
+        "service": "integration-tests-js-XXXX-process-input-traced_node18",
         "type": "serverless"
       },
       {
@@ -864,6 +891,7 @@ START
           "runtime-id":"XXXX",
           "record_event_type": "S3",
           "record_ids":"XXXX/copied_object.txt",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -924,6 +952,7 @@ START
           "operation_name": "aws.s3",
           "resource_names": "my-bucket-name",
           "request_id":"XXXX",
+          "span.kind": "server",
           "_inferred_span.tag_source": "self",
           "_inferred_span.synchronicity": "async",
           "bucketname": "my-bucket-name",
@@ -931,12 +960,14 @@ START
           "event_name": "ObjectCreated:Put",
           "object_key": "test_object.txt",
           "object_etag": "abcdef0123456789abcdef01234567890",
+          "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node18",
           "language": "javascript"
         },
         "metrics": {
           "_dd.agent_psr": 1,
           "_dd.top_level": 1,
+          "_dd.measured": 1,
           "object_size": 100,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
@@ -968,7 +999,7 @@ START
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
           "event_type": "S3",
-          "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node18",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -980,7 +1011,7 @@ START
         "start":XXXX,
         "duration":XXXX,
         "links": [],
-        "service": "aws.lambda",
+        "service": "integration-tests-js-XXXX-process-input-traced_node18",
         "type": "serverless"
       },
       {
@@ -996,6 +1027,7 @@ START
           "runtime-id":"XXXX",
           "record_event_type": "S3",
           "record_ids":"XXXX/test_object.txt",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -1055,6 +1087,7 @@ START
           "operation_name": "aws.sns",
           "resource_names": "sns-lambda",
           "request_id":"XXXX",
+          "span.kind": "server",
           "_inferred_span.tag_source": "self",
           "_inferred_span.synchronicity": "async",
           "type": "Notification",
@@ -1063,12 +1096,14 @@ START
           "topicname": "sns-lambda",
           "topic_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda",
           "event_subscription_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda:21be56ed-a058-49f5-8c98-aedd2564c486",
+          "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node18",
           "language": "javascript"
         },
         "metrics": {
           "_dd.agent_psr": 1,
           "_dd.top_level": 1,
+          "_dd.measured": 1,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
         },
@@ -1099,7 +1134,7 @@ START
           "function_trigger.event_source": "sns",
           "function_trigger.event_source_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda",
           "event_type": "SNS",
-          "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node18",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -1111,7 +1146,7 @@ START
         "start":XXXX,
         "duration":XXXX,
         "links": [],
-        "service": "aws.lambda",
+        "service": "integration-tests-js-XXXX-process-input-traced_node18",
         "type": "serverless"
       },
       {
@@ -1127,6 +1162,7 @@ START
           "runtime-id":"XXXX",
           "record_event_type": "SNS",
           "record_ids":"XXXX",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -1186,18 +1222,21 @@ START
           "operation_name": "aws.sqs",
           "resource_names": "my-queue",
           "request_id":"XXXX",
+          "span.kind": "server",
           "_inferred_span.tag_source": "self",
           "_inferred_span.synchronicity": "async",
           "queuename": "my-queue",
           "event_source_arn": "arn:aws:sqs:us-east-2:123456789012:my-queue",
           "receipt_handle": "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
           "sender_id": "AIDAIENQZJOLO23YVJ4VO",
+          "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node18",
           "language": "javascript"
         },
         "metrics": {
           "_dd.agent_psr": 1,
           "_dd.top_level": 1,
+          "_dd.measured": 1,
           "retry_count": 1,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
@@ -1229,7 +1268,7 @@ START
           "function_trigger.event_source": "sqs",
           "function_trigger.event_source_arn": "arn:aws:sqs:us-east-2:123456789012:my-queue",
           "event_type": "SQS",
-          "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node18",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
@@ -1241,7 +1280,7 @@ START
         "start":XXXX,
         "duration":XXXX,
         "links": [],
-        "service": "aws.lambda",
+        "service": "integration-tests-js-XXXX-process-input-traced_node18",
         "type": "serverless"
       },
       {
@@ -1257,6 +1296,7 @@ START
           "runtime-id":"XXXX",
           "record_event_type": "SQS",
           "record_ids":"XXXX,2e1424d4-f796-459a-8184-9c92662be6da",
+          "_dd.integration": "opentracing",
           "language": "javascript"
         },
         "metrics": {
