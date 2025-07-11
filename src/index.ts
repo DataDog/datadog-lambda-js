@@ -21,11 +21,14 @@ import {
   setSandboxInit,
   setLogger,
   setLogLevel,
+  logWarning,
 } from "./utils";
 import { getEnhancedMetricTags } from "./metrics/enhanced-metrics";
 import { DatadogTraceHeaders } from "./trace/context/extractor";
 import { SpanWrapper } from "./trace/span-wrapper";
 import { SpanOptions, TracerWrapper } from "./trace/tracer-wrapper";
+import path from "path";
+import fs from "fs";
 
 // Backwards-compatible export, TODO deprecate in next major
 export { DatadogTraceHeaders as TraceHeaders } from "./trace/context/extractor";
@@ -104,6 +107,9 @@ export const _metricsQueue: MetricsQueue = new MetricsQueue();
 let currentMetricsListener: MetricsListener | undefined;
 let currentTraceListener: TraceListener | undefined;
 
+const LAMBDA_LAYER_PATH = "/opt/nodejs/node_modules/datadog-lambda-js";
+const LAMBDA_LIBRARY_PATH = path.join(process.cwd(), "node_modules/datadog-lambda-js");
+
 if (getEnvValue(coldStartTracingEnvVar, "true").toLowerCase() === "true") {
   subscribeToDC();
 }
@@ -130,6 +136,19 @@ export function datadog<TEvent, TResult>(
   const metricsListener = new MetricsListener(new KMSService(), finalConfig);
 
   const traceListener = new TraceListener(finalConfig);
+
+  // Check for duplicate installations of the Lambda library
+  detectDuplicateInstallations()
+    .then((duplicateFound) => {
+      if (duplicateFound) {
+        logWarning(
+          `Detected duplicate installations of datadog-lambda-js. This can cause: (1) increased cold start times, (2) broken metrics, and (3) other unexpected behavior. Please use either the Lambda layer version or the package in node_modules, but not both. See: https://docs.datadoghq.com/serverless/aws_lambda/installation/nodejs/?tab=custom`,
+        );
+      }
+    })
+    .catch(() => {
+      logDebug("Failed to check for duplicate installations.");
+    });
 
   // Only wrap the handler once unless forced
   const _ddWrappedKey = "_ddWrapped";
@@ -476,5 +495,28 @@ export async function emitTelemetryOnErrorOutsideHandler(
     await metricsListener.onStartInvocation(undefined);
     incrementErrorsMetric(metricsListener);
     await metricsListener.onCompleteInvocation();
+  }
+}
+
+async function detectDuplicateInstallations() {
+  try {
+    const checkPathExistsAsync = async (libraryPath: string): Promise<boolean> => {
+      try {
+        await fs.promises.access(libraryPath);
+        return true;
+      } catch {
+        return false;
+      }
+    };
+
+    const [layerExists, localExists] = await Promise.all([
+      checkPathExistsAsync(LAMBDA_LAYER_PATH),
+      checkPathExistsAsync(LAMBDA_LIBRARY_PATH),
+    ]);
+
+    return layerExists && localExists;
+  } catch (err) {
+    logDebug("Failed to check for duplicate installations.");
+    return false;
   }
 }
