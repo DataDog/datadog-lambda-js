@@ -7,7 +7,7 @@ import { ColdStartTracerConfig, ColdStartTracer } from "./cold-start-tracer";
 import { logDebug, tagObject } from "../utils";
 import { didFunctionColdStart, isProactiveInitialization } from "../utils/cold-start";
 import { datadogLambdaVersion } from "../constants";
-import { ddtraceVersion, parentSpanFinishTimeHeader } from "./constants";
+import { ddtraceVersion, parentSpanFinishTimeHeader, DD_SERVICE_ENV_VAR } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 import { SpanInferrer } from "./span-inferrer";
@@ -319,11 +319,20 @@ export class TraceListener {
       options.childOf = this.lambdaSpanParentContext;
     }
     options.type = "serverless";
-    options.service = "aws.lambda";
+
     if (this.context) {
       options.resource = this.context.functionName;
-      options.service = this.context.functionName;
     }
+
+    const envService = process.env[DD_SERVICE_ENV_VAR];
+    const resolvedServiceName = envService && envService.trim().length > 0
+      ? envService.trim()
+      : this.context
+      ? this.context.functionName
+      : "aws.lambda";
+
+    options.service = resolvedServiceName;
+
     return this.tracerWrapper.wrap("aws.lambda", options, func);
   }
 }
