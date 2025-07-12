@@ -325,11 +325,12 @@ export class TraceListener {
     }
 
     const envService = process.env[DD_SERVICE_ENV_VAR];
-    const resolvedServiceName = envService && envService.trim().length > 0
-      ? envService.trim()
-      : this.context
-      ? this.context.functionName
-      : "aws.lambda";
+    const resolvedServiceName =
+      envService && envService.trim().length > 0
+        ? envService.trim()
+        : this.context
+        ? this.context.functionName
+        : "aws.lambda";
 
     options.service = resolvedServiceName;
 
