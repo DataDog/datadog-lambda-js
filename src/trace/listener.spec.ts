@@ -67,6 +67,7 @@ jest.mock("./trace-context-service", () => {
 });
 
 describe("TraceListener", () => {
+  let oldEnv: any;
   const defaultConfig = {
     autoPatchHTTP: true,
     captureLambdaPayload: false,
@@ -99,6 +100,13 @@ describe("TraceListener", () => {
     mockSpanContext = undefined;
     mockSpanContextWrapper = undefined;
     mockTraceSource = undefined;
+    oldEnv = process.env;
+    process.env = { ...oldEnv };
+    delete process.env.DD_SERVICE;
+  });
+
+  afterEach(() => {
+    process.env = oldEnv;
   });
 
   it("wraps dd-trace span around invocation", async () => {
@@ -331,6 +339,35 @@ describe("TraceListener", () => {
 
     expect(result.context._datadog).toBe(
       "eyJ4LWRhdGFkb2ctcGFyZW50LWlkIjoiNzk3NjQzMTkzNjgwMzg4MjUxIiwieC1kYXRhZG9nLXRyYWNlLWlkIjoiNDExMDkxMTU4MjI5NzQwNTU1MSIsIngtZGF0YWRvZy1zYW1wbGluZy1wcmlvcml0eSI6MSwieC1kYXRhZG9nLXBhcmVudC1zcGFuLWZpbmlzaC10aW1lIjoxNjYxMTg5OTM2OTgxMDAwMDAwLCJ4LWRhdGFkb2ctYXV0aG9yaXppbmctcmVxdWVzdGlkIjoicmFuZG9tSWQifQ==",
+    );
+  });
+  it("sets service name from DD_SERVICE environment variable", async () => {
+    process.env.DD_SERVICE = "my-custom-service";
+    const listener = new TraceListener(defaultConfig);
+    await listener.onStartInvocation({}, context as any);
+    const unwrappedFunc = () => {};
+    const wrappedFunc = listener.onWrap(unwrappedFunc);
+    wrappedFunc();
+    await listener.onCompleteInvocation();
+
+    expect(mockWrap).toHaveBeenCalledWith(
+      "aws.lambda",
+      {
+        resource: "my-Lambda",
+        service: "my-custom-service",
+        tags: {
+          cold_start: true,
+          function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
+          function_version: "$LATEST",
+          request_id: "1234",
+          resource_names: "my-Lambda",
+          functionname: "my-lambda",
+          datadog_lambda: datadogLambdaVersion,
+          dd_trace: ddtraceVersion,
+        },
+        type: "serverless",
+      },
+      unwrappedFunc,
     );
   });
 });
