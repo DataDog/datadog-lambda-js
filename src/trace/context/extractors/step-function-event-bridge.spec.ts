@@ -55,7 +55,7 @@ describe("StepFunctionEventBridgeTraceExtractor", () => {
         },
       };
 
-      const extractor = new StepFunctionEventBridgeTraceExtractor(tracerWrapper);
+      const extractor = new StepFunctionEventBridgeTraceExtractor();
 
       const traceContext = extractor.extract(payload);
       expect(traceContext).not.toBeNull();
