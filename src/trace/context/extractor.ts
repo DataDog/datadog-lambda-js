@@ -6,6 +6,7 @@ import {
   AppSyncEventTraceExtractor,
   CustomTraceExtractor,
   EventBridgeEventTraceExtractor,
+  EventBridgeSNSEventTraceExtractor,
   EventBridgeSQSEventTraceExtractor,
   HTTPEventTraceExtractor,
   KinesisEventTraceExtractor,
@@ -80,6 +81,7 @@ export class TraceContextExtractor {
       return new HTTPEventTraceExtractor(this.tracerWrapper, this.config.decodeAuthorizerContext);
     }
 
+    if (EventValidator.isEventBridgeSNSEvent(event)) return new EventBridgeSNSEventTraceExtractor(this.tracerWrapper);
     if (EventValidator.isSNSEvent(event)) return new SNSEventTraceExtractor(this.tracerWrapper);
     if (EventValidator.isSNSSQSEvent(event)) return new SNSSQSEventTraceExtractor(this.tracerWrapper);
     if (EventValidator.isEventBridgeSQSEvent(event)) return new EventBridgeSQSEventTraceExtractor(this.tracerWrapper);

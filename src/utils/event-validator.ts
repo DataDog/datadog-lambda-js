@@ -59,6 +59,18 @@ export class EventValidator {
     return false;
   }
 
+  static isEventBridgeSNSEvent(event: any): event is SNSEvent {
+    if (Array.isArray(event.Records) && event.Records.length > 0 && event.Records[0].Sns !== undefined) {
+      try {
+        const message = JSON.parse(event.Records[0].Sns.Message) as EventBridgeEvent<any, any>;
+        return message["detail-type"] !== undefined;
+      } catch (_) {
+        return false;
+      }
+    }
+    return false;
+  }
+
   static isAppSyncResolverEvent(event: any): event is AppSyncResolverEvent<any> {
     return event.info !== undefined && event.info.selectionSetGraphQL !== undefined;
   }

@@ -11,6 +11,7 @@ import { TraceSource } from "../trace-context-service";
 import {
   AppSyncEventTraceExtractor,
   EventBridgeEventTraceExtractor,
+  EventBridgeSNSEventTraceExtractor,
   EventBridgeSQSEventTraceExtractor,
   HTTPEventTraceExtractor,
   KinesisEventTraceExtractor,
@@ -658,6 +659,58 @@ describe("TraceContextExtractor", () => {
         expect(traceContext?.source).toBe("event");
       });
 
+      // EventBridge message delivered to SNS event
+      it("extracts trace context from EventBridge to SNS event", async () => {
+        mockSpanContext = {
+          toTraceId: () => "1234567890123456789",
+          toSpanId: () => "9876543210987654321",
+          _sampling: {
+            priority: "1",
+          },
+        };
+
+        const event: SNSEvent = {
+          Records: [
+            {
+              EventSource: "aws:sns",
+              EventVersion: "1.0",
+              EventSubscriptionArn: "arn:aws:sns:us-east-1:123456123456:my-topic:12345678-1234-1234-1234-123456789012",
+              Sns: {
+                Type: "Notification",
+                MessageId: "12345678-1234-1234-1234-123456789012",
+                TopicArn: "arn:aws:sns:us-east-1:123456123456:my-topic",
+                Message: '{"version":"0","id":"12345678-1234-1234-1234-123456789012","detail-type":"my.Detail","source":"my.Source","account":"123456123456","time":"2023-08-03T22:49:03Z","region":"us-east-1","resources":[],"detail":{"text":"Hello, world!","_datadog":{"x-datadog-trace-id":"1234567890123456789","x-datadog-parent-id":"9876543210987654321","x-datadog-sampling-priority":"1","x-datadog-tags":"_dd.p.dm=-0"}}}',
+                Timestamp: "2023-08-03T22:49:03.123Z",
+                SignatureVersion: "1",
+                Signature: "EXAMPLE",
+                SigningCertUrl: "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-123456789012.pem",
+                Subject: undefined,
+                UnsubscribeUrl: "https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-1:123456123456:my-topic:12345678-1234-1234-1234-123456789012",
+                MessageAttributes: {}
+              }
+            }
+          ]
+        };
+
+        const tracerWrapper = new TracerWrapper();
+        const extractor = new TraceContextExtractor(tracerWrapper, {} as TraceConfig);
+
+        const traceContext = await extractor.extract(event, {} as Context);
+        expect(traceContext).not.toBeNull();
+
+        expect(spyTracerWrapper).toHaveBeenCalledWith({
+          "x-datadog-parent-id": "9876543210987654321",
+          "x-datadog-sampling-priority": "1",
+          "x-datadog-tags": "_dd.p.dm=-0",
+          "x-datadog-trace-id": "1234567890123456789",
+        });
+
+        expect(traceContext?.toTraceId()).toBe("1234567890123456789");
+        expect(traceContext?.toSpanId()).toBe("9876543210987654321");
+        expect(traceContext?.sampleMode()).toBe("1");
+        expect(traceContext?.source).toBe("event");
+      });
+
       // StepFunction context event
       it("extracts trace context from StepFunction event", async () => {
         const event = {
@@ -817,6 +870,20 @@ describe("TraceContextExtractor", () => {
             {
               eventSource: "aws:sqs",
               body: '{"detail-type":"some-detail-type"}',
+            },
+          ],
+        },
+      ],
+      [
+        "EventBridgeSNSTraceExtractor",
+        "EventBridge to SNS event",
+        EventBridgeSNSEventTraceExtractor,
+        {
+          Records: [
+            {
+              Sns: {
+                Message: '{"detail-type":"some-detail-type"}',
+              },
             },
           ],
         },
