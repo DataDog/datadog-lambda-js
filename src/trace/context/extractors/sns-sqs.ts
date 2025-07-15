@@ -4,6 +4,7 @@ import { TracerWrapper } from "../../tracer-wrapper";
 import { logDebug } from "../../../utils";
 import { SpanContextWrapper } from "../../span-context-wrapper";
 import { XrayService } from "../../xray-service";
+import { StepFunctionContextService } from "../../step-function-service";
 
 export class SNSSQSEventTraceExtractor implements EventTraceExtractor {
   constructor(private tracerWrapper: TracerWrapper) {}
@@ -23,15 +24,54 @@ export class SNSSQSEventTraceExtractor implements EventTraceExtractor {
             headers = JSON.parse(decodedValue);
           }
 
+          // First try to extract as regular trace headers
           const traceContext = this.tracerWrapper.extract(headers);
           if (traceContext) {
             logDebug("Extracted trace context from SNS-SQS event");
             return traceContext;
-          } else {
-            logDebug("Failed to extract trace context from SNS-SQS event");
+          }
+
+          // If that fails, check if this is a Step Function context
+          const stepFunctionInstance = StepFunctionContextService.instance(headers);
+          const stepFunctionContext = stepFunctionInstance.context;
+
+          if (stepFunctionContext !== undefined) {
+            const spanContext = stepFunctionInstance.spanContext;
+            if (spanContext !== null) {
+              logDebug("Extracted Step Function trace context from SNS-SQS event", { spanContext, event });
+              return spanContext;
+            }
+          }
+
+          logDebug("Failed to extract trace context from SNS-SQS event");
+        }
+      }
+
+      // Check SQS message attributes for Step Function context
+      const sqsMessageAttribute = event?.Records?.[0]?.messageAttributes?._datadog?.stringValue;
+      if (sqsMessageAttribute) {
+        const parsedHeaders = JSON.parse(sqsMessageAttribute);
+
+        // First try to extract as regular trace headers
+        const traceContext = this.tracerWrapper.extract(parsedHeaders);
+        if (traceContext) {
+          logDebug("Extracted trace context from SQS messageAttributes");
+          return traceContext;
+        }
+
+        // If that fails, check if this is a Step Function context
+        const stepFunctionInstance = StepFunctionContextService.instance(parsedHeaders);
+        const stepFunctionContext = stepFunctionInstance.context;
+
+        if (stepFunctionContext !== undefined) {
+          const spanContext = stepFunctionInstance.spanContext;
+          if (spanContext !== null) {
+            logDebug("Extracted Step Function trace context from SQS messageAttributes", { spanContext, event });
+            return spanContext;
           }
         }
       }
+
       // Then try to extract trace context from attributes.AWSTraceHeader. (Upstream Java apps can
       // pass down Datadog trace context in the attributes.AWSTraceHeader in SQS case)
       if (event?.Records?.[0]?.attributes?.AWSTraceHeader !== undefined) {

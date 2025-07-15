@@ -1,5 +1,6 @@
 import { TracerWrapper } from "../../tracer-wrapper";
 import { SNSSQSEventTraceExtractor } from "./sns-sqs";
+import { StepFunctionContextService } from "../../step-function-service";
 
 let mockSpanContext: any = null;
 
@@ -209,6 +210,55 @@ describe("SNSSQSEventTraceExtractor", () => {
 
       expect(traceContext?.toTraceId()).toBe("5027664352514971920");
       expect(traceContext?.toSpanId()).toBe("1797917631284315439");
+      expect(traceContext?.sampleMode()).toBe("1");
+      expect(traceContext?.source).toBe("event");
+    });
+
+    it("extracts trace context from Step Function SNS-SQS event", () => {
+      // Reset StepFunctionContextService instance
+      StepFunctionContextService["_instance"] = undefined as any;
+
+      const tracerWrapper = new TracerWrapper();
+
+      const payload = {
+        Records: [
+          {
+            messageId: "43a5f138-f166-40f1-b7e4-a7e0af9d633d",
+            receiptHandle:
+              "AQEBrhzl4RiITHp/ui07Y0DlDIdrmYHveKjqDIsx2gG7Z3fvrDohnfnpy/r4esh/ZsilJUR/C3uohYe6HUqvixymhx+io9S/MYNoA1zjmSVd1V4ZKe6saMs6L7aSW5TgrLpuxOtNGWvmNijdlQlOoYW1xRlkzkBywFkELfazExJHrThbxpxXcHbcAoh1Vz77EvlcAQNbc11vTccoUcMcdczvoLd/wgyrsIf0z8qdUQHaspWYoWOlZOsoflDMddYwqWO3LNRphAGMp5ISTDVbVqo1/U+wOqBj+b3dOYP9k0vS9Mj+36t+EJ8+KETFXRPNk4mZ+7hvG+UCYBN582gT502MnQitxylHKWOlH77nIokfk43FjhjsybLE48KdWdO49O2WKslXwCpPLQWnbKWlUl05/12tIk41MolVyfiWywW9R/S7hgcSr51tEBcjZTW8GR8r",
+            body: '{"testData":"Hello from SQS integration test","timestamp":"2025-07-15T18:16:27Z"}',
+            attributes: {
+              ApproximateReceiveCount: "1",
+              SentTimestamp: "1752603390964",
+              SenderId: "AIDAIOA2GYWSHW4E2VXIO",
+              ApproximateFirstReceiveTimestamp: "1752603390980",
+            },
+            messageAttributes: {
+              _datadog: {
+                stringValue:
+                  '{"Execution":{"Id":"arn:aws:states:sa-east-1:123456123456:execution:rstrat-sfn-sns-sqs-demo-dev-state-machine:c363b975-c342-4e40-815a-8dd2496f5e81","StartTime":"2025-07-15T18:16:30.746Z","Name":"c363b975-c342-4e40-815a-8dd2496f5e81","RoleArn":"arn:aws:iam::123456123456:role/rstrat-sfn-sns-sqs-demo-d-StepFunctionsExecutionRol-T2O3igeuSihu","RedriveCount":0},"StateMachine":{"Id":"arn:aws:states:sa-east-1:123456123456:stateMachine:rstrat-sfn-sns-sqs-demo-dev-state-machine","Name":"rstrat-sfn-sns-sqs-demo-dev-state-machine"},"State":{"Name":"PublishToSNS","EnteredTime":"2025-07-15T18:16:30.776Z","RetryCount":0},"RootExecutionId":"arn:aws:states:sa-east-1:123456123456:execution:rstrat-sfn-sns-sqs-demo-dev-state-machine:c363b975-c342-4e40-815a-8dd2496f5e81","serverless-version":"v1"}',
+                stringListValues: [],
+                binaryListValues: [],
+                dataType: "String",
+              },
+            },
+            md5OfBody: "1e832c0d0aa5188dc5e3f2e85c9cb5e7",
+            md5OfMessageAttributes: "64e36d01aec95ca5a2160c13299e9c3b",
+            eventSource: "aws:sqs",
+            eventSourceARN: "arn:aws:sqs:sa-east-1:123456123456:rstrat-sfn-sns-sqs-demo-dev-process-event-queue",
+            awsRegion: "sa-east-1",
+          },
+        ],
+      };
+
+      const extractor = new SNSSQSEventTraceExtractor(tracerWrapper);
+
+      const traceContext = extractor.extract(payload);
+      expect(traceContext).not.toBeNull();
+
+      // The StepFunctionContextService generates deterministic trace IDs
+      expect(traceContext?.toTraceId()).toBe("1657966791618574655");
+      expect(traceContext?.toSpanId()).toBe("5100002956473485303");
       expect(traceContext?.sampleMode()).toBe("1");
       expect(traceContext?.source).toBe("event");
     });

@@ -269,27 +269,33 @@ describe("SNSEventTraceExtractor", () => {
           {
             EventSource: "aws:sns",
             EventVersion: "1.0",
-            EventSubscriptionArn: "arn:aws:sns:sa-east-1:123456123456:rstrat-sfn-sns-demo-dev-process-event-topic:f18241f8-a4f7-4586-80db-97bd1939a557",
+            EventSubscriptionArn:
+              "arn:aws:sns:sa-east-1:123456123456:rstrat-sfn-sns-demo-dev-process-event-topic:f18241f8-a4f7-4586-80db-97bd1939a557",
             Sns: {
               Type: "Notification",
               MessageId: "46d2665c-7ee2-50ba-a4cd-06acf35f5d5f",
               TopicArn: "arn:aws:sns:sa-east-1:123456123456:rstrat-sfn-sns-demo-dev-process-event-topic",
-              Message: "{\"source\":\"demo.stepfunction\",\"detailType\":\"ProcessEvent\",\"message\":\"Test event from Step Functions\",\"customData\":{\"userId\":\"12345\",\"action\":\"test\"}}",
+              Message:
+                '{"source":"demo.stepfunction","detailType":"ProcessEvent","message":"Test event from Step Functions","customData":{"userId":"12345","action":"test"}}',
               Timestamp: "2025-07-15T17:10:21.503Z",
               SignatureVersion: "1",
-              Signature: "fHeJta0GWCs/lHhI6wesXiT+66i1SZ+XH58pyd8mKHKD8bepXsnWvfQdDsOkO2AVv2CqPBF58sAWQae6yob2aMawe/vo8eeahJCaguK8a/3HLj7kP+nXGjgSGvzQm4CdYEyAUco453/mfE/BSf0SkdctxW0rjMs27T2l964Lt2Y/vJeiXVibs/AqEIu3ImekbM8+EIfNMOLBdRBVE47650vawazMkcpPtg5o/8LCA/jNUNj9VCTJrvzep8/vVJEcuHbZ3pcmajA9UJmP3000G0+to0cXwZ5YaakOxQTv81I+cfC99yQJoogLklbgiu+4bqEeNWbwW9KdQz1U+79NgA==",
-              SigningCertUrl: "https://sns.sa-east-1.amazonaws.com/SimpleNotificationService-9c6465fa7f48f5cacd23014631ec1136.pem",
+              Signature:
+                "fHeJta0GWCs/lHhI6wesXiT+66i1SZ+XH58pyd8mKHKD8bepXsnWvfQdDsOkO2AVv2CqPBF58sAWQae6yob2aMawe/vo8eeahJCaguK8a/3HLj7kP+nXGjgSGvzQm4CdYEyAUco453/mfE/BSf0SkdctxW0rjMs27T2l964Lt2Y/vJeiXVibs/AqEIu3ImekbM8+EIfNMOLBdRBVE47650vawazMkcpPtg5o/8LCA/jNUNj9VCTJrvzep8/vVJEcuHbZ3pcmajA9UJmP3000G0+to0cXwZ5YaakOxQTv81I+cfC99yQJoogLklbgiu+4bqEeNWbwW9KdQz1U+79NgA==",
+              SigningCertUrl:
+                "https://sns.sa-east-1.amazonaws.com/SimpleNotificationService-9c6465fa7f48f5cacd23014631ec1136.pem",
               Subject: "Event from Step Functions",
-              UnsubscribeUrl: "https://sns.sa-east-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:sa-east-1:123456123456:rstrat-sfn-sns-demo-dev-process-event-topic:f18241f8-a4f7-4586-80db-97bd1939a557",
+              UnsubscribeUrl:
+                "https://sns.sa-east-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:sa-east-1:123456123456:rstrat-sfn-sns-demo-dev-process-event-topic:f18241f8-a4f7-4586-80db-97bd1939a557",
               MessageAttributes: {
                 _datadog: {
                   Type: "String",
-                  Value: "{\"Execution\":{\"Id\":\"arn:aws:states:sa-east-1:123456123456:execution:rstrat-sfn-sns-demo-dev-state-machine:79049e80-5cc6-49da-9dc0-f19ba2921772\",\"StartTime\":\"2025-07-15T17:10:21.328Z\",\"Name\":\"79049e80-5cc6-49da-9dc0-f19ba2921772\",\"RoleArn\":\"arn:aws:iam::123456123456:role/rstrat-sfn-sns-demo-dev-StepFunctionsExecutionRole-LrsdDm6wMmBh\",\"RedriveCount\":0},\"StateMachine\":{\"Id\":\"arn:aws:states:sa-east-1:123456123456:stateMachine:rstrat-sfn-sns-demo-dev-state-machine\",\"Name\":\"rstrat-sfn-sns-demo-dev-state-machine\"},\"State\":{\"Name\":\"PublishToSNS\",\"EnteredTime\":\"2025-07-15T17:10:21.354Z\",\"RetryCount\":0},\"RootExecutionId\":\"arn:aws:states:sa-east-1:123456123456:execution:rstrat-sfn-sns-demo-dev-state-machine:79049e80-5cc6-49da-9dc0-f19ba2921772\",\"serverless-version\":\"v1\"}"
-                }
-              }
-            }
-          }
-        ]
+                  Value:
+                    '{"Execution":{"Id":"arn:aws:states:sa-east-1:123456123456:execution:rstrat-sfn-sns-demo-dev-state-machine:79049e80-5cc6-49da-9dc0-f19ba2921772","StartTime":"2025-07-15T17:10:21.328Z","Name":"79049e80-5cc6-49da-9dc0-f19ba2921772","RoleArn":"arn:aws:iam::123456123456:role/rstrat-sfn-sns-demo-dev-StepFunctionsExecutionRole-LrsdDm6wMmBh","RedriveCount":0},"StateMachine":{"Id":"arn:aws:states:sa-east-1:123456123456:stateMachine:rstrat-sfn-sns-demo-dev-state-machine","Name":"rstrat-sfn-sns-demo-dev-state-machine"},"State":{"Name":"PublishToSNS","EnteredTime":"2025-07-15T17:10:21.354Z","RetryCount":0},"RootExecutionId":"arn:aws:states:sa-east-1:123456123456:execution:rstrat-sfn-sns-demo-dev-state-machine:79049e80-5cc6-49da-9dc0-f19ba2921772","serverless-version":"v1"}',
+                },
+              },
+            },
+          },
+        ],
       };
 
       const extractor = new SNSEventTraceExtractor(tracerWrapper);
