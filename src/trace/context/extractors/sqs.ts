@@ -4,6 +4,7 @@ import { TracerWrapper } from "../../tracer-wrapper";
 import { logDebug } from "../../../utils";
 import { SpanContextWrapper } from "../../span-context-wrapper";
 import { XrayService } from "../../xray-service";
+import { StepFunctionContextService } from "../../step-function-service";
 
 export class SQSEventTraceExtractor implements EventTraceExtractor {
   constructor(private tracerWrapper: TracerWrapper) {}
@@ -24,13 +25,28 @@ export class SQSEventTraceExtractor implements EventTraceExtractor {
       }
 
       if (headers !== undefined) {
-        const traceContext = this.tracerWrapper.extract(JSON.parse(headers));
+        const parsedHeaders = JSON.parse(headers);
+
+        // First try to extract as regular trace headers
+        const traceContext = this.tracerWrapper.extract(parsedHeaders);
         if (traceContext) {
           logDebug("Extracted trace context from SQS event messageAttributes");
           return traceContext;
-        } else {
-          logDebug("Failed to extract trace context from messageAttributes");
         }
+
+        // If that fails, check if this is a Step Function context
+        const stepFunctionInstance = StepFunctionContextService.instance(parsedHeaders);
+        const stepFunctionContext = stepFunctionInstance.context;
+
+        if (stepFunctionContext !== undefined) {
+          const spanContext = stepFunctionInstance.spanContext;
+          if (spanContext !== null) {
+            logDebug("Extracted Step Function trace context from SQS event", { spanContext, event });
+            return spanContext;
+          }
+        }
+
+        logDebug("Failed to extract trace context from messageAttributes");
       }
       // Then try to extract trace context from attributes.AWSTraceHeader. (Upstream Java apps can
       // pass down Datadog trace context in the attributes.AWSTraceHeader in SQS case)
