@@ -4,6 +4,7 @@ import { logDebug } from "../../../utils";
 import { EventTraceExtractor } from "../extractor";
 import { SpanContextWrapper } from "../../span-context-wrapper";
 import { XrayService, AMZN_TRACE_ID_ENV_VAR } from "../../xray-service";
+import { StepFunctionContextService } from "../../step-function-service";
 
 export class SNSEventTraceExtractor implements EventTraceExtractor {
   constructor(private tracerWrapper: TracerWrapper) {}
@@ -22,13 +23,26 @@ export class SNSEventTraceExtractor implements EventTraceExtractor {
           headers = JSON.parse(decodedValue);
         }
 
+        // First try to extract as regular trace headers
         const traceContext = this.tracerWrapper.extract(headers);
         if (traceContext) {
           logDebug("Extracted trace context from SNS event");
           return traceContext;
-        } else {
-          logDebug("Failed to extract trace context from SNS event");
         }
+
+        // If that fails, check if this is a Step Function context
+        const stepFunctionInstance = StepFunctionContextService.instance(headers);
+        const stepFunctionContext = stepFunctionInstance.context;
+
+        if (stepFunctionContext !== undefined) {
+          const spanContext = stepFunctionInstance.spanContext;
+          if (spanContext !== null) {
+            logDebug("Extracted Step Function trace context from SNS event", { spanContext, event });
+            return spanContext;
+          }
+        }
+
+        logDebug("Failed to extract trace context from SNS event");
       }
       // Then try to extract trace context from _X_AMZN_TRACE_ID header (Upstream Java apps can
       // pass down Datadog trace id (parent id wrong) in the env in SNS case)
