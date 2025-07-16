@@ -10,25 +10,26 @@ export class SQSEventTraceExtractor implements EventTraceExtractor {
 
   extract(event: SQSEvent): SpanContextWrapper | null {
     try {
-      // Try to extract trace context from message attributes
-      const messageAttribute = event?.Records?.[0]?.messageAttributes?._datadog;
-      if (messageAttribute) {
-        let headers;
-        if (messageAttribute.stringValue !== undefined) {
-          headers = JSON.parse(messageAttribute.stringValue);
-        } else if (messageAttribute.binaryValue !== undefined && messageAttribute.dataType === "Binary") {
-          // Try decoding base64 values
-          const decodedValue = Buffer.from(messageAttribute.binaryValue, "base64").toString("ascii");
-          headers = JSON.parse(decodedValue);
-        }
+      // First try to extract trace context from message attributes
+      let headers = event?.Records?.[0]?.messageAttributes?._datadog?.stringValue;
 
-        if (headers) {
-          const traceContext = extractTraceContext(headers, this.tracerWrapper);
-          if (traceContext) {
-            return traceContext;
-          }
-          logDebug("Failed to extract trace context from SQS event");
+      if (!headers) {
+        // Then try to get from binary value. This happens when SNS->SQS, but SNS has raw message delivery enabled.
+        // In this case, SNS maps any messageAttributes to the SQS messageAttributes.
+        // We can at least get trace context from SQS, but we won't be able to create the SNS inferred span.
+        const encodedTraceContext = event?.Records?.[0]?.messageAttributes?._datadog?.binaryValue;
+        if (encodedTraceContext) {
+          headers = Buffer.from(encodedTraceContext, "base64").toString("ascii");
         }
+      }
+
+      if (headers) {
+        const parsedHeaders = JSON.parse(headers);
+        const traceContext = extractTraceContext(parsedHeaders, this.tracerWrapper);
+        if (traceContext) {
+          return traceContext;
+        }
+        logDebug("Failed to extract trace context from SQS event");
       }
 
       // Else try to extract trace context from attributes.AWSTraceHeader
