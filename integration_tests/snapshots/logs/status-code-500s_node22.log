@@ -85,6 +85,7 @@ START
           "service": "integration-tests-js-XXXX-status-code-500s_node22",
           "version": "1.0.0",
           "runtime-id":"XXXX",
+          "cold_start": "true",
           "function_arn":"XXXX_node22",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -101,7 +102,6 @@ START
           "language": "javascript"
         },
         "metrics": {
-          "cold_start": 1,
           "_dd.measured": 1,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
@@ -189,6 +189,7 @@ START
           "service": "integration-tests-js-XXXX-status-code-500s_node22",
           "version": "1.0.0",
           "runtime-id":"XXXX",
+          "cold_start": "false",
           "function_arn":"XXXX_node22",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -202,7 +203,6 @@ START
           "language": "javascript"
         },
         "metrics": {
-          "cold_start": 0,
           "_dd.measured": 1,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
@@ -290,6 +290,7 @@ START
           "service": "integration-tests-js-XXXX-status-code-500s_node22",
           "version": "1.0.0",
           "runtime-id":"XXXX",
+          "cold_start": "false",
           "function_arn":"XXXX_node22",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -303,7 +304,6 @@ START
           "language": "javascript"
         },
         "metrics": {
-          "cold_start": 0,
           "_dd.measured": 1,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
@@ -391,6 +391,7 @@ START
           "service": "integration-tests-js-XXXX-status-code-500s_node22",
           "version": "1.0.0",
           "runtime-id":"XXXX",
+          "cold_start": "false",
           "function_arn":"XXXX_node22",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -404,7 +405,6 @@ START
           "language": "javascript"
         },
         "metrics": {
-          "cold_start": 0,
           "_dd.measured": 1,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
@@ -491,6 +491,7 @@ START
           "service": "integration-tests-js-XXXX-status-code-500s_node22",
           "version": "1.0.0",
           "runtime-id":"XXXX",
+          "cold_start": "false",
           "function_arn":"XXXX_node22",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -504,7 +505,6 @@ START
           "language": "javascript"
         },
         "metrics": {
-          "cold_start": 0,
           "_dd.measured": 1,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
@@ -591,6 +591,7 @@ START
           "service": "integration-tests-js-XXXX-status-code-500s_node22",
           "version": "1.0.0",
           "runtime-id":"XXXX",
+          "cold_start": "false",
           "function_arn":"XXXX_node22",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -604,7 +605,6 @@ START
           "language": "javascript"
         },
         "metrics": {
-          "cold_start": 0,
           "_dd.measured": 1,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
@@ -691,6 +691,7 @@ START
           "service": "integration-tests-js-XXXX-status-code-500s_node22",
           "version": "1.0.0",
           "runtime-id":"XXXX",
+          "cold_start": "false",
           "function_arn":"XXXX_node22",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -704,7 +705,6 @@ START
           "language": "javascript"
         },
         "metrics": {
-          "cold_start": 0,
           "_dd.measured": 1,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
@@ -790,6 +790,7 @@ START
           "service": "integration-tests-js-XXXX-status-code-500s_node22",
           "version": "1.0.0",
           "runtime-id":"XXXX",
+          "cold_start": "false",
           "function_arn":"XXXX_node22",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -803,7 +804,6 @@ START
           "language": "javascript"
         },
         "metrics": {
-          "cold_start": 0,
           "_dd.measured": 1,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
@@ -888,6 +888,7 @@ START
           "service": "integration-tests-js-XXXX-status-code-500s_node22",
           "version": "1.0.0",
           "runtime-id":"XXXX",
+          "cold_start": "false",
           "function_arn":"XXXX_node22",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -901,7 +902,6 @@ START
           "language": "javascript"
         },
         "metrics": {
-          "cold_start": 0,
           "_dd.measured": 1,
           "process_id":XXXX,
           "_sampling_priority_v1": 1
