@@ -1,5 +1,6 @@
 import { StepFunctionContextService } from "../../step-function-service";
 import { StepFunctionEventTraceExtractor } from "./step-function";
+import { TracerWrapper } from "../../tracer-wrapper";
 
 describe("StepFunctionEventTraceExtractor", () => {
   beforeEach(() => {

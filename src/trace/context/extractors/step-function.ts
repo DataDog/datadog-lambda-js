@@ -5,11 +5,16 @@ import { EventTraceExtractor } from "../extractor";
 export class StepFunctionEventTraceExtractor implements EventTraceExtractor {
   extract(event: any): SpanContextWrapper | null {
     // Probably StepFunctionContextService hasn't been called
-    const instance = StepFunctionContextService.instance(event);
-    const context = instance.context;
+    const stepFunctionInstance = StepFunctionContextService.instance(event);
+    const stepFunctionContext = stepFunctionInstance.context;
 
-    if (context === undefined) return null;
+    if (stepFunctionContext !== undefined) {
+      const spanContext = stepFunctionInstance.spanContext;
+      if (spanContext !== null) {
+        return spanContext;
+      }
+    }
 
-    return instance.spanContext;
+    return null;
   }
 }

@@ -9,9 +9,13 @@ export class SQSEventTraceExtractor implements EventTraceExtractor {
   constructor(private tracerWrapper: TracerWrapper) {}
 
   extract(event: SQSEvent): SpanContextWrapper | null {
+    logDebug("SQS Extractor Being Used")
+    logDebug("Line 13 - event", { event });
     try {
       // First try to extract trace context from message attributes
       let headers = event?.Records?.[0]?.messageAttributes?._datadog?.stringValue;
+
+      logDebug("Line 18 - headers", { headers });
 
       if (!headers) {
         // Then try to get from binary value. This happens when SNS->SQS, but SNS has raw message delivery enabled.
@@ -23,8 +27,13 @@ export class SQSEventTraceExtractor implements EventTraceExtractor {
         }
       }
 
+      logDebug("Line 30 - headers", { headers });
+
       if (headers) {
         const parsedHeaders = JSON.parse(headers);
+
+        logDebug("Line 35 - parsedHeaders", { parsedHeaders });
+
         const traceContext = extractTraceContext(parsedHeaders, this.tracerWrapper);
         if (traceContext) {
           return traceContext;
