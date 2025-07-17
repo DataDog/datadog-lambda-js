@@ -12,7 +12,6 @@ import { XrayService } from "../xray-service";
  * Attempts to extract trace context from headers, falling back to Step Function context if needed
  * @param headers The headers object to extract from
  * @param tracerWrapper The tracer wrapper instance
- * @param eventType The type of event (for logging)
  * @returns SpanContextWrapper or null
  */
 export function extractTraceContext(headers: any, tracerWrapper: TracerWrapper): SpanContextWrapper | null {

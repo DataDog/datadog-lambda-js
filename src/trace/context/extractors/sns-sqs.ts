@@ -9,6 +9,7 @@ export class SNSSQSEventTraceExtractor implements EventTraceExtractor {
   constructor(private tracerWrapper: TracerWrapper) {}
 
   extract(event: SQSEvent): SpanContextWrapper | null {
+    logDebug("SNS-SQS Extractor Being Used");
     try {
       // Try to extract trace context from SNS wrapped in SQS
       const body = event?.Records?.[0]?.body;

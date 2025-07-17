@@ -694,6 +694,54 @@ describe("TraceContextExtractor", () => {
         expect(traceContext?.sampleMode()).toBe("1");
         expect(traceContext?.source).toBe("event");
       });
+
+      it("extracts and applies deterministic trace ID from StepFunction event end-to-end", async () => {
+        // This test verifies the complete flow from Step Function event to trace ID assignment
+        const event = {
+          Execution: {
+            Id: "arn:aws:states:us-east-1:123456789012:execution:MyStateMachine:test-execution-id",
+            Name: "test-execution-id",
+            StartTime: "2024-01-01T00:00:00.000Z",
+          },
+          State: {
+            Name: "ProcessData",
+            EnteredTime: "2024-01-01T00:00:01.000Z",
+            RetryCount: 0,
+          },
+          StateMachine: {
+            Id: "arn:aws:states:us-east-1:123456789012:stateMachine:MyStateMachine",
+            Name: "MyStateMachine",
+          },
+        };
+
+        const tracerWrapper = new TracerWrapper();
+        const extractor = new TraceContextExtractor(tracerWrapper, {} as TraceConfig);
+
+        // Extract trace context through the full pipeline
+        const traceContext = await extractor.extract(event, {} as Context);
+        expect(traceContext).not.toBeNull();
+
+        // Verify the trace context was extracted from Step Function
+        expect(traceContext?.source).toBe("event");
+
+        // Verify the trace ID is deterministic based on execution ID
+        // The trace ID should be generated from SHA256 hash of the execution ID
+        const traceId = traceContext?.toTraceId();
+        expect(traceId).toBeDefined();
+        expect(traceId).not.toBe("0"); // Should not be zero
+        expect(traceId).toMatch(/^\d+$/); // Should be numeric string
+
+        // Verify the span ID is deterministic based on execution ID, state name, and entered time
+        const spanId = traceContext?.toSpanId();
+        expect(spanId).toBeDefined();
+        expect(spanId).not.toBe("0"); // Should not be zero
+        expect(spanId).toMatch(/^\d+$/); // Should be numeric string
+
+        // Verify that extracting the same event produces the same trace IDs (deterministic)
+        const traceContext2 = await extractor.extract(event, {} as Context);
+        expect(traceContext2?.toTraceId()).toBe(traceId);
+        expect(traceContext2?.toSpanId()).toBe(spanId);
+      });
     });
 
     describe("lambda context", () => {

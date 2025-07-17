@@ -9,6 +9,7 @@ export class SQSEventTraceExtractor implements EventTraceExtractor {
   constructor(private tracerWrapper: TracerWrapper) {}
 
   extract(event: SQSEvent): SpanContextWrapper | null {
+    logDebug("SQS Extractor Being Used");
     try {
       // First try to extract trace context from message attributes
       let headers = event?.Records?.[0]?.messageAttributes?._datadog?.stringValue;
@@ -25,6 +26,7 @@ export class SQSEventTraceExtractor implements EventTraceExtractor {
 
       if (headers) {
         const parsedHeaders = JSON.parse(headers);
+
         const traceContext = extractTraceContext(parsedHeaders, this.tracerWrapper);
         if (traceContext) {
           return traceContext;
