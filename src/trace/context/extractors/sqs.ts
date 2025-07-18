@@ -1,17 +1,21 @@
 import { SQSEvent } from "aws-lambda";
-import { EventTraceExtractor } from "../extractor";
 import { TracerWrapper } from "../../tracer-wrapper";
 import { logDebug } from "../../../utils";
+import { EventTraceExtractor } from "../extractor";
 import { SpanContextWrapper } from "../../span-context-wrapper";
-import { XrayService } from "../../xray-service";
+import { extractTraceContext, extractFromAWSTraceHeader, handleExtractionError } from "../extractor-utils";
 
 export class SQSEventTraceExtractor implements EventTraceExtractor {
   constructor(private tracerWrapper: TracerWrapper) {}
 
   extract(event: SQSEvent): SpanContextWrapper | null {
+    logDebug("SQS Extractor Being Used")
+    logDebug("Line 13 - event", { event });
     try {
       // First try to extract trace context from message attributes
       let headers = event?.Records?.[0]?.messageAttributes?._datadog?.stringValue;
+
+      logDebug("Line 18 - headers", { headers });
 
       if (!headers) {
         // Then try to get from binary value. This happens when SNS->SQS, but SNS has raw message delivery enabled.
@@ -23,30 +27,28 @@ export class SQSEventTraceExtractor implements EventTraceExtractor {
         }
       }
 
-      if (headers !== undefined) {
-        const traceContext = this.tracerWrapper.extract(JSON.parse(headers));
+      logDebug("Line 30 - headers", { headers });
+
+      if (headers) {
+        const parsedHeaders = JSON.parse(headers);
+
+        logDebug("Line 35 - parsedHeaders", { parsedHeaders });
+
+        const traceContext = extractTraceContext(parsedHeaders, this.tracerWrapper);
         if (traceContext) {
-          logDebug("Extracted trace context from SQS event messageAttributes");
           return traceContext;
-        } else {
-          logDebug("Failed to extract trace context from messageAttributes");
         }
+        logDebug("Failed to extract trace context from SQS event");
       }
-      // Then try to extract trace context from attributes.AWSTraceHeader. (Upstream Java apps can
-      // pass down Datadog trace context in the attributes.AWSTraceHeader in SQS case)
-      if (event?.Records?.[0]?.attributes?.AWSTraceHeader !== undefined) {
-        const traceContext = XrayService.extraceDDContextFromAWSTraceHeader(event.Records[0].attributes.AWSTraceHeader);
-        if (traceContext) {
-          logDebug("Extracted trace context from SQS event attributes AWSTraceHeader");
-          return traceContext;
-        } else {
-          logDebug("No Datadog trace context found from SQS event attributes AWSTraceHeader");
-        }
+
+      // Else try to extract trace context from attributes.AWSTraceHeader
+      // (Upstream Java apps can pass down Datadog trace context in the attributes.AWSTraceHeader in SQS case)
+      const awsTraceHeader = event?.Records?.[0]?.attributes?.AWSTraceHeader;
+      if (awsTraceHeader !== undefined) {
+        return extractFromAWSTraceHeader(awsTraceHeader, "SQS");
       }
     } catch (error) {
-      if (error instanceof Error) {
-        logDebug("Unable to extract trace context from SQS event", error);
-      }
+      handleExtractionError(error, "SQS");
     }
 
     return null;
