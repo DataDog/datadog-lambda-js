@@ -171,13 +171,13 @@ describe("SpanInferrer", () => {
     it("uses generic service name for SNS events", () => {
       const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
       inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
-      expect(getStartSpanServiceTag(1)).toBe("aws.sns");
+      expect(getStartSpanServiceTag(1)).toBe("sns");
     });
 
     it("uses generic service name for SQS events", () => {
       const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
       inferrer.createInferredSpan(sqsEvent, {} as any, {} as SpanContext);
-      expect(getStartSpanServiceTag(1)).toBe("aws.sqs");
+      expect(getStartSpanServiceTag(1)).toBe("sqs");
     });
 
     it("uses generic service name for DDB events", () => {
@@ -189,31 +189,31 @@ describe("SpanInferrer", () => {
     it("uses generic service name for Kinesis events", () => {
       const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
       inferrer.createInferredSpan(kinesisEvent, {} as any, {} as SpanContext);
-      expect(getStartSpanServiceTag(1)).toBe("aws.kinesis");
+      expect(getStartSpanServiceTag(1)).toBe("kinesis");
     });
 
     it("uses generic service name for EventBridge events", () => {
       const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
       inferrer.createInferredSpan(eventBridgeEvent, {} as any, {} as SpanContext);
-      expect(getStartSpanServiceTag(1)).toBe("aws.eventbridge");
+      expect(getStartSpanServiceTag(1)).toBe("eventbridge");
     });
 
     it("uses generic service name for API Gateway events", () => {
       const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
       inferrer.createInferredSpan(apiGatewayV1, {} as any, {} as SpanContext);
-      expect(getStartSpanServiceTag(1)).toBe("aws.apigateway");
+      expect(getStartSpanServiceTag(1)).toBe("id.execute-api.us-east-1.amazonaws.com");
     });
 
     it("uses generic service name for Lambda Function URL events", () => {
       const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
       inferrer.createInferredSpan(functionUrlEvent, {} as any, {} as SpanContext);
-      expect(getStartSpanServiceTag(1)).toBe("aws.lambda_url");
+      expect(getStartSpanServiceTag(1)).toBe("a8hyhsshac.lambda-url.eu-south-1.amazonaws.com");
     });
 
     it("uses generic service name for S3 events", () => {
       const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
       inferrer.createInferredSpan(s3Event, {} as any, {} as SpanContext);
-      expect(getStartSpanServiceTag(1)).toBe("aws.s3");
+      expect(getStartSpanServiceTag(1)).toBe("s3");
     });
   });
 
@@ -225,13 +225,13 @@ describe("SpanInferrer", () => {
     it("uses generic service name for SNS events", () => {
       const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
       inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
-      expect(getStartSpanServiceTag(1)).toBe("aws.sns");
+      expect(getStartSpanServiceTag(1)).toBe("sns");
     });
 
     it("uses generic service name for SQS events", () => {
       const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
       inferrer.createInferredSpan(sqsEvent, {} as any, {} as SpanContext);
-      expect(getStartSpanServiceTag(1)).toBe("aws.sqs");
+      expect(getStartSpanServiceTag(1)).toBe("sqs");
     });
 
     it("uses generic service name for DDB events", () => {
@@ -243,31 +243,31 @@ describe("SpanInferrer", () => {
     it("uses generic service name for Kinesis events", () => {
       const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
       inferrer.createInferredSpan(kinesisEvent, {} as any, {} as SpanContext);
-      expect(getStartSpanServiceTag(1)).toBe("aws.kinesis");
+      expect(getStartSpanServiceTag(1)).toBe("kinesis");
     });
 
     it("uses generic service name for EventBridge events", () => {
       const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
       inferrer.createInferredSpan(eventBridgeEvent, {} as any, {} as SpanContext);
-      expect(getStartSpanServiceTag(1)).toBe("aws.eventbridge");
+      expect(getStartSpanServiceTag(1)).toBe("eventbridge");
     });
 
     it("uses generic service name for API Gateway events", () => {
       const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
       inferrer.createInferredSpan(apiGatewayV1, {} as any, {} as SpanContext);
-      expect(getStartSpanServiceTag(1)).toBe("aws.apigateway");
+      expect(getStartSpanServiceTag(1)).toBe("id.execute-api.us-east-1.amazonaws.com");
     });
 
     it("uses generic service name for Lambda Function URL events", () => {
       const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
       inferrer.createInferredSpan(functionUrlEvent, {} as any, {} as SpanContext);
-      expect(getStartSpanServiceTag(1)).toBe("aws.lambda_url");
+      expect(getStartSpanServiceTag(1)).toBe("a8hyhsshac.lambda-url.eu-south-1.amazonaws.com");
     });
 
     it("uses generic service name for S3 events", () => {
       const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
       inferrer.createInferredSpan(s3Event, {} as any, {} as SpanContext);
-      expect(getStartSpanServiceTag(1)).toBe("aws.s3");
+      expect(getStartSpanServiceTag(1)).toBe("s3");
     });
   });
 

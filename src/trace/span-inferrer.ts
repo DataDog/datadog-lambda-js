@@ -117,7 +117,7 @@ export class SpanInferrer {
     }
     const resourceName = [method || domain, resourcePath].join(" ");
     const apiId = event.requestContext.apiId || "";
-    const serviceName = SpanInferrer.determineServiceName(apiId, "lambda_api_gateway", domain, "aws.apigateway");
+    const serviceName = SpanInferrer.determineServiceName(apiId, "lambda_api_gateway", domain, domain);
 
     options.tags = {
       operation_name: "aws.apigateway",
@@ -216,7 +216,7 @@ export class SpanInferrer {
     }
     const resourceName = [method || domain, path].join(" ");
     const apiId: string = event.requestContext.apiId || "";
-    const serviceName: string = SpanInferrer.determineServiceName(apiId, "lambda_url", domain, "aws.lambda_url");
+    const serviceName: string = SpanInferrer.determineServiceName(apiId, "lambda_url", domain, domain);
 
     options.tags = {
       operation_name: "aws.lambda.url",
@@ -313,7 +313,7 @@ export class SpanInferrer {
 
     const topicName = TopicArn?.split(":").pop() || "";
     const resourceName = topicName;
-    const serviceName = SpanInferrer.determineServiceName(topicName, "lambda_sns", topicName, "aws.sns");
+    const serviceName = SpanInferrer.determineServiceName(topicName, "lambda_sns", topicName, "sns");
     options.tags = {
       operation_name: "aws.sns",
       resource_names: resourceName,
@@ -365,7 +365,7 @@ export class SpanInferrer {
     } = referenceRecord;
     const queueName = eventSourceARN?.split(":").pop() || "";
     const resourceName = queueName;
-    const serviceName = SpanInferrer.determineServiceName(queueName, "lambda_sqs", queueName, "aws.sqs");
+    const serviceName = SpanInferrer.determineServiceName(queueName, "lambda_sqs", queueName, "sqs");
     options.tags = {
       operation_name: "aws.sqs",
       resource_names: resourceName,
@@ -432,7 +432,7 @@ export class SpanInferrer {
     } = referenceRecord;
     const streamName = (eventSourceARN?.split(":").pop() || "").replace(/^stream\//, "");
     const shardId = eventID.split(":").pop();
-    const serviceName = SpanInferrer.determineServiceName(streamName, "lambda_kinesis", streamName, "aws.kinesis");
+    const serviceName = SpanInferrer.determineServiceName(streamName, "lambda_kinesis", streamName, "kinesis");
     options.tags = {
       operation_name: "aws.kinesis",
       resource_names: streamName,
@@ -481,7 +481,7 @@ export class SpanInferrer {
       eventTime,
       eventName,
     } = referenceRecord;
-    const serviceName = SpanInferrer.determineServiceName(bucketName, "lambda_s3", bucketName, "aws.s3");
+    const serviceName = SpanInferrer.determineServiceName(bucketName, "lambda_s3", bucketName, "s3");
     options.tags = {
       operation_name: "aws.s3",
       resource_names: bucketName,
@@ -520,7 +520,7 @@ export class SpanInferrer {
   ): SpanWrapper {
     const options: SpanOptions = {};
     const { time, source } = event as EventBridgeEvent<any, any>;
-    const serviceName = SpanInferrer.determineServiceName(source, "lambda_eventbridge", source, "aws.eventbridge");
+    const serviceName = SpanInferrer.determineServiceName(source, "lambda_eventbridge", source, "eventbridge");
     options.tags = {
       operation_name: "aws.eventbridge",
       resource_names: source,
