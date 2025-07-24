@@ -9,9 +9,11 @@ export class SQSEventTraceExtractor implements EventTraceExtractor {
   constructor(private tracerWrapper: TracerWrapper) {}
 
   extract(event: SQSEvent): SpanContextWrapper | null {
+    let sourceARN = "";
     try {
       // First try to extract trace context from message attributes
       let headers = event?.Records?.[0]?.messageAttributes?._datadog?.stringValue;
+      sourceARN = event.Records[0].eventSourceARN;
 
       if (!headers) {
         // Then try to get from binary value. This happens when SNS->SQS, but SNS has raw message delivery enabled.
@@ -24,6 +26,7 @@ export class SQSEventTraceExtractor implements EventTraceExtractor {
       }
 
       if (headers !== undefined) {
+        this.tracerWrapper.setConsumeCheckpoint(JSON.parse(headers), "sqs", sourceARN);
         const traceContext = this.tracerWrapper.extract(JSON.parse(headers));
         if (traceContext) {
           logDebug("Extracted trace context from SQS event messageAttributes");
@@ -45,10 +48,14 @@ export class SQSEventTraceExtractor implements EventTraceExtractor {
       }
     } catch (error) {
       if (error instanceof Error) {
+        // Still want to set a DSM checkpoint even if DSM context not propagated
+        this.tracerWrapper.setConsumeCheckpoint(null, "sqs", sourceARN);
         logDebug("Unable to extract trace context from SQS event", error);
       }
     }
 
+    // Still want to set a DSM checkpoint even if DSM context not propagated
+    this.tracerWrapper.setConsumeCheckpoint(null, "sqs", sourceARN);
     return null;
   }
 }

@@ -9,9 +9,12 @@ export class SNSSQSEventTraceExtractor implements EventTraceExtractor {
   constructor(private tracerWrapper: TracerWrapper) {}
 
   extract(event: SQSEvent): SpanContextWrapper | null {
+    let sourceARN = "";
+
     try {
       // First try to extract trace context from message attributes
       if (event?.Records?.[0]?.body) {
+        sourceARN = event.Records[0].eventSourceARN;
         const parsedBody = JSON.parse(event?.Records?.[0]?.body) as SNSMessage;
         const messageAttribute = parsedBody?.MessageAttributes?._datadog;
         if (messageAttribute?.Value) {
@@ -24,6 +27,7 @@ export class SNSSQSEventTraceExtractor implements EventTraceExtractor {
           }
 
           const traceContext = this.tracerWrapper.extract(headers);
+          this.tracerWrapper.setConsumeCheckpoint(headers, "sqs", event.Records[0].eventSourceARN);
           if (traceContext) {
             logDebug("Extracted trace context from SNS-SQS event");
             return traceContext;
@@ -45,10 +49,13 @@ export class SNSSQSEventTraceExtractor implements EventTraceExtractor {
       }
     } catch (error) {
       if (error instanceof Error) {
+        // Still want to set a DSM checkpoint even if DSM context not propagated
+        this.tracerWrapper.setConsumeCheckpoint(null, "sqs", sourceARN);
         logDebug("Unable to extract trace context from SNS-SQS event", error);
       }
     }
-
+    // Still want to set a DSM checkpoint even if DSM context not propagated
+    this.tracerWrapper.setConsumeCheckpoint(null, "sqs", sourceARN);
     return null;
   }
 }

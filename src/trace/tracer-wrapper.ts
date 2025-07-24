@@ -1,3 +1,4 @@
+import { getEnvValue } from "../index";
 import { logDebug } from "../utils";
 import { SpanContextWrapper } from "./span-context-wrapper";
 import { TraceSource } from "./trace-context-service";
@@ -27,6 +28,7 @@ export interface TraceOptions {
 // This lets a customer bring their own version of the tracer.
 export class TracerWrapper {
   private tracer: any;
+  private dataStreamsCheckpointer: any;
 
   constructor() {
     try {
@@ -35,6 +37,14 @@ export class TracerWrapper {
       // and one in the user's code.
       const path = require.resolve("dd-trace", { paths: ["/var/task/node_modules", ...module.paths] });
       this.tracer = require(path);
+      if (getEnvValue("DD_DATA_STREAMS_ENABLED", "false").toLowerCase() === "true") {
+        console.log("DataStreamsCheckpointer initialization beginning");
+        console.log("this.tracer._tracer", this.tracer._tracer);
+        console.log("this.tracer._tracer._dataStreamsProcessor", this.tracer._tracer._dataStreamsProcessor);
+        const DataStreamsCheckpointer =
+          require("dd-trace/packages/dd-trace/src/datastreams/checkpointer").DataStreamsCheckpointer;
+        this.dataStreamsCheckpointer = new DataStreamsCheckpointer(this.tracer._tracer);
+      }
       return;
     } catch (err) {
       if (err instanceof Object || err instanceof Error) {
@@ -97,5 +107,20 @@ export class TracerWrapper {
     const dest = {};
     this.tracer.inject(span, "text_map", dest);
     return dest;
+  }
+
+  public setConsumeCheckpoint(context_json: any, event_type: string, arn: string): any {
+    if (!arn) {
+      return;
+    }
+
+    try {
+      this.dataStreamsCheckpointer.setConsumeCheckpoint(event_type, arn, context_json);
+    } catch (error) {
+      logDebug(
+        `DSM: Failed to set consume checkpoint for ${event_type} ${arn}:`,
+        error instanceof Error ? error : new Error(String(error)),
+      );
+    }
   }
 }
