@@ -370,4 +370,99 @@ describe("TraceListener", () => {
       unwrappedFunc,
     );
   });
+
+  describe("DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED tests for aws.lambda service name", () => {
+    const lambdaContext = {
+      invokedFunctionArn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
+      awsRequestId: "1234",
+      functionName: "my-Lambda",
+    };
+
+    beforeEach(() => {
+      mockWrap.mockClear();
+      mockExtract.mockClear();
+      mockSpanContext = undefined;
+      mockSpanContextWrapper = undefined;
+      mockTraceSource = undefined;
+      process.env = { ...oldEnv }; // Restore original environment variables
+      delete process.env.DD_SERVICE; // Ensure DD_SERVICE doesn't interfere
+      delete process.env.DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED;
+    });
+
+    afterEach(() => {
+      process.env = oldEnv;
+    });
+
+    it("uses 'aws.lambda' when DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED is 'false'", async () => {
+      process.env.DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED = "false";
+      const listener = new TraceListener(defaultConfig);
+      await listener.onStartInvocation({}, lambdaContext as any);
+      const unwrappedFunc = () => {};
+      const wrappedFunc = listener.onWrap(unwrappedFunc);
+      wrappedFunc();
+      await listener.onCompleteInvocation();
+
+      expect(mockWrap).toHaveBeenCalledWith(
+        "aws.lambda",
+        expect.objectContaining({
+          service: "aws.lambda",
+        }),
+        unwrappedFunc,
+      );
+    });
+
+    it("uses 'aws.lambda' when DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED is '0'", async () => {
+      process.env.DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED = "0";
+      const listener = new TraceListener(defaultConfig);
+      await listener.onStartInvocation({}, lambdaContext as any);
+      const unwrappedFunc = () => {};
+      const wrappedFunc = listener.onWrap(unwrappedFunc);
+      wrappedFunc();
+      await listener.onCompleteInvocation();
+
+      expect(mockWrap).toHaveBeenCalledWith(
+        "aws.lambda",
+        expect.objectContaining({
+          service: "aws.lambda",
+        }),
+        unwrappedFunc,
+      );
+    });
+
+    it("uses function name when DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED is not set", async () => {
+      delete process.env.DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED;
+      const listener = new TraceListener(defaultConfig);
+      await listener.onStartInvocation({}, lambdaContext as any);
+      const unwrappedFunc = () => {};
+      const wrappedFunc = listener.onWrap(unwrappedFunc);
+      wrappedFunc();
+      await listener.onCompleteInvocation();
+
+      expect(mockWrap).toHaveBeenCalledWith(
+        "aws.lambda",
+        expect.objectContaining({
+          service: lambdaContext.functionName,
+        }),
+        unwrappedFunc,
+      );
+    });
+
+    it("uses function name when DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED is 'true'", async () => {
+      process.env.DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED = "true";
+      const listener = new TraceListener(defaultConfig);
+      await listener.onStartInvocation({}, lambdaContext as any);
+      const unwrappedFunc = () => {};
+      const wrappedFunc = listener.onWrap(unwrappedFunc);
+      wrappedFunc();
+      await listener.onCompleteInvocation();
+
+      expect(mockWrap).toHaveBeenCalledWith(
+        "aws.lambda",
+        expect.objectContaining({
+          service: lambdaContext.functionName,
+        }),
+        unwrappedFunc,
+      );
+    });
+  });
 });

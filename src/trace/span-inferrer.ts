@@ -82,11 +82,19 @@ export class SpanInferrer {
   }
 
   static determineServiceName(specificKey: string, genericKey: string, extractedKey: string, fallback: string): string {
-    return (
-      this.serviceMapping[specificKey] ||
-      this.serviceMapping[genericKey] ||
-      (extractedKey?.trim() ? extractedKey : fallback)
-    );
+    const mappedService = this.serviceMapping[specificKey] || this.serviceMapping[genericKey];
+    if (mappedService) {
+      return mappedService;
+    }
+
+    if (
+      process.env.DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED === "false" ||
+      process.env.DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED === "0"
+    ) {
+      return fallback;
+    }
+
+    return extractedKey?.trim() ? extractedKey : fallback;
   }
 
   createInferredSpanForApiGateway(

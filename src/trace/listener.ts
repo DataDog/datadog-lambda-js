@@ -324,13 +324,19 @@ export class TraceListener {
       options.resource = this.context.functionName;
     }
 
-    const envService = process.env[DD_SERVICE_ENV_VAR];
-    const resolvedServiceName =
-      envService && envService.trim().length > 0
-        ? envService.trim()
-        : this.context
-        ? this.context.functionName
-        : "aws.lambda";
+    const resolvedServiceName = (() => {
+      const envService = process.env[DD_SERVICE_ENV_VAR];
+      if (envService && envService.trim().length > 0) {
+        return envService.trim();
+      }
+      if (
+        process.env.DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED === "false" ||
+        process.env.DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED === "0"
+      ) {
+        return "aws.lambda";
+      }
+      return this.context ? this.context.functionName : "aws.lambda";
+    })();
 
     options.service = resolvedServiceName;
 
