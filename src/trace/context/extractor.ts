@@ -43,8 +43,6 @@ export class TraceContextExtractor {
   }
 
   async extract(event: any, context: Context): Promise<SpanContextWrapper | null> {
-    this.stepFunctionContextService = StepFunctionContextService.instance(event);
-
     let spanContext: SpanContextWrapper | null = null;
     if (this.config.traceExtractor) {
       const customExtractor = new CustomTraceExtractor(this.config.traceExtractor);
@@ -55,6 +53,14 @@ export class TraceContextExtractor {
       const eventExtractor = this.getTraceEventExtractor(event);
       if (eventExtractor !== undefined) {
         spanContext = eventExtractor.extract(event);
+      }
+    }
+
+    if (spanContext === null) {
+      this.stepFunctionContextService = StepFunctionContextService.instance(event);
+      if (this.stepFunctionContextService?.context) {
+        const extractor = new StepFunctionEventTraceExtractor();
+        spanContext = extractor?.extract(event);
       }
     }
 
@@ -87,8 +93,6 @@ export class TraceContextExtractor {
     if (EventValidator.isSQSEvent(event)) return new SQSEventTraceExtractor(this.tracerWrapper);
     if (EventValidator.isKinesisStreamEvent(event)) return new KinesisEventTraceExtractor(this.tracerWrapper);
     if (EventValidator.isEventBridgeEvent(event)) return new EventBridgeEventTraceExtractor(this.tracerWrapper);
-
-    if (this.stepFunctionContextService?.context) return new StepFunctionEventTraceExtractor();
 
     return;
   }

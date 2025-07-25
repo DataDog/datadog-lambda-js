@@ -17,7 +17,6 @@ import {
   SNSEventTraceExtractor,
   SNSSQSEventTraceExtractor,
   SQSEventTraceExtractor,
-  StepFunctionEventTraceExtractor,
 } from "./extractors";
 import { StepFunctionContextService } from "../step-function-service";
 import { SpanContextWrapper } from "../span-context-wrapper";
@@ -694,6 +693,54 @@ describe("TraceContextExtractor", () => {
         expect(traceContext?.sampleMode()).toBe("1");
         expect(traceContext?.source).toBe("event");
       });
+
+      it("extracts and applies deterministic trace ID from StepFunction event end-to-end", async () => {
+        // This test verifies the complete flow from Step Function event to trace ID assignment
+        const event = {
+          Execution: {
+            Id: "arn:aws:states:us-east-1:123456789012:execution:MyStateMachine:test-execution-id",
+            Name: "test-execution-id",
+            StartTime: "2024-01-01T00:00:00.000Z",
+          },
+          State: {
+            Name: "ProcessData",
+            EnteredTime: "2024-01-01T00:00:01.000Z",
+            RetryCount: 0,
+          },
+          StateMachine: {
+            Id: "arn:aws:states:us-east-1:123456789012:stateMachine:MyStateMachine",
+            Name: "MyStateMachine",
+          },
+        };
+
+        const tracerWrapper = new TracerWrapper();
+        const extractor = new TraceContextExtractor(tracerWrapper, {} as TraceConfig);
+
+        // Extract trace context through the full pipeline
+        const traceContext = await extractor.extract(event, {} as Context);
+        expect(traceContext).not.toBeNull();
+
+        // Verify the trace context was extracted from Step Function
+        expect(traceContext?.source).toBe("event");
+
+        // Verify the trace ID is deterministic based on execution ID
+        // The trace ID should be generated from SHA256 hash of the execution ID
+        const traceId = traceContext?.toTraceId();
+        expect(traceId).toBeDefined();
+        expect(traceId).not.toBe("0"); // Should not be zero
+        expect(traceId).toMatch(/^\d+$/); // Should be numeric string
+
+        // Verify the span ID is deterministic based on execution ID, state name, and entered time
+        const spanId = traceContext?.toSpanId();
+        expect(spanId).toBeDefined();
+        expect(spanId).not.toBe("0"); // Should not be zero
+        expect(spanId).toMatch(/^\d+$/); // Should be numeric string
+
+        // Verify that extracting the same event produces the same trace IDs (deterministic)
+        const traceContext2 = await extractor.extract(event, {} as Context);
+        expect(traceContext2?.toTraceId()).toBe(traceId);
+        expect(traceContext2?.toSpanId()).toBe(spanId);
+      });
     });
 
     describe("lambda context", () => {
@@ -734,301 +781,146 @@ describe("TraceContextExtractor", () => {
         expect(traceContext?.source).toBe("event");
       });
     });
-
-    describe("xray", () => {
-      // Fallback, event and context don't contain any trace context
-      it("extracts trace context from Xray", async () => {
-        process.env["_X_AMZN_TRACE_ID"] = "Root=1-5ce31dc2-2c779014b90ce44db5e03875;Parent=0b11cc4230d3e09e;Sampled=1";
-
-        const tracerWrapper = new TracerWrapper();
-        const extractor = new TraceContextExtractor(tracerWrapper, {} as TraceConfig);
-
-        const traceContext = await extractor.extract({}, {} as Context);
-        expect(traceContext).not.toBeNull();
-
-        expect(traceContext?.toTraceId()).toBe("4110911582297405557");
-        expect(traceContext?.toSpanId()).toBe("797643193680388254");
-        expect(traceContext?.sampleMode()).toBe("2");
-        expect(traceContext?.source).toBe("xray");
-      });
-    });
   });
 
-  describe("getTraceEventExtractor", () => {
-    beforeEach(() => {
-      StepFunctionContextService["_instance"] = undefined as any;
-    });
-    it.each([
-      ["null", null],
-      ["undefined", undefined],
-      ["a string", "some-value"],
-      ["a number", 1234],
-      ["an object which doesn't match any expected event", { custom: "event" }],
-    ])("returns undefined when event is '%s'", (_, event) => {
+  describe("xray", () => {
+    // Fallback, event and context don't contain any trace context
+    it("extracts trace context from Xray", async () => {
+      process.env["_X_AMZN_TRACE_ID"] = "Root=1-5ce31dc2-2c779014b90ce44db5e03875;Parent=0b11cc4230d3e09e;Sampled=1";
+
       const tracerWrapper = new TracerWrapper();
-      const traceContextExtractor = new TraceContextExtractor(tracerWrapper, {} as TraceConfig);
+      const extractor = new TraceContextExtractor(tracerWrapper, {} as TraceConfig);
 
-      const extractor = traceContextExtractor["getTraceEventExtractor"](event);
+      const traceContext = await extractor.extract({}, {} as Context);
+      expect(traceContext).not.toBeNull();
 
-      expect(extractor).toBeUndefined();
+      expect(traceContext?.toTraceId()).toBe("4110911582297405557");
+      expect(traceContext?.toSpanId()).toBe("797643193680388254");
+      expect(traceContext?.sampleMode()).toBe("2");
+      expect(traceContext?.source).toBe("xray");
     });
+  });
+});
 
-    // Returns the expected event extractor when payload is from that event
-    it.each([
-      [
-        "HTTPEventTraceExtractor",
-        "headers",
-        HTTPEventTraceExtractor,
-        {
+describe("getTraceEventExtractor", () => {
+  beforeEach(() => {
+    StepFunctionContextService["_instance"] = undefined as any;
+  });
+  it.each([
+    ["null", null],
+    ["undefined", undefined],
+    ["a string", "some-value"],
+    ["a number", 1234],
+    ["an object which doesn't match any expected event", { custom: "event" }],
+  ])("returns undefined when event is '%s'", (_, event) => {
+    const tracerWrapper = new TracerWrapper();
+    const traceContextExtractor = new TraceContextExtractor(tracerWrapper, {} as TraceConfig);
+
+    const extractor = traceContextExtractor["getTraceEventExtractor"](event);
+
+    expect(extractor).toBeUndefined();
+  });
+
+  // Returns the expected event extractor when payload is from that event
+  it.each([
+    [
+      "HTTPEventTraceExtractor",
+      "headers",
+      HTTPEventTraceExtractor,
+      {
+        headers: {},
+      },
+    ],
+    [
+      "SNSEventTraceExtractor",
+      "SNS event",
+      SNSEventTraceExtractor,
+      {
+        Records: [
+          {
+            Sns: {},
+          },
+        ],
+      },
+    ],
+    [
+      "SNSSQSventTraceExtractor",
+      "SNS to SQS event",
+      SNSSQSEventTraceExtractor,
+      {
+        Records: [
+          {
+            eventSource: "aws:sqs",
+            body: '{"Type":"Notification", "TopicArn":"some-topic"}',
+          },
+        ],
+      },
+    ],
+    [
+      "EventBridgeSQSTraceExtractor",
+      "EventBridge to SQS event",
+      EventBridgeSQSEventTraceExtractor,
+      {
+        Records: [
+          {
+            eventSource: "aws:sqs",
+            body: '{"detail-type":"some-detail-type"}',
+          },
+        ],
+      },
+    ],
+    [
+      "AppSyncEventTraceExtractor",
+      "AppSync event",
+      AppSyncEventTraceExtractor,
+      {
+        info: {
+          selectionSetGraphQL: "some-selection",
+        },
+        request: {
           headers: {},
         },
-      ],
-      [
-        "SNSEventTraceExtractor",
-        "SNS event",
-        SNSEventTraceExtractor,
-        {
-          Records: [
-            {
-              Sns: {},
-            },
-          ],
-        },
-      ],
-      [
-        "SNSSQSventTraceExtractor",
-        "SNS to SQS event",
-        SNSSQSEventTraceExtractor,
-        {
-          Records: [
-            {
-              eventSource: "aws:sqs",
-              body: '{"Type":"Notification", "TopicArn":"some-topic"}',
-            },
-          ],
-        },
-      ],
-      [
-        "EventBridgeSQSTraceExtractor",
-        "EventBridge to SQS event",
-        EventBridgeSQSEventTraceExtractor,
-        {
-          Records: [
-            {
-              eventSource: "aws:sqs",
-              body: '{"detail-type":"some-detail-type"}',
-            },
-          ],
-        },
-      ],
-      [
-        "AppSyncEventTraceExtractor",
-        "AppSync event",
-        AppSyncEventTraceExtractor,
-        {
-          info: {
-            selectionSetGraphQL: "some-selection",
+      },
+    ],
+    [
+      "SQSEventTraceExtractor",
+      "SQS event",
+      SQSEventTraceExtractor,
+      {
+        Records: [
+          {
+            eventSource: "aws:sqs",
           },
-          request: {
-            headers: {},
+        ],
+      },
+    ],
+    [
+      "KinesisEventTraceExtractor",
+      "Kinesis stream event",
+      KinesisEventTraceExtractor,
+      {
+        Records: [
+          {
+            kinesis: {},
           },
-        },
-      ],
-      [
-        "SQSEventTraceExtractor",
-        "SQS event",
-        SQSEventTraceExtractor,
-        {
-          Records: [
-            {
-              eventSource: "aws:sqs",
-            },
-          ],
-        },
-      ],
-      [
-        "KinesisEventTraceExtractor",
-        "Kinesis stream event",
-        KinesisEventTraceExtractor,
-        {
-          Records: [
-            {
-              kinesis: {},
-            },
-          ],
-        },
-      ],
-      [
-        "EventBridgeEventTraceExtractor",
-        "EventBridge event",
-        EventBridgeEventTraceExtractor,
-        {
-          "detail-type": "some-detail-type",
-        },
-      ],
-    ])("returns %s when event contains %s", (_, __, _class, event) => {
-      const tracerWrapper = new TracerWrapper();
-      const traceContextExtractor = new TraceContextExtractor(tracerWrapper, {} as TraceConfig);
+        ],
+      },
+    ],
+    [
+      "EventBridgeEventTraceExtractor",
+      "EventBridge event",
+      EventBridgeEventTraceExtractor,
+      {
+        "detail-type": "some-detail-type",
+      },
+    ],
+  ])("returns %s when event contains %s", (_, __, _class, event) => {
+    const tracerWrapper = new TracerWrapper();
+    const traceContextExtractor = new TraceContextExtractor(tracerWrapper, {} as TraceConfig);
 
-      const extractor = traceContextExtractor["getTraceEventExtractor"](event);
+    const extractor = traceContextExtractor["getTraceEventExtractor"](event);
 
-      expect(extractor).toBeInstanceOf(_class);
-    });
-
-    it("returns StepFunctionEventTraceExtractor when event contains LegacyStepFunctionContext", () => {
-      const legacyStepFunctionEvent = {
-        Execution: {
-          Id: "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
-          Input: {
-            MyInput: "MyValue",
-          },
-          Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
-          RoleArn: "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
-          RedriveCount: 0,
-          StartTime: "2022-12-08T21:08:17.924Z",
-        },
-        State: {
-          Name: "step-one",
-          EnteredTime: "2022-12-08T21:08:19.224Z",
-          RetryCount: 2,
-        },
-        StateMachine: {
-          Id: "arn:aws:states:sa-east-1:425362996713:stateMachine:logs-to-traces-sequential",
-          Name: "my-state-machine",
-        },
-      };
-
-      const tracerWrapper = new TracerWrapper();
-      const traceContextExtractor = new TraceContextExtractor(tracerWrapper, {} as TraceConfig);
-
-      // Mimick TraceContextService.extract initialization
-      const instance = StepFunctionContextService.instance(legacyStepFunctionEvent);
-      traceContextExtractor["stepFunctionContextService"] = instance;
-
-      const extractor = traceContextExtractor["getTraceEventExtractor"](legacyStepFunctionEvent);
-
-      expect(extractor).toBeInstanceOf(StepFunctionEventTraceExtractor);
-    });
-
-    it("returns StepFunctionEventTraceExtractor when event contains LambdaRootStepFunctionContext", () => {
-      const lambdaRootStepFunctionEvent = {
-        _datadog: {
-          Execution: {
-            Id: "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
-            Input: {
-              MyInput: "MyValue",
-            },
-            Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
-            RoleArn:
-              "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
-            RedriveCount: 0,
-            StartTime: "2022-12-08T21:08:17.924Z",
-          },
-          State: {
-            Name: "step-one",
-            EnteredTime: "2022-12-08T21:08:19.224Z",
-            RetryCount: 2,
-          },
-          StateMachine: {
-            Id: "arn:aws:states:sa-east-1:425362996713:stateMachine:logs-to-traces-sequential",
-            Name: "my-state-machine",
-          },
-          "x-datadog-trace-id": "10593586103637578129",
-          "x-datadog-tags": "_dd.p.dm=-0,_dd.p.tid=6734e7c300000000",
-          "serverless-version": "v1",
-        },
-      };
-
-      const tracerWrapper = new TracerWrapper();
-      const traceContextExtractor = new TraceContextExtractor(tracerWrapper, {} as TraceConfig);
-
-      // Mimick TraceContextService.extract initialization
-      const instance = StepFunctionContextService.instance(lambdaRootStepFunctionEvent);
-      traceContextExtractor["stepFunctionContextService"] = instance;
-
-      const extractor = traceContextExtractor["getTraceEventExtractor"](lambdaRootStepFunctionEvent);
-
-      expect(extractor).toBeInstanceOf(StepFunctionEventTraceExtractor);
-    });
-
-    it("returns StepFunctionEventTraceExtractor when event contains NestedStepFunctionContext", () => {
-      const nestedStepFunctionEvent = {
-        _datadog: {
-          Execution: {
-            Id: "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
-            Input: {
-              MyInput: "MyValue",
-            },
-            Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
-            RoleArn:
-              "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
-            RedriveCount: 0,
-            StartTime: "2022-12-08T21:08:17.924Z",
-          },
-          State: {
-            Name: "step-one",
-            EnteredTime: "2022-12-08T21:08:19.224Z",
-            RetryCount: 2,
-          },
-          StateMachine: {
-            Id: "arn:aws:states:sa-east-1:425362996713:stateMachine:logs-to-traces-sequential",
-            Name: "my-state-machine",
-          },
-          RootExecutionId:
-            "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:a1b2c3d4-e5f6-7890-1234-56789abcdef0:9f8e7d6c-5b4a-3c2d-1e0f-123456789abc",
-          "serverless-version": "v1",
-        },
-      };
-
-      const tracerWrapper = new TracerWrapper();
-      const traceContextExtractor = new TraceContextExtractor(tracerWrapper, {} as TraceConfig);
-
-      // Mimick TraceContextService.extract initialization
-      const instance = StepFunctionContextService.instance(nestedStepFunctionEvent);
-      traceContextExtractor["stepFunctionContextService"] = instance;
-
-      const extractor = traceContextExtractor["getTraceEventExtractor"](nestedStepFunctionEvent);
-
-      expect(extractor).toBeInstanceOf(StepFunctionEventTraceExtractor);
-    });
-
-    it("returns StepFunctionEventTraceExtractor when event contains legacy lambda StepFunctionContext", () => {
-      const event = {
-        Payload: {
-          Execution: {
-            Id: "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
-            Input: {
-              MyInput: "MyValue",
-            },
-            Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
-            RoleArn:
-              "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
-            RedriveCount: 0,
-            StartTime: "2022-12-08T21:08:17.924Z",
-          },
-          State: {
-            Name: "step-one",
-            EnteredTime: "2022-12-08T21:08:19.224Z",
-            RetryCount: 2,
-          },
-          StateMachine: {
-            Id: "arn:aws:states:sa-east-1:425362996713:stateMachine:logs-to-traces-sequential",
-            Name: "my-state-machine",
-          },
-        },
-      };
-
-      const tracerWrapper = new TracerWrapper();
-      const traceContextExtractor = new TraceContextExtractor(tracerWrapper, {} as TraceConfig);
-
-      // Mimick TraceContextService.extract initialization
-      const instance = StepFunctionContextService.instance(event);
-      traceContextExtractor["stepFunctionContextService"] = instance;
-
-      const extractor = traceContextExtractor["getTraceEventExtractor"](event);
-
-      expect(extractor).toBeInstanceOf(StepFunctionEventTraceExtractor);
-    });
+    expect(extractor).toBeInstanceOf(_class);
   });
 
   describe("addTraceContextToXray", () => {
