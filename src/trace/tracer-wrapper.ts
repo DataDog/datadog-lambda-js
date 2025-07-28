@@ -100,7 +100,7 @@ export class TracerWrapper {
     return dest;
   }
 
-  public setConsumeCheckpoint(context_json: any, event_type: string, arn: string): void {
+  public setConsumeCheckpoint(contextJson: any, eventType: string, arn: string): void {
     if (!arn) {
       return;
     }
@@ -110,10 +110,10 @@ export class TracerWrapper {
     }
 
     try {
-      this.tracer.dataStreamsCheckpointer.setConsumeCheckpoint(event_type, arn, context_json);
+      this.tracer.dataStreamsCheckpointer.setConsumeCheckpoint(eventType, arn, contextJson);
     } catch (err) {
       if (err instanceof Object || err instanceof Error) {
-        logDebug(`DSM: Failed to set consume checkpoint for ${event_type} ${arn}:`, err);
+        logDebug(`DSM: Failed to set consume checkpoint for ${eventType} ${arn}:`, err);
       }
     }
   }
