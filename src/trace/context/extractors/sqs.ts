@@ -26,7 +26,7 @@ export class SQSEventTraceExtractor implements EventTraceExtractor {
       }
 
       if (headers !== undefined) {
-        this.tracerWrapper.setConsumeCheckpoint(JSON.parse(headers), "sqs", sourceARN);
+        this.tracerWrapper.setConsumeCheckpoint(JSON.parse(headers), "sqs", sourceARN, false);
         const traceContext = this.tracerWrapper.extract(JSON.parse(headers));
         if (traceContext) {
           logDebug("Extracted trace context from SQS event messageAttributes");
@@ -53,7 +53,7 @@ export class SQSEventTraceExtractor implements EventTraceExtractor {
     }
 
     // Still want to set a DSM checkpoint even if DSM context not propagated
-    this.tracerWrapper.setConsumeCheckpoint(null, "sqs", sourceARN);
+    this.tracerWrapper.setConsumeCheckpoint(null, "sqs", sourceARN, false);
     return null;
   }
 }
