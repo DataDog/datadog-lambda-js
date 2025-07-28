@@ -111,11 +111,10 @@ export class TracerWrapper {
 
     try {
       this.tracer.dataStreamsCheckpointer.setConsumeCheckpoint(event_type, arn, context_json);
-    } catch (error) {
-      logDebug(
-        `DSM: Failed to set consume checkpoint for ${event_type} ${arn}:`,
-        error instanceof Error ? error : new Error(String(error)),
-      );
+    } catch (err) {
+      if (err instanceof Object || err instanceof Error) {
+        logDebug(`DSM: Failed to set consume checkpoint for ${event_type} ${arn}:`, err);
+      }
     }
   }
 }
