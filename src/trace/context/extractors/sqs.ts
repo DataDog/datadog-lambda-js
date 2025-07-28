@@ -48,8 +48,6 @@ export class SQSEventTraceExtractor implements EventTraceExtractor {
       }
     } catch (error) {
       if (error instanceof Error) {
-        // Still want to set a DSM checkpoint even if DSM context not propagated
-        this.tracerWrapper.setConsumeCheckpoint(null, "sqs", sourceARN);
         logDebug("Unable to extract trace context from SQS event", error);
       }
     }

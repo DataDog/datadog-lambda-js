@@ -45,8 +45,6 @@ export class SNSEventTraceExtractor implements EventTraceExtractor {
       }
     } catch (error) {
       if (error instanceof Error) {
-        // Still want to set a DSM checkpoint even if DSM context not propagated
-        this.tracerWrapper.setConsumeCheckpoint(null, "sns", sourceARN);
         logDebug("Unable to extract trace context from SNS event", error);
       }
     }
