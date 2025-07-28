@@ -106,7 +106,7 @@ export class TracerWrapper {
     return dest;
   }
 
-  public setConsumeCheckpoint(context_json: any, event_type: string, arn: string): any {
+  public setConsumeCheckpoint(context_json: any, event_type: string, arn: string): void {
     if (!arn) {
       return;
     }
