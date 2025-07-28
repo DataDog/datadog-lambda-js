@@ -38,9 +38,6 @@ export class TracerWrapper {
       const path = require.resolve("dd-trace", { paths: ["/var/task/node_modules", ...module.paths] });
       this.tracer = require(path);
       if (getEnvValue("DD_DATA_STREAMS_ENABLED", "false").toLowerCase() === "true") {
-        console.log("DataStreamsCheckpointer initialization beginning");
-        console.log("this.tracer._tracer", this.tracer._tracer);
-        console.log("this.tracer._tracer._dataStreamsProcessor", this.tracer._tracer._dataStreamsProcessor);
         const DataStreamsCheckpointer =
           require("dd-trace/packages/dd-trace/src/datastreams/checkpointer").DataStreamsCheckpointer;
         this.dataStreamsCheckpointer = new DataStreamsCheckpointer(this.tracer._tracer);
