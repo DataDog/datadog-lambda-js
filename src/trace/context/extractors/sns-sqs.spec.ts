@@ -2,7 +2,15 @@ import { TracerWrapper } from "../../tracer-wrapper";
 import { SNSSQSEventTraceExtractor } from "./sns-sqs";
 
 let mockSpanContext: any = null;
-let mockDataStreamsCheckpointer: any = null;
+let mockDataStreamsCheckpointer: any = {
+  setConsumeCheckpoint: jest.fn(),
+};
+
+jest.mock("dd-trace/packages/dd-trace/src/datastreams/checkpointer", () => {
+  return {
+    DataStreamsCheckpointer: jest.fn().mockImplementation(() => mockDataStreamsCheckpointer),
+  };
+});
 
 // Mocking extract is needed, due to dd-trace being a No-op
 // if the detected environment is testing. This is expected, since
@@ -13,14 +21,7 @@ jest.mock("dd-trace", () => {
     ...ddTrace,
     _tracer: { _service: {} },
     extract: (_carrier: any, _headers: any) => mockSpanContext,
-  };
-});
-jest.mock("dd-trace/packages/dd-trace/src/datastreams/checkpointer", () => {
-  mockDataStreamsCheckpointer = {
-    setConsumeCheckpoint: jest.fn(),
-  };
-  return {
-    DataStreamsCheckpointer: jest.fn().mockImplementation(() => mockDataStreamsCheckpointer),
+    dataStreamsCheckpointer: mockDataStreamsCheckpointer,
   };
 });
 const spyTracerWrapper = jest.spyOn(TracerWrapper.prototype, "extract");
@@ -30,9 +31,7 @@ describe("SNSSQSEventTraceExtractor", () => {
     beforeEach(() => {
       mockSpanContext = null;
       spyTracerWrapper.mockClear();
-      mockDataStreamsCheckpointer = {
-        setConsumeCheckpoint: jest.fn(),
-      };
+      mockDataStreamsCheckpointer.setConsumeCheckpoint.mockClear();
       process.env["DD_DATA_STREAMS_ENABLED"] = "true";
 
     });

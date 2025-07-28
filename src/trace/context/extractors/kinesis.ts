@@ -20,7 +20,7 @@ export class KinesisEventTraceExtractor implements EventTraceExtractor {
       const headers = parsedBody?._datadog;
       if (headers) {
         const traceContext = this.tracerWrapper.extract(headers);
-        this.tracerWrapper.setConsumeCheckpoint(headers, "kinesis", sourceARN, false);
+        this.tracerWrapper.setConsumeCheckpoint(headers, "kinesis", sourceARN);
         if (traceContext === null) return null;
 
         logDebug(`Extracted trace context from Kinesis event`, { traceContext, headers });
@@ -33,7 +33,7 @@ export class KinesisEventTraceExtractor implements EventTraceExtractor {
     }
 
     // Still want to set a DSM checkpoint even if DSM context not propagated
-    this.tracerWrapper.setConsumeCheckpoint(null, "kinesis", sourceARN, false);
+    this.tracerWrapper.setConsumeCheckpoint(null, "kinesis", sourceARN);
     return null;
   }
 }

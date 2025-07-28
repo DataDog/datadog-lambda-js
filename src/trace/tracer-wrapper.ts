@@ -37,11 +37,6 @@ export class TracerWrapper {
       // and one in the user's code.
       const path = require.resolve("dd-trace", { paths: ["/var/task/node_modules", ...module.paths] });
       this.tracer = require(path);
-      if (getEnvValue("DD_DATA_STREAMS_ENABLED", "false").toLowerCase() === "true") {
-        const DataStreamsCheckpointer =
-          require("dd-trace/packages/dd-trace/src/datastreams/checkpointer").DataStreamsCheckpointer;
-        this.dataStreamsCheckpointer = new DataStreamsCheckpointer(this.tracer._tracer);
-      }
       return;
     } catch (err) {
       if (err instanceof Object || err instanceof Error) {
@@ -111,8 +106,12 @@ export class TracerWrapper {
       return;
     }
 
+    if (getEnvValue("DD_DATA_STREAMS_ENABLED", "false").toLowerCase() !== "true") {
+      return;
+    }
+
     try {
-      this.dataStreamsCheckpointer.setConsumeCheckpoint(event_type, arn, context_json);
+      this.tracer.dataStreamsCheckpointer.setConsumeCheckpoint(event_type, arn, context_json);
     } catch (error) {
       logDebug(
         `DSM: Failed to set consume checkpoint for ${event_type} ${arn}:`,

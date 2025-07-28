@@ -23,7 +23,7 @@ export class SNSEventTraceExtractor implements EventTraceExtractor {
           const decodedValue = Buffer.from(messageAttribute.Value, "base64").toString("ascii");
           headers = JSON.parse(decodedValue);
         }
-        this.tracerWrapper.setConsumeCheckpoint(headers, "sns", sourceARN, false);
+        this.tracerWrapper.setConsumeCheckpoint(headers, "sns", sourceARN);
         const traceContext = this.tracerWrapper.extract(headers);
         if (traceContext) {
           logDebug("Extracted trace context from SNS event");
@@ -50,7 +50,7 @@ export class SNSEventTraceExtractor implements EventTraceExtractor {
     }
 
     // Still want to set a DSM checkpoint even if DSM context not propagated
-    this.tracerWrapper.setConsumeCheckpoint(null, "sns", sourceARN, false);
+    this.tracerWrapper.setConsumeCheckpoint(null, "sns", sourceARN);
     return null;
   }
 }

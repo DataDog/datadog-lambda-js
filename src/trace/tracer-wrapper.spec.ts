@@ -3,7 +3,15 @@ import { TracerWrapper } from "./tracer-wrapper";
 let mockNoTracer = false;
 let mockTracerInitialised = false;
 let mockSpan: any = null;
-let mockDataStreamsCheckpointer: any = null;
+let mockDataStreamsCheckpointer: any = {
+  setConsumeCheckpoint: jest.fn(),
+};
+jest.mock("dd-trace/packages/dd-trace/src/datastreams/checkpointer", () => {
+  return {
+    DataStreamsCheckpointer: jest.fn().mockImplementation(() => mockDataStreamsCheckpointer),
+  };
+});
+
 const mockSpanContext = {
   toTraceId: () => "1234",
   toSpanId: () => "45678",
@@ -19,27 +27,19 @@ jest.mock("dd-trace", () => {
       scope: () => ({
         active: () => mockSpan,
       }),
+      dataStreamsCheckpointer: mockDataStreamsCheckpointer,
     };
   }
 });
 
-jest.mock("dd-trace/packages/dd-trace/src/datastreams/checkpointer", () => {
-  mockDataStreamsCheckpointer = {
-    setConsumeCheckpoint: jest.fn(),
-  };
-  return {
-    DataStreamsCheckpointer: jest.fn().mockImplementation(() => mockDataStreamsCheckpointer),
-  };
-});
+
 describe("TracerWrapper", () => {
   beforeEach(() => {
     process.env["AWS_LAMBDA_FUNCTION_NAME"] = "my-lambda";
     mockNoTracer = false;
     mockTracerInitialised = true;
     mockSpan = null;
-    mockDataStreamsCheckpointer = {
-      setConsumeCheckpoint: jest.fn(),
-    };
+    mockDataStreamsCheckpointer.setConsumeCheckpoint.mockClear();
   });
   afterEach(() => {
     jest.resetModules();
