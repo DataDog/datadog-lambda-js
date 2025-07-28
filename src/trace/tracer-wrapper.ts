@@ -28,7 +28,6 @@ export interface TraceOptions {
 // This lets a customer bring their own version of the tracer.
 export class TracerWrapper {
   private tracer: any;
-  private dataStreamsCheckpointer: any;
 
   constructor() {
     try {
