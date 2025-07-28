@@ -107,7 +107,7 @@ describe("SQSEventTraceExtractor", () => {
           "x-datadog-sampling-priority": "1",
           "x-datadog-trace-id": "4555236104497098341",
           "dd-pathway-ctx-base64": "some-base64-encoded-context",
-        }
+        },
       );
     });
 
@@ -171,16 +171,28 @@ describe("SQSEventTraceExtractor", () => {
       expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledWith(
         "sqs",
         "arn:aws:sqs:us-east-1:123456789012:MyQueue",
-        ddHeaders
+        ddHeaders,
       );
     });
 
     it.each([
       ["Records", {}, 0],
       ["Records first entry", { Records: [] }, 0],
-      ["messageAttributes in first entry", { Records: [{ messageAttributes: "{}", eventSourceARN: "arn:aws:sqs:us-east-1:MyQueue" }] }, 1],
-      ["_datadog in messageAttributes", { Records: [{ messageAttributes: {}, eventSourceARN: "arn:aws:sqs:us-east-1:MyQueue" }] }, 1],
-      ["stringValue in _datadog", { Records: [{ messageAttributes: { _datadog: {} }, eventSourceARN: "arn:aws:sqs:us-east-1:MyQueue" }] }, 1],
+      [
+        "messageAttributes in first entry",
+        { Records: [{ messageAttributes: "{}", eventSourceARN: "arn:aws:sqs:us-east-1:MyQueue" }] },
+        1,
+      ],
+      [
+        "_datadog in messageAttributes",
+        { Records: [{ messageAttributes: {}, eventSourceARN: "arn:aws:sqs:us-east-1:MyQueue" }] },
+        1,
+      ],
+      [
+        "stringValue in _datadog",
+        { Records: [{ messageAttributes: { _datadog: {} }, eventSourceARN: "arn:aws:sqs:us-east-1:MyQueue" }] },
+        1,
+      ],
     ])("returns null and skips extracting when payload is missing '%s'", (_, payload, dsmCalls) => {
       const tracerWrapper = new TracerWrapper();
       const extractor = new SQSEventTraceExtractor(tracerWrapper);
@@ -194,7 +206,7 @@ describe("SQSEventTraceExtractor", () => {
         expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledWith(
           "sqs",
           "arn:aws:sqs:us-east-1:MyQueue",
-          null
+          null,
         );
       }
     });

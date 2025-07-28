@@ -80,7 +80,7 @@ describe("KinesisEventTraceExtractor", () => {
         "x-datadog-sampled": "1",
         "x-datadog-sampling-priority": "1",
         "x-datadog-trace-id": "667309514221035538",
-        "dd-pathway-ctx-base64" : "some-base64-encoded-context"
+        "dd-pathway-ctx-base64": "some-base64-encoded-context",
       });
 
       expect(traceContext?.toTraceId()).toBe("667309514221035538");
@@ -97,7 +97,7 @@ describe("KinesisEventTraceExtractor", () => {
           "x-datadog-sampling-priority": "1",
           "x-datadog-trace-id": "667309514221035538",
           "dd-pathway-ctx-base64": "some-base64-encoded-context",
-        }
+        },
       );
     });
 
@@ -119,7 +119,7 @@ describe("KinesisEventTraceExtractor", () => {
         expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledWith(
           "kinesis",
           "arn:aws:kinesis:test",
-          null
+          null,
         );
       }
     });

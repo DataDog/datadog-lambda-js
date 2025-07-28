@@ -33,7 +33,6 @@ describe("SNSSQSEventTraceExtractor", () => {
       spyTracerWrapper.mockClear();
       mockDataStreamsCheckpointer.setConsumeCheckpoint.mockClear();
       process.env["DD_DATA_STREAMS_ENABLED"] = "true";
-
     });
 
     afterEach(() => {
@@ -100,7 +99,7 @@ describe("SNSSQSEventTraceExtractor", () => {
           "x-datadog-sampling-priority": "1",
           "x-datadog-trace-id": "2776434475358637757",
           "dd-pathway-ctx-base64": "some-base64-encoded-context",
-        }
+        },
       );
     });
 
@@ -161,7 +160,7 @@ describe("SNSSQSEventTraceExtractor", () => {
           "x-datadog-sampling-priority": "1",
           "x-datadog-trace-id": "7102291628443134919",
           "dd-pathway-ctx-base64": "some-base64-encoded-context",
-        }
+        },
       );
     });
 
@@ -169,10 +168,22 @@ describe("SNSSQSEventTraceExtractor", () => {
       ["Records", {}, 0],
       ["Records first entry", { Records: [] }, 0],
       ["Records first entry body", { Records: [{}] }, 0],
-      ["valid data in body", { Records: [{ body: "{" , eventSourceARN: "arn:aws:sqs:us-east-1:test"}] }, 1], // JSON.parse should fail
-      ["MessageAttributes in body", { Records: [{ body: "{}" , eventSourceARN: "arn:aws:sqs:us-east-1:test"}] }, 1],
-      ["_datadog in MessageAttributes", { Records: [{ body: '{"MessageAttributes":{"text":"Hello, world!"}}' , eventSourceARN: "arn:aws:sqs:us-east-1:test"}] }, 1],
-      ["Value in _datadog", { Records: [{ body: '{"MessageAttributes":{"_datadog":{}}}' , eventSourceARN: "arn:aws:sqs:us-east-1:test"}] }, 1],
+      ["valid data in body", { Records: [{ body: "{", eventSourceARN: "arn:aws:sqs:us-east-1:test" }] }, 1], // JSON.parse should fail
+      ["MessageAttributes in body", { Records: [{ body: "{}", eventSourceARN: "arn:aws:sqs:us-east-1:test" }] }, 1],
+      [
+        "_datadog in MessageAttributes",
+        {
+          Records: [
+            { body: '{"MessageAttributes":{"text":"Hello, world!"}}', eventSourceARN: "arn:aws:sqs:us-east-1:test" },
+          ],
+        },
+        1,
+      ],
+      [
+        "Value in _datadog",
+        { Records: [{ body: '{"MessageAttributes":{"_datadog":{}}}', eventSourceARN: "arn:aws:sqs:us-east-1:test" }] },
+        1,
+      ],
     ])("returns null and skips extracting when payload is missing '%s'", (_, payload, dsmCalls) => {
       const tracerWrapper = new TracerWrapper();
       const extractor = new SNSSQSEventTraceExtractor(tracerWrapper);
@@ -186,7 +197,7 @@ describe("SNSSQSEventTraceExtractor", () => {
         expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledWith(
           "sqs",
           "arn:aws:sqs:us-east-1:test",
-          null
+          null,
         );
       }
     });

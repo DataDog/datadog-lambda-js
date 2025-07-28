@@ -32,7 +32,6 @@ jest.mock("dd-trace", () => {
   }
 });
 
-
 describe("TracerWrapper", () => {
   beforeEach(() => {
     process.env["AWS_LAMBDA_FUNCTION_NAME"] = "my-lambda";
