@@ -166,6 +166,7 @@ describe("SNSSQSEventTraceExtractor", () => {
       );
     });
 
+    // prettier-ignore
     it.each([
       ["Records", {}, 0],
       ["Records first entry", { Records: [] }, 0],
