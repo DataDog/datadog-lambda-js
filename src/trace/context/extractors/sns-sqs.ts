@@ -27,7 +27,7 @@ export class SNSSQSEventTraceExtractor implements EventTraceExtractor {
           }
 
           const traceContext = this.tracerWrapper.extract(headers);
-          this.tracerWrapper.setConsumeCheckpoint(headers, "sqs", event.Records[0].eventSourceARN);
+          this.tracerWrapper.setConsumeCheckpoint(headers, "sqs", sourceARN);
           if (traceContext) {
             logDebug("Extracted trace context from SNS-SQS event");
             return traceContext;
