@@ -102,6 +102,7 @@ export class TracerWrapper {
 
   public setConsumeCheckpoint(contextJson: any, eventType: string, arn: string): void {
     if (!arn) {
+      logDebug("DSM: No ARN provided, skipping setConsumeCheckpoint");
       return;
     }
 
