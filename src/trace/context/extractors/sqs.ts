@@ -13,7 +13,7 @@ export class SQSEventTraceExtractor implements EventTraceExtractor {
     try {
       // First try to extract trace context from message attributes
       let headers = event?.Records?.[0]?.messageAttributes?._datadog?.stringValue;
-      sourceARN = event.Records[0].eventSourceARN;
+      sourceARN = event?.Records?.[0]?.eventSourceARN;
 
       if (!headers) {
         // Then try to get from binary value. This happens when SNS->SQS, but SNS has raw message delivery enabled.

@@ -13,7 +13,7 @@ export class SNSEventTraceExtractor implements EventTraceExtractor {
     try {
       // First try to extract trace context from message attributes
       const messageAttribute = event?.Records?.[0]?.Sns?.MessageAttributes?._datadog;
-      sourceARN = event.Records[0].Sns.TopicArn;
+      sourceARN = event?.Records?.[0]?.Sns?.TopicArn;
       if (messageAttribute?.Value) {
         let headers;
         if (messageAttribute.Type === "String") {

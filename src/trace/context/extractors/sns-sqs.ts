@@ -14,7 +14,7 @@ export class SNSSQSEventTraceExtractor implements EventTraceExtractor {
     try {
       // First try to extract trace context from message attributes
       if (event?.Records?.[0]?.body) {
-        sourceARN = event.Records[0].eventSourceARN;
+        sourceARN = event?.Records?.[0]?.eventSourceARN;
         const parsedBody = JSON.parse(event?.Records?.[0]?.body) as SNSMessage;
         const messageAttribute = parsedBody?.MessageAttributes?._datadog;
         if (messageAttribute?.Value) {

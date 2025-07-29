@@ -12,7 +12,7 @@ export class KinesisEventTraceExtractor implements EventTraceExtractor {
     const kinesisData = event?.Records?.[0]?.kinesis.data;
     if (kinesisData === undefined) return null;
 
-    sourceARN = event.Records[0].eventSourceARN;
+    sourceARN = event?.Records?.[0]?.eventSourceARN;
 
     try {
       const decodedData = Buffer.from(kinesisData, "base64").toString("ascii");
