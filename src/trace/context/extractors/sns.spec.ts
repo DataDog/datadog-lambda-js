@@ -194,18 +194,8 @@ describe("SNSEventTraceExtractor", () => {
       ["Records first entry", { Records: [] }, 0],
       ["Records first entry Sns", { Records: [{}] }, 0],
       ["MessageAttributes in Sns", { Records: [{ Sns: "{TopicArn: 'arn:aws:sns:eu-west-1:test'}" }] }, 0],
-      [
-        "_datadog in MessageAttributes",
-        {
-          Records: [{ Sns: { MessageAttributes: { text: "Hello, world!" }, TopicArn: "arn:aws:sns:eu-west-1:test" } }],
-        },
-        1,
-      ],
-      [
-        "Value in _datadog",
-        { Records: [{ Sns: { MessageAttributes: { _datadog: {} }, TopicArn: "arn:aws:sns:eu-west-1:test" } }] },
-        1,
-      ],
+      ["_datadog in MessageAttributes", { Records: [{ Sns: { MessageAttributes: { text: "Hello, world!" }, TopicArn: "arn:aws:sns:eu-west-1:test" } }] }, 1],
+      ["Value in _datadog", { Records: [{ Sns: { MessageAttributes: { _datadog: {} }, TopicArn: "arn:aws:sns:eu-west-1:test" } }] }, 1],
     ])("returns null and skips extracting when payload is missing '%s'", (_, payload, dsmCalls) => {
       const tracerWrapper = new TracerWrapper();
       const extractor = new SNSEventTraceExtractor(tracerWrapper);

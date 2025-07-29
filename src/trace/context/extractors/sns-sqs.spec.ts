@@ -172,20 +172,8 @@ describe("SNSSQSEventTraceExtractor", () => {
       ["Records first entry body", { Records: [{}] }, 0],
       ["valid data in body", { Records: [{ body: "{", eventSourceARN: "arn:aws:sqs:us-east-1:test" }] }, 1], // JSON.parse should fail
       ["MessageAttributes in body", { Records: [{ body: "{}", eventSourceARN: "arn:aws:sqs:us-east-1:test" }] }, 1],
-      [
-        "_datadog in MessageAttributes",
-        {
-          Records: [
-            { body: '{"MessageAttributes":{"text":"Hello, world!"}}', eventSourceARN: "arn:aws:sqs:us-east-1:test" },
-          ],
-        },
-        1,
-      ],
-      [
-        "Value in _datadog",
-        { Records: [{ body: '{"MessageAttributes":{"_datadog":{}}}', eventSourceARN: "arn:aws:sqs:us-east-1:test" }] },
-        1,
-      ],
+      ["_datadog in MessageAttributes", { Records: [{ body: '{"MessageAttributes":{"text":"Hello, world!"}}', eventSourceARN: "arn:aws:sqs:us-east-1:test" }] }, 1],
+      ["Value in _datadog", { Records: [{ body: '{"MessageAttributes":{"_datadog":{}}}', eventSourceARN: "arn:aws:sqs:us-east-1:test" }] }, 1],
     ])("returns null and skips extracting when payload is missing '%s'", (_, payload, dsmCalls) => {
       const tracerWrapper = new TracerWrapper();
       const extractor = new SNSSQSEventTraceExtractor(tracerWrapper);

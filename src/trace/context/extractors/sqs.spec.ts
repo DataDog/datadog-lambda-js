@@ -180,21 +180,9 @@ describe("SQSEventTraceExtractor", () => {
     it.each([
       ["Records", {}, 0],
       ["Records first entry", { Records: [] }, 0],
-      [
-        "messageAttributes in first entry",
-        { Records: [{ messageAttributes: "{}", eventSourceARN: "arn:aws:sqs:us-east-1:MyQueue" }] },
-        1,
-      ],
-      [
-        "_datadog in messageAttributes",
-        { Records: [{ messageAttributes: {}, eventSourceARN: "arn:aws:sqs:us-east-1:MyQueue" }] },
-        1,
-      ],
-      [
-        "stringValue in _datadog",
-        { Records: [{ messageAttributes: { _datadog: {} }, eventSourceARN: "arn:aws:sqs:us-east-1:MyQueue" }] },
-        1,
-      ],
+      ["messageAttributes in first entry", { Records: [{ messageAttributes: "{}", eventSourceARN: "arn:aws:sqs:us-east-1:MyQueue" }] }, 1],
+      ["_datadog in messageAttributes", { Records: [{ messageAttributes: {}, eventSourceARN: "arn:aws:sqs:us-east-1:MyQueue" }] }, 1],
+      ["stringValue in _datadog", { Records: [{ messageAttributes: { _datadog: {} }, eventSourceARN: "arn:aws:sqs:us-east-1:MyQueue" }] }, 1],
     ])("returns null and skips extracting when payload is missing '%s'", (_, payload, dsmCalls) => {
       const tracerWrapper = new TracerWrapper();
       const extractor = new SQSEventTraceExtractor(tracerWrapper);
