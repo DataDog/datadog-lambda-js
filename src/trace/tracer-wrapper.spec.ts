@@ -111,7 +111,7 @@ describe("TracerWrapper", () => {
 
     wrapper.setConsumeCheckpoint(contextJson, eventType, arn);
 
-    expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledWith(eventType, arn, contextJson);
+    expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledWith(eventType, arn, contextJson, false);
   });
 
   it("should not call internal setConsumeCheckpoint when DD_DATA_STREAMS_ENABLED is off", () => {

@@ -98,6 +98,7 @@ describe("KinesisEventTraceExtractor", () => {
           "x-datadog-trace-id": "667309514221035538",
           "dd-pathway-ctx-base64": "some-base64-encoded-context",
         },
+        false,
       );
     });
 
@@ -120,6 +121,7 @@ describe("KinesisEventTraceExtractor", () => {
           "kinesis",
           "arn:aws:kinesis:test",
           null,
+          false,
         );
       }
     });

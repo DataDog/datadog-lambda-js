@@ -100,6 +100,7 @@ describe("SNSSQSEventTraceExtractor", () => {
           "x-datadog-trace-id": "2776434475358637757",
           "dd-pathway-ctx-base64": "some-base64-encoded-context",
         },
+        false,
       );
     });
 
@@ -161,6 +162,7 @@ describe("SNSSQSEventTraceExtractor", () => {
           "x-datadog-trace-id": "7102291628443134919",
           "dd-pathway-ctx-base64": "some-base64-encoded-context",
         },
+        false,
       );
     });
 
@@ -198,6 +200,7 @@ describe("SNSSQSEventTraceExtractor", () => {
           "sqs",
           "arn:aws:sqs:us-east-1:test",
           null,
+          false,
         );
       }
     });
