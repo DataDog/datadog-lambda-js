@@ -26,8 +26,9 @@ export class SQSEventTraceExtractor implements EventTraceExtractor {
       }
 
       if (headers !== undefined) {
-        this.tracerWrapper.setConsumeCheckpoint(JSON.parse(headers), "sqs", sourceARN);
-        const traceContext = this.tracerWrapper.extract(JSON.parse(headers));
+        const parsedHeaders = JSON.parse(headers);
+        this.tracerWrapper.setConsumeCheckpoint(parsedHeaders, "sqs", sourceARN);
+        const traceContext = this.tracerWrapper.extract(parsedHeaders);
         if (traceContext) {
           logDebug("Extracted trace context from SQS event messageAttributes");
           return traceContext;
