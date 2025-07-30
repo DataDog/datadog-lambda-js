@@ -3,6 +3,15 @@ import { TracerWrapper } from "../../tracer-wrapper";
 import { SQSEventTraceExtractor } from "./sqs";
 
 let mockSpanContext: any = null;
+let mockDataStreamsCheckpointer: any = {
+  setConsumeCheckpoint: jest.fn(),
+};
+
+jest.mock("dd-trace/packages/dd-trace/src/datastreams/checkpointer", () => {
+  return {
+    DataStreamsCheckpointer: jest.fn().mockImplementation(() => mockDataStreamsCheckpointer),
+  };
+});
 
 // Mocking extract is needed, due to dd-trace being a No-op
 // if the detected environment is testing. This is expected, since
@@ -13,6 +22,7 @@ jest.mock("dd-trace", () => {
     ...ddTrace,
     _tracer: { _service: {} },
     extract: (_carrier: any, _headers: any) => mockSpanContext,
+    dataStreamsCheckpointer: mockDataStreamsCheckpointer,
   };
 });
 const spyTracerWrapper = jest.spyOn(TracerWrapper.prototype, "extract");
@@ -22,10 +32,13 @@ describe("SQSEventTraceExtractor", () => {
     beforeEach(() => {
       mockSpanContext = null;
       spyTracerWrapper.mockClear();
+      mockDataStreamsCheckpointer.setConsumeCheckpoint.mockClear();
+      process.env["DD_DATA_STREAMS_ENABLED"] = "true";
     });
 
     afterEach(() => {
       jest.resetModules();
+      delete process.env["DD_DATA_STREAMS_ENABLED"];
     });
 
     it("extracts trace context with valid payload", () => {
@@ -51,7 +64,7 @@ describe("SQSEventTraceExtractor", () => {
             messageAttributes: {
               _datadog: {
                 stringValue:
-                  '{"x-datadog-trace-id":"4555236104497098341","x-datadog-parent-id":"3369753143434738315","x-datadog-sampled":"1","x-datadog-sampling-priority":"1"}',
+                  '{"x-datadog-trace-id":"4555236104497098341","x-datadog-parent-id":"3369753143434738315","x-datadog-sampled":"1","x-datadog-sampling-priority":"1","dd-pathway-ctx-base64":"some-base64-encoded-context"}',
                 stringListValues: undefined,
                 binaryListValues: undefined,
                 dataType: "String",
@@ -77,12 +90,26 @@ describe("SQSEventTraceExtractor", () => {
         "x-datadog-sampled": "1",
         "x-datadog-sampling-priority": "1",
         "x-datadog-trace-id": "4555236104497098341",
+        "dd-pathway-ctx-base64": "some-base64-encoded-context",
       });
 
       expect(traceContext?.toTraceId()).toBe("4555236104497098341");
       expect(traceContext?.toSpanId()).toBe("3369753143434738315");
       expect(traceContext?.sampleMode()).toBe("1");
       expect(traceContext?.source).toBe("event");
+
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledWith(
+        "sqs",
+        "arn:aws:sqs:eu-west-1:601427279990:metal-queue",
+        {
+          "x-datadog-parent-id": "3369753143434738315",
+          "x-datadog-sampled": "1",
+          "x-datadog-sampling-priority": "1",
+          "x-datadog-trace-id": "4555236104497098341",
+          "dd-pathway-ctx-base64": "some-base64-encoded-context",
+        },
+        false,
+      );
     });
 
     it("extracts trace context from _datadog binaryValue when raw message delivery is used", () => {
@@ -100,6 +127,7 @@ describe("SQSEventTraceExtractor", () => {
         "x-datadog-parent-id": "0987654321",
         "x-datadog-sampled": "1",
         "x-datadog-sampling-priority": "1",
+        "dd-pathway-ctx-base64": "some-base64-encoded-context",
       };
       const ddHeadersString = JSON.stringify(ddHeaders);
       const ddHeadersBase64 = Buffer.from(ddHeadersString, "ascii").toString("base64");
@@ -140,20 +168,39 @@ describe("SQSEventTraceExtractor", () => {
       expect(traceContext?.toSpanId()).toBe("0987654321");
       expect(traceContext?.sampleMode()).toBe("1");
       expect(traceContext?.source).toBe("event");
+
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledWith(
+        "sqs",
+        "arn:aws:sqs:us-east-1:123456789012:MyQueue",
+        ddHeaders,
+        false,
+      );
     });
 
+    // prettier-ignore
     it.each([
-      ["Records", {}],
-      ["Records first entry", { Records: [] }],
-      ["messageAttributes in first entry", { Records: [{ messageAttributes: "{}" }] }],
-      ["_datadog in messageAttributes", { Records: [{ messageAttributes: {} }] }],
-      ["stringValue in _datadog", { Records: [{ messageAttributes: { _datadog: {} } }] }],
-    ])("returns null and skips extracting when payload is missing '%s'", (_, payload) => {
+      ["Records", {}, 0],
+      ["Records first entry", { Records: [] }, 0],
+      ["messageAttributes in first entry", { Records: [{ messageAttributes: "{}", eventSourceARN: "arn:aws:sqs:us-east-1:MyQueue" }] }, 1],
+      ["_datadog in messageAttributes", { Records: [{ messageAttributes: {}, eventSourceARN: "arn:aws:sqs:us-east-1:MyQueue" }] }, 1],
+      ["stringValue in _datadog", { Records: [{ messageAttributes: { _datadog: {} }, eventSourceARN: "arn:aws:sqs:us-east-1:MyQueue" }] }, 1],
+    ])("returns null and skips extracting when payload is missing '%s'", (_, payload, dsmCalls) => {
       const tracerWrapper = new TracerWrapper();
       const extractor = new SQSEventTraceExtractor(tracerWrapper);
 
       const traceContext = extractor.extract(payload as any);
       expect(traceContext).toBeNull();
+
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledTimes(dsmCalls);
+
+      if (dsmCalls > 0) {
+        expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledWith(
+          "sqs",
+          "arn:aws:sqs:us-east-1:MyQueue",
+          null,
+          false,
+        );
+      }
     });
 
     it("returns null when extracted span context by tracer is null", () => {
