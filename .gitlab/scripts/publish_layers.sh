@@ -87,12 +87,6 @@ if [[ ! ${STAGES[@]} =~ $STAGE ]]; then
 fi
 
 layer="${LAYERS[$index]}"
-if [ -z "$LAYER_NAME_SUFFIX" ]; then
-    echo "No layer name suffix"
-else
-    layer="${layer}-${LAYER_NAME_SUFFIX}"
-fi
-echo "layer name: $layer"
 
 if [[ "$STAGE" =~ ^(staging|sandbox)$ ]]; then
     # Deploy latest version
