@@ -1,30 +1,24 @@
-import { EventBridgeEvent, SQSEvent } from "aws-lambda";
-import { EventTraceExtractor } from "../extractor";
-import { logDebug } from "../../../utils";
+import { SQSEvent } from "aws-lambda";
 import { TracerWrapper } from "../../tracer-wrapper";
+import { EventTraceExtractor } from "../extractor";
 import { SpanContextWrapper } from "../../span-context-wrapper";
+import { extractTraceContext, handleExtractionError } from "../extractor-utils";
 
 export class EventBridgeSQSEventTraceExtractor implements EventTraceExtractor {
   constructor(private tracerWrapper: TracerWrapper) {}
 
   extract(event: SQSEvent): SpanContextWrapper | null {
-    const body = event?.Records?.[0]?.body;
-    if (body === undefined) return null;
-
     try {
-      const parsedBody = JSON.parse(body) as EventBridgeEvent<any, any>;
-      const headers = parsedBody?.detail?._datadog;
-      if (headers === undefined) return null;
-
-      const traceContext = this.tracerWrapper.extract(headers);
-      if (traceContext === null) return null;
-
-      logDebug("Extracted trace context from EventBridge-SQS event", { traceContext, event });
-      return traceContext;
-    } catch (error) {
-      if (error instanceof Error) {
-        logDebug("Unable to extract trace context from EventBridge-SQS event", error);
+      const body = event?.Records?.[0]?.body;
+      if (body) {
+        const parsedBody = JSON.parse(body);
+        const headers = parsedBody?.detail?._datadog;
+        if (headers) {
+          return extractTraceContext(headers, this.tracerWrapper);
+        }
       }
+    } catch (error) {
+      handleExtractionError(error, "EventBridge-SQS");
     }
 
     return null;
