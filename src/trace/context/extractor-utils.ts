@@ -23,12 +23,10 @@ export function extractTraceContext(headers: any, tracerWrapper: TracerWrapper):
 
   // If that fails, check if this is a Step Function context
   const stepFunctionInstance = StepFunctionContextService.instance(headers);
-  const stepFunctionContext = stepFunctionInstance.context;
 
-  if (stepFunctionContext !== undefined) {
-    const spanContext = stepFunctionInstance.spanContext;
-    if (spanContext !== null) {
-      return spanContext;
+  if (stepFunctionInstance.context !== undefined) {
+    if (stepFunctionInstance.spanContext !== null) {
+      return stepFunctionInstance.spanContext;
     }
   }
 
