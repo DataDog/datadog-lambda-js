@@ -28,6 +28,7 @@ export class SNSSQSEventTraceExtractor implements EventTraceExtractor {
           }
 
           const traceContext = extractTraceContext(headers, this.tracerWrapper);
+          this.tracerWrapper.setConsumeCheckpoint(headers, "sqs", sourceARN);
           if (traceContext) {
             return traceContext;
           }
@@ -40,6 +41,7 @@ export class SNSSQSEventTraceExtractor implements EventTraceExtractor {
       if (sqsMessageAttribute?.stringValue) {
         const headers = JSON.parse(sqsMessageAttribute.stringValue);
         const traceContext = extractTraceContext(headers, this.tracerWrapper);
+        this.tracerWrapper.setConsumeCheckpoint(headers, "sqs", sourceARN);
         if (traceContext) {
           return traceContext;
         }

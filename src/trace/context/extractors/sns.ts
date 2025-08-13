@@ -25,6 +25,7 @@ export class SNSEventTraceExtractor implements EventTraceExtractor {
         }
 
         const traceContext = extractTraceContext(headers, this.tracerWrapper);
+        this.tracerWrapper.setConsumeCheckpoint(headers, "sns", sourceARN);
         if (traceContext) {
           return traceContext;
         }
