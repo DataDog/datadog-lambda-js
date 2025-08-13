@@ -8,11 +8,9 @@ export class KinesisEventTraceExtractor implements EventTraceExtractor {
   constructor(private tracerWrapper: TracerWrapper) {}
 
   extract(event: KinesisStreamEvent): SpanContextWrapper | null {
-    let sourceARN = "";
+    const sourceARN = event?.Records?.[0]?.eventSourceARN;
     const kinesisData = event?.Records?.[0]?.kinesis.data;
     if (kinesisData === undefined) return null;
-
-    sourceARN = event?.Records?.[0]?.eventSourceARN;
 
     try {
       const decodedData = Buffer.from(kinesisData, "base64").toString("ascii");
