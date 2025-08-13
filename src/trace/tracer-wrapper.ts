@@ -77,6 +77,7 @@ export class TracerWrapper {
 
   public startSpan<T = (...args: any[]) => any>(name: string, options: TraceOptions): T | null {
     if (!this.isTracerAvailable) {
+      logDebug("No Tracer available, cannot start span");
       return null;
     }
     return this.tracer.startSpan(name, options);

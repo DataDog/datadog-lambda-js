@@ -109,6 +109,222 @@ describe("SpanInferrer", () => {
     expect(serviceName).toBe("fallback");
   });
 
+  describe("when DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED is set to 'true'", () => {
+    beforeEach(() => {
+      process.env.DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED = "true";
+    });
+
+    it("uses instance-level service name for SNS events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("ExampleTopic");
+    });
+
+    it("uses instance-level service name for SQS events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(sqsEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("MyQueue");
+    });
+
+    it("uses instance-level service name for DDB events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(ddbEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("ExampleTableWithStream");
+    });
+
+    it("uses instance-level service name for Kinesis events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(kinesisEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("EXAMPLE");
+    });
+
+    it("uses instance-level service name for EventBridge events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(eventBridgeEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("my.event");
+    });
+
+    it("uses instance-level service name for API Gateway events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(apiGatewayV1, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("id.execute-api.us-east-1.amazonaws.com");
+    });
+
+    it("uses instance-level service name for Lambda Function URL events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(functionUrlEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("a8hyhsshac.lambda-url.eu-south-1.amazonaws.com");
+    });
+
+    it("uses instance-level service name for S3 events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(s3Event, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("example-bucket");
+    });
+  });
+
+  describe("when DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED is set to 'false'", () => {
+    beforeEach(() => {
+      process.env.DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED = "false";
+    });
+
+    it("uses generic service name for SNS events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("sns");
+    });
+
+    it("uses generic service name for SQS events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(sqsEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("sqs");
+    });
+
+    it("uses generic service name for DDB events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(ddbEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("aws.dynamodb");
+    });
+
+    it("uses generic service name for Kinesis events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(kinesisEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("kinesis");
+    });
+
+    it("uses generic service name for EventBridge events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(eventBridgeEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("eventbridge");
+    });
+
+    it("uses generic service name for API Gateway events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(apiGatewayV1, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("id.execute-api.us-east-1.amazonaws.com");
+    });
+
+    it("uses generic service name for Lambda Function URL events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(functionUrlEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("a8hyhsshac.lambda-url.eu-south-1.amazonaws.com");
+    });
+
+    it("uses generic service name for S3 events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(s3Event, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("s3");
+    });
+  });
+
+  describe("when DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED is set to '0'", () => {
+    beforeEach(() => {
+      process.env.DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED = "0";
+    });
+
+    it("uses generic service name for SNS events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("sns");
+    });
+
+    it("uses generic service name for SQS events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(sqsEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("sqs");
+    });
+
+    it("uses generic service name for DDB events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(ddbEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("aws.dynamodb");
+    });
+
+    it("uses generic service name for Kinesis events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(kinesisEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("kinesis");
+    });
+
+    it("uses generic service name for EventBridge events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(eventBridgeEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("eventbridge");
+    });
+
+    it("uses generic service name for API Gateway events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(apiGatewayV1, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("id.execute-api.us-east-1.amazonaws.com");
+    });
+
+    it("uses generic service name for Lambda Function URL events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(functionUrlEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("a8hyhsshac.lambda-url.eu-south-1.amazonaws.com");
+    });
+
+    it("uses generic service name for S3 events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(s3Event, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("s3");
+    });
+  });
+
+  describe("when DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED is not set", () => {
+    beforeEach(() => {
+      delete process.env.DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED;
+    });
+
+    it("uses instance-level service name for SNS events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("ExampleTopic");
+    });
+
+    it("uses instance-level service name for SQS events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(sqsEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("MyQueue");
+    });
+
+    it("uses instance-level service name for DDB events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(ddbEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("ExampleTableWithStream");
+    });
+
+    it("uses instance-level service name for Kinesis events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(kinesisEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("EXAMPLE");
+    });
+
+    it("uses instance-level service name for EventBridge events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(eventBridgeEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("my.event");
+    });
+
+    it("uses instance-level service name for API Gateway events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(apiGatewayV1, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("id.execute-api.us-east-1.amazonaws.com");
+    });
+
+    it("uses instance-level service name for Lambda Function URL events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(functionUrlEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("a8hyhsshac.lambda-url.eu-south-1.amazonaws.com");
+    });
+
+    it("uses instance-level service name for S3 events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(s3Event, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("example-bucket");
+    });
+  });
+
   it("extracts service name from event when service mapping has incorrect delimiters", () => {
     process.env.DD_SERVICE_MAPPING = "key1-value1,key2=value2";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
