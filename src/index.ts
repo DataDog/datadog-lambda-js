@@ -52,6 +52,7 @@ export const minColdStartTraceDurationEnvVar = "DD_MIN_COLD_START_DURATION";
 export const coldStartTraceSkipLibEnvVar = "DD_COLD_START_TRACE_SKIP_LIB";
 export const localTestingEnvVar = "DD_LOCAL_TESTING";
 export const addSpanPointersEnvVar = "DD_TRACE_AWS_ADD_SPAN_POINTERS";
+export const useSpanLinksEnvVar = "DD_USE_SPAN_LINKS";
 
 interface GlobalConfig {
   /**
@@ -97,6 +98,7 @@ export const defaultConfig: Config = {
   coldStartTraceSkipLib: "",
   localTesting: false,
   addSpanPointers: true,
+  useSpanLinks: false
 } as const;
 
 export const _metricsQueue: MetricsQueue = new MetricsQueue();
@@ -417,6 +419,11 @@ function getConfig(userConfig?: Partial<Config>): Config {
   if (userConfig === undefined || userConfig.addSpanPointers === undefined) {
     const result = getEnvValue(addSpanPointersEnvVar, "true").toLowerCase();
     config.addSpanPointers = result === "true";
+  }
+
+  if (userConfig === undefined || userConfig.useSpanLinks === undefined) {
+    const result = getEnvValue(useSpanLinksEnvVar, "false").toLowerCase();
+    config.useSpanLinks = result === "true";
   }
 
   return config;

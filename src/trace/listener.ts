@@ -74,6 +74,11 @@ export interface TraceConfig {
    * @default true
    */
   addSpanPointers: boolean;
+  /**
+   * Whether to use SpanLinks instead of parent-child spans
+   * @default true
+   */
+  useSpanLinks: boolean;
 }
 
 export class TraceListener {
@@ -316,7 +321,15 @@ export class TraceListener {
       };
     }
     if (this.lambdaSpanParentContext) {
-      options.childOf = this.lambdaSpanParentContext;
+      if (this.config.useSpanLinks){
+        options.links = [
+          {
+            context: this.lambdaSpanParentContext,
+          },
+        ];
+      } else {
+        options.childOf = this.lambdaSpanParentContext;
+      }
     }
     options.type = "serverless";
 
