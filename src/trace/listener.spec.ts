@@ -89,6 +89,7 @@ describe("TraceListener", () => {
     minColdStartTraceDuration: 3,
     coldStartTraceSkipLib: "",
     addSpanPointers: true,
+    useSpanLinks: false
   };
   const context = {
     invokedFunctionArn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
@@ -184,6 +185,56 @@ describe("TraceListener", () => {
         },
         type: "serverless",
         childOf: mockSpanContext,
+      },
+      unwrappedFunc,
+    );
+  });
+
+  it("wraps dd-trace span around invocation, with linked trace context from event", async () => {
+    const listener = new TraceListener({
+      ...defaultConfig,
+      useSpanLinks: true
+    });
+    mockTraceSource = TraceSource.Event;
+    mockSpanContext = {
+      toTraceId: () => "4110911582297405551",
+      toSpanId: () => "797643193680388251",
+      _sampling: {
+        priority: "2",
+      },
+    };
+    mockSpanContextWrapper = {
+      spanContext: mockSpanContext,
+    };
+    await listener.onStartInvocation({}, context as any);
+    const unwrappedFunc = () => {};
+    const wrappedFunc = listener.onWrap(unwrappedFunc);
+    wrappedFunc();
+    await listener.onCompleteInvocation();
+
+    expect(mockWrap).toHaveBeenCalledWith(
+      "aws.lambda",
+      {
+        resource: "my-Lambda",
+        service: "my-Lambda",
+        tags: {
+          cold_start: "true",
+          function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
+          function_version: "$LATEST",
+          request_id: "1234",
+          resource_names: "my-Lambda",
+          functionname: "my-lambda",
+          "_dd.parent_source": "event",
+          datadog_lambda: datadogLambdaVersion,
+          dd_trace: ddtraceVersion,
+        },
+        type: "serverless",
+        childOf: undefined,
+        links: expect.arrayContaining([
+          expect.objectContaining({
+            context: mockSpanContext,
+          }),
+        ]),
       },
       unwrappedFunc,
     );
