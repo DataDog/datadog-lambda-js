@@ -14,6 +14,48 @@ jest.mock("dd-trace/packages/dd-trace/src/datastreams/checkpointer", () => {
   };
 });
 
+const makeRecord = ({
+  messageId,
+  ddHeaders,
+  eventSourceARN,
+  extraAttributes,
+}: {
+  messageId: string;
+  ddHeaders: Record<string, string> | null;
+  eventSourceARN: string;
+  extraAttributes?: Record<string, string>;
+}) => {
+  let messageAttributes: Record<string, any> = {};
+  if (ddHeaders) {
+    const ddHeadersString = JSON.stringify(ddHeaders);
+    const ddHeadersBase64 = Buffer.from(ddHeadersString, "ascii").toString("base64");
+    messageAttributes = {
+      _datadog: {
+        binaryValue: ddHeadersBase64,
+        dataType: "Binary",
+      },
+    };
+  }
+
+  return {
+    messageId,
+    receiptHandle: "MessageReceiptHandle",
+    body: "Hello from SQS!",
+    attributes: {
+      ApproximateReceiveCount: "1",
+      SentTimestamp: "1523232000000",
+      SenderId: "123456789012",
+      ApproximateFirstReceiveTimestamp: "1523232000001",
+      ...(extraAttributes || {}),
+    },
+    messageAttributes,
+    md5OfBody: "x",
+    eventSource: "aws:sqs",
+    eventSourceARN,
+    awsRegion: "us-east-1",
+  };
+};
+
 // Mocking extract is needed, due to dd-trace being a No-op
 // if the detected environment is testing. This is expected, since
 // we don't want to test dd-trace extraction, but our components.
@@ -130,32 +172,14 @@ describe("SQSEventTraceExtractor", () => {
         "x-datadog-sampling-priority": "1",
         "dd-pathway-ctx-base64": "some-base64-encoded-context",
       };
-      const ddHeadersString = JSON.stringify(ddHeaders);
-      const ddHeadersBase64 = Buffer.from(ddHeadersString, "ascii").toString("base64");
 
       const payload: SQSEvent = {
         Records: [
-          {
-            messageId: "abc-123",
-            receiptHandle: "MessageReceiptHandle",
-            body: "Hello from SQS!",
-            attributes: {
-              ApproximateReceiveCount: "1",
-              SentTimestamp: "1523232000000",
-              SenderId: "123456789012",
-              ApproximateFirstReceiveTimestamp: "1523232000001",
-            },
-            messageAttributes: {
-              _datadog: {
-                binaryValue: ddHeadersBase64,
-                dataType: "Binary",
-              },
-            },
-            md5OfBody: "x",
-            eventSource: "aws:sqs",
+          makeRecord({
+            messageId: "abc123",
+            ddHeaders,
             eventSourceARN: "arn:aws:sqs:us-east-1:123456789012:MyQueue",
-            awsRegion: "us-east-1",
-          },
+          }),
         ],
       };
 
@@ -177,7 +201,6 @@ describe("SQSEventTraceExtractor", () => {
         false,
       );
     });
-
     // prettier-ignore
     it.each([
       ["Records", {}, 0],
@@ -204,32 +227,27 @@ describe("SQSEventTraceExtractor", () => {
       }
     });
 
-    it("returns null when extracted span context by tracer is null", () => {
+    it("returns null when extracted span context by tracer is null, but still sets a checkpoint", () => {
       const tracerWrapper = new TracerWrapper();
 
       const payload: SQSEvent = {
         Records: [
-          {
+          makeRecord({
             messageId: "19dd0b57-b21e-4ac1-bd88-01bbb068cb78",
-            receiptHandle: "MessageReceiptHandle",
-            body: "Hello from SQS!",
-            attributes: {
-              ApproximateReceiveCount: "1",
-              SentTimestamp: "1523232000000",
-              SenderId: "123456789012",
-              ApproximateFirstReceiveTimestamp: "1523232000001",
-            },
-            messageAttributes: {},
-            md5OfBody: "{{{md5_of_body}}}",
-            eventSource: "aws:sqs",
+            ddHeaders: null,
             eventSourceARN: "arn:aws:sqs:us-east-1:123456789012:MyQueue",
-            awsRegion: "us-east-1",
-          },
+          }),
         ],
       };
       const extractor = new SQSEventTraceExtractor(tracerWrapper);
 
       const traceContext = extractor.extract(payload);
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledWith(
+        "sqs",
+        "arn:aws:sqs:us-east-1:123456789012:MyQueue",
+        null,
+        false,
+      );
       expect(traceContext).toBeNull();
     });
 
@@ -237,23 +255,14 @@ describe("SQSEventTraceExtractor", () => {
       const tracerWrapper = new TracerWrapper();
       const payload: SQSEvent = {
         Records: [
-          {
-            body: "Hello world",
-            attributes: {
-              ApproximateReceiveCount: "1",
-              SentTimestamp: "1605544528092",
-              SenderId: "AROAYYB64AB3JHSRKO6XR:sqs-trace-dev-producer",
-              ApproximateFirstReceiveTimestamp: "1605544528094",
+          makeRecord({
+            messageId: "foo",
+            ddHeaders: null,
+            eventSourceARN: "arn:aws:sqs:eu-west-1:601427279990:metal-queue",
+            extraAttributes: {
               AWSTraceHeader: "Root=1-65f2f78c-0000000008addb5405b376c0;Parent=5abcb7ed643995c7;Sampled=1",
             },
-            messageAttributes: {},
-            eventSource: "aws:sqs",
-            eventSourceARN: "arn:aws:sqs:eu-west-1:601427279990:metal-queue",
-            awsRegion: "eu-west-1",
-            messageId: "foo",
-            md5OfBody: "x",
-            receiptHandle: "x",
-          },
+          }),
         ],
       };
 
@@ -270,6 +279,58 @@ describe("SQSEventTraceExtractor", () => {
       expect(traceContext?.toSpanId()).toBe("6538302989251745223");
       expect(traceContext?.sampleMode()).toBe("1");
       expect(traceContext?.source).toBe("event");
+    });
+
+    it("calls setConsumeCheckpoint for every record in the event", () => {
+      mockSpanContext = {
+        toTraceId: () => "1234567890",
+        toSpanId: () => "0987654321",
+        _sampling: {
+          priority: "1",
+        },
+      };
+      const tracerWrapper = new TracerWrapper();
+      const makeDdHeaders = (traceId: string, parentId: string) => ({
+        "x-datadog-trace-id": traceId,
+        "x-datadog-parent-id": parentId,
+        "x-datadog-sampled": "1",
+        "x-datadog-sampling-priority": "1",
+        "dd-pathway-ctx-base64": "some-base64-encoded-context",
+      });
+      const eventSourceARN = "arn:aws:sqs:us-east-1:123456789012:queue-1";
+
+      const extractor = new SQSEventTraceExtractor(tracerWrapper);
+      const firstDdHeaders = makeDdHeaders("abc", "def");
+      const payload: SQSEvent = {
+        Records: [
+          makeRecord({
+            messageId: '1', ddHeaders: firstDdHeaders, eventSourceARN
+          }),
+          makeRecord({
+            messageId: '2', ddHeaders: makeDdHeaders('ghi', 'jkl'), eventSourceARN
+          }),
+          makeRecord({
+            messageId: '3', ddHeaders: makeDdHeaders('mno', 'pqr'), eventSourceARN
+          }),
+          makeRecord({
+            messageId: '4', ddHeaders: null, eventSourceARN
+          }),
+          makeRecord({
+            messageId: '5', ddHeaders: makeDdHeaders('yza', 'bcd'), eventSourceARN
+          }),
+        ]
+      };
+      const traceContext = extractor.extract(payload);
+      expect(traceContext).not.toBeNull();
+
+      expect(spyTracerWrapper).toHaveBeenCalledWith(firstDdHeaders);
+
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledTimes(5);
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(1, "sqs", "arn:aws:sqs:us-east-1:123456789012:queue-1", firstDdHeaders, false);
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(2, "sqs", "arn:aws:sqs:us-east-1:123456789012:queue-1", makeDdHeaders('ghi', 'jkl'), false);
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(3, "sqs", "arn:aws:sqs:us-east-1:123456789012:queue-1", makeDdHeaders('mno', 'pqr'), false);
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(4, "sqs", "arn:aws:sqs:us-east-1:123456789012:queue-1", null, false);
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(5, "sqs", "arn:aws:sqs:us-east-1:123456789012:queue-1", makeDdHeaders('yza', 'bcd'), false);
     });
 
     it("extracts trace context from Step Function SQS event", () => {
@@ -319,6 +380,33 @@ describe("SQSEventTraceExtractor", () => {
       expect(traceContext?.toSpanId()).toBe("6711327198021343353");
       expect(traceContext?.sampleMode()).toBe("1");
       expect(traceContext?.source).toBe("event");
+
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledWith(
+        "sqs",
+        "arn:aws:sqs:sa-east-1:123456123456:rstrat-sfn-sqs-demo-dev-process-event-queue",
+        {
+          Execution: {
+            Id: "arn:aws:states:sa-east-1:123456123456:execution:rstrat-sfn-sqs-demo-dev-state-machine:a4912895-93a3-4803-a712-69fecb55c025",
+            Name: "a4912895-93a3-4803-a712-69fecb55c025",
+            RedriveCount: 0,
+            RoleArn: "arn:aws:iam::123456123456:role/rstrat-sfn-sqs-demo-dev-StepFunctionsExecutionRole-s6ozc2dVrvLH",
+            StartTime: "2025-07-15T15:48:40.302Z",
+          },
+          RootExecutionId:
+            "arn:aws:states:sa-east-1:123456123456:execution:rstrat-sfn-sqs-demo-dev-state-machine:a4912895-93a3-4803-a712-69fecb55c025",
+          State: {
+            EnteredTime: "2025-07-15T15:48:40.333Z",
+            Name: "SendToSQS",
+            RetryCount: 0,
+          },
+          StateMachine: {
+            Id: "arn:aws:states:sa-east-1:123456123456:stateMachine:rstrat-sfn-sqs-demo-dev-state-machine",
+            Name: "rstrat-sfn-sqs-demo-dev-state-machine",
+          },
+          "serverless-version": "v1",
+        },
+        false,
+      );
     });
   });
 });
