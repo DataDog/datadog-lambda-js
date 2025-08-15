@@ -8,30 +8,31 @@ export class KinesisEventTraceExtractor implements EventTraceExtractor {
   constructor(private tracerWrapper: TracerWrapper) {}
 
   extract(event: KinesisStreamEvent): SpanContextWrapper | null {
-    const sourceARN = event?.Records?.[0]?.eventSourceARN;
-    const kinesisData = event?.Records?.[0]?.kinesis.data;
-    if (kinesisData === undefined) return null;
+    let context: SpanContextWrapper | null = null;
 
-    try {
-      const decodedData = Buffer.from(kinesisData, "base64").toString("ascii");
-      const parsedBody = JSON.parse(decodedData);
-      const headers = parsedBody?._datadog;
-      if (headers) {
-        const traceContext = this.tracerWrapper.extract(headers);
-        this.tracerWrapper.setConsumeCheckpoint(headers, "kinesis", sourceARN);
-        if (traceContext === null) return null;
+    for (const record of event?.Records || []) {
+      try {
+        const kinesisData = record?.kinesis?.data;
+        const decodedData = Buffer.from(kinesisData, "base64").toString("ascii");
+        const parsedBody = JSON.parse(decodedData);
+        const headers = parsedBody?._datadog ?? null;
+        this.tracerWrapper.setConsumeCheckpoint(headers, "kinesis", record.eventSourceARN);
 
-        logDebug(`Extracted trace context from Kinesis event`, { traceContext, headers });
-        return traceContext;
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        logDebug("Unable to extract trace context from Kinesis event", error);
+        // If we already have a context, we can skip the rest of the records
+        if (context) continue;
+
+        if (headers) {
+          context = this.tracerWrapper.extract(headers);
+          if (context !== null) {
+            logDebug(`Extracted trace context from Kinesis event`, { traceContext: context, headers });
+          }
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          logDebug("Unable to extract trace context from Kinesis event", error);
+        }
       }
     }
-
-    // Still want to set a DSM checkpoint even if DSM context not propagated
-    this.tracerWrapper.setConsumeCheckpoint(null, "kinesis", sourceARN);
-    return null;
+    return context;
   }
 }

@@ -105,7 +105,7 @@ describe("KinesisEventTraceExtractor", () => {
     it.each([
       ["Records", {}, 0],
       ["Records first entry", { Records: [] }, 0],
-      ["valid data in kinesis", { Records: [{ kinesis: { data: "{" }, eventSourceARN: "arn:aws:kinesis:test" }] }, 1], // JSON.parse should fail
+      ["valid data in kinesis", { Records: [{ kinesis: { data: "{" }, eventSourceARN: "arn:aws:kinesis:test" }] }, 0], // JSON.parse should fail
       ["_datadog in data", { Records: [{ kinesis: { data: "e30=" }, eventSourceARN: "arn:aws:kinesis:test" }] }, 1],
     ])("returns null and skips extracting when payload is missing '%s'", (_, payload, dsmCalls) => {
       const tracerWrapper = new TracerWrapper();
@@ -124,6 +124,107 @@ describe("KinesisEventTraceExtractor", () => {
           false,
         );
       }
+    });
+
+    it("calls setConsumeCheckpoint for each record", () => {
+      mockSpanContext = {
+        toTraceId: () => "667309514221035538",
+        toSpanId: () => "1350735035497811828",
+        _sampling: {
+          priority: "1",
+        },
+      };
+      const tracerWrapper = new TracerWrapper();
+
+      const makeKinesisRecord = (eventSourceARN: string, hasDatadogHeaders: boolean) => {
+        const baseData = { "some": "data" };
+        const dataWithHeaders = hasDatadogHeaders 
+          ? {
+              ...baseData,
+              "_datadog": {
+                "x-datadog-trace-id": "667309514221035538",
+                "x-datadog-parent-id": "1350735035497811828",
+                "x-datadog-sampled": "1",
+                "x-datadog-sampling-priority": "1",
+                "dd-pathway-ctx-base64": "some-base64-encoded-context",
+              }
+            }
+          : baseData;
+        
+        const encodedData = Buffer.from(JSON.stringify(dataWithHeaders)).toString("base64");
+        
+        return {
+          kinesis: {
+            kinesisSchemaVersion: "1.0",
+            partitionKey: "test-partition",
+            sequenceNumber: "12345",
+            data: encodedData,
+            approximateArrivalTimestamp: 1642518727.248,
+          },
+          eventSource: "aws:kinesis",
+          eventID: "test-event-id",
+          invokeIdentityArn: "arn:aws:iam::EXAMPLE",
+          eventVersion: "1.0",
+          eventName: "aws:kinesis:record",
+          eventSourceARN: eventSourceARN,
+          awsRegion: "us-east-1",
+        };
+      };
+
+      const payload = {
+        Records: [
+          makeKinesisRecord("arn:aws:kinesis:us-east-1:123456789012:stream/stream-1", true),
+          makeKinesisRecord("arn:aws:kinesis:us-east-1:123456789012:stream/stream-2", false),
+          makeKinesisRecord("arn:aws:kinesis:us-east-1:123456789012:stream/stream-3", true),
+          makeKinesisRecord("arn:aws:kinesis:us-east-1:123456789012:stream/stream-4", false),
+        ],
+      };
+
+      const extractor = new KinesisEventTraceExtractor(tracerWrapper);
+      const traceContext = extractor.extract(payload);
+      expect(traceContext).not.toBeNull();
+
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledTimes(4);
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(
+        1,
+        "kinesis",
+        "arn:aws:kinesis:us-east-1:123456789012:stream/stream-1",
+        {
+          "x-datadog-trace-id": "667309514221035538",
+          "x-datadog-parent-id": "1350735035497811828",
+          "x-datadog-sampled": "1",
+          "x-datadog-sampling-priority": "1",
+          "dd-pathway-ctx-base64": "some-base64-encoded-context",
+        },
+        false,
+      );
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(
+        2,
+        "kinesis",
+        "arn:aws:kinesis:us-east-1:123456789012:stream/stream-2",
+        null,
+        false,
+      );
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(
+        3,
+        "kinesis",
+        "arn:aws:kinesis:us-east-1:123456789012:stream/stream-3",
+        {
+          "x-datadog-trace-id": "667309514221035538",
+          "x-datadog-parent-id": "1350735035497811828",
+          "x-datadog-sampled": "1",
+          "x-datadog-sampling-priority": "1",
+          "dd-pathway-ctx-base64": "some-base64-encoded-context",
+        },
+        false,
+      );
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(
+        4,
+        "kinesis",
+        "arn:aws:kinesis:us-east-1:123456789012:stream/stream-4",
+        null,
+        false,
+      );
     });
 
     it("returns null when extracted span context by tracer is null", () => {
