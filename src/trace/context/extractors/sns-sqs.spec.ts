@@ -328,7 +328,7 @@ describe("SNSSQSEventTraceExtractor", () => {
       const makeSNSSQSRecord = (
         messageId: string,
         eventSourceARN: string,
-        datadogHeaders: Record<string, string> | null
+        datadogHeaders: Record<string, string> | null,
       ) => {
         const messageAttributes = datadogHeaders
           ? {
@@ -339,9 +339,9 @@ describe("SNSSQSEventTraceExtractor", () => {
             }
           : {
               other_attribute: {
-                Type: "String", 
-                Value: "some-value"
-              }
+                Type: "String",
+                Value: "some-value",
+              },
             };
 
         return {
@@ -414,17 +414,17 @@ describe("SNSSQSEventTraceExtractor", () => {
 
       // Should call setConsumeCheckpoint for each record
       expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledTimes(5);
-      
+
       expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(
         1,
         "sqs",
         "arn:aws:sqs:us-east-1:123456789012:queue-1",
         firstDdHeaders,
-        false
+        false,
       );
       expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(
         2,
-        "sqs", 
+        "sqs",
         "arn:aws:sqs:us-east-1:123456789012:queue-2",
         {
           "x-datadog-trace-id": "1111111111111111111",
@@ -433,14 +433,14 @@ describe("SNSSQSEventTraceExtractor", () => {
           "x-datadog-sampling-priority": "1",
           "dd-pathway-ctx-base64": "different-context",
         },
-        false
+        false,
       );
       expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(
         3,
         "sqs",
         "arn:aws:sqs:us-east-1:123456789012:queue-3",
         null,
-        false
+        false,
       );
       expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(
         4,
@@ -453,14 +453,14 @@ describe("SNSSQSEventTraceExtractor", () => {
           "x-datadog-sampling-priority": "1",
           "dd-pathway-ctx-base64": "another-context",
         },
-        false
+        false,
       );
       expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(
         5,
         "sqs",
         "arn:aws:sqs:us-east-1:123456789012:queue-5",
         null,
-        false
+        false,
       );
     });
   });

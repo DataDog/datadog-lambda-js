@@ -10,7 +10,7 @@ export class SQSEventTraceExtractor implements EventTraceExtractor {
 
   extract(event: SQSEvent): SpanContextWrapper | null {
     logDebug("SQS Extractor Being Used");
-    
+
     let context: SpanContextWrapper | null = null;
     for (const record of event?.Records || []) {
       try {
@@ -30,7 +30,7 @@ export class SQSEventTraceExtractor implements EventTraceExtractor {
 
         // Set a checkpoint for the record, even if we don't have headers
         this.tracerWrapper.setConsumeCheckpoint(headers, "sqs", record.eventSourceARN);
-        
+
         // If we've already extracted context, skip the rest of the loop, since we only want to extract context once
         if (!context) {
           // Try to extract trace context from headers

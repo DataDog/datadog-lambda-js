@@ -10,7 +10,7 @@ export class SNSSQSEventTraceExtractor implements EventTraceExtractor {
 
   extract(event: SQSEvent): SpanContextWrapper | null {
     logDebug("SNS-SQS Extractor Being Used");
-    
+
     let context: SpanContextWrapper | null = null;
     for (const record of event?.Records || []) {
       let headers = null;

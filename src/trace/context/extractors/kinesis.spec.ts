@@ -137,22 +137,22 @@ describe("KinesisEventTraceExtractor", () => {
       const tracerWrapper = new TracerWrapper();
 
       const makeKinesisRecord = (eventSourceARN: string, hasDatadogHeaders: boolean) => {
-        const baseData = { "some": "data" };
-        const dataWithHeaders = hasDatadogHeaders 
+        const baseData = { some: "data" };
+        const dataWithHeaders = hasDatadogHeaders
           ? {
               ...baseData,
-              "_datadog": {
+              _datadog: {
                 "x-datadog-trace-id": "667309514221035538",
                 "x-datadog-parent-id": "1350735035497811828",
                 "x-datadog-sampled": "1",
                 "x-datadog-sampling-priority": "1",
                 "dd-pathway-ctx-base64": "some-base64-encoded-context",
-              }
+              },
             }
           : baseData;
-        
+
         const encodedData = Buffer.from(JSON.stringify(dataWithHeaders)).toString("base64");
-        
+
         return {
           kinesis: {
             kinesisSchemaVersion: "1.0",

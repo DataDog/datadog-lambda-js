@@ -304,21 +304,31 @@ describe("SQSEventTraceExtractor", () => {
       const payload: SQSEvent = {
         Records: [
           makeRecord({
-            messageId: '1', ddHeaders: firstDdHeaders, eventSourceARN
+            messageId: "1",
+            ddHeaders: firstDdHeaders,
+            eventSourceARN,
           }),
           makeRecord({
-            messageId: '2', ddHeaders: makeDdHeaders('ghi', 'jkl'), eventSourceARN
+            messageId: "2",
+            ddHeaders: makeDdHeaders("ghi", "jkl"),
+            eventSourceARN,
           }),
           makeRecord({
-            messageId: '3', ddHeaders: makeDdHeaders('mno', 'pqr'), eventSourceARN
+            messageId: "3",
+            ddHeaders: makeDdHeaders("mno", "pqr"),
+            eventSourceARN,
           }),
           makeRecord({
-            messageId: '4', ddHeaders: null, eventSourceARN
+            messageId: "4",
+            ddHeaders: null,
+            eventSourceARN,
           }),
           makeRecord({
-            messageId: '5', ddHeaders: makeDdHeaders('yza', 'bcd'), eventSourceARN
+            messageId: "5",
+            ddHeaders: makeDdHeaders("yza", "bcd"),
+            eventSourceARN,
           }),
-        ]
+        ],
       };
       const traceContext = extractor.extract(payload);
       expect(traceContext).not.toBeNull();
@@ -326,11 +336,41 @@ describe("SQSEventTraceExtractor", () => {
       expect(spyTracerWrapper).toHaveBeenCalledWith(firstDdHeaders);
 
       expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledTimes(5);
-      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(1, "sqs", "arn:aws:sqs:us-east-1:123456789012:queue-1", firstDdHeaders, false);
-      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(2, "sqs", "arn:aws:sqs:us-east-1:123456789012:queue-1", makeDdHeaders('ghi', 'jkl'), false);
-      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(3, "sqs", "arn:aws:sqs:us-east-1:123456789012:queue-1", makeDdHeaders('mno', 'pqr'), false);
-      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(4, "sqs", "arn:aws:sqs:us-east-1:123456789012:queue-1", null, false);
-      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(5, "sqs", "arn:aws:sqs:us-east-1:123456789012:queue-1", makeDdHeaders('yza', 'bcd'), false);
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(
+        1,
+        "sqs",
+        "arn:aws:sqs:us-east-1:123456789012:queue-1",
+        firstDdHeaders,
+        false,
+      );
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(
+        2,
+        "sqs",
+        "arn:aws:sqs:us-east-1:123456789012:queue-1",
+        makeDdHeaders("ghi", "jkl"),
+        false,
+      );
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(
+        3,
+        "sqs",
+        "arn:aws:sqs:us-east-1:123456789012:queue-1",
+        makeDdHeaders("mno", "pqr"),
+        false,
+      );
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(
+        4,
+        "sqs",
+        "arn:aws:sqs:us-east-1:123456789012:queue-1",
+        null,
+        false,
+      );
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(
+        5,
+        "sqs",
+        "arn:aws:sqs:us-east-1:123456789012:queue-1",
+        makeDdHeaders("yza", "bcd"),
+        false,
+      );
     });
 
     it("extracts trace context from Step Function SQS event", () => {
