@@ -314,5 +314,154 @@ describe("SNSSQSEventTraceExtractor", () => {
       expect(traceContext?.sampleMode()).toBe("1");
       expect(traceContext?.source).toBe("event");
     });
+
+    it("calls setConsumeCheckpoint for every record in the event", () => {
+      mockSpanContext = {
+        toTraceId: () => "2776434475358637757",
+        toSpanId: () => "4493917105238181843",
+        _sampling: {
+          priority: "1",
+        },
+      };
+      const tracerWrapper = new TracerWrapper();
+
+      const makeSNSSQSRecord = (
+        messageId: string,
+        eventSourceARN: string,
+        datadogHeaders: Record<string, string> | null
+      ) => {
+        const messageAttributes = datadogHeaders
+          ? {
+              _datadog: {
+                Type: "String",
+                Value: JSON.stringify(datadogHeaders),
+              },
+            }
+          : {
+              other_attribute: {
+                Type: "String", 
+                Value: "some-value"
+              }
+            };
+
+        return {
+          messageId,
+          receiptHandle: "receipt-handle",
+          body: JSON.stringify({
+            Type: "Notification",
+            MessageId: `notification-${messageId}`,
+            TopicArn: "arn:aws:sns:us-east-1:123456789012:test-topic",
+            Message: "Test message",
+            Timestamp: "2021-12-17T21:46:58.040Z",
+            MessageAttributes: messageAttributes,
+          }),
+          attributes: {
+            ApproximateReceiveCount: "1",
+            SentTimestamp: "1639777618130",
+            SenderId: "AIDAIOA2GYWSHW4E2VXIO",
+            ApproximateFirstReceiveTimestamp: "1639777618132",
+          },
+          messageAttributes: {},
+          md5OfBody: "test-md5",
+          eventSource: "aws:sqs",
+          eventSourceARN,
+          awsRegion: "us-east-1",
+        };
+      };
+
+      const firstDdHeaders = {
+        "x-datadog-trace-id": "2776434475358637757",
+        "x-datadog-parent-id": "4493917105238181843",
+        "x-datadog-sampled": "1",
+        "x-datadog-sampling-priority": "1",
+        "dd-pathway-ctx-base64": "some-base64-encoded-context",
+      };
+
+      const payload = {
+        Records: [
+          makeSNSSQSRecord("msg1", "arn:aws:sqs:us-east-1:123456789012:queue-1", firstDdHeaders),
+          makeSNSSQSRecord("msg2", "arn:aws:sqs:us-east-1:123456789012:queue-2", {
+            "x-datadog-trace-id": "1111111111111111111",
+            "x-datadog-parent-id": "2222222222222222222",
+            "x-datadog-sampled": "1",
+            "x-datadog-sampling-priority": "1",
+            "dd-pathway-ctx-base64": "different-context",
+          }),
+          makeSNSSQSRecord("msg3", "arn:aws:sqs:us-east-1:123456789012:queue-3", null),
+          makeSNSSQSRecord("msg4", "arn:aws:sqs:us-east-1:123456789012:queue-4", {
+            "x-datadog-trace-id": "3333333333333333333",
+            "x-datadog-parent-id": "4444444444444444444",
+            "x-datadog-sampled": "1",
+            "x-datadog-sampling-priority": "1",
+            "dd-pathway-ctx-base64": "another-context",
+          }),
+          makeSNSSQSRecord("msg5", "arn:aws:sqs:us-east-1:123456789012:queue-5", null),
+        ],
+      };
+
+      const extractor = new SNSSQSEventTraceExtractor(tracerWrapper);
+
+      const traceContext = extractor.extract(payload);
+      expect(traceContext).not.toBeNull();
+
+      // Should use the first record's headers for trace context
+      expect(spyTracerWrapper).toHaveBeenCalledWith(firstDdHeaders);
+
+      expect(traceContext?.toTraceId()).toBe("2776434475358637757");
+      expect(traceContext?.toSpanId()).toBe("4493917105238181843");
+      expect(traceContext?.sampleMode()).toBe("1");
+      expect(traceContext?.source).toBe("event");
+
+      // Should call setConsumeCheckpoint for each record
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledTimes(5);
+      
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(
+        1,
+        "sqs",
+        "arn:aws:sqs:us-east-1:123456789012:queue-1",
+        firstDdHeaders,
+        false
+      );
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(
+        2,
+        "sqs", 
+        "arn:aws:sqs:us-east-1:123456789012:queue-2",
+        {
+          "x-datadog-trace-id": "1111111111111111111",
+          "x-datadog-parent-id": "2222222222222222222",
+          "x-datadog-sampled": "1",
+          "x-datadog-sampling-priority": "1",
+          "dd-pathway-ctx-base64": "different-context",
+        },
+        false
+      );
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(
+        3,
+        "sqs",
+        "arn:aws:sqs:us-east-1:123456789012:queue-3",
+        null,
+        false
+      );
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(
+        4,
+        "sqs",
+        "arn:aws:sqs:us-east-1:123456789012:queue-4",
+        {
+          "x-datadog-trace-id": "3333333333333333333",
+          "x-datadog-parent-id": "4444444444444444444",
+          "x-datadog-sampled": "1",
+          "x-datadog-sampling-priority": "1",
+          "dd-pathway-ctx-base64": "another-context",
+        },
+        false
+      );
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(
+        5,
+        "sqs",
+        "arn:aws:sqs:us-east-1:123456789012:queue-5",
+        null,
+        false
+      );
+    });
   });
 });

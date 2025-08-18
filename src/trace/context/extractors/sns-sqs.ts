@@ -10,54 +10,59 @@ export class SNSSQSEventTraceExtractor implements EventTraceExtractor {
 
   extract(event: SQSEvent): SpanContextWrapper | null {
     logDebug("SNS-SQS Extractor Being Used");
-    const sourceARN = event?.Records?.[0]?.eventSourceARN;
-    try {
-      // Try to extract trace context from SNS wrapped in SQS
-      const body = event?.Records?.[0]?.body;
-      if (body) {
-        const parsedBody = JSON.parse(body);
-        const snsMessageAttribute = parsedBody?.MessageAttributes?._datadog;
-        if (snsMessageAttribute?.Value) {
-          let headers;
-          if (snsMessageAttribute.Type === "String") {
-            headers = JSON.parse(snsMessageAttribute.Value);
+    
+    let context: SpanContextWrapper | null = null;
+    for (const record of event?.Records || []) {
+      let headers = null;
+      try {
+        // Try to extract trace context from SNS wrapped in SQS
+        const body = record.body;
+        if (body) {
+          const parsedBody = JSON.parse(body);
+          const snsMessageAttribute = parsedBody?.MessageAttributes?._datadog;
+          if (snsMessageAttribute?.Value) {
+            if (snsMessageAttribute.Type === "String") {
+              headers = JSON.parse(snsMessageAttribute.Value);
+            } else {
+              // Try decoding base64 values
+              const decodedValue = Buffer.from(snsMessageAttribute.Value, "base64").toString("ascii");
+              headers = JSON.parse(decodedValue);
+            }
+          }
+        }
+
+        // Check SQS message attributes as a fallback
+        if (!headers) {
+          const sqsMessageAttribute = record.messageAttributes?._datadog;
+          if (sqsMessageAttribute?.stringValue) {
+            headers = JSON.parse(sqsMessageAttribute.stringValue);
+          }
+        }
+
+        // Set a checkpoint for the record, even if we don't have headers
+        this.tracerWrapper.setConsumeCheckpoint(headers, "sqs", record.eventSourceARN);
+
+        // If we've already extracted context, skip the rest of the extraction, since we only want to extract context once
+        if (!context) {
+          // Try to extract trace context from headers
+          if (headers) {
+            context = extractTraceContext(headers, this.tracerWrapper);
           } else {
-            // Try decoding base64 values
-            const decodedValue = Buffer.from(snsMessageAttribute.Value, "base64").toString("ascii");
-            headers = JSON.parse(decodedValue);
+            logDebug("Failed to extract trace context from SNS-SQS event");
+
+            // Else try to extract trace context from attributes.AWSTraceHeader
+            // (Upstream Java apps can pass down Datadog trace context in the attributes.AWSTraceHeader in SQS case)
+            const awsTraceHeader = record.attributes?.AWSTraceHeader;
+            if (awsTraceHeader !== undefined) {
+              context = extractFromAWSTraceHeader(awsTraceHeader, "SNS-SQS");
+            }
           }
-
-          const traceContext = extractTraceContext(headers, this.tracerWrapper);
-          this.tracerWrapper.setConsumeCheckpoint(headers, "sqs", sourceARN);
-          if (traceContext) {
-            return traceContext;
-          }
-          logDebug("Failed to extract trace context from SNS-SQS event");
         }
+      } catch (error) {
+        handleExtractionError(error, "SQS");
       }
-
-      // Check SQS message attributes as a fallback
-      const sqsMessageAttribute = event?.Records?.[0]?.messageAttributes?._datadog;
-      if (sqsMessageAttribute?.stringValue) {
-        const headers = JSON.parse(sqsMessageAttribute.stringValue);
-        const traceContext = extractTraceContext(headers, this.tracerWrapper);
-        this.tracerWrapper.setConsumeCheckpoint(headers, "sqs", sourceARN);
-        if (traceContext) {
-          return traceContext;
-        }
-      }
-
-      // Else try to extract trace context from attributes.AWSTraceHeader
-      // (Upstream Java apps can pass down Datadog trace context in the attributes.AWSTraceHeader in SQS case)
-      const awsTraceHeader = event?.Records?.[0]?.attributes?.AWSTraceHeader;
-      if (awsTraceHeader !== undefined) {
-        return extractFromAWSTraceHeader(awsTraceHeader, "SNS-SQS");
-      }
-    } catch (error) {
-      handleExtractionError(error, "SQS");
     }
-    // Still want to set a DSM checkpoint even if DSM context not propagated
-    this.tracerWrapper.setConsumeCheckpoint(null, "sqs", sourceARN);
-    return null;
+
+    return context;
   }
 }
