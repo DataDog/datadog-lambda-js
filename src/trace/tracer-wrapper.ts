@@ -107,7 +107,7 @@ export class TracerWrapper {
       return;
     }
 
-    if (getEnvValue("DD_DATA_STREAMS_ENABLED", "false").toLowerCase() !== "true") {
+    if (!this.isDataStreamsEnabled) {
       return;
     }
 
@@ -118,5 +118,10 @@ export class TracerWrapper {
         logDebug(`DSM: Failed to set consume checkpoint for ${eventType} ${arn}:`, err);
       }
     }
+  }
+
+  private get isDataStreamsEnabled(): boolean {
+    const validEnabledValues = new Set(["true", "1", "yes", "y", "on", "1"]);
+    return validEnabledValues.has(getEnvValue("DD_DATA_STREAMS_ENABLED", "false").toLowerCase());
   }
 }
