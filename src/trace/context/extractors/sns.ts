@@ -33,8 +33,12 @@ export class SNSEventTraceExtractor implements EventTraceExtractor {
         this.tracerWrapper.setConsumeCheckpoint(headers, "sns", sourceARN);
 
         // If we've already extracted context, skip the rest of the extraction, since we only want to extract context once
+        // also, if DSM is disabled, we can break out of the loop early
+        if (!this.tracerWrapper.isDataStreamsEnabled && context) {
+          break;
+        }
         if (context) continue;
-          // Try to extract trace context from headers
+        // Try to extract trace context from headers
         if (headers) {
           context = extractTraceContext(headers, this.tracerWrapper);
         } else {

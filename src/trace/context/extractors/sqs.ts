@@ -32,6 +32,10 @@ export class SQSEventTraceExtractor implements EventTraceExtractor {
         this.tracerWrapper.setConsumeCheckpoint(headers, "sqs", record.eventSourceARN);
 
         // If we've already extracted context, skip the rest of the loop, since we only want to extract context once
+        // also, if DSM is disabled, we can break out of the loop early
+        if (!this.tracerWrapper.isDataStreamsEnabled && context) {
+          break;
+        }
         if (context) continue;
         // Try to extract trace context from headers
         if (headers) {

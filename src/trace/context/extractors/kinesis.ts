@@ -19,6 +19,10 @@ export class KinesisEventTraceExtractor implements EventTraceExtractor {
         this.tracerWrapper.setConsumeCheckpoint(headers, "kinesis", record.eventSourceARN);
 
         // If we already have a context, we can skip the rest of the records
+        // also, if DSM is disabled, we can stop extracting context after the first record
+        if (!this.tracerWrapper.isDataStreamsEnabled && context) {
+          break;
+        }
         if (context) continue;
 
         if (headers) {

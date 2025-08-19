@@ -448,5 +448,67 @@ describe("SQSEventTraceExtractor", () => {
         false,
       );
     });
+
+    it("extracts trace context from multiple records when DSM is disabled but does not call setConsumeCheckpoint", () => {
+      // Disable DSM
+      delete process.env["DD_DATA_STREAMS_ENABLED"];
+
+      mockSpanContext = {
+        toTraceId: () => "1234567890",
+        toSpanId: () => "0987654321",
+        _sampling: {
+          priority: "1",
+        },
+      };
+      const tracerWrapper = new TracerWrapper();
+
+      const firstDdHeaders = {
+        "x-datadog-trace-id": "1234567890",
+        "x-datadog-parent-id": "0987654321",
+        "x-datadog-sampled": "1",
+        "x-datadog-sampling-priority": "1",
+        "dd-pathway-ctx-base64": "some-base64-encoded-context",
+      };
+
+      const payload: SQSEvent = {
+        Records: [
+          makeRecord({
+            messageId: "msg1",
+            ddHeaders: firstDdHeaders,
+            eventSourceARN: "arn:aws:sqs:us-east-1:123456789012:queue-1",
+          }),
+          makeRecord({
+            messageId: "msg2",
+            ddHeaders: {
+              "x-datadog-trace-id": "1111111111111111111",
+              "x-datadog-parent-id": "2222222222222222222",
+              "x-datadog-sampled": "1",
+              "x-datadog-sampling-priority": "1",
+              "dd-pathway-ctx-base64": "different-context",
+            },
+            eventSourceARN: "arn:aws:sqs:us-east-1:123456789012:queue-2",
+          }),
+          makeRecord({
+            messageId: "msg3",
+            ddHeaders: null,
+            eventSourceARN: "arn:aws:sqs:us-east-1:123456789012:queue-3",
+          }),
+        ],
+      };
+
+      const extractor = new SQSEventTraceExtractor(tracerWrapper);
+      const traceContext = extractor.extract(payload);
+
+      // Should still extract trace context from first record
+      expect(traceContext).not.toBeNull();
+      expect(spyTracerWrapper).toHaveBeenCalledWith(firstDdHeaders);
+      expect(traceContext?.toTraceId()).toBe("1234567890");
+      expect(traceContext?.toSpanId()).toBe("0987654321");
+      expect(traceContext?.sampleMode()).toBe("1");
+      expect(traceContext?.source).toBe("event");
+
+      // Should NOT call setConsumeCheckpoint when DSM is disabled
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledTimes(0);
+    });
   });
 });

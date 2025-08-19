@@ -500,5 +500,89 @@ describe("SNSEventTraceExtractor", () => {
         false,
       );
     });
+
+    it("extracts trace context from multiple records when DSM is disabled but does not call setConsumeCheckpoint", () => {
+      // Disable DSM
+      delete process.env["DD_DATA_STREAMS_ENABLED"];
+
+      mockSpanContext = {
+        toTraceId: () => "6966585609680374559",
+        toSpanId: () => "4297634551783724228",
+        _sampling: {
+          priority: "1",
+        },
+      };
+      const tracerWrapper = new TracerWrapper();
+
+      const makeSNSRecord = (messageId: string, topicArn: string, datadogHeaders: Record<string, string> | null) => {
+        const messageAttributes: any = {};
+        if (datadogHeaders) {
+          messageAttributes._datadog = {
+            Type: "String",
+            Value: JSON.stringify(datadogHeaders),
+          };
+        } else {
+          messageAttributes.other_attribute = {
+            Type: "String",
+            Value: "some-value",
+          };
+        }
+
+        return {
+          EventSource: "aws:sns",
+          EventVersion: "1.0",
+          EventSubscriptionArn: `arn:aws:sns:us-east-1:123456789012:${topicArn}:subscription-${messageId}`,
+          Sns: {
+            Type: "Notification",
+            MessageId: messageId,
+            TopicArn: topicArn,
+            Subject: "Test Subject",
+            Message: '{"test":"message"}',
+            Timestamp: "2022-01-24T15:45:27.968Z",
+            SignatureVersion: "1",
+            Signature: "test-signature",
+            SigningCertUrl: "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-test.pem",
+            UnsubscribeUrl: `https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-1:123456789012:${topicArn}:subscription-${messageId}`,
+            MessageAttributes: messageAttributes,
+          },
+        };
+      };
+
+      const firstDdHeaders = {
+        "x-datadog-trace-id": "6966585609680374559",
+        "x-datadog-parent-id": "4297634551783724228",
+        "x-datadog-sampled": "1",
+        "x-datadog-sampling-priority": "1",
+        "dd-pathway-ctx-base64": "some-base64-encoded-context",
+      };
+
+      const payload: SNSEvent = {
+        Records: [
+          makeSNSRecord("msg1", "arn:aws:sns:us-east-1:123456789012:topic-1", firstDdHeaders),
+          makeSNSRecord("msg2", "arn:aws:sns:us-east-1:123456789012:topic-2", {
+            "x-datadog-trace-id": "1111111111111111111",
+            "x-datadog-parent-id": "2222222222222222222",
+            "x-datadog-sampled": "1",
+            "x-datadog-sampling-priority": "1",
+            "dd-pathway-ctx-base64": "different-context",
+          }),
+          makeSNSRecord("msg3", "arn:aws:sns:us-east-1:123456789012:topic-3", null),
+        ],
+      };
+
+      const extractor = new SNSEventTraceExtractor(tracerWrapper);
+      const traceContext = extractor.extract(payload);
+
+      // Should still extract trace context from first record
+      expect(traceContext).not.toBeNull();
+      expect(spyTracerWrapper).toHaveBeenCalledWith(firstDdHeaders);
+      expect(traceContext?.toTraceId()).toBe("6966585609680374559");
+      expect(traceContext?.toSpanId()).toBe("4297634551783724228");
+      expect(traceContext?.sampleMode()).toBe("1");
+      expect(traceContext?.source).toBe("event");
+
+      // Should NOT call setConsumeCheckpoint when DSM is disabled
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledTimes(0);
+    });
   });
 });

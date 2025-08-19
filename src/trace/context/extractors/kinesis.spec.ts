@@ -256,5 +256,75 @@ describe("KinesisEventTraceExtractor", () => {
       const traceContext = extractor.extract(payload);
       expect(traceContext).toBeNull();
     });
+
+    it("extracts trace context from multiple records when DSM is disabled but does not call setConsumeCheckpoint", () => {
+      // Disable DSM
+      delete process.env["DD_DATA_STREAMS_ENABLED"];
+
+      mockSpanContext = {
+        toTraceId: () => "667309514221035538",
+        toSpanId: () => "1350735035497811828",
+        _sampling: {
+          priority: "1",
+        },
+      };
+      const tracerWrapper = new TracerWrapper();
+
+      const makeKinesisRecord = (eventSourceARN: string, hasDatadogHeaders: boolean) => {
+        const baseData = { some: "data" };
+        const dataWithHeaders = hasDatadogHeaders
+          ? {
+              ...baseData,
+              _datadog: {
+                "x-datadog-trace-id": "667309514221035538",
+                "x-datadog-parent-id": "1350735035497811828",
+                "x-datadog-sampled": "1",
+                "x-datadog-sampling-priority": "1",
+                "dd-pathway-ctx-base64": "some-base64-encoded-context",
+              },
+            }
+          : baseData;
+
+        const encodedData = Buffer.from(JSON.stringify(dataWithHeaders)).toString("base64");
+
+        return {
+          kinesis: {
+            kinesisSchemaVersion: "1.0",
+            partitionKey: "test-partition",
+            sequenceNumber: "12345",
+            data: encodedData,
+            approximateArrivalTimestamp: 1642518727.248,
+          },
+          eventSource: "aws:kinesis",
+          eventID: "test-event-id",
+          invokeIdentityArn: "arn:aws:iam::EXAMPLE",
+          eventVersion: "1.0",
+          eventName: "aws:kinesis:record",
+          eventSourceARN: eventSourceARN,
+          awsRegion: "us-east-1",
+        };
+      };
+
+      const payload = {
+        Records: [
+          makeKinesisRecord("arn:aws:kinesis:us-east-1:123456789012:stream/stream-1", true),
+          makeKinesisRecord("arn:aws:kinesis:us-east-1:123456789012:stream/stream-2", false),
+          makeKinesisRecord("arn:aws:kinesis:us-east-1:123456789012:stream/stream-3", true),
+        ],
+      };
+
+      const extractor = new KinesisEventTraceExtractor(tracerWrapper);
+      const traceContext = extractor.extract(payload);
+
+      // Should still extract trace context from first record
+      expect(traceContext).not.toBeNull();
+      expect(traceContext?.toTraceId()).toBe("667309514221035538");
+      expect(traceContext?.toSpanId()).toBe("1350735035497811828");
+      expect(traceContext?.sampleMode()).toBe("1");
+      expect(traceContext?.source).toBe("event");
+
+      // Should NOT call setConsumeCheckpoint when DSM is disabled
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledTimes(0);
+    });
   });
 });

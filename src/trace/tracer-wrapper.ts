@@ -120,7 +120,7 @@ export class TracerWrapper {
     }
   }
 
-  private get isDataStreamsEnabled(): boolean {
+  public get isDataStreamsEnabled(): boolean {
     const validEnabledValues = new Set(["true", "1", "yes", "y", "on", "1"]);
     return validEnabledValues.has(getEnvValue("DD_DATA_STREAMS_ENABLED", "false").toLowerCase());
   }
