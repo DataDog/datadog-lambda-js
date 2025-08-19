@@ -33,18 +33,17 @@ export class SNSEventTraceExtractor implements EventTraceExtractor {
         this.tracerWrapper.setConsumeCheckpoint(headers, "sns", sourceARN);
 
         // If we've already extracted context, skip the rest of the extraction, since we only want to extract context once
-        if (!context) {
+        if (context) continue;
           // Try to extract trace context from headers
-          if (headers) {
-            context = extractTraceContext(headers, this.tracerWrapper);
-          } else {
-            logDebug("Failed to extract trace context from SNS event");
+        if (headers) {
+          context = extractTraceContext(headers, this.tracerWrapper);
+        } else {
+          logDebug("Failed to extract trace context from SNS event");
 
-            // Then try to extract trace context from _X_AMZN_TRACE_ID header (Upstream Java apps can
-            // pass down Datadog trace id (parent id wrong) in the env in SNS case)
-            if (process.env[AMZN_TRACE_ID_ENV_VAR]) {
-              context = extractFromAWSTraceHeader(process.env[AMZN_TRACE_ID_ENV_VAR], "SNS");
-            }
+          // Then try to extract trace context from _X_AMZN_TRACE_ID header (Upstream Java apps can
+          // pass down Datadog trace id (parent id wrong) in the env in SNS case)
+          if (process.env[AMZN_TRACE_ID_ENV_VAR]) {
+            context = extractFromAWSTraceHeader(process.env[AMZN_TRACE_ID_ENV_VAR], "SNS");
           }
         }
       } catch (error) {

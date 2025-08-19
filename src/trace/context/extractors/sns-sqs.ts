@@ -43,19 +43,19 @@ export class SNSSQSEventTraceExtractor implements EventTraceExtractor {
         this.tracerWrapper.setConsumeCheckpoint(headers, "sqs", record.eventSourceARN);
 
         // If we've already extracted context, skip the rest of the extraction, since we only want to extract context once
-        if (!context) {
-          // Try to extract trace context from headers
-          if (headers) {
-            context = extractTraceContext(headers, this.tracerWrapper);
-          } else {
-            logDebug("Failed to extract trace context from SNS-SQS event");
+        if (context) continue;
 
-            // Else try to extract trace context from attributes.AWSTraceHeader
-            // (Upstream Java apps can pass down Datadog trace context in the attributes.AWSTraceHeader in SQS case)
-            const awsTraceHeader = record.attributes?.AWSTraceHeader;
-            if (awsTraceHeader !== undefined) {
-              context = extractFromAWSTraceHeader(awsTraceHeader, "SNS-SQS");
-            }
+        // Try to extract trace context from headers
+        if (headers) {
+          context = extractTraceContext(headers, this.tracerWrapper);
+        } else {
+          logDebug("Failed to extract trace context from SNS-SQS event");
+
+          // Else try to extract trace context from attributes.AWSTraceHeader
+          // (Upstream Java apps can pass down Datadog trace context in the attributes.AWSTraceHeader in SQS case)
+          const awsTraceHeader = record.attributes?.AWSTraceHeader;
+          if (awsTraceHeader !== undefined) {
+            context = extractFromAWSTraceHeader(awsTraceHeader, "SNS-SQS");
           }
         }
       } catch (error) {
