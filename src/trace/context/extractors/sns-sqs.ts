@@ -4,6 +4,7 @@ import { logDebug } from "../../../utils";
 import { EventTraceExtractor } from "../extractor";
 import { SpanContextWrapper } from "../../span-context-wrapper";
 import { extractTraceContext, extractFromAWSTraceHeader, handleExtractionError } from "../extractor-utils";
+import { getDataStreamsEnabled } from "../../../index";
 
 export class SNSSQSEventTraceExtractor implements EventTraceExtractor {
   constructor(private tracerWrapper: TracerWrapper) {}
@@ -13,8 +14,13 @@ export class SNSSQSEventTraceExtractor implements EventTraceExtractor {
 
     let context: SpanContextWrapper | null = null;
     for (const record of event?.Records || []) {
-      let headers = null;
       try {
+        // If we already have a context and dsm is not enabled, we can break out of the loop early
+        if (!getDataStreamsEnabled() && context) {
+          break;
+        }
+
+        let headers = null;
         // Try to extract trace context from SNS wrapped in SQS
         const body = record.body;
         if (body) {
@@ -42,11 +48,7 @@ export class SNSSQSEventTraceExtractor implements EventTraceExtractor {
         // Set a checkpoint for the record, even if we don't have headers
         this.tracerWrapper.setConsumeCheckpoint(headers, "sqs", record.eventSourceARN);
 
-        // If we've already extracted context, skip the rest of the extraction, since we only want to extract context once
-        // also, if DSM is disabled, we can break out of the loop early
-        if (!this.tracerWrapper.isDataStreamsEnabled && context) {
-          break;
-        }
+        // if we already have a context, no need to extract again
         if (context) continue;
 
         // Try to extract trace context from headers

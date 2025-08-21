@@ -5,6 +5,7 @@ import { EventTraceExtractor } from "../extractor";
 import { SpanContextWrapper } from "../../span-context-wrapper";
 import { AMZN_TRACE_ID_ENV_VAR } from "../../xray-service";
 import { extractTraceContext, extractFromAWSTraceHeader, handleExtractionError } from "../extractor-utils";
+import { getDataStreamsEnabled } from "../../../index";
 
 export class SNSEventTraceExtractor implements EventTraceExtractor {
   constructor(private tracerWrapper: TracerWrapper) {}
@@ -13,10 +14,14 @@ export class SNSEventTraceExtractor implements EventTraceExtractor {
     let context: SpanContextWrapper | null = null;
 
     for (const record of event?.Records || []) {
-      let headers = null;
-      const sourceARN = record.Sns?.TopicArn;
-
       try {
+        // If we already have a context and dsm is not enabled, we can break out of the loop early
+        if (!getDataStreamsEnabled() && context) {
+          break;
+        }
+
+        let headers = null;
+        const sourceARN = record.Sns?.TopicArn;
         // First try to extract trace context from message attributes
         const messageAttribute = record.Sns?.MessageAttributes?._datadog;
         if (messageAttribute?.Value) {
@@ -32,11 +37,7 @@ export class SNSEventTraceExtractor implements EventTraceExtractor {
         // Set a checkpoint for the record, even if we don't have headers
         this.tracerWrapper.setConsumeCheckpoint(headers, "sns", sourceARN);
 
-        // If we've already extracted context, skip the rest of the extraction, since we only want to extract context once
-        // also, if DSM is disabled, we can break out of the loop early
-        if (!this.tracerWrapper.isDataStreamsEnabled && context) {
-          break;
-        }
+        // if we already have a context, no need to extract again
         if (context) continue;
         // Try to extract trace context from headers
         if (headers) {

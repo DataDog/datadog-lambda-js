@@ -1,4 +1,4 @@
-import { getEnvValue } from "../index";
+import { getDataStreamsEnabled } from "../index";
 import { logDebug } from "../utils";
 import { SpanContextWrapper } from "./span-context-wrapper";
 import { TraceSource } from "./trace-context-service";
@@ -107,7 +107,7 @@ export class TracerWrapper {
       return;
     }
 
-    if (!this.isDataStreamsEnabled) {
+    if (!getDataStreamsEnabled()) {
       return;
     }
 
@@ -118,10 +118,5 @@ export class TracerWrapper {
         logDebug(`DSM: Failed to set consume checkpoint for ${eventType} ${arn}:`, err);
       }
     }
-  }
-
-  public get isDataStreamsEnabled(): boolean {
-    const validEnabledValues = new Set(["true", "1", "yes", "y", "on", "1"]);
-    return validEnabledValues.has(getEnvValue("DD_DATA_STREAMS_ENABLED", "false").toLowerCase());
   }
 }

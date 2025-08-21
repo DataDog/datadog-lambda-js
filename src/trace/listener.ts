@@ -74,6 +74,11 @@ export interface TraceConfig {
    * @default true
    */
   addSpanPointers: boolean;
+  /**
+   * Whether to enable Data Streams Monitoring
+   * @default false
+   */
+  dataStreamsEnabled: boolean;
 }
 
 export class TraceListener {
