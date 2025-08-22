@@ -54,14 +54,6 @@ export const localTestingEnvVar = "DD_LOCAL_TESTING";
 export const addSpanPointersEnvVar = "DD_TRACE_AWS_ADD_SPAN_POINTERS";
 export const dataStreamsEnabledEnvVar = "DD_DATA_STREAMS_ENABLED";
 
-/**
- * Check if Data Streams Monitoring is enabled
- * Reads from environment variable through config system
- */
-export function getDataStreamsEnabled(): boolean {
-  return getConfig().dataStreamsEnabled;
-}
-
 interface GlobalConfig {
   /**
    * Whether to log extra information.
@@ -481,16 +473,16 @@ export async function emitTelemetryOnErrorOutsideHandler(
       },
       startTime,
     };
-    const tracerWrapper = new TracerWrapper();
+    const config = getConfig();
+    const tracerWrapper = new TracerWrapper(config);
     const span = new SpanWrapper(tracerWrapper.startSpan("aws.lambda", options), {});
     span.finish();
-  }
 
-  const config = getConfig();
-  if (config.enhancedMetrics) {
-    const metricsListener = new MetricsListener(new KMSService(), config);
-    await metricsListener.onStartInvocation(undefined);
-    incrementErrorsMetric(metricsListener);
-    await metricsListener.onCompleteInvocation();
+    if (config.enhancedMetrics) {
+      const metricsListener = new MetricsListener(new KMSService(), config);
+      await metricsListener.onStartInvocation(undefined);
+      incrementErrorsMetric(metricsListener);
+      await metricsListener.onCompleteInvocation();
+    }
   }
 }

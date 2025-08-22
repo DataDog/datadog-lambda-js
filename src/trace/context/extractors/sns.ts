@@ -5,10 +5,10 @@ import { EventTraceExtractor } from "../extractor";
 import { SpanContextWrapper } from "../../span-context-wrapper";
 import { AMZN_TRACE_ID_ENV_VAR } from "../../xray-service";
 import { extractTraceContext, extractFromAWSTraceHeader, handleExtractionError } from "../extractor-utils";
-import { getDataStreamsEnabled } from "../../../index";
+import { TraceConfig } from "../../listener";
 
 export class SNSEventTraceExtractor implements EventTraceExtractor {
-  constructor(private tracerWrapper: TracerWrapper) {}
+  constructor(private tracerWrapper: TracerWrapper, private config: TraceConfig) {}
 
   extract(event: SNSEvent): SpanContextWrapper | null {
     let context: SpanContextWrapper | null = null;
@@ -16,7 +16,7 @@ export class SNSEventTraceExtractor implements EventTraceExtractor {
     for (const record of event?.Records || []) {
       try {
         // If we already have a context and dsm is not enabled, we can break out of the loop early
-        if (!getDataStreamsEnabled() && context) {
+        if (!this.config.dataStreamsEnabled && context) {
           break;
         }
 

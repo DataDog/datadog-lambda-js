@@ -27,11 +27,25 @@ jest.mock("dd-trace", () => {
 const spyTracerWrapper = jest.spyOn(TracerWrapper.prototype, "extract");
 
 describe("KinesisEventTraceExtractor", () => {
+  const mockConfig = {
+    autoPatchHTTP: true,
+    captureLambdaPayload: false,
+    captureLambdaPayloadMaxDepth: 10,
+    createInferredSpan: true,
+    encodeAuthorizerContext: true,
+    decodeAuthorizerContext: true,
+    mergeDatadogXrayTraces: false,
+    injectLogContext: false,
+    minColdStartTraceDuration: 3,
+    coldStartTraceSkipLib: "",
+    addSpanPointers: true,
+    dataStreamsEnabled: true,
+  };
+
   describe("extract", () => {
     beforeEach(() => {
       mockSpanContext = null;
       mockDataStreamsCheckpointer.setConsumeCheckpoint.mockClear();
-      process.env["DD_DATA_STREAMS_ENABLED"] = "true";
     });
 
     afterEach(() => {
@@ -47,7 +61,7 @@ describe("KinesisEventTraceExtractor", () => {
           priority: "1",
         },
       };
-      const tracerWrapper = new TracerWrapper();
+      const tracerWrapper = new TracerWrapper(mockConfig);
 
       const payload = {
         Records: [
@@ -70,7 +84,7 @@ describe("KinesisEventTraceExtractor", () => {
         ],
       };
 
-      const extractor = new KinesisEventTraceExtractor(tracerWrapper);
+      const extractor = new KinesisEventTraceExtractor(tracerWrapper, mockConfig);
 
       const traceContext = extractor.extract(payload);
       expect(traceContext).not.toBeNull();
@@ -108,8 +122,8 @@ describe("KinesisEventTraceExtractor", () => {
       ["valid data in kinesis", { Records: [{ kinesis: { data: "{" }, eventSourceARN: "arn:aws:kinesis:test" }] }, 0], // JSON.parse should fail
       ["_datadog in data", { Records: [{ kinesis: { data: "e30=" }, eventSourceARN: "arn:aws:kinesis:test" }] }, 1],
     ])("returns null and skips extracting when payload is missing '%s'", (_, payload, dsmCalls) => {
-      const tracerWrapper = new TracerWrapper();
-      const extractor = new KinesisEventTraceExtractor(tracerWrapper);
+      const tracerWrapper = new TracerWrapper(mockConfig);
+      const extractor = new KinesisEventTraceExtractor(tracerWrapper, mockConfig);
 
       const traceContext = extractor.extract(payload as any);
       expect(traceContext).toBeNull();
@@ -134,7 +148,7 @@ describe("KinesisEventTraceExtractor", () => {
           priority: "1",
         },
       };
-      const tracerWrapper = new TracerWrapper();
+      const tracerWrapper = new TracerWrapper(mockConfig);
 
       const makeKinesisRecord = (eventSourceARN: string, hasDatadogHeaders: boolean) => {
         const baseData = { some: "data" };
@@ -180,7 +194,7 @@ describe("KinesisEventTraceExtractor", () => {
         ],
       };
 
-      const extractor = new KinesisEventTraceExtractor(tracerWrapper);
+      const extractor = new KinesisEventTraceExtractor(tracerWrapper, mockConfig);
       const traceContext = extractor.extract(payload);
       expect(traceContext).not.toBeNull();
 
@@ -228,7 +242,7 @@ describe("KinesisEventTraceExtractor", () => {
     });
 
     it("returns null when extracted span context by tracer is null", () => {
-      const tracerWrapper = new TracerWrapper();
+      const tracerWrapper = new TracerWrapper(mockConfig);
 
       const payload = {
         Records: [
@@ -251,16 +265,13 @@ describe("KinesisEventTraceExtractor", () => {
         ],
       };
 
-      const extractor = new KinesisEventTraceExtractor(tracerWrapper);
+      const extractor = new KinesisEventTraceExtractor(tracerWrapper, mockConfig);
 
       const traceContext = extractor.extract(payload);
       expect(traceContext).toBeNull();
     });
 
     it("extracts trace context from multiple records when DSM is disabled but does not call setConsumeCheckpoint", () => {
-      // Disable DSM
-      delete process.env["DD_DATA_STREAMS_ENABLED"];
-
       mockSpanContext = {
         toTraceId: () => "667309514221035538",
         toSpanId: () => "1350735035497811828",
@@ -268,7 +279,8 @@ describe("KinesisEventTraceExtractor", () => {
           priority: "1",
         },
       };
-      const tracerWrapper = new TracerWrapper();
+      const disabledConfig = { ...mockConfig, dataStreamsEnabled: false };
+      const tracerWrapper = new TracerWrapper(disabledConfig);
 
       const makeKinesisRecord = (eventSourceARN: string, hasDatadogHeaders: boolean) => {
         const baseData = { some: "data" };
@@ -313,7 +325,7 @@ describe("KinesisEventTraceExtractor", () => {
         ],
       };
 
-      const extractor = new KinesisEventTraceExtractor(tracerWrapper);
+      const extractor = new KinesisEventTraceExtractor(tracerWrapper, mockConfig);
       const traceContext = extractor.extract(payload);
 
       // Should still extract trace context from first record

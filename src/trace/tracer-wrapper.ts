@@ -1,7 +1,7 @@
-import { getDataStreamsEnabled } from "../index";
 import { logDebug } from "../utils";
 import { SpanContextWrapper } from "./span-context-wrapper";
 import { TraceSource } from "./trace-context-service";
+import { TraceConfig } from "./listener";
 
 export interface SpanContext {
   toTraceId(): string;
@@ -28,8 +28,24 @@ export interface TraceOptions {
 // This lets a customer bring their own version of the tracer.
 export class TracerWrapper {
   private tracer: any;
+  private config: TraceConfig;
 
-  constructor() {
+  constructor(config?: TraceConfig) {
+    // Default config for tests and standalone usage
+    this.config = config || {
+      autoPatchHTTP: true,
+      captureLambdaPayload: false,
+      captureLambdaPayloadMaxDepth: 10,
+      createInferredSpan: true,
+      encodeAuthorizerContext: true,
+      decodeAuthorizerContext: true,
+      mergeDatadogXrayTraces: false,
+      injectLogContext: false,
+      minColdStartTraceDuration: 3,
+      coldStartTraceSkipLib: "",
+      addSpanPointers: true,
+      dataStreamsEnabled: false,
+    };
     try {
       // Try and use the same version of the tracing library the user has installed.
       // This handles edge cases where two versions of dd-trace are installed, one in the layer
@@ -107,7 +123,7 @@ export class TracerWrapper {
       return;
     }
 
-    if (!getDataStreamsEnabled()) {
+    if (!this.config.dataStreamsEnabled) {
       return;
     }
 

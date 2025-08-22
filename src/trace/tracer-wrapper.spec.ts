@@ -33,6 +33,21 @@ jest.mock("dd-trace", () => {
 });
 
 describe("TracerWrapper", () => {
+  const mockConfig = {
+    autoPatchHTTP: true,
+    captureLambdaPayload: false,
+    captureLambdaPayloadMaxDepth: 10,
+    createInferredSpan: true,
+    encodeAuthorizerContext: true,
+    decodeAuthorizerContext: true,
+    mergeDatadogXrayTraces: false,
+    injectLogContext: false,
+    minColdStartTraceDuration: 3,
+    coldStartTraceSkipLib: "",
+    addSpanPointers: true,
+    dataStreamsEnabled: false,
+  };
+
   beforeEach(() => {
     process.env["AWS_LAMBDA_FUNCTION_NAME"] = "my-lambda";
     mockNoTracer = false;
@@ -46,28 +61,28 @@ describe("TracerWrapper", () => {
     delete process.env["DD_DATA_STREAMS_ENABLED"];
   });
   it("isTracerAvailable should return true when dd-trace is present and initialised", () => {
-    const wrapper = new TracerWrapper();
+    const wrapper = new TracerWrapper(mockConfig);
     expect(wrapper.isTracerAvailable).toBeTruthy();
   });
   it("isTracerAvailable should return false when dd-trace is present and uninitialised", () => {
     mockNoTracer = false;
     mockTracerInitialised = false;
-    const wrapper = new TracerWrapper();
+    const wrapper = new TracerWrapper(mockConfig);
     expect(wrapper.isTracerAvailable).toBeFalsy();
   });
   it("isTracerAvailable should return false when dd-trace is absent", () => {
     mockNoTracer = true;
-    const wrapper = new TracerWrapper();
+    const wrapper = new TracerWrapper(mockConfig);
     expect(wrapper.isTracerAvailable).toBeFalsy();
   });
   it("should extract span context when dd-trace is present", () => {
-    const wrapper = new TracerWrapper();
+    const wrapper = new TracerWrapper(mockConfig);
     const extractedTraceContext = wrapper.extract({})?.spanContext;
     expect(extractedTraceContext).toBe(mockSpanContext);
   });
   it("shouldn't extract span context when dd-trace is absent", () => {
     mockNoTracer = true;
-    const wrapper = new TracerWrapper();
+    const wrapper = new TracerWrapper(mockConfig);
     expect(wrapper.extract({})).toBeNull();
   });
 
@@ -81,7 +96,7 @@ describe("TracerWrapper", () => {
         },
       }),
     };
-    const wrapper = new TracerWrapper();
+    const wrapper = new TracerWrapper(mockConfig);
     const traceContext = wrapper.traceContext();
     expect(traceContext?.toTraceId()).toBe("45678");
     expect(traceContext?.toSpanId()).toBe("1234");
@@ -89,13 +104,13 @@ describe("TracerWrapper", () => {
     expect(traceContext?.source).toBe("ddtrace");
   });
   it("should return NULL when no span is available", () => {
-    const wrapper = new TracerWrapper();
+    const wrapper = new TracerWrapper(mockConfig);
     const traceContext = wrapper.traceContext();
     expect(traceContext).toBeNull();
   });
   it("should not call internal setConsumeCheckpoint when arn is not provided", () => {
     process.env["DD_DATA_STREAMS_ENABLED"] = "true";
-    const wrapper = new TracerWrapper();
+    const wrapper = new TracerWrapper(mockConfig);
 
     wrapper.setConsumeCheckpoint({ test: "context" }, "kinesis", "");
 
@@ -103,8 +118,8 @@ describe("TracerWrapper", () => {
   });
 
   it("should call internal setConsumeCheckpoint when DD_DATA_STREAMS_ENABLED is on and arn is provided", () => {
-    process.env["DD_DATA_STREAMS_ENABLED"] = "true";
-    const wrapper = new TracerWrapper();
+    const enabledConfig = { ...mockConfig, dataStreamsEnabled: true };
+    const wrapper = new TracerWrapper(enabledConfig);
     const contextJson = { test: "context" };
     const eventType = "kinesis";
     const arn = "arn:aws:kinesis:us-east-1:123456789:stream/test-stream";
@@ -116,7 +131,7 @@ describe("TracerWrapper", () => {
 
   it("should not call internal setConsumeCheckpoint when DD_DATA_STREAMS_ENABLED is off", () => {
     process.env["DD_DATA_STREAMS_ENABLED"] = "false";
-    const wrapper = new TracerWrapper();
+    const wrapper = new TracerWrapper(mockConfig);
     const contextJson = { test: "context" };
     const eventType = "kinesis";
     const arn = "arn:aws:kinesis:us-east-1:123456789:stream/test-stream";

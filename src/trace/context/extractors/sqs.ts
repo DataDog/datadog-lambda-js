@@ -4,10 +4,10 @@ import { logDebug } from "../../../utils";
 import { EventTraceExtractor } from "../extractor";
 import { SpanContextWrapper } from "../../span-context-wrapper";
 import { extractTraceContext, extractFromAWSTraceHeader, handleExtractionError } from "../extractor-utils";
-import { getDataStreamsEnabled } from "../../../index";
+import { TraceConfig } from "../../listener";
 
 export class SQSEventTraceExtractor implements EventTraceExtractor {
-  constructor(private tracerWrapper: TracerWrapper) {}
+  constructor(private tracerWrapper: TracerWrapper, private config: TraceConfig) {}
 
   extract(event: SQSEvent): SpanContextWrapper | null {
     logDebug("SQS Extractor Being Used");
@@ -16,7 +16,7 @@ export class SQSEventTraceExtractor implements EventTraceExtractor {
     for (const record of event?.Records || []) {
       try {
         // If we already have a context and dsm is not enabled, we can break out of the loop early
-        if (!getDataStreamsEnabled() && context) {
+        if (!this.config.dataStreamsEnabled && context) {
           break;
         }
 

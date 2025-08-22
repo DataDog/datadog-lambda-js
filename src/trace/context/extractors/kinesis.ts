@@ -3,10 +3,10 @@ import { logDebug } from "../../../utils";
 import { EventTraceExtractor } from "../extractor";
 import { TracerWrapper } from "../../tracer-wrapper";
 import { SpanContextWrapper } from "../../span-context-wrapper";
-import { getDataStreamsEnabled } from "../../../index";
+import { TraceConfig } from "../../listener";
 
 export class KinesisEventTraceExtractor implements EventTraceExtractor {
-  constructor(private tracerWrapper: TracerWrapper) {}
+  constructor(private tracerWrapper: TracerWrapper, private config: TraceConfig) {}
 
   extract(event: KinesisStreamEvent): SpanContextWrapper | null {
     let context: SpanContextWrapper | null = null;
@@ -14,7 +14,7 @@ export class KinesisEventTraceExtractor implements EventTraceExtractor {
     for (const record of event?.Records || []) {
       try {
         // If we already have a context and dsm is not enabled, we can break out of the loop early
-        if (!getDataStreamsEnabled() && context) {
+        if (!this.config.dataStreamsEnabled && context) {
           break;
         }
 

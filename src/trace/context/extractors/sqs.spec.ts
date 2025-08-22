@@ -71,12 +71,26 @@ jest.mock("dd-trace", () => {
 const spyTracerWrapper = jest.spyOn(TracerWrapper.prototype, "extract");
 
 describe("SQSEventTraceExtractor", () => {
+  const mockConfig = {
+    autoPatchHTTP: true,
+    captureLambdaPayload: false,
+    captureLambdaPayloadMaxDepth: 10,
+    createInferredSpan: true,
+    encodeAuthorizerContext: true,
+    decodeAuthorizerContext: true,
+    mergeDatadogXrayTraces: false,
+    injectLogContext: false,
+    minColdStartTraceDuration: 3,
+    coldStartTraceSkipLib: "",
+    addSpanPointers: true,
+    dataStreamsEnabled: true,
+  };
+
   describe("extract", () => {
     beforeEach(() => {
       mockSpanContext = null;
       spyTracerWrapper.mockClear();
       mockDataStreamsCheckpointer.setConsumeCheckpoint.mockClear();
-      process.env["DD_DATA_STREAMS_ENABLED"] = "true";
     });
 
     afterEach(() => {
@@ -92,7 +106,7 @@ describe("SQSEventTraceExtractor", () => {
           priority: "1",
         },
       };
-      const tracerWrapper = new TracerWrapper();
+      const tracerWrapper = new TracerWrapper(mockConfig);
 
       const payload: SQSEvent = {
         Records: [
@@ -123,7 +137,7 @@ describe("SQSEventTraceExtractor", () => {
         ],
       };
 
-      const extractor = new SQSEventTraceExtractor(tracerWrapper);
+      const extractor = new SQSEventTraceExtractor(tracerWrapper, mockConfig);
 
       const traceContext = extractor.extract(payload);
       expect(traceContext).not.toBeNull();
@@ -163,7 +177,7 @@ describe("SQSEventTraceExtractor", () => {
           priority: "1",
         },
       };
-      const tracerWrapper = new TracerWrapper();
+      const tracerWrapper = new TracerWrapper(mockConfig);
 
       const ddHeaders = {
         "x-datadog-trace-id": "1234567890",
@@ -183,7 +197,7 @@ describe("SQSEventTraceExtractor", () => {
         ],
       };
 
-      const extractor = new SQSEventTraceExtractor(tracerWrapper);
+      const extractor = new SQSEventTraceExtractor(tracerWrapper, mockConfig);
       const traceContext = extractor.extract(payload);
       expect(traceContext).not.toBeNull();
 
@@ -209,8 +223,8 @@ describe("SQSEventTraceExtractor", () => {
       ["_datadog in messageAttributes", { Records: [{ messageAttributes: {}, eventSourceARN: "arn:aws:sqs:us-east-1:MyQueue" }] }, 1],
       ["stringValue in _datadog", { Records: [{ messageAttributes: { _datadog: {} }, eventSourceARN: "arn:aws:sqs:us-east-1:MyQueue" }] }, 1],
     ])("returns null and skips extracting when payload is missing '%s'", (_, payload, dsmCalls) => {
-      const tracerWrapper = new TracerWrapper();
-      const extractor = new SQSEventTraceExtractor(tracerWrapper);
+      const tracerWrapper = new TracerWrapper(mockConfig);
+      const extractor = new SQSEventTraceExtractor(tracerWrapper, mockConfig);
 
       const traceContext = extractor.extract(payload as any);
       expect(traceContext).toBeNull();
@@ -228,7 +242,7 @@ describe("SQSEventTraceExtractor", () => {
     });
 
     it("returns null when extracted span context by tracer is null, but still sets a checkpoint", () => {
-      const tracerWrapper = new TracerWrapper();
+      const tracerWrapper = new TracerWrapper(mockConfig);
 
       const payload: SQSEvent = {
         Records: [
@@ -239,7 +253,7 @@ describe("SQSEventTraceExtractor", () => {
           }),
         ],
       };
-      const extractor = new SQSEventTraceExtractor(tracerWrapper);
+      const extractor = new SQSEventTraceExtractor(tracerWrapper, mockConfig);
 
       const traceContext = extractor.extract(payload);
       expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledWith(
@@ -252,7 +266,7 @@ describe("SQSEventTraceExtractor", () => {
     });
 
     it("extracts trace context from AWSTraceHeader with valid payload", () => {
-      const tracerWrapper = new TracerWrapper();
+      const tracerWrapper = new TracerWrapper(mockConfig);
       const payload: SQSEvent = {
         Records: [
           makeRecord({
@@ -266,7 +280,7 @@ describe("SQSEventTraceExtractor", () => {
         ],
       };
 
-      const extractor = new SQSEventTraceExtractor(tracerWrapper);
+      const extractor = new SQSEventTraceExtractor(tracerWrapper, mockConfig);
 
       const traceContext = extractor.extract(payload);
       expect(traceContext).not.toBeNull();
@@ -289,7 +303,7 @@ describe("SQSEventTraceExtractor", () => {
           priority: "1",
         },
       };
-      const tracerWrapper = new TracerWrapper();
+      const tracerWrapper = new TracerWrapper(mockConfig);
       const makeDdHeaders = (traceId: string, parentId: string) => ({
         "x-datadog-trace-id": traceId,
         "x-datadog-parent-id": parentId,
@@ -299,7 +313,7 @@ describe("SQSEventTraceExtractor", () => {
       });
       const eventSourceARN = "arn:aws:sqs:us-east-1:123456789012:queue-1";
 
-      const extractor = new SQSEventTraceExtractor(tracerWrapper);
+      const extractor = new SQSEventTraceExtractor(tracerWrapper, mockConfig);
       const firstDdHeaders = makeDdHeaders("abc", "def");
       const payload: SQSEvent = {
         Records: [
@@ -377,7 +391,7 @@ describe("SQSEventTraceExtractor", () => {
       // Reset StepFunctionContextService instance
       StepFunctionContextService["_instance"] = undefined as any;
 
-      const tracerWrapper = new TracerWrapper();
+      const tracerWrapper = new TracerWrapper(mockConfig);
 
       const payload: SQSEvent = {
         Records: [
@@ -410,7 +424,7 @@ describe("SQSEventTraceExtractor", () => {
         ],
       };
 
-      const extractor = new SQSEventTraceExtractor(tracerWrapper);
+      const extractor = new SQSEventTraceExtractor(tracerWrapper, mockConfig);
 
       const traceContext = extractor.extract(payload);
       expect(traceContext).not.toBeNull();
@@ -450,9 +464,6 @@ describe("SQSEventTraceExtractor", () => {
     });
 
     it("extracts trace context from multiple records when DSM is disabled but does not call setConsumeCheckpoint", () => {
-      // Disable DSM
-      delete process.env["DD_DATA_STREAMS_ENABLED"];
-
       mockSpanContext = {
         toTraceId: () => "1234567890",
         toSpanId: () => "0987654321",
@@ -460,7 +471,8 @@ describe("SQSEventTraceExtractor", () => {
           priority: "1",
         },
       };
-      const tracerWrapper = new TracerWrapper();
+      const disabledConfig = { ...mockConfig, dataStreamsEnabled: false };
+      const tracerWrapper = new TracerWrapper(disabledConfig);
 
       const firstDdHeaders = {
         "x-datadog-trace-id": "1234567890",
@@ -496,7 +508,7 @@ describe("SQSEventTraceExtractor", () => {
         ],
       };
 
-      const extractor = new SQSEventTraceExtractor(tracerWrapper);
+      const extractor = new SQSEventTraceExtractor(tracerWrapper, mockConfig);
       const traceContext = extractor.extract(payload);
 
       // Should still extract trace context from first record

@@ -98,7 +98,7 @@ export class TraceListener {
   }
 
   constructor(private config: TraceConfig) {
-    this.tracerWrapper = new TracerWrapper();
+    this.tracerWrapper = new TracerWrapper(config);
     this.contextService = new TraceContextService(this.tracerWrapper, this.config);
     this.inferrer = new SpanInferrer(this.tracerWrapper);
   }
