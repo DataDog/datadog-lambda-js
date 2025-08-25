@@ -51,10 +51,6 @@ describe("SNSEventTraceExtractor", () => {
       mockDataStreamsCheckpointer.setConsumeCheckpoint.mockClear();
     });
 
-    afterEach(() => {
-      jest.resetModules();
-    });
-
     it("extracts trace context with valid payload with String Value", () => {
       mockSpanContext = {
         toTraceId: () => "6966585609680374559",
@@ -63,7 +59,7 @@ describe("SNSEventTraceExtractor", () => {
           priority: "1",
         },
       };
-      const tracerWrapper = new TracerWrapper(mockConfig);
+      const tracerWrapper = new TracerWrapper();
 
       const payload: SNSEvent = {
         Records: [
@@ -138,7 +134,7 @@ describe("SNSEventTraceExtractor", () => {
           priority: "1",
         },
       };
-      const tracerWrapper = new TracerWrapper(mockConfig);
+      const tracerWrapper = new TracerWrapper();
 
       const payload: SNSEvent = {
         Records: [
@@ -212,7 +208,7 @@ describe("SNSEventTraceExtractor", () => {
       ["_datadog in MessageAttributes", { Records: [{ Sns: { MessageAttributes: { text: "Hello, world!" }, TopicArn: "arn:aws:sns:eu-west-1:test" } }] }, 1],
       ["Value in _datadog", { Records: [{ Sns: { MessageAttributes: { _datadog: {} }, TopicArn: "arn:aws:sns:eu-west-1:test" } }] }, 1],
     ])("returns null and skips extracting when payload is missing '%s'", (_, payload, dsmCalls) => {
-      const tracerWrapper = new TracerWrapper(mockConfig);
+      const tracerWrapper = new TracerWrapper();
       const extractor = new SNSEventTraceExtractor(tracerWrapper, mockConfig);
 
       const traceContext = extractor.extract(payload as any);
@@ -231,7 +227,7 @@ describe("SNSEventTraceExtractor", () => {
     });
 
     it("returns null when extracted span context by tracer is null", () => {
-      const tracerWrapper = new TracerWrapper(mockConfig);
+      const tracerWrapper = new TracerWrapper();
 
       const payload: SNSEvent = {
         Records: [
@@ -272,7 +268,7 @@ describe("SNSEventTraceExtractor", () => {
     });
 
     it("extracts trace context from AWSTraceHeader when no tracecontext found from payload", () => {
-      const tracerWrapper = new TracerWrapper(mockConfig);
+      const tracerWrapper = new TracerWrapper();
       const payload: SNSEvent = {
         Records: [
           {
@@ -327,7 +323,7 @@ describe("SNSEventTraceExtractor", () => {
       // Reset StepFunctionContextService instance
       StepFunctionContextService["_instance"] = undefined as any;
 
-      const tracerWrapper = new TracerWrapper(mockConfig);
+      const tracerWrapper = new TracerWrapper();
 
       const payload: SNSEvent = {
         Records: [
@@ -383,7 +379,7 @@ describe("SNSEventTraceExtractor", () => {
           priority: "1",
         },
       };
-      const tracerWrapper = new TracerWrapper(mockConfig);
+      const tracerWrapper = new TracerWrapper();
 
       const makeSNSRecord = (messageId: string, topicArn: string, datadogHeaders: Record<string, string> | null) => {
         const messageAttributes: any = {};
@@ -522,8 +518,7 @@ describe("SNSEventTraceExtractor", () => {
           priority: "1",
         },
       };
-      const disabledConfig = { ...mockConfig, dataStreamsEnabled: false };
-      const tracerWrapper = new TracerWrapper(disabledConfig);
+      const tracerWrapper = new TracerWrapper();
 
       const makeSNSRecord = (messageId: string, topicArn: string, datadogHeaders: Record<string, string> | null) => {
         const messageAttributes: any = {};
@@ -581,7 +576,8 @@ describe("SNSEventTraceExtractor", () => {
         ],
       };
 
-      const extractor = new SNSEventTraceExtractor(tracerWrapper, mockConfig);
+      const disabledConfig = { ...mockConfig, dataStreamsEnabled: false };
+      const extractor = new SNSEventTraceExtractor(tracerWrapper, disabledConfig);
       const traceContext = extractor.extract(payload);
 
       // Should still extract trace context from first record

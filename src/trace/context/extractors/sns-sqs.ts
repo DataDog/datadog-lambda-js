@@ -1,4 +1,4 @@
-import { SQSEvent } from "aws-lambda";
+import { SQSEvent, SQSRecord } from "aws-lambda";
 import { TracerWrapper } from "../../tracer-wrapper";
 import { logDebug } from "../../../utils";
 import { EventTraceExtractor } from "../extractor";
@@ -10,33 +10,17 @@ export class SNSSQSEventTraceExtractor implements EventTraceExtractor {
   constructor(private tracerWrapper: TracerWrapper, private config: TraceConfig) {}
 
   extract(event: SQSEvent): SpanContextWrapper | null {
-    // Set DSM consume checkpoints if enabled
+    // Set DSM consume checkpoints if enabled and capture first record's headers
+    let firstRecordHeaders: Record<string, string> | null = null;
     if (this.config.dataStreamsEnabled) {
-      for (const record of event?.Records || []) {
+      for (let i = 0; i < (event?.Records || []).length; i++) {
+        const record = event.Records[i];
         try {
-          let headers = null;
-          // Try to extract trace context from SNS wrapped in SQS
-          const body = record.body;
-          if (body) {
-            const parsedBody = JSON.parse(body);
-            const snsMessageAttribute = parsedBody?.MessageAttributes?._datadog;
-            if (snsMessageAttribute?.Value) {
-              if (snsMessageAttribute.Type === "String") {
-                headers = JSON.parse(snsMessageAttribute.Value);
-              } else {
-                // Try decoding base64 values
-                const decodedValue = Buffer.from(snsMessageAttribute.Value, "base64").toString("ascii");
-                headers = JSON.parse(decodedValue);
-              }
-            }
-          }
-
-          // Check SQS message attributes as a fallback
-          if (!headers) {
-            const sqsMessageAttribute = record.messageAttributes?._datadog;
-            if (sqsMessageAttribute?.stringValue) {
-              headers = JSON.parse(sqsMessageAttribute.stringValue);
-            }
+          const headers = this.getParsedRecordHeaders(record);
+          
+          // Store first record's headers for trace context extraction
+          if (i === 0) {
+            firstRecordHeaders = headers;
           }
 
           // Set a checkpoint for the record, even if we don't have headers

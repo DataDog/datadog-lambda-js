@@ -473,16 +473,16 @@ export async function emitTelemetryOnErrorOutsideHandler(
       },
       startTime,
     };
-    const config = getConfig();
-    const tracerWrapper = new TracerWrapper(config);
+    const tracerWrapper = new TracerWrapper();
     const span = new SpanWrapper(tracerWrapper.startSpan("aws.lambda", options), {});
     span.finish();
+  }
 
-    if (config.enhancedMetrics) {
-      const metricsListener = new MetricsListener(new KMSService(), config);
-      await metricsListener.onStartInvocation(undefined);
-      incrementErrorsMetric(metricsListener);
-      await metricsListener.onCompleteInvocation();
-    }
+  const config = getConfig();
+  if (config.enhancedMetrics) {
+    const metricsListener = new MetricsListener(new KMSService(), config);
+    await metricsListener.onStartInvocation(undefined);
+    incrementErrorsMetric(metricsListener);
+    await metricsListener.onCompleteInvocation();
   }
 }

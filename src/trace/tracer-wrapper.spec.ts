@@ -61,28 +61,28 @@ describe("TracerWrapper", () => {
     delete process.env["DD_DATA_STREAMS_ENABLED"];
   });
   it("isTracerAvailable should return true when dd-trace is present and initialised", () => {
-    const wrapper = new TracerWrapper(mockConfig);
+    const wrapper = new TracerWrapper();
     expect(wrapper.isTracerAvailable).toBeTruthy();
   });
   it("isTracerAvailable should return false when dd-trace is present and uninitialised", () => {
     mockNoTracer = false;
     mockTracerInitialised = false;
-    const wrapper = new TracerWrapper(mockConfig);
+    const wrapper = new TracerWrapper();
     expect(wrapper.isTracerAvailable).toBeFalsy();
   });
   it("isTracerAvailable should return false when dd-trace is absent", () => {
     mockNoTracer = true;
-    const wrapper = new TracerWrapper(mockConfig);
+    const wrapper = new TracerWrapper();
     expect(wrapper.isTracerAvailable).toBeFalsy();
   });
   it("should extract span context when dd-trace is present", () => {
-    const wrapper = new TracerWrapper(mockConfig);
+    const wrapper = new TracerWrapper();
     const extractedTraceContext = wrapper.extract({})?.spanContext;
     expect(extractedTraceContext).toBe(mockSpanContext);
   });
   it("shouldn't extract span context when dd-trace is absent", () => {
     mockNoTracer = true;
-    const wrapper = new TracerWrapper(mockConfig);
+    const wrapper = new TracerWrapper();
     expect(wrapper.extract({})).toBeNull();
   });
 
@@ -96,7 +96,7 @@ describe("TracerWrapper", () => {
         },
       }),
     };
-    const wrapper = new TracerWrapper(mockConfig);
+    const wrapper = new TracerWrapper();
     const traceContext = wrapper.traceContext();
     expect(traceContext?.toTraceId()).toBe("45678");
     expect(traceContext?.toSpanId()).toBe("1234");
@@ -104,22 +104,21 @@ describe("TracerWrapper", () => {
     expect(traceContext?.source).toBe("ddtrace");
   });
   it("should return NULL when no span is available", () => {
-    const wrapper = new TracerWrapper(mockConfig);
+    const wrapper = new TracerWrapper();
     const traceContext = wrapper.traceContext();
     expect(traceContext).toBeNull();
   });
   it("should not call internal setConsumeCheckpoint when arn is not provided", () => {
     process.env["DD_DATA_STREAMS_ENABLED"] = "true";
-    const wrapper = new TracerWrapper(mockConfig);
+    const wrapper = new TracerWrapper();
 
     wrapper.setConsumeCheckpoint({ test: "context" }, "kinesis", "");
 
     expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).not.toHaveBeenCalled();
   });
 
-  it("should call internal setConsumeCheckpoint when DD_DATA_STREAMS_ENABLED is on and arn is provided", () => {
-    const enabledConfig = { ...mockConfig, dataStreamsEnabled: true };
-    const wrapper = new TracerWrapper(enabledConfig);
+  it("should call internal setConsumeCheckpoint when arn is provided", () => {
+    const wrapper = new TracerWrapper();
     const contextJson = { test: "context" };
     const eventType = "kinesis";
     const arn = "arn:aws:kinesis:us-east-1:123456789:stream/test-stream";
@@ -127,17 +126,5 @@ describe("TracerWrapper", () => {
     wrapper.setConsumeCheckpoint(contextJson, eventType, arn);
 
     expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledWith(eventType, arn, contextJson, false);
-  });
-
-  it("should not call internal setConsumeCheckpoint when DD_DATA_STREAMS_ENABLED is off", () => {
-    process.env["DD_DATA_STREAMS_ENABLED"] = "false";
-    const wrapper = new TracerWrapper(mockConfig);
-    const contextJson = { test: "context" };
-    const eventType = "kinesis";
-    const arn = "arn:aws:kinesis:us-east-1:123456789:stream/test-stream";
-
-    wrapper.setConsumeCheckpoint(contextJson, eventType, arn);
-
-    expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).not.toHaveBeenCalled();
   });
 });
