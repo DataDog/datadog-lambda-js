@@ -473,7 +473,7 @@ describe("SNSSQSEventTraceExtractor", () => {
       );
     });
 
-    it("extracts trace context from multiple records when DSM is disabled but does not call setConsumeCheckpoint", () => {
+    it("extracts trace context when DSM is disabled and does not call setConsumeCheckpoint", () => {
       mockSpanContext = {
         toTraceId: () => "2776434475358637757",
         toSpanId: () => "4493917105238181843",

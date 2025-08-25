@@ -510,7 +510,7 @@ describe("SNSEventTraceExtractor", () => {
       );
     });
 
-    it("extracts trace context from multiple records when DSM is disabled but does not call setConsumeCheckpoint", () => {
+    it("extracts trace context when DSM is disabled and does not call setConsumeCheckpoint", () => {
       mockSpanContext = {
         toTraceId: () => "6966585609680374559",
         toSpanId: () => "4297634551783724228",

@@ -266,7 +266,7 @@ describe("KinesisEventTraceExtractor", () => {
       expect(traceContext).toBeNull();
     });
 
-    it("extracts trace context from multiple records when DSM is disabled but does not call setConsumeCheckpoint", () => {
+    it("extracts trace context when DSM is disabled and does not call setConsumeCheckpoint", () => {
       mockSpanContext = {
         toTraceId: () => "667309514221035538",
         toSpanId: () => "1350735035497811828",
