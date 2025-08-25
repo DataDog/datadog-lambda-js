@@ -1,4 +1,4 @@
-import { KinesisStreamEvent } from "aws-lambda";
+import { KinesisStreamEvent, KinesisStreamRecord } from "aws-lambda";
 import { logDebug } from "../../../utils";
 import { EventTraceExtractor } from "../extractor";
 import { TracerWrapper } from "../../tracer-wrapper";
@@ -9,14 +9,19 @@ export class KinesisEventTraceExtractor implements EventTraceExtractor {
   constructor(private tracerWrapper: TracerWrapper, private config: TraceConfig) {}
 
   extract(event: KinesisStreamEvent): SpanContextWrapper | null {
-    // Set DSM consume checkpoints if enabled
+    // Set DSM consume checkpoints if enabled and capture first record's headers
+    let firstRecordHeaders: Record<string, string> | null = null;
     if (this.config.dataStreamsEnabled) {
-      for (const record of event?.Records || []) {
+      for (let i = 0; i < (event?.Records || []).length; i++) {
+        const record = event.Records[i];
         try {
-          const kinesisDataForRecord = record?.kinesis?.data;
-          const decodedData = Buffer.from(kinesisDataForRecord, "base64").toString("ascii");
-          const parsedBody = JSON.parse(decodedData);
-          const headers = parsedBody?._datadog ?? null;
+          const headers = this.getParsedRecordHeaders(record);
+
+          // Store first record's headers for trace context extraction
+          if (i === 0) {
+            firstRecordHeaders = headers;
+          }
+
           this.tracerWrapper.setConsumeCheckpoint(headers, "kinesis", record.eventSourceARN);
         } catch (error) {
           if (error instanceof Error) {
@@ -30,14 +35,16 @@ export class KinesisEventTraceExtractor implements EventTraceExtractor {
     if (kinesisData === undefined) return null;
 
     try {
-      const decodedData = Buffer.from(kinesisData, "base64").toString("ascii");
-      const parsedBody = JSON.parse(decodedData);
-      const headers = parsedBody?._datadog;
-      if (headers) {
-        const traceContext = this.tracerWrapper.extract(headers);
+      // Use already parsed headers from DSM if available, otherwise parse now
+      if (!firstRecordHeaders) {
+        firstRecordHeaders = this.getParsedRecordHeaders(event?.Records?.[0]);
+      }
+
+      if (firstRecordHeaders) {
+        const traceContext = this.tracerWrapper.extract(firstRecordHeaders);
         if (traceContext === null) return null;
 
-        logDebug(`Extracted trace context from Kinesis event`, { traceContext, headers });
+        logDebug(`Extracted trace context from Kinesis event`, { traceContext, headers: firstRecordHeaders });
         return traceContext;
       }
     } catch (error) {
@@ -47,5 +54,24 @@ export class KinesisEventTraceExtractor implements EventTraceExtractor {
     }
 
     return null;
+  }
+
+  private getParsedRecordHeaders(record: KinesisStreamRecord | undefined): Record<string, string> | null {
+    if (!record) {
+      return null;
+    }
+
+    try {
+      const kinesisDataForRecord = record?.kinesis?.data;
+      if (!kinesisDataForRecord) {
+        return null;
+      }
+
+      const decodedData = Buffer.from(kinesisDataForRecord, "base64").toString("ascii");
+      const parsedBody = JSON.parse(decodedData);
+      return parsedBody?._datadog ?? null;
+    } catch (error) {
+      return null;
+    }
   }
 }

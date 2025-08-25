@@ -1,4 +1,4 @@
-import { SNSEvent } from "aws-lambda";
+import { SNSEvent, SNSEventRecord } from "aws-lambda";
 import { TracerWrapper } from "../../tracer-wrapper";
 import { logDebug } from "../../../utils";
 import { EventTraceExtractor } from "../extractor";
@@ -11,26 +11,21 @@ export class SNSEventTraceExtractor implements EventTraceExtractor {
   constructor(private tracerWrapper: TracerWrapper, private config: TraceConfig) {}
 
   extract(event: SNSEvent): SpanContextWrapper | null {
-    // Set DSM consume checkpoints if enabled
+    // Set DSM consume checkpoints if enabled and capture first record's headers
+    let firstRecordHeaders: Record<string, string> | null = null;
     if (this.config.dataStreamsEnabled) {
-      for (const record of event?.Records || []) {
+      for (let i = 0; i < (event?.Records || []).length; i++) {
+        const record = event.Records[i];
         try {
-          let headers = null;
-          const sourceARN = record.Sns?.TopicArn;
-          // First try to extract trace context from message attributes
-          const messageAttribute = record.Sns?.MessageAttributes?._datadog;
-          if (messageAttribute?.Value) {
-            if (messageAttribute.Type === "String") {
-              headers = JSON.parse(messageAttribute.Value);
-            } else {
-              // Try decoding base64 values
-              const decodedValue = Buffer.from(messageAttribute.Value, "base64").toString("ascii");
-              headers = JSON.parse(decodedValue);
-            }
+          const headers = this.getParsedRecordHeaders(record);
+
+          // Store first record's headers for trace context extraction
+          if (i === 0) {
+            firstRecordHeaders = headers;
           }
 
           // Set a checkpoint for the record, even if we don't have headers
-          this.tracerWrapper.setConsumeCheckpoint(headers, "sns", sourceARN);
+          this.tracerWrapper.setConsumeCheckpoint(headers, "sns", record.Sns?.TopicArn);
         } catch (error) {
           handleExtractionError(error, "SNS DSM checkpoint");
         }
@@ -38,19 +33,13 @@ export class SNSEventTraceExtractor implements EventTraceExtractor {
     }
 
     try {
-      // First try to extract trace context from message attributes
-      const messageAttribute = event?.Records?.[0]?.Sns?.MessageAttributes?._datadog;
-      if (messageAttribute?.Value) {
-        let headers;
-        if (messageAttribute.Type === "String") {
-          headers = JSON.parse(messageAttribute.Value);
-        } else {
-          // Try decoding base64 values
-          const decodedValue = Buffer.from(messageAttribute.Value, "base64").toString("ascii");
-          headers = JSON.parse(decodedValue);
-        }
+      // Use already parsed headers from DSM if available, otherwise parse now
+      if (!firstRecordHeaders) {
+        firstRecordHeaders = this.getParsedRecordHeaders(event?.Records?.[0]);
+      }
 
-        const traceContext = extractTraceContext(headers, this.tracerWrapper);
+      if (firstRecordHeaders) {
+        const traceContext = extractTraceContext(firstRecordHeaders, this.tracerWrapper);
         if (traceContext) {
           return traceContext;
         }
@@ -67,5 +56,28 @@ export class SNSEventTraceExtractor implements EventTraceExtractor {
     }
 
     return null;
+  }
+
+  private getParsedRecordHeaders(record: SNSEventRecord | undefined): Record<string, string> | null {
+    if (!record) {
+      return null;
+    }
+    try {
+      // First try to extract trace context from message attributes
+      const messageAttribute = record.Sns?.MessageAttributes?._datadog;
+      if (messageAttribute?.Value) {
+        if (messageAttribute.Type === "String") {
+          return JSON.parse(messageAttribute.Value);
+        } else {
+          // Try decoding base64 values
+          const decodedValue = Buffer.from(messageAttribute.Value, "base64").toString("ascii");
+          return JSON.parse(decodedValue);
+        }
+      }
+
+      return null;
+    } catch (error) {
+      return null;
+    }
   }
 }

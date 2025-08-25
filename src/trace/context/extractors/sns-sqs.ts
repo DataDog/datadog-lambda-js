@@ -17,7 +17,7 @@ export class SNSSQSEventTraceExtractor implements EventTraceExtractor {
         const record = event.Records[i];
         try {
           const headers = this.getParsedRecordHeaders(record);
-          
+
           // Store first record's headers for trace context extraction
           if (i === 0) {
             firstRecordHeaders = headers;
@@ -33,37 +33,17 @@ export class SNSSQSEventTraceExtractor implements EventTraceExtractor {
 
     logDebug("SNS-SQS Extractor Being Used");
     try {
-      // Try to extract trace context from SNS wrapped in SQS
-      const body = event?.Records?.[0]?.body;
-      if (body) {
-        const parsedBody = JSON.parse(body);
-        const snsMessageAttribute = parsedBody?.MessageAttributes?._datadog;
-        if (snsMessageAttribute?.Value) {
-          let headers;
-          if (snsMessageAttribute.Type === "String") {
-            headers = JSON.parse(snsMessageAttribute.Value);
-          } else {
-            // Try decoding base64 values
-            const decodedValue = Buffer.from(snsMessageAttribute.Value, "base64").toString("ascii");
-            headers = JSON.parse(decodedValue);
-          }
-
-          const traceContext = extractTraceContext(headers, this.tracerWrapper);
-          if (traceContext) {
-            return traceContext;
-          }
-          logDebug("Failed to extract trace context from SNS-SQS event");
-        }
+      // Use already parsed headers from DSM if available, otherwise parse now
+      if (!firstRecordHeaders) {
+        firstRecordHeaders = this.getParsedRecordHeaders(event?.Records?.[0]);
       }
 
-      // Check SQS message attributes as a fallback
-      const sqsMessageAttribute = event?.Records?.[0]?.messageAttributes?._datadog;
-      if (sqsMessageAttribute?.stringValue) {
-        const headers = JSON.parse(sqsMessageAttribute.stringValue);
-        const traceContext = extractTraceContext(headers, this.tracerWrapper);
+      if (firstRecordHeaders) {
+        const traceContext = extractTraceContext(firstRecordHeaders, this.tracerWrapper);
         if (traceContext) {
           return traceContext;
         }
+        logDebug("Failed to extract trace context from SNS-SQS event");
       }
 
       // Else try to extract trace context from attributes.AWSTraceHeader
@@ -77,5 +57,38 @@ export class SNSSQSEventTraceExtractor implements EventTraceExtractor {
     }
 
     return null;
+  }
+
+  private getParsedRecordHeaders(record: SQSRecord | undefined): Record<string, string> | null {
+    if (!record) {
+      return null;
+    }
+    try {
+      // Try to extract trace context from SNS wrapped in SQS
+      const body = record.body;
+      if (body) {
+        const parsedBody = JSON.parse(body);
+        const snsMessageAttribute = parsedBody?.MessageAttributes?._datadog;
+        if (snsMessageAttribute?.Value) {
+          if (snsMessageAttribute.Type === "String") {
+            return JSON.parse(snsMessageAttribute.Value);
+          } else {
+            // Try decoding base64 values
+            const decodedValue = Buffer.from(snsMessageAttribute.Value, "base64").toString("ascii");
+            return JSON.parse(decodedValue);
+          }
+        }
+      }
+
+      // Check SQS message attributes as a fallback
+      const sqsMessageAttribute = record.messageAttributes?._datadog;
+      if (sqsMessageAttribute?.stringValue) {
+        return JSON.parse(sqsMessageAttribute.stringValue);
+      }
+
+      return null;
+    } catch (error) {
+      return null;
+    }
   }
 }
