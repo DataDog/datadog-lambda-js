@@ -4,6 +4,15 @@ import { SNSEventTraceExtractor } from "./sns";
 import { StepFunctionContextService } from "../../step-function-service";
 
 let mockSpanContext: any = null;
+let mockDataStreamsCheckpointer: any = {
+  setConsumeCheckpoint: jest.fn(),
+};
+
+jest.mock("dd-trace/packages/dd-trace/src/datastreams/checkpointer", () => {
+  return {
+    DataStreamsCheckpointer: jest.fn().mockImplementation(() => mockDataStreamsCheckpointer),
+  };
+});
 
 // Mocking extract is needed, due to dd-trace being a No-op
 // if the detected environment is testing. This is expected, since
@@ -14,19 +23,32 @@ jest.mock("dd-trace", () => {
     ...ddTrace,
     _tracer: { _service: {} },
     extract: (_carrier: any, _headers: any) => mockSpanContext,
+    dataStreamsCheckpointer: mockDataStreamsCheckpointer,
   };
 });
 const spyTracerWrapper = jest.spyOn(TracerWrapper.prototype, "extract");
 
 describe("SNSEventTraceExtractor", () => {
+  const mockConfig = {
+    autoPatchHTTP: true,
+    captureLambdaPayload: false,
+    captureLambdaPayloadMaxDepth: 10,
+    createInferredSpan: true,
+    encodeAuthorizerContext: true,
+    decodeAuthorizerContext: true,
+    mergeDatadogXrayTraces: false,
+    injectLogContext: false,
+    minColdStartTraceDuration: 3,
+    coldStartTraceSkipLib: "",
+    addSpanPointers: true,
+    dataStreamsEnabled: true,
+  };
+
   describe("extract", () => {
     beforeEach(() => {
       mockSpanContext = null;
       spyTracerWrapper.mockClear();
-    });
-
-    afterEach(() => {
-      jest.resetModules();
+      mockDataStreamsCheckpointer.setConsumeCheckpoint.mockClear();
     });
 
     it("extracts trace context with valid payload with String Value", () => {
@@ -64,7 +86,7 @@ describe("SNSEventTraceExtractor", () => {
                 _datadog: {
                   Type: "String",
                   Value:
-                    '{"x-datadog-trace-id":"6966585609680374559","x-datadog-parent-id":"4297634551783724228","x-datadog-sampled":"1","x-datadog-sampling-priority":"1"}',
+                    '{"x-datadog-trace-id":"6966585609680374559","x-datadog-parent-id":"4297634551783724228","x-datadog-sampled":"1","x-datadog-sampling-priority":"1","dd-pathway-ctx-base64":"some-base64-encoded-context"}',
                 },
               },
             },
@@ -72,7 +94,7 @@ describe("SNSEventTraceExtractor", () => {
         ],
       };
 
-      const extractor = new SNSEventTraceExtractor(tracerWrapper);
+      const extractor = new SNSEventTraceExtractor(tracerWrapper, mockConfig);
 
       const traceContext = extractor.extract(payload);
       expect(traceContext).not.toBeNull();
@@ -82,12 +104,26 @@ describe("SNSEventTraceExtractor", () => {
         "x-datadog-sampled": "1",
         "x-datadog-sampling-priority": "1",
         "x-datadog-trace-id": "6966585609680374559",
+        "dd-pathway-ctx-base64": "some-base64-encoded-context",
       });
 
       expect(traceContext?.toTraceId()).toBe("6966585609680374559");
       expect(traceContext?.toSpanId()).toBe("4297634551783724228");
       expect(traceContext?.sampleMode()).toBe("1");
       expect(traceContext?.source).toBe("event");
+
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledWith(
+        "sns",
+        "arn:aws:sns:eu-west-1:601427279990:aj-js-library-test-dev-solo-topic",
+        {
+          "x-datadog-parent-id": "4297634551783724228",
+          "x-datadog-sampled": "1",
+          "x-datadog-sampling-priority": "1",
+          "x-datadog-trace-id": "6966585609680374559",
+          "dd-pathway-ctx-base64": "some-base64-encoded-context",
+        },
+        false,
+      );
     });
 
     it("extracts trace context with valid payload with Binary Value", () => {
@@ -125,7 +161,7 @@ describe("SNSEventTraceExtractor", () => {
                 _datadog: {
                   Type: "Binary",
                   Value:
-                    "eyJ4LWRhdGFkb2ctdHJhY2UtaWQiOiI3MTAyMjkxNjI4NDQzMTM0OTE5IiwieC1kYXRhZG9nLXBhcmVudC1pZCI6IjQyNDc1NTAxMDE2NDg2MTg2MTgiLCJ4LWRhdGFkb2ctc2FtcGxpbmctcHJpb3JpdHkiOiIxIn0=",
+                    "eyJ4LWRhdGFkb2ctdHJhY2UtaWQiOiI3MTAyMjkxNjI4NDQzMTM0OTE5IiwieC1kYXRhZG9nLXBhcmVudC1pZCI6IjQyNDc1NTAxMDE2NDg2MTg2MTgiLCJ4LWRhdGFkb2ctc2FtcGxpbmctcHJpb3JpdHkiOiIxIiwiZGQtcGF0aHdheS1jdHgtYmFzZTY0Ijoic29tZS1iYXNlNjQtZW5jb2RlZC1jb250ZXh0In0=",
                 },
               },
             },
@@ -133,7 +169,7 @@ describe("SNSEventTraceExtractor", () => {
         ],
       };
 
-      const extractor = new SNSEventTraceExtractor(tracerWrapper);
+      const extractor = new SNSEventTraceExtractor(tracerWrapper, mockConfig);
 
       const traceContext = extractor.extract(payload);
       expect(traceContext).not.toBeNull();
@@ -142,27 +178,52 @@ describe("SNSEventTraceExtractor", () => {
         "x-datadog-parent-id": "4247550101648618618",
         "x-datadog-sampling-priority": "1",
         "x-datadog-trace-id": "7102291628443134919",
+        "dd-pathway-ctx-base64": "some-base64-encoded-context",
       });
 
       expect(traceContext?.toTraceId()).toBe("7102291628443134919");
       expect(traceContext?.toSpanId()).toBe("4247550101648618618");
       expect(traceContext?.sampleMode()).toBe("1");
       expect(traceContext?.source).toBe("event");
+
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledWith(
+        "sns",
+        "arn:aws:sns:eu-west-1:601427279990:aj-js-library-test-dev-solo-topic",
+        {
+          "x-datadog-parent-id": "4247550101648618618",
+          "x-datadog-sampling-priority": "1",
+          "x-datadog-trace-id": "7102291628443134919",
+          "dd-pathway-ctx-base64": "some-base64-encoded-context",
+        },
+        false,
+      );
     });
 
+    // prettier-ignore
     it.each([
-      ["Records", {}],
-      ["Records first entry", { Records: [] }],
-      ["Records first entry Sns", { Records: [{}] }],
-      ["MessageAttributes in Sns", { Records: [{ Sns: "{}" }] }],
-      ["_datadog in MessageAttributes", { Records: [{ Sns: '{"MessageAttributes":{"text":"Hello, world!"}}' }] }],
-      ["Value in _datadog", { Records: [{ Sns: '{"MessageAttributes":{"_datadog":{}}}' }] }],
-    ])("returns null and skips extracting when payload is missing '%s'", (_, payload) => {
+      ["Records", {}, 0],
+      ["Records first entry", { Records: [] }, 0],
+      ["Records first entry Sns", { Records: [{}] }, 0],
+      ["MessageAttributes in Sns", { Records: [{ Sns: "{TopicArn: 'arn:aws:sns:eu-west-1:test'}" }] }, 0],
+      ["_datadog in MessageAttributes", { Records: [{ Sns: { MessageAttributes: { text: "Hello, world!" }, TopicArn: "arn:aws:sns:eu-west-1:test" } }] }, 1],
+      ["Value in _datadog", { Records: [{ Sns: { MessageAttributes: { _datadog: {} }, TopicArn: "arn:aws:sns:eu-west-1:test" } }] }, 1],
+    ])("returns null and skips extracting when payload is missing '%s'", (_, payload, dsmCalls) => {
       const tracerWrapper = new TracerWrapper();
-      const extractor = new SNSEventTraceExtractor(tracerWrapper);
+      const extractor = new SNSEventTraceExtractor(tracerWrapper, mockConfig);
 
       const traceContext = extractor.extract(payload as any);
       expect(traceContext).toBeNull();
+
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledTimes(dsmCalls);
+
+      if (dsmCalls > 0) {
+        expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledWith(
+          "sns",
+          "arn:aws:sns:eu-west-1:test",
+          null,
+          false,
+        );
+      }
     });
 
     it("returns null when extracted span context by tracer is null", () => {
@@ -200,7 +261,7 @@ describe("SNSEventTraceExtractor", () => {
         ],
       };
 
-      const extractor = new SNSEventTraceExtractor(tracerWrapper);
+      const extractor = new SNSEventTraceExtractor(tracerWrapper, mockConfig);
 
       const traceContext = extractor.extract(payload);
       expect(traceContext).toBeNull();
@@ -241,7 +302,7 @@ describe("SNSEventTraceExtractor", () => {
         ],
       };
 
-      const extractor = new SNSEventTraceExtractor(tracerWrapper);
+      const extractor = new SNSEventTraceExtractor(tracerWrapper, mockConfig);
       process.env["_X_AMZN_TRACE_ID"] =
         "Root=1-66393a26-0000000017acacbad335fb99;Parent=12f5e70cc905dfb7;Sampled=1;Lineage=48e79d5f:0";
       const traceContext = extractor.extract(payload);
@@ -298,7 +359,7 @@ describe("SNSEventTraceExtractor", () => {
         ],
       };
 
-      const extractor = new SNSEventTraceExtractor(tracerWrapper);
+      const extractor = new SNSEventTraceExtractor(tracerWrapper, mockConfig);
 
       const traceContext = extractor.extract(payload);
       expect(traceContext).not.toBeNull();
@@ -308,6 +369,227 @@ describe("SNSEventTraceExtractor", () => {
       expect(traceContext?.toSpanId()).toBe("8347071195300897803");
       expect(traceContext?.sampleMode()).toBe("1");
       expect(traceContext?.source).toBe("event");
+    });
+
+    it("calls setConsumeCheckpoint for every record in the event", () => {
+      mockSpanContext = {
+        toTraceId: () => "6966585609680374559",
+        toSpanId: () => "4297634551783724228",
+        _sampling: {
+          priority: "1",
+        },
+      };
+      const tracerWrapper = new TracerWrapper();
+
+      const makeSNSRecord = (messageId: string, topicArn: string, datadogHeaders: Record<string, string> | null) => {
+        const messageAttributes: any = {};
+        if (datadogHeaders) {
+          messageAttributes._datadog = {
+            Type: "String",
+            Value: JSON.stringify(datadogHeaders),
+          };
+        } else {
+          messageAttributes.other_attribute = {
+            Type: "String",
+            Value: "some-value",
+          };
+        }
+
+        return {
+          EventSource: "aws:sns",
+          EventVersion: "1.0",
+          EventSubscriptionArn: `arn:aws:sns:us-east-1:123456789012:${topicArn}:subscription-${messageId}`,
+          Sns: {
+            Type: "Notification",
+            MessageId: messageId,
+            TopicArn: topicArn,
+            Subject: "Test Subject",
+            Message: '{"test":"message"}',
+            Timestamp: "2022-01-24T15:45:27.968Z",
+            SignatureVersion: "1",
+            Signature: "test-signature",
+            SigningCertUrl: "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-test.pem",
+            UnsubscribeUrl: `https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-1:123456789012:${topicArn}:subscription-${messageId}`,
+            MessageAttributes: messageAttributes,
+          },
+        };
+      };
+
+      const firstDdHeaders = {
+        "x-datadog-trace-id": "6966585609680374559",
+        "x-datadog-parent-id": "4297634551783724228",
+        "x-datadog-sampled": "1",
+        "x-datadog-sampling-priority": "1",
+        "dd-pathway-ctx-base64": "some-base64-encoded-context",
+      };
+
+      const payload: SNSEvent = {
+        Records: [
+          makeSNSRecord("msg1", "arn:aws:sns:us-east-1:123456789012:topic-1", firstDdHeaders),
+          makeSNSRecord("msg2", "arn:aws:sns:us-east-1:123456789012:topic-2", {
+            "x-datadog-trace-id": "1111111111111111111",
+            "x-datadog-parent-id": "2222222222222222222",
+            "x-datadog-sampled": "1",
+            "x-datadog-sampling-priority": "1",
+            "dd-pathway-ctx-base64": "different-context",
+          }),
+          makeSNSRecord("msg3", "arn:aws:sns:us-east-1:123456789012:topic-3", null),
+          makeSNSRecord("msg4", "arn:aws:sns:us-east-1:123456789012:topic-4", {
+            "x-datadog-trace-id": "3333333333333333333",
+            "x-datadog-parent-id": "4444444444444444444",
+            "x-datadog-sampled": "1",
+            "x-datadog-sampling-priority": "1",
+            "dd-pathway-ctx-base64": "another-context",
+          }),
+          makeSNSRecord("msg5", "arn:aws:sns:us-east-1:123456789012:topic-5", null),
+        ],
+      };
+
+      const extractor = new SNSEventTraceExtractor(tracerWrapper, mockConfig);
+
+      const traceContext = extractor.extract(payload);
+      expect(traceContext).not.toBeNull();
+
+      // Should use the first record's headers for trace context
+      expect(spyTracerWrapper).toHaveBeenCalledWith(firstDdHeaders);
+
+      expect(traceContext?.toTraceId()).toBe("6966585609680374559");
+      expect(traceContext?.toSpanId()).toBe("4297634551783724228");
+      expect(traceContext?.sampleMode()).toBe("1");
+      expect(traceContext?.source).toBe("event");
+
+      // Should call setConsumeCheckpoint for each record
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledTimes(5);
+
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(
+        1,
+        "sns",
+        "arn:aws:sns:us-east-1:123456789012:topic-1",
+        firstDdHeaders,
+        false,
+      );
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(
+        2,
+        "sns",
+        "arn:aws:sns:us-east-1:123456789012:topic-2",
+        {
+          "x-datadog-trace-id": "1111111111111111111",
+          "x-datadog-parent-id": "2222222222222222222",
+          "x-datadog-sampled": "1",
+          "x-datadog-sampling-priority": "1",
+          "dd-pathway-ctx-base64": "different-context",
+        },
+        false,
+      );
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(
+        3,
+        "sns",
+        "arn:aws:sns:us-east-1:123456789012:topic-3",
+        null,
+        false,
+      );
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(
+        4,
+        "sns",
+        "arn:aws:sns:us-east-1:123456789012:topic-4",
+        {
+          "x-datadog-trace-id": "3333333333333333333",
+          "x-datadog-parent-id": "4444444444444444444",
+          "x-datadog-sampled": "1",
+          "x-datadog-sampling-priority": "1",
+          "dd-pathway-ctx-base64": "another-context",
+        },
+        false,
+      );
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenNthCalledWith(
+        5,
+        "sns",
+        "arn:aws:sns:us-east-1:123456789012:topic-5",
+        null,
+        false,
+      );
+    });
+
+    it("extracts trace context when DSM is disabled and does not call setConsumeCheckpoint", () => {
+      mockSpanContext = {
+        toTraceId: () => "6966585609680374559",
+        toSpanId: () => "4297634551783724228",
+        _sampling: {
+          priority: "1",
+        },
+      };
+      const tracerWrapper = new TracerWrapper();
+
+      const makeSNSRecord = (messageId: string, topicArn: string, datadogHeaders: Record<string, string> | null) => {
+        const messageAttributes: any = {};
+        if (datadogHeaders) {
+          messageAttributes._datadog = {
+            Type: "String",
+            Value: JSON.stringify(datadogHeaders),
+          };
+        } else {
+          messageAttributes.other_attribute = {
+            Type: "String",
+            Value: "some-value",
+          };
+        }
+
+        return {
+          EventSource: "aws:sns",
+          EventVersion: "1.0",
+          EventSubscriptionArn: `arn:aws:sns:us-east-1:123456789012:${topicArn}:subscription-${messageId}`,
+          Sns: {
+            Type: "Notification",
+            MessageId: messageId,
+            TopicArn: topicArn,
+            Subject: "Test Subject",
+            Message: '{"test":"message"}',
+            Timestamp: "2022-01-24T15:45:27.968Z",
+            SignatureVersion: "1",
+            Signature: "test-signature",
+            SigningCertUrl: "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-test.pem",
+            UnsubscribeUrl: `https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-1:123456789012:${topicArn}:subscription-${messageId}`,
+            MessageAttributes: messageAttributes,
+          },
+        };
+      };
+
+      const firstDdHeaders = {
+        "x-datadog-trace-id": "6966585609680374559",
+        "x-datadog-parent-id": "4297634551783724228",
+        "x-datadog-sampled": "1",
+        "x-datadog-sampling-priority": "1",
+        "dd-pathway-ctx-base64": "some-base64-encoded-context",
+      };
+
+      const payload: SNSEvent = {
+        Records: [
+          makeSNSRecord("msg1", "arn:aws:sns:us-east-1:123456789012:topic-1", firstDdHeaders),
+          makeSNSRecord("msg2", "arn:aws:sns:us-east-1:123456789012:topic-2", {
+            "x-datadog-trace-id": "1111111111111111111",
+            "x-datadog-parent-id": "2222222222222222222",
+            "x-datadog-sampled": "1",
+            "x-datadog-sampling-priority": "1",
+            "dd-pathway-ctx-base64": "different-context",
+          }),
+          makeSNSRecord("msg3", "arn:aws:sns:us-east-1:123456789012:topic-3", null),
+        ],
+      };
+
+      const disabledConfig = { ...mockConfig, dataStreamsEnabled: false };
+      const extractor = new SNSEventTraceExtractor(tracerWrapper, disabledConfig);
+      const traceContext = extractor.extract(payload);
+
+      // Should still extract trace context from first record
+      expect(traceContext).not.toBeNull();
+      expect(spyTracerWrapper).toHaveBeenCalledWith(firstDdHeaders);
+      expect(traceContext?.toTraceId()).toBe("6966585609680374559");
+      expect(traceContext?.toSpanId()).toBe("4297634551783724228");
+      expect(traceContext?.sampleMode()).toBe("1");
+      expect(traceContext?.source).toBe("event");
+
+      // Should NOT call setConsumeCheckpoint when DSM is disabled
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledTimes(0);
     });
   });
 });

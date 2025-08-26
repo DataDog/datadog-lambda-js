@@ -99,4 +99,19 @@ export class TracerWrapper {
     this.tracer.inject(span, "text_map", dest);
     return dest;
   }
+
+  public setConsumeCheckpoint(contextJson: any, eventType: string, arn: string): void {
+    if (!arn) {
+      logDebug("DSM: No ARN provided, skipping setConsumeCheckpoint");
+      return;
+    }
+
+    try {
+      this.tracer.dataStreamsCheckpointer.setConsumeCheckpoint(eventType, arn, contextJson, false);
+    } catch (err) {
+      if (err instanceof Object || err instanceof Error) {
+        logDebug(`DSM: Failed to set consume checkpoint for ${eventType} ${arn}:`, err);
+      }
+    }
+  }
 }

@@ -3,6 +3,15 @@ import { TracerWrapper } from "./tracer-wrapper";
 let mockNoTracer = false;
 let mockTracerInitialised = false;
 let mockSpan: any = null;
+let mockDataStreamsCheckpointer: any = {
+  setConsumeCheckpoint: jest.fn(),
+};
+jest.mock("dd-trace/packages/dd-trace/src/datastreams/checkpointer", () => {
+  return {
+    DataStreamsCheckpointer: jest.fn().mockImplementation(() => mockDataStreamsCheckpointer),
+  };
+});
+
 const mockSpanContext = {
   toTraceId: () => "1234",
   toSpanId: () => "45678",
@@ -18,20 +27,38 @@ jest.mock("dd-trace", () => {
       scope: () => ({
         active: () => mockSpan,
       }),
+      dataStreamsCheckpointer: mockDataStreamsCheckpointer,
     };
   }
 });
 
 describe("TracerWrapper", () => {
+  const mockConfig = {
+    autoPatchHTTP: true,
+    captureLambdaPayload: false,
+    captureLambdaPayloadMaxDepth: 10,
+    createInferredSpan: true,
+    encodeAuthorizerContext: true,
+    decodeAuthorizerContext: true,
+    mergeDatadogXrayTraces: false,
+    injectLogContext: false,
+    minColdStartTraceDuration: 3,
+    coldStartTraceSkipLib: "",
+    addSpanPointers: true,
+    dataStreamsEnabled: false,
+  };
+
   beforeEach(() => {
     process.env["AWS_LAMBDA_FUNCTION_NAME"] = "my-lambda";
     mockNoTracer = false;
     mockTracerInitialised = true;
     mockSpan = null;
+    mockDataStreamsCheckpointer.setConsumeCheckpoint.mockClear();
   });
   afterEach(() => {
     jest.resetModules();
     delete process.env["AWS_LAMBDA_FUNCTION_NAME"];
+    delete process.env["DD_DATA_STREAMS_ENABLED"];
   });
   it("isTracerAvailable should return true when dd-trace is present and initialised", () => {
     const wrapper = new TracerWrapper();
@@ -80,5 +107,24 @@ describe("TracerWrapper", () => {
     const wrapper = new TracerWrapper();
     const traceContext = wrapper.traceContext();
     expect(traceContext).toBeNull();
+  });
+  it("should not call internal setConsumeCheckpoint when arn is not provided", () => {
+    process.env["DD_DATA_STREAMS_ENABLED"] = "true";
+    const wrapper = new TracerWrapper();
+
+    wrapper.setConsumeCheckpoint({ test: "context" }, "kinesis", "");
+
+    expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).not.toHaveBeenCalled();
+  });
+
+  it("should call internal setConsumeCheckpoint when arn is provided", () => {
+    const wrapper = new TracerWrapper();
+    const contextJson = { test: "context" };
+    const eventType = "kinesis";
+    const arn = "arn:aws:kinesis:us-east-1:123456789:stream/test-stream";
+
+    wrapper.setConsumeCheckpoint(contextJson, eventType, arn);
+
+    expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledWith(eventType, arn, contextJson, false);
   });
 });
