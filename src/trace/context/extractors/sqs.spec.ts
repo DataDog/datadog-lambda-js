@@ -2,6 +2,7 @@ import { SQSEvent } from "aws-lambda";
 import { TracerWrapper } from "../../tracer-wrapper";
 import { SQSEventTraceExtractor } from "./sqs";
 import { StepFunctionContextService } from "../../step-function-service";
+import { TraceConfig } from "../../listener";
 
 let mockSpanContext: any = null;
 
@@ -68,7 +69,7 @@ describe("SQSEventTraceExtractor", () => {
         ],
       };
 
-      const extractor = new SQSEventTraceExtractor(tracerWrapper);
+      const extractor = new SQSEventTraceExtractor(tracerWrapper, {} as TraceConfig);
 
       const traceContext = extractor.extract(payload);
       expect(traceContext).not.toBeNull();
@@ -80,10 +81,10 @@ describe("SQSEventTraceExtractor", () => {
         "x-datadog-trace-id": "4555236104497098341",
       });
 
-      expect(traceContext?.toTraceId()).toBe("4555236104497098341");
-      expect(traceContext?.toSpanId()).toBe("3369753143434738315");
-      expect(traceContext?.sampleMode()).toBe("1");
-      expect(traceContext?.source).toBe("event");
+      expect(traceContext?.[0].toTraceId()).toBe("4555236104497098341");
+      expect(traceContext?.[0].toSpanId()).toBe("3369753143434738315");
+      expect(traceContext?.[0].sampleMode()).toBe("1");
+      expect(traceContext?.[0].source).toBe("event");
     });
 
     it("extracts trace context from _datadog binaryValue when raw message delivery is used", () => {
@@ -131,16 +132,166 @@ describe("SQSEventTraceExtractor", () => {
         ],
       };
 
-      const extractor = new SQSEventTraceExtractor(tracerWrapper);
+      const extractor = new SQSEventTraceExtractor(tracerWrapper, {} as TraceConfig);
       const traceContext = extractor.extract(payload);
       expect(traceContext).not.toBeNull();
 
       expect(spyTracerWrapper).toHaveBeenCalledWith(ddHeaders);
 
-      expect(traceContext?.toTraceId()).toBe("1234567890");
-      expect(traceContext?.toSpanId()).toBe("0987654321");
-      expect(traceContext?.sampleMode()).toBe("1");
-      expect(traceContext?.source).toBe("event");
+      expect(traceContext?.[0].toTraceId()).toBe("1234567890");
+      expect(traceContext?.[0].toSpanId()).toBe("0987654321");
+      expect(traceContext?.[0].sampleMode()).toBe("1");
+      expect(traceContext?.[0].source).toBe("event");
+    });
+
+    it("only extracts first trace context with multiple input payloads", () => {
+      mockSpanContext = {
+        toTraceId: () => "4555236104497098341",
+        toSpanId: () => "3369753143434738315",
+        _sampling: {
+          priority: "1",
+        },
+      };
+      const tracerWrapper = new TracerWrapper();
+
+      const payload: SQSEvent = {
+        Records: [
+          {
+            body: "Hello world",
+            attributes: {
+              ApproximateReceiveCount: "1",
+              SentTimestamp: "1605544528092",
+              SenderId: "AROAYYB64AB3JHSRKO6XR:sqs-trace-dev-producer",
+              ApproximateFirstReceiveTimestamp: "1605544528094",
+            },
+            messageAttributes: {
+              _datadog: {
+                stringValue:
+                  '{"x-datadog-trace-id":"4555236104497098341","x-datadog-parent-id":"3369753143434738315","x-datadog-sampled":"1","x-datadog-sampling-priority":"1"}',
+                stringListValues: undefined,
+                binaryListValues: undefined,
+                dataType: "String",
+              },
+            },
+            eventSource: "aws:sqs",
+            eventSourceARN: "arn:aws:sqs:eu-west-1:601427279990:metal-queue",
+            awsRegion: "eu-west-1",
+            messageId: "foo",
+            md5OfBody: "x",
+            receiptHandle: "x",
+          },
+          {
+            body: "Hello world",
+            attributes: {
+              ApproximateReceiveCount: "1",
+              SentTimestamp: "1605544528092",
+              SenderId: "AROAYYB64AB3JHSRKO6XR:sqs-trace-dev-producer",
+              ApproximateFirstReceiveTimestamp: "1605544528094",
+            },
+            messageAttributes: {
+              _datadog: {
+                stringValue:
+                  '{"x-datadog-trace-id":"4555236104497098341","x-datadog-parent-id":"3369753143434738315","x-datadog-sampled":"1","x-datadog-sampling-priority":"1"}',
+                stringListValues: undefined,
+                binaryListValues: undefined,
+                dataType: "String",
+              },
+            },
+            eventSource: "aws:sqs",
+            eventSourceARN: "arn:aws:sqs:eu-west-1:601427279990:metal-queue",
+            awsRegion: "eu-west-1",
+            messageId: "foo",
+            md5OfBody: "x",
+            receiptHandle: "x",
+          },
+        ],
+      };
+
+      const extractor = new SQSEventTraceExtractor(tracerWrapper, {} as TraceConfig);
+
+      const traceContext = extractor.extract(payload);
+      expect(traceContext.length).toBe(1);
+
+      expect(spyTracerWrapper).toHaveBeenCalledWith({
+        "x-datadog-parent-id": "3369753143434738315",
+        "x-datadog-sampled": "1",
+        "x-datadog-sampling-priority": "1",
+        "x-datadog-trace-id": "4555236104497098341",
+      });
+
+      expect(traceContext?.[0].toTraceId()).toBe("4555236104497098341");
+      expect(traceContext?.[0].toSpanId()).toBe("3369753143434738315");
+      expect(traceContext?.[0].sampleMode()).toBe("1");
+      expect(traceContext?.[0].source).toBe("event");
+    });
+
+    it("extract all trace contexts when span links is enabled", () => {
+      mockSpanContext = {
+        toTraceId: () => "4555236104497098341",
+        toSpanId: () => "3369753143434738315",
+        _sampling: {
+          priority: "1",
+        },
+      };
+      const tracerWrapper = new TracerWrapper();
+
+      const payload: SQSEvent = {
+        Records: [
+          {
+            body: "Hello world",
+            attributes: {
+              ApproximateReceiveCount: "1",
+              SentTimestamp: "1605544528092",
+              SenderId: "AROAYYB64AB3JHSRKO6XR:sqs-trace-dev-producer",
+              ApproximateFirstReceiveTimestamp: "1605544528094",
+            },
+            messageAttributes: {
+              _datadog: {
+                stringValue:
+                  '{"x-datadog-trace-id":"4555236104497098341","x-datadog-parent-id":"3369753143434738315","x-datadog-sampled":"1","x-datadog-sampling-priority":"1"}',
+                stringListValues: undefined,
+                binaryListValues: undefined,
+                dataType: "String",
+              },
+            },
+            eventSource: "aws:sqs",
+            eventSourceARN: "arn:aws:sqs:eu-west-1:601427279990:metal-queue",
+            awsRegion: "eu-west-1",
+            messageId: "foo",
+            md5OfBody: "x",
+            receiptHandle: "x",
+          },
+          {
+            body: "Hello world",
+            attributes: {
+              ApproximateReceiveCount: "1",
+              SentTimestamp: "1605544528092",
+              SenderId: "AROAYYB64AB3JHSRKO6XR:sqs-trace-dev-producer",
+              ApproximateFirstReceiveTimestamp: "1605544528094",
+            },
+            messageAttributes: {
+              _datadog: {
+                stringValue:
+                  '{"x-datadog-trace-id":"4555236104497098341","x-datadog-parent-id":"3369753143434738315","x-datadog-sampled":"1","x-datadog-sampling-priority":"1"}',
+                stringListValues: undefined,
+                binaryListValues: undefined,
+                dataType: "String",
+              },
+            },
+            eventSource: "aws:sqs",
+            eventSourceARN: "arn:aws:sqs:eu-west-1:601427279990:metal-queue",
+            awsRegion: "eu-west-1",
+            messageId: "foo",
+            md5OfBody: "x",
+            receiptHandle: "x",
+          },
+        ],
+      };
+
+      const extractor = new SQSEventTraceExtractor(tracerWrapper, {useSpanLinks: true} as TraceConfig);
+
+      const traceContext = extractor.extract(payload);
+      expect(traceContext.length).toBe(2);
     });
 
     it.each([
@@ -149,15 +300,15 @@ describe("SQSEventTraceExtractor", () => {
       ["messageAttributes in first entry", { Records: [{ messageAttributes: "{}" }] }],
       ["_datadog in messageAttributes", { Records: [{ messageAttributes: {} }] }],
       ["stringValue in _datadog", { Records: [{ messageAttributes: { _datadog: {} } }] }],
-    ])("returns null and skips extracting when payload is missing '%s'", (_, payload) => {
+    ])("returns an empty array and skips extracting when payload is missing '%s'", (_, payload) => {
       const tracerWrapper = new TracerWrapper();
-      const extractor = new SQSEventTraceExtractor(tracerWrapper);
+      const extractor = new SQSEventTraceExtractor(tracerWrapper, {} as TraceConfig);
 
       const traceContext = extractor.extract(payload as any);
-      expect(traceContext).toBeNull();
+      expect(traceContext).toStrictEqual([]);
     });
 
-    it("returns null when extracted span context by tracer is null", () => {
+    it("returns an empty array when extracted span context by tracer is null", () => {
       const tracerWrapper = new TracerWrapper();
 
       const payload: SQSEvent = {
@@ -180,10 +331,10 @@ describe("SQSEventTraceExtractor", () => {
           },
         ],
       };
-      const extractor = new SQSEventTraceExtractor(tracerWrapper);
+      const extractor = new SQSEventTraceExtractor(tracerWrapper, {} as TraceConfig);
 
       const traceContext = extractor.extract(payload);
-      expect(traceContext).toBeNull();
+      expect(traceContext).toStrictEqual([]);
     });
 
     it("extracts trace context from AWSTraceHeader with valid payload", () => {
@@ -210,7 +361,7 @@ describe("SQSEventTraceExtractor", () => {
         ],
       };
 
-      const extractor = new SQSEventTraceExtractor(tracerWrapper);
+      const extractor = new SQSEventTraceExtractor(tracerWrapper, {} as TraceConfig);
 
       const traceContext = extractor.extract(payload);
       expect(traceContext).not.toBeNull();
@@ -219,10 +370,10 @@ describe("SQSEventTraceExtractor", () => {
       // 2. More importantly, DD_TRACE_PROPAGATION_STYLE could cause extraction fail
       expect(spyTracerWrapper).not.toHaveBeenCalled();
 
-      expect(traceContext?.toTraceId()).toBe("625397077193750208");
-      expect(traceContext?.toSpanId()).toBe("6538302989251745223");
-      expect(traceContext?.sampleMode()).toBe("1");
-      expect(traceContext?.source).toBe("event");
+      expect(traceContext?.[0].toTraceId()).toBe("625397077193750208");
+      expect(traceContext?.[0].toSpanId()).toBe("6538302989251745223");
+      expect(traceContext?.[0].sampleMode()).toBe("1");
+      expect(traceContext?.[0].source).toBe("event");
     });
 
     it("extracts trace context from Step Function SQS event", () => {
@@ -262,16 +413,16 @@ describe("SQSEventTraceExtractor", () => {
         ],
       };
 
-      const extractor = new SQSEventTraceExtractor(tracerWrapper);
+      const extractor = new SQSEventTraceExtractor(tracerWrapper, {} as TraceConfig);
 
       const traceContext = extractor.extract(payload);
       expect(traceContext).not.toBeNull();
 
       // The StepFunctionContextService generates deterministic trace IDs
-      expect(traceContext?.toTraceId()).toBe("7148114900282288397");
-      expect(traceContext?.toSpanId()).toBe("6711327198021343353");
-      expect(traceContext?.sampleMode()).toBe("1");
-      expect(traceContext?.source).toBe("event");
+      expect(traceContext?.[0].toTraceId()).toBe("7148114900282288397");
+      expect(traceContext?.[0].toSpanId()).toBe("6711327198021343353");
+      expect(traceContext?.[0].sampleMode()).toBe("1");
+      expect(traceContext?.[0].source).toBe("event");
     });
   });
 });

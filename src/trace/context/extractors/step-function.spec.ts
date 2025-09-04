@@ -55,10 +55,10 @@ describe("StepFunctionEventTraceExtractor", () => {
       const traceContext = extractor.extract(payload);
       expect(traceContext).not.toBeNull();
 
-      expect(traceContext?.toTraceId()).toBe("435175499815315247");
-      expect(traceContext?.toSpanId()).toBe("3929055471293792800");
-      expect(traceContext?.sampleMode()).toBe("1");
-      expect(traceContext?.source).toBe("event");
+      expect(traceContext?.[0].toTraceId()).toBe("435175499815315247");
+      expect(traceContext?.[0].toSpanId()).toBe("3929055471293792800");
+      expect(traceContext?.[0].sampleMode()).toBe("1");
+      expect(traceContext?.[0].source).toBe("event");
     });
 
     // https://github.com/DataDog/logs-backend/blob/c17618cb552fc369ca40282bae0a65803f82f694/domains/serverless/apps/logs-to-traces-reducer/src/test/resources/test-json-files/stepfunctions/RedriveTest/snapshots/RedriveLambdaSuccessTraceMerging.json#L46
@@ -72,10 +72,10 @@ describe("StepFunctionEventTraceExtractor", () => {
       const traceContext = extractor.extract(redrivePayload);
       expect(traceContext).not.toBeNull();
 
-      expect(traceContext?.toTraceId()).toBe("435175499815315247");
-      expect(traceContext?.toSpanId()).toBe("8782364156266188026");
-      expect(traceContext?.sampleMode()).toBe("1");
-      expect(traceContext?.source).toBe("event");
+      expect(traceContext?.[0].toTraceId()).toBe("435175499815315247");
+      expect(traceContext?.[0].toSpanId()).toBe("8782364156266188026");
+      expect(traceContext?.[0].sampleMode()).toBe("1");
+      expect(traceContext?.[0].source).toBe("event");
     });
 
     it("extracts trace context with valid payload when instance wasn't initialized", () => {
@@ -85,10 +85,10 @@ describe("StepFunctionEventTraceExtractor", () => {
       const traceContext = extractor.extract(payload);
       expect(traceContext).not.toBeNull();
 
-      expect(traceContext?.toTraceId()).toBe("435175499815315247");
-      expect(traceContext?.toSpanId()).toBe("3929055471293792800");
-      expect(traceContext?.sampleMode()).toBe("1");
-      expect(traceContext?.source).toBe("event");
+      expect(traceContext?.[0].toTraceId()).toBe("435175499815315247");
+      expect(traceContext?.[0].toSpanId()).toBe("3929055471293792800");
+      expect(traceContext?.[0].sampleMode()).toBe("1");
+      expect(traceContext?.[0].source).toBe("event");
     });
 
     it("extracts trace context with valid legacy lambda payload", () => {
@@ -101,17 +101,17 @@ describe("StepFunctionEventTraceExtractor", () => {
       const traceContext = extractor.extract({ Payload: payload });
       expect(traceContext).not.toBeNull();
 
-      expect(traceContext?.toTraceId()).toBe("435175499815315247");
-      expect(traceContext?.toSpanId()).toBe("3929055471293792800");
-      expect(traceContext?.sampleMode()).toBe("1");
-      expect(traceContext?.source).toBe("event");
+      expect(traceContext?.[0].toTraceId()).toBe("435175499815315247");
+      expect(traceContext?.[0].toSpanId()).toBe("3929055471293792800");
+      expect(traceContext?.[0].sampleMode()).toBe("1");
+      expect(traceContext?.[0].source).toBe("event");
     });
 
-    it("returns null when StepFunctionContextService.context is undefined", async () => {
+    it("returns empty array when StepFunctionContextService.context is undefined", async () => {
       const extractor = new StepFunctionEventTraceExtractor();
 
       const traceContext = extractor.extract({});
-      expect(traceContext).toBeNull();
+      expect(traceContext).toStrictEqual([]);
     });
 
     it("extracts trace context end-to-end with deterministic IDs for v1 nested context", () => {
@@ -136,16 +136,16 @@ describe("StepFunctionEventTraceExtractor", () => {
       const traceContext = extractor.extract(nestedPayload);
 
       expect(traceContext).not.toBeNull();
-      expect(traceContext?.source).toBe("event");
+      expect(traceContext?.[0].source).toBe("event");
 
       // Verify trace ID is based on root execution ID (deterministic)
-      const traceId = traceContext?.toTraceId();
+      const traceId = traceContext?.[0].toTraceId();
       expect(traceId).toBeDefined();
       expect(traceId).not.toBe("0");
 
       // Extract again to verify deterministic behavior
       const traceContext2 = extractor.extract(nestedPayload);
-      expect(traceContext2?.toTraceId()).toBe(traceId);
+      expect(traceContext2?.[0].toTraceId()).toBe(traceId);
     });
 
     it("extracts trace context end-to-end with propagated IDs for v1 lambda root context", () => {
@@ -171,19 +171,19 @@ describe("StepFunctionEventTraceExtractor", () => {
       const traceContext = extractor.extract(lambdaRootPayload);
 
       expect(traceContext).not.toBeNull();
-      expect(traceContext?.source).toBe("event");
+      expect(traceContext?.[0].source).toBe("event");
 
       // Verify trace ID comes from propagated headers, not deterministic hash
-      expect(traceContext?.toTraceId()).toBe("1234567890123456789");
+      expect(traceContext?.[0].toTraceId()).toBe("1234567890123456789");
 
       // Verify deterministic span ID based on execution details
-      const spanId = traceContext?.toSpanId();
+      const spanId = traceContext?.[0].toSpanId();
       expect(spanId).toBeDefined();
       expect(spanId).not.toBe("0");
 
       // Extract again to verify deterministic span ID
       const traceContext2 = extractor.extract(lambdaRootPayload);
-      expect(traceContext2?.toSpanId()).toBe(spanId);
+      expect(traceContext2?.[0].toSpanId()).toBe(spanId);
     });
   });
 });

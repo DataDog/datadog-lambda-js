@@ -18,7 +18,7 @@ export class HTTPEventTraceExtractor implements EventTraceExtractor {
     this.decodeAuthorizerContext = decodeAuthorizerContext;
   }
 
-  extract(event: any): SpanContextWrapper | null {
+  extract(event: any): SpanContextWrapper[] {
     if (this.decodeAuthorizerContext) {
       // need to set the trace context if using authorizer lambda in authorizing (non-cached) cases
       try {
@@ -29,10 +29,10 @@ export class HTTPEventTraceExtractor implements EventTraceExtractor {
         );
         if (injectedAuthorizerHeaders !== null) {
           const _traceContext = this.tracerWrapper.extract(injectedAuthorizerHeaders);
-          if (_traceContext === null) return null;
+          if (_traceContext === null) return [];
 
           logDebug(`Extracted trace context from authorizer event`, { traceContext: _traceContext, event });
-          return _traceContext;
+          return [_traceContext];
         }
       } catch (error) {
         if (error instanceof Error) {
@@ -55,10 +55,10 @@ export class HTTPEventTraceExtractor implements EventTraceExtractor {
     }
 
     const traceContext = this.tracerWrapper.extract(lowerCaseHeaders);
-    if (traceContext === null) return null;
+    if (traceContext === null) return [];
 
     logDebug(`Extracted trace context from HTTP event`, { traceContext, event });
-    return traceContext;
+    return [traceContext];
   }
 
   public static getEventSubType(event: any): HTTPEventSubType {

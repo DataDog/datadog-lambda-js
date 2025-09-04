@@ -2,6 +2,8 @@ import { SNSEvent } from "aws-lambda";
 import { TracerWrapper } from "../../tracer-wrapper";
 import { SNSEventTraceExtractor } from "./sns";
 import { StepFunctionContextService } from "../../step-function-service";
+import { TraceConfig } from "../../listener";
+import { EventBridgeSQSEventTraceExtractor } from "./event-bridge-sqs";
 
 let mockSpanContext: any = null;
 
@@ -72,10 +74,10 @@ describe("SNSEventTraceExtractor", () => {
         ],
       };
 
-      const extractor = new SNSEventTraceExtractor(tracerWrapper);
+      const extractor = new SNSEventTraceExtractor(tracerWrapper, {} as TraceConfig);
 
       const traceContext = extractor.extract(payload);
-      expect(traceContext).not.toBeNull();
+      expect(traceContext.length).toBe(1);
 
       expect(spyTracerWrapper).toHaveBeenCalledWith({
         "x-datadog-parent-id": "4297634551783724228",
@@ -84,10 +86,10 @@ describe("SNSEventTraceExtractor", () => {
         "x-datadog-trace-id": "6966585609680374559",
       });
 
-      expect(traceContext?.toTraceId()).toBe("6966585609680374559");
-      expect(traceContext?.toSpanId()).toBe("4297634551783724228");
-      expect(traceContext?.sampleMode()).toBe("1");
-      expect(traceContext?.source).toBe("event");
+      expect(traceContext?.[0].toTraceId()).toBe("6966585609680374559");
+      expect(traceContext?.[0].toSpanId()).toBe("4297634551783724228");
+      expect(traceContext?.[0].sampleMode()).toBe("1");
+      expect(traceContext?.[0].source).toBe("event");
     });
 
     it("extracts trace context with valid payload with Binary Value", () => {
@@ -133,7 +135,7 @@ describe("SNSEventTraceExtractor", () => {
         ],
       };
 
-      const extractor = new SNSEventTraceExtractor(tracerWrapper);
+      const extractor = new SNSEventTraceExtractor(tracerWrapper, {} as TraceConfig);
 
       const traceContext = extractor.extract(payload);
       expect(traceContext).not.toBeNull();
@@ -144,10 +146,178 @@ describe("SNSEventTraceExtractor", () => {
         "x-datadog-trace-id": "7102291628443134919",
       });
 
-      expect(traceContext?.toTraceId()).toBe("7102291628443134919");
-      expect(traceContext?.toSpanId()).toBe("4247550101648618618");
-      expect(traceContext?.sampleMode()).toBe("1");
-      expect(traceContext?.source).toBe("event");
+      expect(traceContext?.[0].toTraceId()).toBe("7102291628443134919");
+      expect(traceContext?.[0].toSpanId()).toBe("4247550101648618618");
+      expect(traceContext?.[0].sampleMode()).toBe("1");
+      expect(traceContext?.[0].source).toBe("event");
+    });
+
+
+    it("only extracts first trace context with multiple input payloads", () => {
+      mockSpanContext = {
+        toTraceId: () => "6966585609680374559",
+        toSpanId: () => "4297634551783724228",
+        _sampling: {
+          priority: "1",
+        },
+      };
+      const tracerWrapper = new TracerWrapper();
+
+      const payload: SNSEvent = {
+        Records: [
+          {
+            EventSource: "aws:sns",
+            EventVersion: "1.0",
+            EventSubscriptionArn:
+              "arn:aws:sns:eu-west-1:601427279990:aj-js-library-test-dev-solo-topic:1bd19208-a99a-46d9-8398-f90f8699c641",
+            Sns: {
+              Type: "Notification",
+              MessageId: "f19d39fa-8c61-5df9-8f49-639247b6cece",
+              TopicArn: "arn:aws:sns:eu-west-1:601427279990:aj-js-library-test-dev-solo-topic",
+              Subject: undefined,
+              Message: '{"hello":"there","ajTimestamp":1643039127879}',
+              Timestamp: "2022-01-24T15:45:27.968Z",
+              SignatureVersion: "1",
+              Signature:
+                "mzp2Ou0fASw4LYRxY6SSww7qFfofn4luCJBRaTjLpQ5uhwhsAUKdyLz9VPD+/dlRbi1ImsWtIZ7A+wxj1oV7Z2Gyu/N4RpGalae37+jTluDS7AhjgcD7Bs4bgQtFkCfMFEwbhICQfukLLzbwbgczZ4NTPn6zj5o28c5NBKSJMYSnLz82ohw77GgnZ/m26E32ZQNW4+VCEMINg9Ne2rHstwPWRXPr5xGTrx8jH8CNUZnVpFVfhU8o+OSeAdpzm2l99grHIo7qPhekERxANz6QHynMlhdzD3UNSgc3oZkamZban/NEKd4MKJzgNQdNOYVj3Kw6eF2ZweEoBQ5sSFK5fQ==",
+              SigningCertUrl:
+                "https://sns.eu-west-1.amazonaws.com/SimpleNotificationService-************************33ab7e69.pem",
+              UnsubscribeUrl:
+                "https://sns.eu-west-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-west-1:601427279990:aj-js-library-test-dev-solo-topic:1bd19208-a99a-46d9-8398-f90f8699c641",
+              MessageAttributes: {
+                _datadog: {
+                  Type: "String",
+                  Value:
+                    '{"x-datadog-trace-id":"6966585609680374559","x-datadog-parent-id":"4297634551783724228","x-datadog-sampled":"1","x-datadog-sampling-priority":"1"}',
+                },
+              },
+            },
+          },
+          {
+            EventSource: "aws:sns",
+            EventVersion: "1.0",
+            EventSubscriptionArn:
+              "arn:aws:sns:eu-west-1:601427279990:aj-js-library-test-dev-solo-topic:1bd19208-a99a-46d9-8398-f90f8699c641",
+            Sns: {
+              Type: "Notification",
+              MessageId: "f19d39fa-8c61-5df9-8f49-639247b6cece",
+              TopicArn: "arn:aws:sns:eu-west-1:601427279990:aj-js-library-test-dev-solo-topic",
+              Subject: undefined,
+              Message: '{"hello":"there","ajTimestamp":1643039127879}',
+              Timestamp: "2022-01-24T15:45:27.968Z",
+              SignatureVersion: "1",
+              Signature:
+                "mzp2Ou0fASw4LYRxY6SSww7qFfofn4luCJBRaTjLpQ5uhwhsAUKdyLz9VPD+/dlRbi1ImsWtIZ7A+wxj1oV7Z2Gyu/N4RpGalae37+jTluDS7AhjgcD7Bs4bgQtFkCfMFEwbhICQfukLLzbwbgczZ4NTPn6zj5o28c5NBKSJMYSnLz82ohw77GgnZ/m26E32ZQNW4+VCEMINg9Ne2rHstwPWRXPr5xGTrx8jH8CNUZnVpFVfhU8o+OSeAdpzm2l99grHIo7qPhekERxANz6QHynMlhdzD3UNSgc3oZkamZban/NEKd4MKJzgNQdNOYVj3Kw6eF2ZweEoBQ5sSFK5fQ==",
+              SigningCertUrl:
+                "https://sns.eu-west-1.amazonaws.com/SimpleNotificationService-************************33ab7e69.pem",
+              UnsubscribeUrl:
+                "https://sns.eu-west-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-west-1:601427279990:aj-js-library-test-dev-solo-topic:1bd19208-a99a-46d9-8398-f90f8699c641",
+              MessageAttributes: {
+                _datadog: {
+                  Type: "String",
+                  Value:
+                    '{"x-datadog-trace-id":"6966585609680374559","x-datadog-parent-id":"4297634551783724228","x-datadog-sampled":"1","x-datadog-sampling-priority":"1"}',
+                },
+              },
+            },
+          },
+        ],
+      };
+
+      const extractor = new SNSEventTraceExtractor(tracerWrapper, {} as TraceConfig);
+
+      const traceContext = extractor.extract(payload);
+      expect(traceContext.length).toBe(1);
+
+      expect(spyTracerWrapper).toHaveBeenCalledWith({
+        "x-datadog-parent-id": "4297634551783724228",
+        "x-datadog-sampled": "1",
+        "x-datadog-sampling-priority": "1",
+        "x-datadog-trace-id": "6966585609680374559",
+      });
+
+      expect(traceContext?.[0].toTraceId()).toBe("6966585609680374559");
+      expect(traceContext?.[0].toSpanId()).toBe("4297634551783724228");
+      expect(traceContext?.[0].sampleMode()).toBe("1");
+      expect(traceContext?.[0].source).toBe("event");
+    });
+
+    it("extract all trace contexts when span links is enabled", () => {
+      mockSpanContext = {
+        toTraceId: () => "6966585609680374559",
+        toSpanId: () => "4297634551783724228",
+        _sampling: {
+          priority: "1",
+        },
+      };
+      const tracerWrapper = new TracerWrapper();
+
+      const payload: SNSEvent = {
+        Records: [
+          {
+            EventSource: "aws:sns",
+            EventVersion: "1.0",
+            EventSubscriptionArn:
+              "arn:aws:sns:eu-west-1:601427279990:aj-js-library-test-dev-solo-topic:1bd19208-a99a-46d9-8398-f90f8699c641",
+            Sns: {
+              Type: "Notification",
+              MessageId: "f19d39fa-8c61-5df9-8f49-639247b6cece",
+              TopicArn: "arn:aws:sns:eu-west-1:601427279990:aj-js-library-test-dev-solo-topic",
+              Subject: undefined,
+              Message: '{"hello":"there","ajTimestamp":1643039127879}',
+              Timestamp: "2022-01-24T15:45:27.968Z",
+              SignatureVersion: "1",
+              Signature:
+                "mzp2Ou0fASw4LYRxY6SSww7qFfofn4luCJBRaTjLpQ5uhwhsAUKdyLz9VPD+/dlRbi1ImsWtIZ7A+wxj1oV7Z2Gyu/N4RpGalae37+jTluDS7AhjgcD7Bs4bgQtFkCfMFEwbhICQfukLLzbwbgczZ4NTPn6zj5o28c5NBKSJMYSnLz82ohw77GgnZ/m26E32ZQNW4+VCEMINg9Ne2rHstwPWRXPr5xGTrx8jH8CNUZnVpFVfhU8o+OSeAdpzm2l99grHIo7qPhekERxANz6QHynMlhdzD3UNSgc3oZkamZban/NEKd4MKJzgNQdNOYVj3Kw6eF2ZweEoBQ5sSFK5fQ==",
+              SigningCertUrl:
+                "https://sns.eu-west-1.amazonaws.com/SimpleNotificationService-************************33ab7e69.pem",
+              UnsubscribeUrl:
+                "https://sns.eu-west-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-west-1:601427279990:aj-js-library-test-dev-solo-topic:1bd19208-a99a-46d9-8398-f90f8699c641",
+              MessageAttributes: {
+                _datadog: {
+                  Type: "String",
+                  Value:
+                    '{"x-datadog-trace-id":"6966585609680374559","x-datadog-parent-id":"4297634551783724228","x-datadog-sampled":"1","x-datadog-sampling-priority":"1"}',
+                },
+              },
+            },
+          },
+          {
+            EventSource: "aws:sns",
+            EventVersion: "1.0",
+            EventSubscriptionArn:
+              "arn:aws:sns:eu-west-1:601427279990:aj-js-library-test-dev-solo-topic:1bd19208-a99a-46d9-8398-f90f8699c641",
+            Sns: {
+              Type: "Notification",
+              MessageId: "f19d39fa-8c61-5df9-8f49-639247b6cece",
+              TopicArn: "arn:aws:sns:eu-west-1:601427279990:aj-js-library-test-dev-solo-topic",
+              Subject: undefined,
+              Message: '{"hello":"there","ajTimestamp":1643039127879}',
+              Timestamp: "2022-01-24T15:45:27.968Z",
+              SignatureVersion: "1",
+              Signature:
+                "mzp2Ou0fASw4LYRxY6SSww7qFfofn4luCJBRaTjLpQ5uhwhsAUKdyLz9VPD+/dlRbi1ImsWtIZ7A+wxj1oV7Z2Gyu/N4RpGalae37+jTluDS7AhjgcD7Bs4bgQtFkCfMFEwbhICQfukLLzbwbgczZ4NTPn6zj5o28c5NBKSJMYSnLz82ohw77GgnZ/m26E32ZQNW4+VCEMINg9Ne2rHstwPWRXPr5xGTrx8jH8CNUZnVpFVfhU8o+OSeAdpzm2l99grHIo7qPhekERxANz6QHynMlhdzD3UNSgc3oZkamZban/NEKd4MKJzgNQdNOYVj3Kw6eF2ZweEoBQ5sSFK5fQ==",
+              SigningCertUrl:
+                "https://sns.eu-west-1.amazonaws.com/SimpleNotificationService-************************33ab7e69.pem",
+              UnsubscribeUrl:
+                "https://sns.eu-west-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-west-1:601427279990:aj-js-library-test-dev-solo-topic:1bd19208-a99a-46d9-8398-f90f8699c641",
+              MessageAttributes: {
+                _datadog: {
+                  Type: "String",
+                  Value:
+                    '{"x-datadog-trace-id":"6966585609680374559","x-datadog-parent-id":"4297634551783724228","x-datadog-sampled":"1","x-datadog-sampling-priority":"1"}',
+                },
+              },
+            },
+          },
+        ],
+      };
+
+      const extractor = new SNSEventTraceExtractor(tracerWrapper, {useSpanLinks: true} as TraceConfig);
+
+      const traceContext = extractor.extract(payload);
+
+      expect(traceContext?.length).toBe(2);
     });
 
     it.each([
@@ -157,15 +327,15 @@ describe("SNSEventTraceExtractor", () => {
       ["MessageAttributes in Sns", { Records: [{ Sns: "{}" }] }],
       ["_datadog in MessageAttributes", { Records: [{ Sns: '{"MessageAttributes":{"text":"Hello, world!"}}' }] }],
       ["Value in _datadog", { Records: [{ Sns: '{"MessageAttributes":{"_datadog":{}}}' }] }],
-    ])("returns null and skips extracting when payload is missing '%s'", (_, payload) => {
+    ])("returns an empty array and skips extracting when payload is missing '%s'", (_, payload) => {
       const tracerWrapper = new TracerWrapper();
-      const extractor = new SNSEventTraceExtractor(tracerWrapper);
+      const extractor = new SNSEventTraceExtractor(tracerWrapper, {} as TraceConfig);
 
       const traceContext = extractor.extract(payload as any);
-      expect(traceContext).toBeNull();
+      expect(traceContext).toStrictEqual([]);
     });
 
-    it("returns null when extracted span context by tracer is null", () => {
+    it("returns an empty array when extracted span context by tracer is null", () => {
       const tracerWrapper = new TracerWrapper();
 
       const payload: SNSEvent = {
@@ -200,10 +370,10 @@ describe("SNSEventTraceExtractor", () => {
         ],
       };
 
-      const extractor = new SNSEventTraceExtractor(tracerWrapper);
+      const extractor = new SNSEventTraceExtractor(tracerWrapper, {} as TraceConfig);
 
       const traceContext = extractor.extract(payload);
-      expect(traceContext).toBeNull();
+      expect(traceContext).toStrictEqual([]);
     });
 
     it("extracts trace context from AWSTraceHeader when no tracecontext found from payload", () => {
@@ -241,7 +411,7 @@ describe("SNSEventTraceExtractor", () => {
         ],
       };
 
-      const extractor = new SNSEventTraceExtractor(tracerWrapper);
+      const extractor = new SNSEventTraceExtractor(tracerWrapper, {} as TraceConfig);
       process.env["_X_AMZN_TRACE_ID"] =
         "Root=1-66393a26-0000000017acacbad335fb99;Parent=12f5e70cc905dfb7;Sampled=1;Lineage=48e79d5f:0";
       const traceContext = extractor.extract(payload);
@@ -252,10 +422,10 @@ describe("SNSEventTraceExtractor", () => {
       // 2. More importantly, DD_TRACE_PROPAGATION_STYLE could cause extraction fail
       expect(spyTracerWrapper).not.toHaveBeenCalled();
 
-      expect(traceContext?.toTraceId()).toBe("1705928277274000281");
-      expect(traceContext?.toSpanId()).toBe("1366252104075042743");
-      expect(traceContext?.sampleMode()).toBe("1");
-      expect(traceContext?.source).toBe("event");
+      expect(traceContext?.[0].toTraceId()).toBe("1705928277274000281");
+      expect(traceContext?.[0].toSpanId()).toBe("1366252104075042743");
+      expect(traceContext?.[0].sampleMode()).toBe("1");
+      expect(traceContext?.[0].source).toBe("event");
     });
 
     it("extracts trace context from Step Function SNS event", () => {
@@ -298,16 +468,16 @@ describe("SNSEventTraceExtractor", () => {
         ],
       };
 
-      const extractor = new SNSEventTraceExtractor(tracerWrapper);
+      const extractor = new SNSEventTraceExtractor(tracerWrapper, {} as TraceConfig);
 
       const traceContext = extractor.extract(payload);
       expect(traceContext).not.toBeNull();
 
       // The StepFunctionContextService generates deterministic trace IDs
-      expect(traceContext?.toTraceId()).toBe("3995810302240690842");
-      expect(traceContext?.toSpanId()).toBe("8347071195300897803");
-      expect(traceContext?.sampleMode()).toBe("1");
-      expect(traceContext?.source).toBe("event");
+      expect(traceContext?.[0].toTraceId()).toBe("3995810302240690842");
+      expect(traceContext?.[0].toSpanId()).toBe("8347071195300897803");
+      expect(traceContext?.[0].sampleMode()).toBe("1");
+      expect(traceContext?.[0].source).toBe("event");
     });
   });
 });

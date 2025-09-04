@@ -7,7 +7,7 @@ import { extractTraceContext, handleExtractionError } from "../extractor-utils";
 export class EventBridgeEventTraceExtractor implements EventTraceExtractor {
   constructor(private tracerWrapper: TracerWrapper) {}
 
-  extract(event: EventBridgeEvent<string, any>): SpanContextWrapper | null {
+  extract(event: EventBridgeEvent<string, any>): SpanContextWrapper[] {
     try {
       const headers = event?.detail?._datadog;
       if (headers) {
@@ -17,6 +17,6 @@ export class EventBridgeEventTraceExtractor implements EventTraceExtractor {
       handleExtractionError(error, "EventBridge");
     }
 
-    return null;
+    return [];
   }
 }

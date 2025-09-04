@@ -56,10 +56,10 @@ describe("HTTPEventTraceExtractor", () => {
         "x-datadog-trace-id": "797643193680388254",
       });
 
-      expect(traceContext?.toTraceId()).toBe("797643193680388254");
-      expect(traceContext?.toSpanId()).toBe("4726693487091824375");
-      expect(traceContext?.sampleMode()).toBe("2");
-      expect(traceContext?.source).toBe("event");
+      expect(traceContext?.[0].toTraceId()).toBe("797643193680388254");
+      expect(traceContext?.[0].toSpanId()).toBe("4726693487091824375");
+      expect(traceContext?.[0].sampleMode()).toBe("2");
+      expect(traceContext?.[0].source).toBe("event");
     });
 
     // The tracer is not handling mixed casing Datadog headers yet
@@ -92,10 +92,10 @@ describe("HTTPEventTraceExtractor", () => {
         "x-datadog-trace-id": "797643193680388254",
       });
 
-      expect(traceContext?.toTraceId()).toBe("797643193680388254");
-      expect(traceContext?.toSpanId()).toBe("4726693487091824375");
-      expect(traceContext?.sampleMode()).toBe("2");
-      expect(traceContext?.source).toBe("event");
+      expect(traceContext?.[0].toTraceId()).toBe("797643193680388254");
+      expect(traceContext?.[0].toSpanId()).toBe("4726693487091824375");
+      expect(traceContext?.[0].sampleMode()).toBe("2");
+      expect(traceContext?.[0].source).toBe("event");
     });
 
     it("extracts trace context from payload with multiValueHeaders", () => {
@@ -122,9 +122,9 @@ describe("HTTPEventTraceExtractor", () => {
         "x-datadog-sampling-priority": "1",
       });
 
-      expect(traceContext?.toTraceId()).toBe("123");
-      expect(traceContext?.toSpanId()).toBe("456");
-      expect(traceContext?.sampleMode()).toBe("1");
+      expect(traceContext?.[0].toTraceId()).toBe("123");
+      expect(traceContext?.[0].toSpanId()).toBe("456");
+      expect(traceContext?.[0].sampleMode()).toBe("1");
     });
 
     it("flattens a real ALB multiValueHeaders payload into a lowercase, single-value map", () => {
@@ -188,7 +188,7 @@ describe("HTTPEventTraceExtractor", () => {
       const extractor = new HTTPEventTraceExtractor(tracerWrapper);
 
       const traceContext = extractor.extract(payload);
-      expect(traceContext).not.toBeNull();
+      expect(traceContext.length).toBe(1);
 
       expect(spyTracerWrapper).toHaveBeenCalledWith({
         "x-datadog-authorizing-requestid": "random-id",
@@ -198,13 +198,13 @@ describe("HTTPEventTraceExtractor", () => {
         "x-datadog-trace-id": "2389589954026090296",
       });
 
-      expect(traceContext?.toTraceId()).toBe("2389589954026090296");
-      expect(traceContext?.toSpanId()).toBe("2389589954026090296");
-      expect(traceContext?.sampleMode()).toBe("1");
-      expect(traceContext?.source).toBe("event");
+      expect(traceContext?.[0].toTraceId()).toBe("2389589954026090296");
+      expect(traceContext?.[0].toSpanId()).toBe("2389589954026090296");
+      expect(traceContext?.[0].sampleMode()).toBe("1");
+      expect(traceContext?.[0].source).toBe("event");
     });
 
-    it("returns null when extracted span context by tracer is null", () => {
+    it("returns an empty array when extracted span context by tracer is null", () => {
       const tracerWrapper = new TracerWrapper();
 
       const payload = {
@@ -214,7 +214,7 @@ describe("HTTPEventTraceExtractor", () => {
       const extractor = new HTTPEventTraceExtractor(tracerWrapper);
 
       const traceContext = extractor.extract(payload);
-      expect(traceContext).toBeNull();
+      expect(traceContext).toStrictEqual([]);
     });
   });
 

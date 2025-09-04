@@ -64,7 +64,7 @@ describe("LambdaContextTraceExtractor", () => {
       const extractor = new LambdaContextTraceExtractor(tracerWrapper);
 
       const traceContext = extractor.extract(payload);
-      expect(traceContext).not.toBeNull();
+      expect(traceContext.length).toBe(1);
 
       expect(spyTracerWrapper).toHaveBeenCalledWith({
         "x-datadog-parent-id": "1350735035497811828",
@@ -72,10 +72,10 @@ describe("LambdaContextTraceExtractor", () => {
         "x-datadog-trace-id": "667309514221035538",
       });
 
-      expect(traceContext?.toTraceId()).toBe("667309514221035538");
-      expect(traceContext?.toSpanId()).toBe("1350735035497811828");
-      expect(traceContext?.sampleMode()).toBe("1");
-      expect(traceContext?.source).toBe("event");
+      expect(traceContext?.[0].toTraceId()).toBe("667309514221035538");
+      expect(traceContext?.[0].toSpanId()).toBe("1350735035497811828");
+      expect(traceContext?.[0].sampleMode()).toBe("1");
+      expect(traceContext?.[0].source).toBe("event");
     });
 
     it.each([
@@ -88,10 +88,10 @@ describe("LambdaContextTraceExtractor", () => {
       const extractor = new LambdaContextTraceExtractor(tracerWrapper);
 
       const traceContext = extractor.extract(payload as any);
-      expect(traceContext).toBeNull();
+      expect(traceContext).toStrictEqual([]);
     });
 
-    it("returns null when extracted span context by tracer is null", () => {
+    it("returns an empty array when extracted span context by tracer is null", () => {
       const tracerWrapper = new TracerWrapper();
 
       const payload = {
@@ -105,7 +105,7 @@ describe("LambdaContextTraceExtractor", () => {
       const extractor = new LambdaContextTraceExtractor(tracerWrapper);
 
       const traceContext = extractor.extract(payload);
-      expect(traceContext).toBeNull();
+      expect(traceContext).toStrictEqual([]);
     });
   });
 });

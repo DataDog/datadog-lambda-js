@@ -10,7 +10,7 @@ export class AppSyncEventTraceExtractor implements EventTraceExtractor {
     this.httpEventExtractor = new HTTPEventTraceExtractor(this.tracerWrapper, false);
   }
 
-  extract(event: any): SpanContextWrapper | null {
+  extract(event: any): SpanContextWrapper[] {
     event.headers = event.request.headers;
 
     return this.httpEventExtractor.extract(event);

@@ -52,7 +52,7 @@ describe("AppSyncEventTraceExtractor", () => {
       const extractor = new AppSyncEventTraceExtractor(tracerWrapper);
 
       const traceContext = extractor.extract(payload);
-      expect(traceContext).not.toBeNull();
+      expect(traceContext.length).toBe(1);
 
       expect(spyTracerWrapper).toHaveBeenCalledWith({
         "x-datadog-parent-id": "797643193680388254",
@@ -60,13 +60,13 @@ describe("AppSyncEventTraceExtractor", () => {
         "x-datadog-trace-id": "4110911582297405557",
       });
 
-      expect(traceContext?.toTraceId()).toBe("797643193680388254");
-      expect(traceContext?.toSpanId()).toBe("4110911582297405557");
-      expect(traceContext?.sampleMode()).toBe("2");
-      expect(traceContext?.source).toBe("event");
+      expect(traceContext?.[0].toTraceId()).toBe("797643193680388254");
+      expect(traceContext?.[0].toSpanId()).toBe("4110911582297405557");
+      expect(traceContext?.[0].sampleMode()).toBe("2");
+      expect(traceContext?.[0].source).toBe("event");
     });
 
-    it("returns null when extracted span context by tracer is null", () => {
+    it("returns an empty array when extracted span context by tracer is null", () => {
       const tracerWrapper = new TracerWrapper();
 
       const payload = {
@@ -83,7 +83,7 @@ describe("AppSyncEventTraceExtractor", () => {
       const extractor = new AppSyncEventTraceExtractor(tracerWrapper);
 
       const traceContext = extractor.extract(payload);
-      expect(traceContext).toBeNull();
+      expect(traceContext).toStrictEqual([]);
     });
   });
 });

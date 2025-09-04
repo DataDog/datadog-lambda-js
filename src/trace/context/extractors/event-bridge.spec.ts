@@ -59,7 +59,7 @@ describe("EventBridgeEventTraceExtractor", () => {
       const extractor = new EventBridgeEventTraceExtractor(tracerWrapper);
 
       const traceContext = extractor.extract(payload);
-      expect(traceContext).not.toBeNull();
+      expect(traceContext.length).toBe(1);
 
       expect(spyTracerWrapper).toHaveBeenCalledWith({
         "x-datadog-trace-id": "5827606813695714842",
@@ -67,24 +67,24 @@ describe("EventBridgeEventTraceExtractor", () => {
         "x-datadog-sampling-priority": "1",
       });
 
-      expect(traceContext?.toTraceId()).toBe("5827606813695714842");
-      expect(traceContext?.toSpanId()).toBe("4726693487091824375");
-      expect(traceContext?.sampleMode()).toBe("1");
-      expect(traceContext?.source).toBe("event");
+      expect(traceContext?.[0].toTraceId()).toBe("5827606813695714842");
+      expect(traceContext?.[0].toSpanId()).toBe("4726693487091824375");
+      expect(traceContext?.[0].sampleMode()).toBe("1");
+      expect(traceContext?.[0].source).toBe("event");
     });
 
     it.each([
       ["detail", {}],
       ["_datadog in detail", { hello: "there" }],
-    ])("returns null and skips extracting when payload is missing '%s'", (_, payload) => {
+    ])("returns an empty array and skips extracting when payload is missing '%s'", (_, payload) => {
       const tracerWrapper = new TracerWrapper();
       const extractor = new EventBridgeEventTraceExtractor(tracerWrapper);
 
       const traceContext = extractor.extract(payload as any);
-      expect(traceContext).toBeNull();
+      expect(traceContext).toStrictEqual([]);
     });
 
-    it("returns null when extracted span context by tracer is null", () => {
+    it("returns an empty array when extracted span context by tracer is null", () => {
       const tracerWrapper = new TracerWrapper();
 
       const payload = {
@@ -105,7 +105,7 @@ describe("EventBridgeEventTraceExtractor", () => {
       const extractor = new EventBridgeEventTraceExtractor(tracerWrapper);
 
       const traceContext = extractor.extract(payload);
-      expect(traceContext).toBeNull();
+      expect(traceContext).toStrictEqual([]);
     });
 
     it("extracts trace context from Step Function EventBridge event", () => {
@@ -163,10 +163,10 @@ describe("EventBridgeEventTraceExtractor", () => {
       const traceContext = extractor.extract(payload);
       expect(traceContext).not.toBeNull();
 
-      expect(traceContext?.toTraceId()).toBe("1503104665848096006");
-      expect(traceContext?.toSpanId()).toBe("159267866761498620");
-      expect(traceContext?.sampleMode()).toBe("1");
-      expect(traceContext?.source).toBe("event");
+      expect(traceContext?.[0].toTraceId()).toBe("1503104665848096006");
+      expect(traceContext?.[0].toSpanId()).toBe("159267866761498620");
+      expect(traceContext?.[0].sampleMode()).toBe("1");
+      expect(traceContext?.[0].source).toBe("event");
     });
   });
 });
