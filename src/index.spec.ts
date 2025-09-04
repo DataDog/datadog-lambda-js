@@ -49,19 +49,19 @@ let mockTraceSource: TraceSource | undefined = undefined;
 
 jest.mock("./trace/trace-context-service", () => {
   class MockTraceContextService {
-    extract(event: any, context: Context): SpanContextWrapper {
-      return mockSpanContextWrapper;
+    extract(event: any, context: Context): SpanContextWrapper[] {
+      return [mockSpanContextWrapper];
     }
 
     get traceSource() {
       return mockTraceSource;
     }
     get currentTraceContext() {
-      return mockSpanContextWrapper;
+      return [mockSpanContextWrapper];
     }
 
     get currentTraceHeaders() {
-      return mockTraceHeaders;
+      return [mockTraceHeaders];
     }
   }
   return {

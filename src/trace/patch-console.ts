@@ -56,9 +56,9 @@ function patchMethod(mod: wrappedConsole, method: LogMethod, contextService: Tra
       setLogLevel(LogLevel.NONE);
       try {
         const context = contextService.currentTraceContext;
-        if (context !== null) {
-          const traceId = context.toTraceId();
-          const parentId = context.toSpanId();
+        if (context.length > 0) {
+          const traceId = context[0].toTraceId();
+          const parentId = context[0].toSpanId();
           prefix = `[dd.trace_id=${traceId} dd.span_id=${parentId}]`;
           if (arguments.length === 0) {
             arguments.length = 1;

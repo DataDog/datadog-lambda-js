@@ -324,7 +324,7 @@ export function getTraceHeaders(): Partial<DatadogTraceHeaders> {
   if (currentTraceListener === undefined) {
     return {};
   }
-  return currentTraceListener.currentTraceHeaders;
+  return currentTraceListener.currentTraceHeaders[0];
 }
 
 function getConfig(userConfig?: Partial<Config>): Config {

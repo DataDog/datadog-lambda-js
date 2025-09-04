@@ -90,7 +90,7 @@ export class TraceListener {
   private inferredSpan?: SpanWrapper;
   private wrappedCurrentSpan?: SpanWrapper;
   private triggerTags?: { [key: string]: string };
-  private lambdaSpanParentContext?: SpanContext;
+  private lambdaSpanParentContexts?: SpanContext[];
   private spanPointerAttributesList: SpanPointerAttributes[] | undefined;
 
   public get currentTraceHeaders() {
@@ -122,9 +122,11 @@ export class TraceListener {
     // The aws.lambda span needs to have a parented to the Datadog trace context from the
     // incoming event if available or the X-Ray trace context if hybrid tracing is enabled
     const spanContextWrapper = await this.contextService.extract(event, context);
-    let parentSpanContext: SpanContext | undefined;
+    // Then incoming event may have multiple span contexts
+    let parentSpanContexts: SpanContext[] = [];
+
     if (this.contextService.traceSource === TraceSource.Event || this.config.mergeDatadogXrayTraces) {
-      parentSpanContext = tracerInitialized ? spanContextWrapper?.spanContext : undefined;
+      parentSpanContexts = tracerInitialized ? spanContextWrapper?.map((sc) => sc.spanContext) : [];
       logDebug("Attempting to find parent for the aws.lambda span");
     } else {
       logDebug("Didn't attempt to find parent for aws.lambda span", {
@@ -132,16 +134,18 @@ export class TraceListener {
         traceSource: this.contextService.traceSource,
       });
     }
+
     if (this.config.createInferredSpan) {
       this.inferredSpan = this.inferrer.createInferredSpan(
         event,
         context,
-        parentSpanContext,
+        // Create inferred spans with the first parent span context
+        parentSpanContexts[0],
         this.config.encodeAuthorizerContext,
       );
     }
 
-    this.lambdaSpanParentContext = this.inferredSpan?.span || parentSpanContext;
+    this.lambdaSpanParentContexts = this.inferredSpan ? [this.inferredSpan?.span] : parentSpanContexts;
     this.context = context;
     const eventSource = parseEventSource(event);
     this.triggerTags = extractTriggerTags(event, context, eventSource);
@@ -320,15 +324,12 @@ export class TraceListener {
         ...this.stepFunctionContext,
       };
     }
-    if (this.lambdaSpanParentContext) {
-      if (this.config.useSpanLinks){
-        options.links = [
-          {
-            context: this.lambdaSpanParentContext,
-          },
-        ];
+
+    if (this.lambdaSpanParentContexts && this.lambdaSpanParentContexts.length > 0) {
+      if (this.config.useSpanLinks) {
+        options.links = this.lambdaSpanParentContexts?.map((psc) => ({ context: psc }));
       } else {
-        options.childOf = this.lambdaSpanParentContext;
+        options.childOf = this.lambdaSpanParentContexts?.[0];
       }
     }
     options.type = "serverless";

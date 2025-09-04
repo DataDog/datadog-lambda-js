@@ -141,10 +141,10 @@ describe("TraceContextExtractor", () => {
 
         expect(spyCustomExtractor).toHaveBeenCalled();
 
-        expect(traceContext?.toTraceId()).toBe("4110911582297405551");
-        expect(traceContext?.toSpanId()).toBe("797643193680388251");
-        expect(traceContext?.sampleMode()).toBe("2");
-        expect(traceContext?.source).toBe("event");
+        expect(traceContext?.[0].toTraceId()).toBe("4110911582297405551");
+        expect(traceContext?.[0].toSpanId()).toBe("797643193680388251");
+        expect(traceContext?.[0].sampleMode()).toBe("2");
+        expect(traceContext?.[0].source).toBe("event");
       });
     });
     describe("event", () => {
@@ -180,10 +180,10 @@ describe("TraceContextExtractor", () => {
           "x-datadog-trace-id": "4110911582297405551",
         });
 
-        expect(traceContext?.toTraceId()).toBe("4110911582297405551");
-        expect(traceContext?.toSpanId()).toBe("797643193680388251");
-        expect(traceContext?.sampleMode()).toBe("2");
-        expect(traceContext?.source).toBe("event");
+        expect(traceContext?.[0].toTraceId()).toBe("4110911582297405551");
+        expect(traceContext?.[0].toSpanId()).toBe("797643193680388251");
+        expect(traceContext?.[0].sampleMode()).toBe("2");
+        expect(traceContext?.[0].source).toBe("event");
       });
 
       // SNS message event (String Value)
@@ -242,10 +242,10 @@ describe("TraceContextExtractor", () => {
           "x-datadog-trace-id": "6966585609680374559",
         });
 
-        expect(traceContext?.toTraceId()).toBe("6966585609680374559");
-        expect(traceContext?.toSpanId()).toBe("4297634551783724228");
-        expect(traceContext?.sampleMode()).toBe("1");
-        expect(traceContext?.source).toBe("event");
+        expect(traceContext?.[0].toTraceId()).toBe("6966585609680374559");
+        expect(traceContext?.[0].toSpanId()).toBe("4297634551783724228");
+        expect(traceContext?.[0].sampleMode()).toBe("1");
+        expect(traceContext?.[0].source).toBe("event");
       });
 
       // SNS message event (Binary Value)
@@ -303,10 +303,10 @@ describe("TraceContextExtractor", () => {
           "x-datadog-trace-id": "7102291628443134919",
         });
 
-        expect(traceContext?.toTraceId()).toBe("7102291628443134919");
-        expect(traceContext?.toSpanId()).toBe("4247550101648618618");
-        expect(traceContext?.sampleMode()).toBe("1");
-        expect(traceContext?.source).toBe("event");
+        expect(traceContext?.[0].toTraceId()).toBe("7102291628443134919");
+        expect(traceContext?.[0].toSpanId()).toBe("4247550101648618618");
+        expect(traceContext?.[0].sampleMode()).toBe("1");
+        expect(traceContext?.[0].source).toBe("event");
       });
 
       // SNS message delivered to SQS queue event (String Value)
@@ -354,10 +354,10 @@ describe("TraceContextExtractor", () => {
           "x-datadog-trace-id": "2776434475358637757",
         });
 
-        expect(traceContext?.toTraceId()).toBe("2776434475358637757");
-        expect(traceContext?.toSpanId()).toBe("4493917105238181843");
-        expect(traceContext?.sampleMode()).toBe("1");
-        expect(traceContext?.source).toBe("event");
+        expect(traceContext?.[0].toTraceId()).toBe("2776434475358637757");
+        expect(traceContext?.[0].toSpanId()).toBe("4493917105238181843");
+        expect(traceContext?.[0].sampleMode()).toBe("1");
+        expect(traceContext?.[0].source).toBe("event");
       });
 
       // SNS message delivered to SQS queue event (Binary Value)
@@ -404,10 +404,10 @@ describe("TraceContextExtractor", () => {
           "x-datadog-trace-id": "7102291628443134919",
         });
 
-        expect(traceContext?.toTraceId()).toBe("7102291628443134919");
-        expect(traceContext?.toSpanId()).toBe("4247550101648618618");
-        expect(traceContext?.sampleMode()).toBe("1");
-        expect(traceContext?.source).toBe("event");
+        expect(traceContext?.[0].toTraceId()).toBe("7102291628443134919");
+        expect(traceContext?.[0].toSpanId()).toBe("4247550101648618618");
+        expect(traceContext?.[0].sampleMode()).toBe("1");
+        expect(traceContext?.[0].source).toBe("event");
       });
 
       // EventBridge message delivered to SQS queue event
@@ -456,10 +456,10 @@ describe("TraceContextExtractor", () => {
           "x-datadog-trace-id": "7379586022458917877",
         });
 
-        expect(traceContext?.toTraceId()).toBe("7379586022458917877");
-        expect(traceContext?.toSpanId()).toBe("2644033662113726488");
-        expect(traceContext?.sampleMode()).toBe("1");
-        expect(traceContext?.source).toBe("event");
+        expect(traceContext?.[0].toTraceId()).toBe("7379586022458917877");
+        expect(traceContext?.[0].toSpanId()).toBe("2644033662113726488");
+        expect(traceContext?.[0].sampleMode()).toBe("1");
+        expect(traceContext?.[0].source).toBe("event");
       });
 
       // AppSync event
@@ -496,10 +496,10 @@ describe("TraceContextExtractor", () => {
           "x-datadog-trace-id": "4110911582297405557",
         });
 
-        expect(traceContext?.toTraceId()).toBe("797643193680388254");
-        expect(traceContext?.toSpanId()).toBe("4110911582297405557");
-        expect(traceContext?.sampleMode()).toBe("2");
-        expect(traceContext?.source).toBe("event");
+        expect(traceContext?.[0].toTraceId()).toBe("797643193680388254");
+        expect(traceContext?.[0].toSpanId()).toBe("4110911582297405557");
+        expect(traceContext?.[0].sampleMode()).toBe("2");
+        expect(traceContext?.[0].source).toBe("event");
       });
 
       // SQS queue message event
@@ -554,10 +554,10 @@ describe("TraceContextExtractor", () => {
           "x-datadog-trace-id": "4555236104497098341",
         });
 
-        expect(traceContext?.toTraceId()).toBe("4555236104497098341");
-        expect(traceContext?.toSpanId()).toBe("3369753143434738315");
-        expect(traceContext?.sampleMode()).toBe("1");
-        expect(traceContext?.source).toBe("event");
+        expect(traceContext?.[0].toTraceId()).toBe("4555236104497098341");
+        expect(traceContext?.[0].toSpanId()).toBe("3369753143434738315");
+        expect(traceContext?.[0].sampleMode()).toBe("1");
+        expect(traceContext?.[0].source).toBe("event");
       });
 
       // Kinesis stream event
@@ -604,10 +604,10 @@ describe("TraceContextExtractor", () => {
           "x-datadog-trace-id": "667309514221035538",
         });
 
-        expect(traceContext?.toTraceId()).toBe("667309514221035538");
-        expect(traceContext?.toSpanId()).toBe("1350735035497811828");
-        expect(traceContext?.sampleMode()).toBe("1");
-        expect(traceContext?.source).toBe("event");
+        expect(traceContext?.[0].toTraceId()).toBe("667309514221035538");
+        expect(traceContext?.[0].toSpanId()).toBe("1350735035497811828");
+        expect(traceContext?.[0].sampleMode()).toBe("1");
+        expect(traceContext?.[0].source).toBe("event");
       });
 
       // EventBridge message event
@@ -651,10 +651,10 @@ describe("TraceContextExtractor", () => {
           "x-datadog-sampling-priority": "1",
         });
 
-        expect(traceContext?.toTraceId()).toBe("5827606813695714842");
-        expect(traceContext?.toSpanId()).toBe("4726693487091824375");
-        expect(traceContext?.sampleMode()).toBe("1");
-        expect(traceContext?.source).toBe("event");
+        expect(traceContext?.[0].toTraceId()).toBe("5827606813695714842");
+        expect(traceContext?.[0].toSpanId()).toBe("4726693487091824375");
+        expect(traceContext?.[0].sampleMode()).toBe("1");
+        expect(traceContext?.[0].source).toBe("event");
       });
 
       // StepFunction context event
@@ -688,10 +688,10 @@ describe("TraceContextExtractor", () => {
         const traceContext = await extractor.extract(event, {} as Context);
         expect(traceContext).not.toBeNull();
 
-        expect(traceContext?.toTraceId()).toBe("1139193989631387307");
-        expect(traceContext?.toSpanId()).toBe("7747304477664363642");
-        expect(traceContext?.sampleMode()).toBe("1");
-        expect(traceContext?.source).toBe("event");
+        expect(traceContext?.[0].toTraceId()).toBe("1139193989631387307");
+        expect(traceContext?.[0].toSpanId()).toBe("7747304477664363642");
+        expect(traceContext?.[0].sampleMode()).toBe("1");
+        expect(traceContext?.[0].source).toBe("event");
       });
 
       it("extracts and applies deterministic trace ID from StepFunction event end-to-end", async () => {
@@ -721,25 +721,25 @@ describe("TraceContextExtractor", () => {
         expect(traceContext).not.toBeNull();
 
         // Verify the trace context was extracted from Step Function
-        expect(traceContext?.source).toBe("event");
+        expect(traceContext?.[0].source).toBe("event");
 
         // Verify the trace ID is deterministic based on execution ID
         // The trace ID should be generated from SHA256 hash of the execution ID
-        const traceId = traceContext?.toTraceId();
+        const traceId = traceContext?.[0].toTraceId();
         expect(traceId).toBeDefined();
         expect(traceId).not.toBe("0"); // Should not be zero
         expect(traceId).toMatch(/^\d+$/); // Should be numeric string
 
         // Verify the span ID is deterministic based on execution ID, state name, and entered time
-        const spanId = traceContext?.toSpanId();
+        const spanId = traceContext?.[0].toSpanId();
         expect(spanId).toBeDefined();
         expect(spanId).not.toBe("0"); // Should not be zero
         expect(spanId).toMatch(/^\d+$/); // Should be numeric string
 
         // Verify that extracting the same event produces the same trace IDs (deterministic)
         const traceContext2 = await extractor.extract(event, {} as Context);
-        expect(traceContext2?.toTraceId()).toBe(traceId);
-        expect(traceContext2?.toSpanId()).toBe(spanId);
+        expect(traceContext2?.[0].toTraceId()).toBe(traceId);
+        expect(traceContext2?.[0].toSpanId()).toBe(spanId);
       });
     });
 
@@ -775,10 +775,10 @@ describe("TraceContextExtractor", () => {
           "x-datadog-trace-id": "667309514221035538",
         });
 
-        expect(traceContext?.toTraceId()).toBe("667309514221035538");
-        expect(traceContext?.toSpanId()).toBe("1350735035497811828");
-        expect(traceContext?.sampleMode()).toBe("1");
-        expect(traceContext?.source).toBe("event");
+        expect(traceContext?.[0].toTraceId()).toBe("667309514221035538");
+        expect(traceContext?.[0].toSpanId()).toBe("1350735035497811828");
+        expect(traceContext?.[0].sampleMode()).toBe("1");
+        expect(traceContext?.[0].source).toBe("event");
       });
     });
   });
@@ -794,10 +794,10 @@ describe("TraceContextExtractor", () => {
       const traceContext = await extractor.extract({}, {} as Context);
       expect(traceContext).not.toBeNull();
 
-      expect(traceContext?.toTraceId()).toBe("4110911582297405557");
-      expect(traceContext?.toSpanId()).toBe("797643193680388254");
-      expect(traceContext?.sampleMode()).toBe("2");
-      expect(traceContext?.source).toBe("xray");
+      expect(traceContext?.[0].toTraceId()).toBe("4110911582297405557");
+      expect(traceContext?.[0].toSpanId()).toBe("797643193680388254");
+      expect(traceContext?.[0].sampleMode()).toBe("2");
+      expect(traceContext?.[0].source).toBe("xray");
     });
   });
 });

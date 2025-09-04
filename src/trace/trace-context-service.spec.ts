@@ -30,53 +30,53 @@ describe("TraceContextService", () => {
       source: TraceSource.Event,
       spanContext: spanContext,
     };
-    traceContextService["rootTraceContext"] = {
+    traceContextService["rootTraceContexts"] = [{
       toTraceId: () => "123456",
       toSpanId: () => "abcdef",
       sampleMode: () => 1,
       source: TraceSource.Event,
       spanContext: spanContext,
-    };
+    }];
 
     const currentTraceContext = traceContextService.currentTraceContext;
-    expect(currentTraceContext?.toTraceId()).toBe("123456");
-    expect(currentTraceContext?.toSpanId()).toBe("78910");
-    expect(currentTraceContext?.sampleMode()).toBe(1);
-    expect(currentTraceContext?.source).toBe("event");
+    expect(currentTraceContext?.[0].toTraceId()).toBe("123456");
+    expect(currentTraceContext?.[0].toSpanId()).toBe("78910");
+    expect(currentTraceContext?.[0].sampleMode()).toBe(1);
+    expect(currentTraceContext?.[0].source).toBe("event");
   });
   it("uses parent trace parent id when trace id is invalid", () => {
     mockXRayShouldThrow = true;
     mockXRaySegment = {
       id: "0b11cc",
     };
-    traceContextService["rootTraceContext"] = {
+    traceContextService["rootTraceContexts"] = [{
       toTraceId: () => "123456",
       toSpanId: () => "abcdef",
       sampleMode: () => 1,
       source: TraceSource.Xray,
       spanContext: spanContext,
-    };
+    }];
 
     const currentTraceContext = traceContextService.currentTraceContext;
-    expect(currentTraceContext?.toTraceId()).toBe("123456");
-    expect(currentTraceContext?.toSpanId()).toBe("abcdef");
-    expect(currentTraceContext?.sampleMode()).toBe(1);
-    expect(currentTraceContext?.source).toBe("xray");
+    expect(currentTraceContext?.[0].toTraceId()).toBe("123456");
+    expect(currentTraceContext?.[0].toSpanId()).toBe("abcdef");
+    expect(currentTraceContext?.[0].sampleMode()).toBe(1);
+    expect(currentTraceContext?.[0].source).toBe("xray");
   });
   it("uses parent trace parent id when no datadog trace context is available and xray throws", () => {
     mockXRayShouldThrow = true;
-    traceContextService["rootTraceContext"] = {
+    traceContextService["rootTraceContexts"] = [{
       toTraceId: () => "123456",
       toSpanId: () => "abcdef",
       sampleMode: () => 1,
       source: TraceSource.Xray,
       spanContext: spanContext,
-    };
+    }];
 
     const currentTraceContext = traceContextService.currentTraceContext;
-    expect(currentTraceContext?.toTraceId()).toBe("123456");
-    expect(currentTraceContext?.toSpanId()).toBe("abcdef");
-    expect(currentTraceContext?.sampleMode()).toBe(1);
-    expect(currentTraceContext?.source).toBe("xray");
+    expect(currentTraceContext?.[0].toTraceId()).toBe("123456");
+    expect(currentTraceContext?.[0].toSpanId()).toBe("abcdef");
+    expect(currentTraceContext?.[0].sampleMode()).toBe(1);
+    expect(currentTraceContext?.[0].source).toBe("xray");
   });
 });

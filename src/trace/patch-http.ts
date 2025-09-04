@@ -104,9 +104,11 @@ function getRequestOptionsWithTraceContext(
     headers = {};
   }
   const traceHeaders = traceService.currentTraceHeaders;
+
+  // If HTTP request use first trace header
   headers = {
     ...headers,
-    ...traceHeaders,
+    ...(traceHeaders ? traceHeaders[0] : {}),
   };
   const requestOpts = {
     ...options,
@@ -115,7 +117,7 @@ function getRequestOptionsWithTraceContext(
   // Logging all http requests during integration tests let's
   // us track traffic in our test snapshots
   if (isIntegrationTest()) {
-    _logHttpRequest(requestOpts, traceHeaders);
+    _logHttpRequest(requestOpts, traceHeaders[0]);
   }
   return requestOpts;
 }

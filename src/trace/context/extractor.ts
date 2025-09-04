@@ -25,7 +25,7 @@ export const DATADOG_PARENT_ID_HEADER = "x-datadog-parent-id";
 export const DATADOG_SAMPLING_PRIORITY_HEADER = "x-datadog-sampling-priority";
 
 export interface EventTraceExtractor {
-  extract(event: any): SpanContextWrapper | null;
+  extract(event: any): SpanContextWrapper[];
 }
 
 export interface DatadogTraceHeaders {
@@ -42,40 +42,58 @@ export class TraceContextExtractor {
     this.xrayService = new XrayService();
   }
 
-  async extract(event: any, context: Context): Promise<SpanContextWrapper | null> {
-    let spanContext: SpanContextWrapper | null = null;
+  async extract(event: any, context: Context): Promise<SpanContextWrapper[]> {
+    let spanContexts: SpanContextWrapper[] = [];
     if (this.config.traceExtractor) {
       const customExtractor = new CustomTraceExtractor(this.config.traceExtractor);
-      spanContext = await customExtractor.extract(event, context);
-    }
+      const spanContext = await customExtractor.extract(event, context);
 
-    if (spanContext === null) {
-      const eventExtractor = this.getTraceEventExtractor(event);
-      if (eventExtractor !== undefined) {
-        spanContext = eventExtractor.extract(event);
+      if (spanContext !== null){
+        spanContexts.push(spanContext);
       }
     }
 
-    if (spanContext === null) {
+    if (spanContexts === null || spanContexts.length === 0) {
+      const eventExtractor = this.getTraceEventExtractor(event);
+      if (eventExtractor !== undefined) {
+        spanContexts.push(...eventExtractor.extract(event));
+      }
+    }
+    
+    if (spanContexts === null || spanContexts.length === 0) {
       this.stepFunctionContextService = StepFunctionContextService.instance(event);
       if (this.stepFunctionContextService?.context) {
         const extractor = new StepFunctionEventTraceExtractor();
-        spanContext = extractor?.extract(event);
+        let spanContext = extractor?.extract(event);
+
+        if (spanContext !== null) {
+          spanContexts.push(...spanContext);
+        }
       }
     }
 
-    if (spanContext === null) {
+    if (spanContexts.length === 0) {
       const contextExtractor = new LambdaContextTraceExtractor(this.tracerWrapper);
-      spanContext = contextExtractor.extract(context);
+      let spanContext = contextExtractor.extract(context);
+
+      if (spanContext !== null) {
+        spanContexts.push(...spanContext);
+      }
     }
 
-    if (spanContext !== null) {
-      this.addTraceContextToXray(spanContext);
+    if (spanContexts.length > 0) {
+      this.addTraceContextToXray(spanContexts[0]);
 
-      return spanContext;
+      return spanContexts;
     }
 
-    return this.xrayService.extract();
+    const xRayContext = this.xrayService.extract();
+    
+    if (xRayContext !== null) {
+      spanContexts.push(xRayContext);
+    }
+
+    return spanContexts;
   }
 
   private getTraceEventExtractor(event: any): EventTraceExtractor | undefined {
@@ -86,12 +104,12 @@ export class TraceContextExtractor {
       return new HTTPEventTraceExtractor(this.tracerWrapper, this.config.decodeAuthorizerContext);
     }
 
-    if (EventValidator.isSNSEvent(event)) return new SNSEventTraceExtractor(this.tracerWrapper);
-    if (EventValidator.isSNSSQSEvent(event)) return new SNSSQSEventTraceExtractor(this.tracerWrapper);
-    if (EventValidator.isEventBridgeSQSEvent(event)) return new EventBridgeSQSEventTraceExtractor(this.tracerWrapper);
+    if (EventValidator.isSNSEvent(event)) return new SNSEventTraceExtractor(this.tracerWrapper, this.config);
+    if (EventValidator.isSNSSQSEvent(event)) return new SNSSQSEventTraceExtractor(this.tracerWrapper, this.config);
+    if (EventValidator.isEventBridgeSQSEvent(event)) return new EventBridgeSQSEventTraceExtractor(this.tracerWrapper, this.config);
     if (EventValidator.isAppSyncResolverEvent(event)) return new AppSyncEventTraceExtractor(this.tracerWrapper);
-    if (EventValidator.isSQSEvent(event)) return new SQSEventTraceExtractor(this.tracerWrapper);
-    if (EventValidator.isKinesisStreamEvent(event)) return new KinesisEventTraceExtractor(this.tracerWrapper);
+    if (EventValidator.isSQSEvent(event)) return new SQSEventTraceExtractor(this.tracerWrapper, this.config);
+    if (EventValidator.isKinesisStreamEvent(event)) return new KinesisEventTraceExtractor(this.tracerWrapper, this.config);
     if (EventValidator.isEventBridgeEvent(event)) return new EventBridgeEventTraceExtractor(this.tracerWrapper);
 
     return;

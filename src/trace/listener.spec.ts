@@ -158,9 +158,9 @@ describe("TraceListener", () => {
         priority: "2",
       },
     };
-    mockSpanContextWrapper = {
+    mockSpanContextWrapper = [{
       spanContext: mockSpanContext,
-    };
+    }];
     await listener.onStartInvocation({}, context as any);
     const unwrappedFunc = () => {};
     const wrappedFunc = listener.onWrap(unwrappedFunc);
@@ -203,9 +203,9 @@ describe("TraceListener", () => {
         priority: "2",
       },
     };
-    mockSpanContextWrapper = {
+    mockSpanContextWrapper = [{
       spanContext: mockSpanContext,
-    };
+    }];
     await listener.onStartInvocation({}, context as any);
     const unwrappedFunc = () => {};
     const wrappedFunc = listener.onWrap(unwrappedFunc);
@@ -281,9 +281,9 @@ describe("TraceListener", () => {
         priority: "2",
       },
     };
-    mockSpanContextWrapper = {
+    mockSpanContextWrapper = [{
       spanContext: mockSpanContext,
-    };
+    }];
 
     await listener.onStartInvocation({}, context as any);
     const unwrappedFunc = () => {};
@@ -384,9 +384,9 @@ describe("TraceListener", () => {
         priority: "1",
       },
     };
-    mockSpanContextWrapper = {
+    mockSpanContextWrapper = [{
       spanContext: mockSpanContext,
-    };
+    }];
 
     const stepFunctionSQSEvent = {
       Records: [

@@ -42,44 +42,46 @@ export interface TraceContext {
 export type TraceExtractor = (event: any, context: Context) => Promise<TraceContext> | TraceContext;
 
 export class TraceContextService {
-  public rootTraceContext: SpanContextWrapper | null = null;
+  public rootTraceContexts: SpanContextWrapper[] = [];
   private traceExtractor: TraceContextExtractor;
 
   constructor(private tracerWrapper: TracerWrapper, private config: TraceConfig) {
     this.traceExtractor = new TraceContextExtractor(this.tracerWrapper, this.config);
   }
 
-  async extract(event: any, context: Context): Promise<SpanContextWrapper | null> {
-    this.rootTraceContext = await this.traceExtractor?.extract(event, context);
+  async extract(event: any, context: Context): Promise<SpanContextWrapper[]> {
+    this.rootTraceContexts = await this.traceExtractor?.extract(event, context);
 
     return this.currentTraceContext;
   }
 
-  get currentTraceHeaders(): Partial<DatadogTraceHeaders> {
-    const traceContext = this.currentTraceContext as SpanContextWrapper;
-    if (traceContext === null) return {};
+  get currentTraceHeaders(): Partial<DatadogTraceHeaders>[] {
+    const traceContext = this.currentTraceContext;
+    if (traceContext === null) return [{}];
 
-    return {
-      [DATADOG_TRACE_ID_HEADER]: traceContext.toTraceId(),
-      [DATADOG_PARENT_ID_HEADER]: traceContext.toSpanId(),
-      [DATADOG_SAMPLING_PRIORITY_HEADER]: traceContext.sampleMode().toString(),
-    };
+    return traceContext.map((tc) => {
+      return {
+        [DATADOG_TRACE_ID_HEADER]: tc.toTraceId(),
+        [DATADOG_PARENT_ID_HEADER]: tc.toSpanId(),
+        [DATADOG_SAMPLING_PRIORITY_HEADER]: tc.sampleMode().toString(),
+      };
+    });
   }
 
-  get currentTraceContext(): SpanContextWrapper | null {
-    if (this.rootTraceContext === null) return null;
+  get currentTraceContext(): SpanContextWrapper[] {
+    if (this.rootTraceContexts === null || this.rootTraceContexts.length === 0) return [];
 
-    const traceContext = this.rootTraceContext;
+    const traceContext = this.rootTraceContexts;
     const currentDatadogContext = this.tracerWrapper.traceContext();
     if (currentDatadogContext) {
       logDebug(`set trace context from dd-trace with parent ${currentDatadogContext.toTraceId()}`);
-      return currentDatadogContext;
+      return [currentDatadogContext];
     }
 
     return traceContext;
   }
 
   get traceSource() {
-    return this.rootTraceContext !== null ? this.rootTraceContext?.source : null;
+    return this.rootTraceContexts.length > 0 ? this.rootTraceContexts[0].source : null;
   }
 }

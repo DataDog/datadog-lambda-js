@@ -14,11 +14,11 @@ import { XrayService } from "../xray-service";
  * @param tracerWrapper The tracer wrapper instance
  * @returns SpanContextWrapper or null
  */
-export function extractTraceContext(headers: any, tracerWrapper: TracerWrapper): SpanContextWrapper | null {
+export function extractTraceContext(headers: any, tracerWrapper: TracerWrapper): SpanContextWrapper[] {
   // First try to extract as regular trace headers
   const traceContext = tracerWrapper.extract(headers);
   if (traceContext) {
-    return traceContext;
+    return [traceContext];
   }
 
   // If that fails, check if this is a Step Function context
@@ -26,11 +26,11 @@ export function extractTraceContext(headers: any, tracerWrapper: TracerWrapper):
 
   if (stepFunctionInstance.context !== undefined) {
     if (stepFunctionInstance.spanContext !== null) {
-      return stepFunctionInstance.spanContext;
+      return [stepFunctionInstance.spanContext];
     }
   }
 
-  return null;
+  return [];
 }
 
 /**
@@ -39,14 +39,14 @@ export function extractTraceContext(headers: any, tracerWrapper: TracerWrapper):
  * @param eventType The type of event (for logging)
  * @returns SpanContextWrapper or null
  */
-export function extractFromAWSTraceHeader(awsTraceHeader: string, eventType: string): SpanContextWrapper | null {
+export function extractFromAWSTraceHeader(awsTraceHeader: string, eventType: string): SpanContextWrapper[] {
   const traceContext = XrayService.extraceDDContextFromAWSTraceHeader(awsTraceHeader);
   if (traceContext) {
     logDebug(`Extracted trace context from ${eventType} event attributes AWSTraceHeader`);
-    return traceContext;
+    return [traceContext];
   } else {
     logDebug(`No Datadog trace context found from ${eventType} event attributes AWSTraceHeader`);
-    return null;
+    return [];
   }
 }
 

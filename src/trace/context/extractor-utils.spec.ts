@@ -37,7 +37,7 @@ describe("extractor-utils", () => {
       expect(result).not.toBeNull();
     });
 
-    it("returns null when no trace context can be extracted", () => {
+    it("returns an empty array when no trace context can be extracted", () => {
       const emptyEvent = {
         someOtherProperty: "value",
       };
@@ -45,7 +45,7 @@ describe("extractor-utils", () => {
       const tracerWrapper = new TracerWrapper();
       const result = extractTraceContext(emptyEvent, tracerWrapper);
 
-      expect(result).toBeNull();
+      expect(result).toStrictEqual([]);
     });
 
     it("extracts context from LambdaRootStepFunctionContext", () => {
@@ -158,7 +158,7 @@ describe("extractor-utils", () => {
 
       const result = extractFromAWSTraceHeader(invalidHeader, eventType);
 
-      expect(result).toBeNull();
+      expect(result).toStrictEqual([]);
     });
   });
 });

@@ -33,13 +33,15 @@ describe("patchHttp", () => {
 
   beforeEach(() => {
     contextService = new TraceContextService(traceWrapper as any, {} as any);
-    contextService["rootTraceContext"] = {
-      spanContext: {},
-      toTraceId: () => "123456",
-      toSpanId: () => "78910",
-      sampleMode: () => SampleMode.USER_KEEP,
-      source: TraceSource.Event,
-    } as SpanContextWrapper;
+    contextService["rootTraceContexts"] = [
+      {
+        spanContext: {},
+        toTraceId: () => "123456",
+        toSpanId: () => "78910",
+        sampleMode: () => SampleMode.USER_KEEP,
+        source: TraceSource.Event,
+      },
+    ];
     setLogLevel(LogLevel.NONE);
   });
 
@@ -130,7 +132,7 @@ describe("patchHttp", () => {
   it("doesn't inject tracing headers when context is empty", () => {
     nock("http://www.example.com").get("/").reply(200, {});
 
-    contextService["rootTraceContext"] = null as any;
+    contextService["rootTraceContexts"] = [] as any;
     patchHttp(contextService);
     const req = http.request("http://www.example.com");
     const headers = req.getHeaders();

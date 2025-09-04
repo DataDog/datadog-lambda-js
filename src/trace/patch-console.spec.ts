@@ -28,13 +28,13 @@ describe("patchConsole", () => {
     trace = jest.fn();
     cnsole = { log, info, debug, error, warn, trace } as any;
     contextService = new TraceContextService(traceWrapper as any, {} as any);
-    contextService["rootTraceContext"] = {
+    contextService["rootTraceContexts"] = [{
       spanContext: {},
       toTraceId: () => "123456",
       toSpanId: () => "78910",
       sampleMode: () => SampleMode.USER_KEEP,
       source: TraceSource.Event,
-    } as SpanContextWrapper;
+    }];
   });
 
   afterEach(() => {
@@ -73,7 +73,7 @@ describe("patchConsole", () => {
   });
 
   it("doesn't inject trace context when none is present", () => {
-    contextService["rootTraceContext"] = undefined as any;
+    contextService["rootTraceContexts"] = [] as any;
     patchConsole(cnsole as any, contextService);
     cnsole.log("Hello");
     expect(log).toHaveBeenCalledWith("Hello");
@@ -92,7 +92,7 @@ describe("patchConsole", () => {
     );
   });
   it("leaves empty message unmodified when there is no trace context", () => {
-    contextService["rootTraceContext"] = undefined as any;
+    contextService["rootTraceContexts"] = [] as any;
     patchConsole(cnsole as any, contextService);
     cnsole.log();
     expect(log).toHaveBeenCalledWith();
