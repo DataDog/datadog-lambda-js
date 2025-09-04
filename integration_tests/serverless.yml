@@ -71,6 +71,17 @@ functions:
     environment:
       DD_FLUSH_TO_LOG: true
 
+  # process-input-traced
+  with-span-links-traced_node:
+    name: integration-tests-js-${sls:stage}-with-span-links-traced_${env:RUNTIME}
+    handler: process-input-traced.handle
+    runtime: ${env:SERVERLESS_RUNTIME}
+    layers:
+      - { Ref: NodeLambdaLayer }
+    environment:
+      DD_FLUSH_TO_LOG: true
+      DD_USE_SPAN_LINKS: true
+
   # throw-error-traced
   throw-error-traced_node:
     name: integration-tests-js-${sls:stage}-throw-error-traced_${env:RUNTIME}
