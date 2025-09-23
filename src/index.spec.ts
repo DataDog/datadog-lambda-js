@@ -64,7 +64,7 @@ jest.mock("./trace/trace-context-service", () => {
       return mockTraceHeaders;
     }
 
-    reset(){
+    reset() {
       // mocking
     }
   }
