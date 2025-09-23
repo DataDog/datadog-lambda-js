@@ -279,9 +279,10 @@ export class TraceListener {
       this.injectAuthorizerSpan(result, event?.requestContext?.requestId, finishTime || Date.now());
     }
 
-    // Reset singleton
+    // Reset singletons and trace context
     this.stepFunctionContext = undefined;
     StepFunctionContextService.reset();
+    this.contextService.reset();
   }
 
   public onWrap<T = (...args: any[]) => any>(func: T): T {
