@@ -50,6 +50,9 @@ export class TraceContextService {
   }
 
   async extract(event: any, context: Context): Promise<SpanContextWrapper | null> {
+    // Reset trace context from previous invocation to prevent caching
+    this.rootTraceContext = null;
+
     this.rootTraceContext = await this.traceExtractor?.extract(event, context);
 
     return this.currentTraceContext;
@@ -81,5 +84,9 @@ export class TraceContextService {
 
   get traceSource() {
     return this.rootTraceContext !== null ? this.rootTraceContext?.source : null;
+  }
+
+  reset() {
+    this.rootTraceContext = null;
   }
 }

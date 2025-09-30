@@ -79,4 +79,51 @@ describe("TraceContextService", () => {
     expect(currentTraceContext?.sampleMode()).toBe(1);
     expect(currentTraceContext?.source).toBe("xray");
   });
+
+  it("resets rootTraceContext to prevent caching between invocations", () => {
+    // Initial trace context
+    traceContextService["rootTraceContext"] = {
+      toTraceId: () => "123456",
+      toSpanId: () => "abcdef",
+      sampleMode: () => 1,
+      source: TraceSource.Event,
+      spanContext: spanContext,
+    };
+
+    expect(traceContextService.currentTraceContext).not.toBeNull();
+    expect(traceContextService.traceSource).toBe("event");
+
+    traceContextService.reset();
+
+    expect(traceContextService.currentTraceContext).toBeNull();
+    expect(traceContextService.traceSource).toBeNull();
+  });
+
+  it("automatically resets trace context at the beginning of extract", async () => {
+    // Mock the extractor to return a specific context
+    const mockExtract = jest.fn().mockResolvedValue({
+      toTraceId: () => "newTraceId",
+      toSpanId: () => "newSpanId",
+      sampleMode: () => 1,
+      source: TraceSource.Event,
+      spanContext: {},
+    });
+    traceContextService["traceExtractor"] = { extract: mockExtract } as any;
+
+    // Set up old trace context (simulating previous invocation)
+    traceContextService["rootTraceContext"] = {
+      toTraceId: () => "oldTraceId",
+      toSpanId: () => "oldSpanId",
+      sampleMode: () => 0,
+      source: TraceSource.Xray,
+      spanContext: {},
+    };
+
+    // Extract should reset and set new context
+    const result = await traceContextService.extract({}, {} as any);
+
+    // Verify old context was cleared and new context was set
+    expect(result?.toTraceId()).toBe("newTraceId");
+    expect(traceContextService.traceSource).toBe("event");
+  });
 });

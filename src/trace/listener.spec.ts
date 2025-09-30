@@ -68,6 +68,9 @@ jest.mock("./trace-context-service", () => {
     get currentTraceContext() {
       return mockSpanContextWrapper;
     }
+    reset() {
+      // mocking
+    }
   }
   return {
     ...jest.requireActual("./trace-context-service"),

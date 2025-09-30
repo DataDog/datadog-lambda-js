@@ -63,6 +63,10 @@ jest.mock("./trace/trace-context-service", () => {
     get currentTraceHeaders() {
       return mockTraceHeaders;
     }
+
+    reset() {
+      // mocking
+    }
   }
   return {
     ...jest.requireActual("./trace/trace-context-service"),
