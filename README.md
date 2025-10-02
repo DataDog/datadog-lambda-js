@@ -40,7 +40,7 @@ Datadog's [Continuous Profiler](https://www.datadoghq.com/product/code-profiling
 
 ### 5.x.x
 
-The 5.x.x release introduces version 2 of the Datadog tracer, [dd-trace-js](https://github.com/DataDog/dd-trace-js/). This includes a few breaking changes, and the migration guide found [here](https://github.com/DataDog/dd-trace-js/blob/master/MIGRATING.md#nested-objects-as-tags).
+The 5.x.x release introduces version 2 of the Datadog tracer, [dd-trace-js](https://github.com/DataDog/dd-trace-js/). This includes a few breaking changes, and the migration guide found [here](https://github.com/DataDog/dd-trace-js/blob/main/MIGRATING.md#nested-objects-as-tags).
 
 The first 5.x.x version was released with Lambda Layer version `69`.
 
@@ -59,12 +59,12 @@ The 8.x.x release drops support for Node14, and upgrades dd-trace-js to version 
 ### 9.x.x
 The 9.x.x release changed how Lambda's traceID is hashed if the incoming payload contains Step Functions context object. This change only affects those who uses inject Step Functions context object into Lambda payload.
 
-There is a full migration guide available [here](https://github.com/DataDog/dd-trace-js/blob/master/MIGRATING.md).
+There is a full migration guide available [here](https://github.com/DataDog/dd-trace-js/blob/main/MIGRATING.md).
 Some changes are more likely to impact Serverless users:
 - `HTTP Operation Name Changed`. HTTP requests will no longer appear as a separate client under `*-http-client`, which polluted the APM service catalog.
 - `tracer.currentSpan()` has been deprecated for a long time, and is now removed.
 - `tracer.bindEmitter()` is similarly removed after being deprecated.
-- It is no longer possible to [bind promises or event emitters with tracer.scope().bind(...)](https://github.com/DataDog/dd-trace-js/blob/master/MIGRATING.md#scope-binding-for-promises-and-event-emitters)
+- It is no longer possible to [bind promises or event emitters with tracer.scope().bind(...)](https://github.com/DataDog/dd-trace-js/blob/main/MIGRATING.md#scope-binding-for-promises-and-event-emitters)
 
 ## Opening Issues
 
