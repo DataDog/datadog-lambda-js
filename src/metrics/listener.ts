@@ -74,13 +74,6 @@ export class MetricsListener {
   }
 
   public async onStartInvocation(_: any, context?: Context) {
-    // We get the API key in onStartInvocation rather than in the constructor because in busy functions,
-    // initialization may occur more than 5 minutes before the first invocation (due to proactive initialization),
-    // resulting in AWS errors: https://github.com/aws/aws-sdk-js-v3/issues/5192#issuecomment-2073243617
-    if (!this.apiKey) {
-      this.apiKey = this.getAPIKey(this.config);
-    }
-
     if (this.isExtensionRunning === undefined) {
       this.isExtensionRunning = await isExtensionRunning();
       logDebug(`Extension present: ${this.isExtensionRunning}`);
@@ -98,6 +91,12 @@ export class MetricsListener {
       return;
     }
 
+    // We get the API key in onStartInvocation rather than in the constructor because in busy functions,
+    // initialization may occur more than 5 minutes before the first invocation (due to proactive initialization),
+    // resulting in AWS errors: https://github.com/aws/aws-sdk-js-v3/issues/5192#issuecomment-2073243617
+    if (!this.apiKey) {
+      this.apiKey = this.getAPIKey(this.config);
+    }
     this.currentProcessor = this.createProcessor(this.config, this.apiKey);
   }
 
