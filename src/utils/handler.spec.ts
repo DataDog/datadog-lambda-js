@@ -1,7 +1,7 @@
 import { Context, Handler } from "aws-lambda";
 
 import { didFunctionColdStart } from "./cold-start";
-import { wrap } from "./handler";
+import { promisifiedHandler } from "./handler";
 import { LogLevel, setLogLevel } from "./log";
 
 const mockContext = {
@@ -12,91 +12,16 @@ beforeEach(() => {
   setLogLevel(LogLevel.NONE);
 });
 
-describe("wrap", () => {
+describe("promisifiedHandler", () => {
   it("returns a promise when callback used by the handler", async () => {
     const handler: Handler = (event, context, callback) => {
       callback(null, { statusCode: 200, body: "The body of the response" });
     };
 
-    let calledStart = false;
-    let calledComplete = false;
-    let calledOriginalHandler = false;
+    const promHandler = promisifiedHandler(handler) as any;
 
-    const wrappedHandler = wrap(
-      handler,
-      async () => {
-        calledStart = true;
-      },
-      async () => {
-        calledComplete = true;
-      },
-    );
-
-    const result = await wrappedHandler({}, mockContext, () => {
-      calledOriginalHandler = true;
-    });
+    const result = await promHandler({}, mockContext);
     expect(result).toEqual({ statusCode: 200, body: "The body of the response" });
-    expect(calledStart).toBeTruthy();
-    expect(calledComplete).toBeTruthy();
-    expect(calledOriginalHandler).toBeFalsy();
-  });
-
-  it("recovers from onStart throwing an error and invokes the original lambda callback", async () => {
-    const handler: Handler = (event, context, callback) => {
-      callback(null, { statusCode: 200, body: "The body of the response" });
-    };
-
-    let calledStart = false;
-    let calledComplete = false;
-    let calledOriginalHandler = false;
-
-    const wrappedHandler = wrap(
-      handler,
-      () => {
-        calledStart = true;
-        throw Error("Some Error");
-      },
-      async () => {
-        calledComplete = true;
-      },
-    );
-
-    const result = await wrappedHandler({}, mockContext, () => {
-      calledOriginalHandler = true;
-    });
-    expect(result).toEqual({ statusCode: 200, body: "The body of the response" });
-    expect(calledStart).toBeTruthy();
-    expect(calledComplete).toBeTruthy();
-    expect(calledOriginalHandler).toBeFalsy();
-  });
-
-  it("recovers from onComplete throwing an error and invokes the original lambda callback", async () => {
-    const handler: Handler = (event, context, callback) => {
-      callback(null, { statusCode: 200, body: "The body of the response" });
-    };
-
-    let calledStart = false;
-    let calledComplete = false;
-    let calledOriginalHandler = false;
-
-    const wrappedHandler = wrap(
-      handler,
-      async () => {
-        calledStart = true;
-      },
-      async () => {
-        calledComplete = true;
-        throw Error("Some Error");
-      },
-    );
-
-    const result = await wrappedHandler({}, mockContext, () => {
-      calledOriginalHandler = true;
-    });
-    expect(result).toEqual({ statusCode: 200, body: "The body of the response" });
-    expect(calledStart).toBeTruthy();
-    expect(calledComplete).toBeTruthy();
-    expect(calledOriginalHandler).toBeFalsy();
   });
 
   it("returns a promise when the original handler returns a promise", async () => {
@@ -104,28 +29,11 @@ describe("wrap", () => {
       return { statusCode: 200, body: "The body of the response" };
     };
 
-    let calledStart = false;
-    let calledComplete = false;
-    let calledOriginalHandler = false;
+    const promHandler = promisifiedHandler(handler) as any;
 
-    const wrappedHandler = wrap(
-      handler,
-      async () => {
-        calledStart = true;
-      },
-      async () => {
-        calledComplete = true;
-      },
-    );
-
-    const result = await wrappedHandler({}, mockContext, () => {
-      calledOriginalHandler = true;
-    });
+    const result = await promHandler({}, mockContext);
 
     expect(result).toEqual({ statusCode: 200, body: "The body of the response" });
-    expect(calledStart).toBeTruthy();
-    expect(calledComplete).toBeTruthy();
-    expect(calledOriginalHandler).toBeFalsy();
   });
 
   it("throws an error when the original lambda gives the callback an error", async () => {
@@ -133,30 +41,11 @@ describe("wrap", () => {
       return callback(new Error("Some error"), { statusCode: 200, body: "The body of the response" });
     };
 
-    let calledStart = false;
-    let calledComplete = false;
-    let calledOriginalHandler = false;
+    const promHandler = promisifiedHandler(handler) as any;
 
-    const wrappedHandler = wrap(
-      handler,
-      async () => {
-        calledStart = true;
-      },
-      async () => {
-        calledComplete = true;
-        throw Error("An error");
-      },
-    );
-
-    const result = wrappedHandler({}, mockContext, () => {
-      calledOriginalHandler = true;
-    });
+    const result = promHandler({}, mockContext);
 
     await expect(result).rejects.toEqual(new Error("Some error"));
-
-    expect(calledStart).toBeTruthy();
-    expect(calledComplete).toBeTruthy();
-    expect(calledOriginalHandler).toBeFalsy();
   });
 
   it("throws an error when the original lambda throws an error", async () => {
@@ -164,28 +53,10 @@ describe("wrap", () => {
       throw Error("Some error");
     };
 
-    let calledStart = false;
-    let calledComplete = false;
-    let calledOriginalHandler = false;
+    const promHandler = promisifiedHandler(handler) as any;
 
-    const wrappedHandler = wrap(
-      handler,
-      async () => {
-        calledStart = true;
-      },
-      async () => {
-        calledComplete = true;
-      },
-    );
-
-    const result = wrappedHandler({}, mockContext, () => {
-      calledOriginalHandler = true;
-    });
+    const result = promHandler({}, mockContext);
     await expect(result).rejects.toEqual(Error("Some error"));
-
-    expect(calledStart).toBeTruthy();
-    expect(calledComplete).toBeTruthy();
-    expect(calledOriginalHandler).toBeFalsy();
   });
 
   it("returns the first result to complete between the callback and the handler promise", async () => {
@@ -194,20 +65,11 @@ describe("wrap", () => {
       return { statusCode: 200, body: "The promise response" };
     };
 
-    let calledOriginalHandler = false;
+    const promHandler = promisifiedHandler(handler) as any;
 
-    const wrappedHandler = wrap(
-      handler,
-      async () => {},
-      async () => {},
-    );
-
-    const result = await wrappedHandler({}, mockContext, () => {
-      calledOriginalHandler = true;
-    });
+    const result = await promHandler({}, mockContext);
 
     expect(result).toEqual({ statusCode: 204, body: "The callback response" });
-    expect(calledOriginalHandler).toBeFalsy();
   });
 
   it("doesn't complete using non-promise return values", async () => {
@@ -218,20 +80,11 @@ describe("wrap", () => {
       return { statusCode: 200, body: "The promise response" } as unknown as void;
     };
 
-    let calledOriginalHandler = false;
+    const promHandler = promisifiedHandler(handler) as any;
 
-    const wrappedHandler = wrap(
-      handler,
-      async () => {},
-      async () => {},
-    );
-
-    const result = await wrappedHandler({}, mockContext, () => {
-      calledOriginalHandler = true;
-    });
+    const result = await promHandler({}, mockContext);
 
     expect(result).toEqual({ statusCode: 204, body: "The callback response" });
-    expect(calledOriginalHandler).toBeFalsy();
   });
 
   it("completes when calling context.done", async () => {
@@ -239,40 +92,22 @@ describe("wrap", () => {
       context.done(undefined, { statusCode: 204, body: "The callback response" });
     };
 
-    let calledOriginalHandler = false;
+    const promHandler = promisifiedHandler(handler) as any;
 
-    const wrappedHandler = wrap(
-      handler,
-      async () => {},
-      async () => {},
-    );
-
-    const result = await wrappedHandler({}, mockContext, () => {
-      calledOriginalHandler = true;
-    });
+    const result = await promHandler({}, mockContext);
 
     expect(result).toEqual({ statusCode: 204, body: "The callback response" });
-    expect(calledOriginalHandler).toBeFalsy();
   });
   it("completes when calling context.succeed", async () => {
     const handler: Handler = async (event, context, callback) => {
       context.succeed({ statusCode: 204, body: "The callback response" });
     };
 
-    let calledOriginalHandler = false;
+    const promHandler = promisifiedHandler(handler) as any;
 
-    const wrappedHandler = wrap(
-      handler,
-      async () => {},
-      async () => {},
-    );
-
-    const result = await wrappedHandler({}, mockContext, () => {
-      calledOriginalHandler = true;
-    });
+    const result = await promHandler({}, mockContext);
 
     expect(result).toEqual({ statusCode: 204, body: "The callback response" });
-    expect(calledOriginalHandler).toBeFalsy();
   });
 
   it("throws error when calling context.fail", async () => {
@@ -280,21 +115,11 @@ describe("wrap", () => {
       context.fail(new Error("Some error"));
     };
 
-    let calledOriginalHandler = false;
+    const promHandler = promisifiedHandler(handler) as any;
 
-    const wrappedHandler = wrap(
-      handler,
-      async () => {},
-      async () => {},
-    );
-
-    const result = wrappedHandler({}, mockContext, () => {
-      calledOriginalHandler = true;
-    });
+    const result = promHandler({}, mockContext);
 
     await expect(result).rejects.toEqual(new Error("Some error"));
-
-    expect(calledOriginalHandler).toBeFalsy();
   });
 
   it("completes when handler returns undefined", async () => {
@@ -302,28 +127,11 @@ describe("wrap", () => {
       // No return statement, implicitly returns undefined
     };
 
-    let calledStart = false;
-    let calledComplete = false;
-    let calledOriginalHandler = false;
+    const promHandler = promisifiedHandler(handler) as any;
 
-    const wrappedHandler = wrap(
-      handler,
-      async () => {
-        calledStart = true;
-      },
-      async () => {
-        calledComplete = true;
-      },
-    );
-
-    const result = await wrappedHandler({}, mockContext, () => {
-      calledOriginalHandler = true;
-    });
+    const result = await promHandler({}, mockContext);
 
     expect(result).toEqual(undefined);
-    expect(calledStart).toBeTruthy();
-    expect(calledComplete).toBeTruthy();
-    expect(calledOriginalHandler).toBeFalsy();
   });
 
   it("completes when handler returns a value directly (sync handler)", async () => {
@@ -332,27 +140,10 @@ describe("wrap", () => {
       return { statusCode: 200, body: "Sync response" };
     };
 
-    let calledStart = false;
-    let calledComplete = false;
-    let calledOriginalHandler = false;
+    const promHandler = promisifiedHandler(handler as any) as any;
 
-    const wrappedHandler = wrap(
-      handler as any,
-      async () => {
-        calledStart = true;
-      },
-      async () => {
-        calledComplete = true;
-      },
-    );
-
-    const result = await wrappedHandler({}, mockContext, () => {
-      calledOriginalHandler = true;
-    });
+    const result = await promHandler({}, mockContext);
 
     expect(result).toEqual({ statusCode: 200, body: "Sync response" });
-    expect(calledStart).toBeTruthy();
-    expect(calledComplete).toBeTruthy();
-    expect(calledOriginalHandler).toBeFalsy();
   });
 });
