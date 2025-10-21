@@ -67,7 +67,7 @@ export function promisifiedHandler<TEvent, TResult>(handler: Handler<TEvent, TRe
       // Distinguish between:
       //  - ordinary sync return value -> resolve immediately
       //  - side-effect artifact (e.g. aws-serverless-express server) -> wait for context.done
-      //  
+
       // Heuristic: if returned object has at least one function-valued property,
       // it's likely an artifact (like a server with `.listen`). Otherwise treat as sync result.
       const looksLikeArtifact =
