@@ -186,7 +186,6 @@ describe("promisifiedHandler", () => {
     const result = await promHandler({}, mockContext);
 
     // Should wait for and return the context.done result, NOT the server artifact
-    // This test will FAIL because current implementation resolves immediately with serverArtifact
     expect(result).toEqual({ statusCode: 200, body: "Response from context.done" });
     expect(result).not.toBe(serverArtifact);
   });
