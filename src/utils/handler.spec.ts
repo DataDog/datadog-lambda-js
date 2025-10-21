@@ -146,4 +146,50 @@ describe("promisifiedHandler", () => {
 
     expect(result).toEqual({ statusCode: 200, body: "Sync response" });
   });
+
+  it("waits for callback when handler returns non-promise artifact with callback parameter", async () => {
+    // Simulates aws-serverless-express pattern where a server instance is returned
+    // but the actual response comes through the callback
+    const serverArtifact = { type: "server-instance", listen: () => {} };
+    const handler: Handler = (event, context, callback) => {
+      // Simulate async processing that eventually calls callback
+      setTimeout(() => {
+        callback(null, { statusCode: 200, body: "Actual response from callback" });
+      }, 10);
+      return serverArtifact as unknown as void;
+    };
+
+    const promHandler = promisifiedHandler(handler) as any;
+
+    const result = await promHandler({}, mockContext);
+
+    // Should return the callback result, not the server artifact
+    expect(result).toEqual({ statusCode: 200, body: "Actual response from callback" });
+    expect(result).not.toBe(serverArtifact);
+  });
+
+  it("should wait for context.done in legacy mode when handler returns artifact (2 params)", async () => {
+    // This test reveals the issue: In legacy mode, handlers with only 2 parameters
+    // (event, context) return side-effect artifacts like aws-serverless-express server
+    // and rely on context.done to finish the response. The current implementation
+    // incorrectly resolves immediately with the artifact instead of waiting for context.done.
+    const serverArtifact = { type: "server-instance", listen: () => {} };
+    const handler = (event: any, context: Context) => {
+      // Simulate legacy handler that sets up server and calls context.done
+      setTimeout(() => {
+        context.done(undefined, { statusCode: 200, body: "Response from context.done" });
+      }, 10);
+      // Returns server artifact (side effect) but should wait for context.done
+      return serverArtifact;
+    };
+
+    const promHandler = promisifiedHandler(handler as any) as any;
+
+    const result = await promHandler({}, mockContext);
+
+    // Should wait for and return the context.done result, NOT the server artifact
+    // This test will FAIL because current implementation resolves immediately with serverArtifact
+    expect(result).toEqual({ statusCode: 200, body: "Response from context.done" });
+    expect(result).not.toBe(serverArtifact);
+  });
 });

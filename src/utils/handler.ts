@@ -55,18 +55,35 @@ export function promisifiedHandler<TEvent, TResult>(handler: Handler<TEvent, TRe
 
     const asyncProm = handler(event, context, modifiedCallback) as Promise<TResult> | undefined;
     let promise: Promise<TResult | undefined> = callbackProm;
-    if (asyncProm !== undefined && typeof asyncProm.then === "function") {
+
+    if (asyncProm !== undefined && typeof (asyncProm as any).then === "function") {
       // Mimics behaviour of lambda runtime, the first method of returning a result always wins.
-      promise = Promise.race([callbackProm, asyncProm]);
-    } else if (asyncProm === undefined && handler.length < 3) {
-      // Handler returned undefined and doesn't take a callback parameter, resolve immediately
-      promise = Promise.resolve(undefined);
+      promise = Promise.race([callbackProm, asyncProm as Promise<TResult>]);
     } else if (handler.length >= 3) {
       // Handler takes a callback, wait for the callback to be called
       promise = callbackProm;
     } else {
-      // Handler returned a value directly (sync handler with return value), resolve with that value
-      promise = Promise.resolve(asyncProm);
+      // Handler returned a value directly
+      // Distinguish between:
+      //  - ordinary sync return value -> resolve immediately
+      //  - side-effect artifact (e.g. aws-serverless-express server) -> wait for context.done
+  
+      // Heuristic: if returned object has at least one function-valued property,
+      // it's likely an artifact (like a server with `.listen`). Otherwise treat as sync result.
+      const looksLikeArtifact =
+        handler.length < 3 &&
+        asyncProm !== undefined &&
+        typeof asyncProm === "object" &&
+        // check for function-valued properties
+        Object.keys(asyncProm as object).some((k) => typeof (asyncProm as any)[k] === "function");
+
+      if (looksLikeArtifact) {
+        // Wait for callbackProm instead (the context.done/succeed/fail will resolve it)
+        promise = callbackProm;
+      } else {
+        // Return the value directly
+        promise = Promise.resolve(asyncProm);
+      }
     }
     return promise;
   };
