@@ -169,10 +169,8 @@ describe("promisifiedHandler", () => {
   });
 
   it("should wait for context.done in legacy mode when handler returns artifact (2 params)", async () => {
-    // This test reveals the issue: In legacy mode, handlers with only 2 parameters
-    // (event, context) return side-effect artifacts like aws-serverless-express server
-    // and rely on context.done to finish the response. The current implementation
-    // incorrectly resolves immediately with the artifact instead of waiting for context.done.
+    // In legacy mode, handlers with only 2 parameters (event, context) return side-effect artifacts
+    // like aws-serverless-express server and rely on context.done to finish the response. 
     const serverArtifact = { type: "server-instance", listen: () => {} };
     const handler = (event: any, context: Context) => {
       // Simulate legacy handler that sets up server and calls context.done
