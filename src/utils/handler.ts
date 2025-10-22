@@ -1,5 +1,6 @@
 import { Callback, Context, Handler } from "aws-lambda";
 import { HANDLER_STREAMING, STREAM_RESPONSE } from "../constants";
+import { EventEmitter } from "events";
 
 export function promisifiedHandler<TEvent, TResult>(handler: Handler<TEvent, TResult> | any) {
   // Response Stream Lambda function.
@@ -68,14 +69,18 @@ export function promisifiedHandler<TEvent, TResult>(handler: Handler<TEvent, TRe
       //  - ordinary sync return value -> resolve immediately
       //  - side-effect artifact (e.g. aws-serverless-express server) -> wait for context.done
 
-      // Heuristic: if returned object has at least one function-valued property,
-      // it's likely an artifact (like a server with `.listen`). Otherwise treat as sync result.
+      // Heuristic: trying to detect common types of side-effect artifacts
       const looksLikeArtifact =
-        handler.length < 3 &&
         asyncProm !== undefined &&
         typeof asyncProm === "object" &&
-        // check for function-valued properties
-        Object.keys(asyncProm as object).some((k) => typeof (asyncProm as any)[k] === "function");
+        // 1. Node.js http.Server or similar
+        ((typeof (asyncProm as any).listen === "function" && typeof (asyncProm as any).close === "function") ||
+          // 2. EventEmitter-like (has .on and .emit)
+          (typeof (asyncProm as any).on === "function" && typeof (asyncProm as any).emit === "function") ||
+          // 3. Instance of EventEmitter (covers Server, Socket, etc.)
+          asyncProm instanceof EventEmitter ||
+          // 4. Constructor name hint
+          ((asyncProm as any).constructor && /Server|Socket|Emitter/i.test((asyncProm as any).constructor.name)));
 
       if (looksLikeArtifact) {
         // Wait for callbackProm instead (the context.done/succeed/fail will resolve it)
