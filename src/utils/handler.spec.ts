@@ -168,25 +168,103 @@ describe("promisifiedHandler", () => {
     expect(result).not.toBe(serverArtifact);
   });
 
-  it("should wait for context.done in legacy mode when handler returns artifact (2 params)", async () => {
-    // In legacy mode, handlers with only 2 parameters (event, context) return side-effect artifacts
-    // like aws-serverless-express server and rely on context.done to finish the response.
-    const serverArtifact = { type: "server-instance", listen: () => {} };
+  it("detects http.Server-like artifact (has listen AND close)", async () => {
+    // Detection method 1: Node.js http.Server or similar (has both listen and close)
+    const serverArtifact = {
+      listen: () => {},
+      close: () => {},
+      _handle: {},
+    };
     const handler = (event: any, context: Context) => {
-      // Simulate legacy handler that sets up server and calls context.done
       setTimeout(() => {
         context.done(undefined, { statusCode: 200, body: "Response from context.done" });
       }, 10);
-      // Returns server artifact (side effect) but should wait for context.done
       return serverArtifact;
     };
 
     const promHandler = promisifiedHandler(handler as any) as any;
-
     const result = await promHandler({}, mockContext);
 
-    // Should wait for and return the context.done result, NOT the server artifact
     expect(result).toEqual({ statusCode: 200, body: "Response from context.done" });
     expect(result).not.toBe(serverArtifact);
+  });
+
+  it("detects EventEmitter-like artifact (has on AND emit)", async () => {
+    // Detection method 2: EventEmitter-like (has .on and .emit)
+    const emitterArtifact = {
+      on: () => {},
+      emit: () => {},
+      listeners: [],
+    };
+    const handler = (event: any, context: Context) => {
+      setTimeout(() => {
+        context.succeed({ statusCode: 200, body: "EventEmitter response" });
+      }, 10);
+      return emitterArtifact;
+    };
+
+    const promHandler = promisifiedHandler(handler as any) as any;
+    const result = await promHandler({}, mockContext);
+
+    expect(result).toEqual({ statusCode: 200, body: "EventEmitter response" });
+    expect(result).not.toBe(emitterArtifact);
+  });
+
+  it("detects EventEmitter instance", async () => {
+    // Detection method 3: Instance of EventEmitter (covers Server, Socket, etc.)
+    const { EventEmitter } = require("events");
+    const artifact = new EventEmitter();
+
+    const handler = (event: any, context: Context) => {
+      setTimeout(() => {
+        context.succeed({ statusCode: 200, body: "From EventEmitter instance" });
+      }, 10);
+      return artifact;
+    };
+
+    const promHandler = promisifiedHandler(handler as any) as any;
+    const result = await promHandler({}, mockContext);
+
+    expect(result).toEqual({ statusCode: 200, body: "From EventEmitter instance" });
+    expect(result).not.toBe(artifact);
+  });
+
+  it("detects artifact by constructor name (Server/Socket/Emitter)", async () => {
+    // Detection method 4: Constructor name matches /Server|Socket|Emitter/i
+    class CustomServer {
+      public port = 3000;
+      public start() {
+        return "started";
+      }
+    }
+    const artifact = new CustomServer();
+
+    const handler = (event: any, context: Context) => {
+      setTimeout(() => {
+        context.succeed({ statusCode: 200, body: "From CustomServer" });
+      }, 10);
+      return artifact;
+    };
+
+    const promHandler = promisifiedHandler(handler as any) as any;
+    const result = await promHandler({}, mockContext);
+
+    expect(result).toEqual({ statusCode: 200, body: "From CustomServer" });
+    expect(result).not.toBe(artifact);
+  });
+
+  it("does NOT treat plain response objects as artifacts", async () => {
+    // Plain objects that happen to have some function properties should still
+    // be treated as artifacts to be safe, but objects without functions are not artifacts
+    const handler = (event: any, context: Context) => {
+      // This is a legitimate Lambda response
+      return { statusCode: 200, body: "Plain response", headers: { "Content-Type": "text/plain" } };
+    };
+
+    const promHandler = promisifiedHandler(handler as any) as any;
+    const result = await promHandler({}, mockContext);
+
+    // Should return immediately with the response object
+    expect(result).toEqual({ statusCode: 200, body: "Plain response", headers: { "Content-Type": "text/plain" } });
   });
 });
