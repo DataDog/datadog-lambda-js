@@ -127,4 +127,35 @@ describe("TracerWrapper", () => {
 
     expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledWith(eventType, arn, contextJson, false);
   });
+
+  it("should finish active span when closing scope to prevent context leakage", () => {
+    const mockFinishFn = jest.fn();
+    mockSpan = {
+      context: () => ({
+        toSpanId: () => "1234",
+        toTraceId: () => "45678",
+        _sampling: {
+          priority: "2",
+        },
+      }),
+      finish: mockFinishFn,
+    };
+
+    const wrapper = new TracerWrapper();
+    wrapper.closeScope();
+
+    expect(mockFinishFn).toHaveBeenCalled();
+  });
+
+  it("should not error when closing scope with no active span", () => {
+    mockSpan = null;
+    const wrapper = new TracerWrapper();
+    expect(() => wrapper.closeScope()).not.toThrow();
+  });
+
+  it("should not error when closing scope with tracer unavailable", () => {
+    mockNoTracer = true;
+    const wrapper = new TracerWrapper();
+    expect(() => wrapper.closeScope()).not.toThrow();
+  });
 });

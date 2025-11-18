@@ -50,8 +50,9 @@ export class TraceContextService {
   }
 
   async extract(event: any, context: Context): Promise<SpanContextWrapper | null> {
-    // Reset trace context from previous invocation to prevent caching
+    // Reset trace context and close dd-trace scope to prevent stale context from previous invocation due to unfinished spans
     this.rootTraceContext = null;
+    this.tracerWrapper.closeScope();
 
     this.rootTraceContext = await this.traceExtractor?.extract(event, context);
 

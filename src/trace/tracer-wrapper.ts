@@ -94,6 +94,24 @@ export class TracerWrapper {
     return new SpanContextWrapper(span.context(), TraceSource.DdTrace);
   }
 
+  public closeScope(): void {
+    if (!this.isTracerAvailable) {
+      return;
+    }
+    try {
+      const activeSpan = this.currentSpan;
+      if (activeSpan && typeof activeSpan.finish === "function") {
+        logDebug("Finishing stale dd-trace span to prevent context leakage between invocations");
+        // Finish any stale span from previous invocation due to unfinished spans
+        activeSpan.finish();
+      }
+    } catch (err) {
+      if (err instanceof Object || err instanceof Error) {
+        logDebug("Failed to close dd-trace scope", err);
+      }
+    }
+  }
+
   public injectSpan(span: SpanContext): any {
     const dest = {};
     this.tracer.inject(span, "text_map", dest);
