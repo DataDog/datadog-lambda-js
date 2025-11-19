@@ -55,8 +55,8 @@ export class TraceContextService {
     this.tracerWrapper.closeScope();
 
     this.rootTraceContext = await this.traceExtractor?.extract(event, context);
-
-    return this.currentTraceContext;
+    // Return the extracted context, not the current context which may not be related to the event or context
+    return this.rootTraceContext;
   }
 
   get currentTraceHeaders(): Partial<DatadogTraceHeaders> {
@@ -71,7 +71,6 @@ export class TraceContextService {
   }
 
   get currentTraceContext(): SpanContextWrapper | null {
-    if (this.rootTraceContext === null) return null;
 
     const traceContext = this.rootTraceContext;
     const currentDatadogContext = this.tracerWrapper.traceContext();
