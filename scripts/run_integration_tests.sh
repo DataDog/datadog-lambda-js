@@ -30,7 +30,7 @@ mismatch_found=false
 # [1]: nodejs version
 # [2]: random 8-character ID to avoid collisions with other runs
 node18=("nodejs18.x" "18.12" $(xxd -l 4 -c 4 -p < /dev/random))
-node20=("nodejs20.x" "20.9" $(xxd -l 4 -c 4 -p < /dev/random))
+node20=("nodejs20.x" "20.19" $(xxd -l 4 -c 4 -p < /dev/random))
 node22=("nodejs22.x" "22.11" $(xxd -l 4 -c 4 -p < /dev/random))
 
 PARAMETERS_SETS=("node18" "node20" "node22")
