@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Usage: VERSION=5 aws-vault exec sso-serverless-sandbox-account-admin -- publish_sandbox.sh
+# Usage: VERSION=5 LAYERS=Datadog-Node22-x REGIONS=us-west-2 aws-vault exec sso-serverless-sandbox-account-admin -- publish_sandbox.sh
 set -e
 
 if [ -z "$VERSION" ]; then
