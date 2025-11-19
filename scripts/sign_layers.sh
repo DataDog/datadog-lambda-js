@@ -8,7 +8,7 @@
 set -e
 
 LAYER_DIR=".layers"
-LAYER_FILES=("datadog_lambda_node18.12.zip" "datadog_lambda_node20.9.zip" "datadog_lambda_node22.11.zip")
+LAYER_FILES=("datadog_lambda_node18.12.zip" "datadog_lambda_node20.19.zip" "datadog_lambda_node22.11.zip")
 SIGNING_PROFILE_NAME="DatadogLambdaSigningProfile"
 
 if [ -z "$LAYER_FILE" ]; then
