@@ -71,7 +71,6 @@ export class TraceContextService {
   }
 
   get currentTraceContext(): SpanContextWrapper | null {
-
     const traceContext = this.rootTraceContext;
     const currentDatadogContext = this.tracerWrapper.traceContext();
     if (currentDatadogContext) {
