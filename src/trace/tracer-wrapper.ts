@@ -1,4 +1,4 @@
-import { logDebug } from "../utils";
+import { logDebug, logWarning } from "../utils";
 import { SpanContextWrapper } from "./span-context-wrapper";
 import { TraceSource } from "./trace-context-service";
 
@@ -95,14 +95,10 @@ export class TracerWrapper {
   }
 
   public closeScope(): void {
-    if (!this.isTracerAvailable) {
-      return;
-    }
     try {
       const activeSpan = this.currentSpan;
       if (activeSpan && typeof activeSpan.finish === "function") {
-        logDebug("Finishing stale dd-trace span to prevent context leakage between invocations");
-        // Finish any stale span from previous invocation due to unfinished spans
+        logDebug("Detected stale span from previous invocation, finishing it to prevent trace context leakage");
         activeSpan.finish();
       }
     } catch (err) {
