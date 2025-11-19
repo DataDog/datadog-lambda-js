@@ -5,15 +5,15 @@
 # This product includes software developed at Datadog (https://www.datadoghq.com/).
 # Copyright 2023 Datadog, Inc.
 
-# NODE_VERSION=20.9 REGION=us-east-1
+# NODE_VERSION=20.19 REGION=us-east-1
 
 set -e
 
 # Available runtimes: https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html
 AWS_CLI_NODE_VERSIONS=("nodejs18.x" "nodejs20.x" "nodejs22.x")
-LAYER_PATHS=(".layers/datadog_lambda_node18.12.zip" ".layers/datadog_lambda_node20.9.zip" ".layers/datadog_lambda_node22.11.zip")
+LAYER_PATHS=(".layers/datadog_lambda_node18.12.zip" ".layers/datadog_lambda_node20.19.zip" ".layers/datadog_lambda_node22.11.zip")
 LAYERS=("Datadog-Node18-x" "Datadog-Node20-x" "Datadog-Node22-x")
-NODE_VERSIONS=("18.12" "20.9" "22.11")
+NODE_VERSIONS=("18.12" "20.19" "22.11")
 STAGES=('prod', 'sandbox', 'staging')
 
 printf "Starting script...\n\n"

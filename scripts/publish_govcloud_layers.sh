@@ -16,7 +16,7 @@
 
 set -e
 
-NODE_VERSIONS=("18.12" "20.9" "22.11")
+NODE_VERSIONS=("18.12" "20.19" "22.11")
 
 LAYER_PACKAGE=$1
 
