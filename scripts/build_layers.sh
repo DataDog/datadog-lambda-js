@@ -11,6 +11,8 @@ set -e
 LAYER_DIR=".layers"
 LAYER_FILES_PREFIX="datadog_lambda_node"
 
+# When changing any of these values, you must also change the corresponding
+# value at https://github.com/DataDog/serverless-tools/blob/0fabf9a1ab96df3907c2e50fd8df7e1fbd6a1fca/.gitlab/setup.sh#L128
 export NODE_VERSIONS=("18.12" "20.19" "22.11")
 
 if [ -z "$NODE_VERSION" ]; then
