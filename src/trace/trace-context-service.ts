@@ -50,12 +50,13 @@ export class TraceContextService {
   }
 
   async extract(event: any, context: Context): Promise<SpanContextWrapper | null> {
-    // Reset trace context from previous invocation to prevent caching
+    // Reset trace context and close dd-trace scope to prevent stale context from previous invocation due to unfinished spans
     this.rootTraceContext = null;
+    this.tracerWrapper.closeScope();
 
     this.rootTraceContext = await this.traceExtractor?.extract(event, context);
-
-    return this.currentTraceContext;
+    // Return the extracted context, not the current context which may not be related to the event or context
+    return this.rootTraceContext;
   }
 
   get currentTraceHeaders(): Partial<DatadogTraceHeaders> {
@@ -70,8 +71,6 @@ export class TraceContextService {
   }
 
   get currentTraceContext(): SpanContextWrapper | null {
-    if (this.rootTraceContext === null) return null;
-
     const traceContext = this.rootTraceContext;
     const currentDatadogContext = this.tracerWrapper.traceContext();
     if (currentDatadogContext) {
