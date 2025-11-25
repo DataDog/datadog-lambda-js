@@ -20,6 +20,17 @@ PIDS=()
 # Makes sure any subprocesses will be terminated with this process
 trap "pkill -P $$; exit 1;" INT
 
+# Ensure the argument arrays have the same length
+expected_length=${#NODE_VERSIONS_FOR_AWS_CLI[@]}
+if [[ ${#LAYER_PATHS[@]} -ne $expected_length ]] || \
+   [[ ${#AVAILABLE_LAYERS[@]} -ne $expected_length ]]; then
+    echo "ERROR: arguments NODE_VERSIONS_FOR_AWS_CLI, LAYER_PATHS, and AVAILABLE_LAYERS must have the same number of entries."
+    echo "NODE_VERSIONS_FOR_AWS_CLI has ${#NODE_VERSIONS_FOR_AWS_CLI[@]} entries."
+    echo "LAYER_PATHS has ${#LAYER_PATHS[@]} entries."
+    echo "AVAILABLE_LAYERS has ${#AVAILABLE_LAYERS[@]} entries."
+    exit 1
+fi
+
 # Check that the layer files exist
 for layer_file in "${LAYER_PATHS[@]}"
 do

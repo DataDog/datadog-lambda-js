@@ -10,7 +10,8 @@ START
     "resource:integration-tests-js-XXXX-http-requests_node24",
     "memorysize:1024",
     "cold_start:true",
-    "datadog_lambda:vX.X.X"
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs24.x"
   ],
   "v": 1
 }
@@ -30,7 +31,8 @@ START
     "resource:integration-tests-js-XXXX-http-requests_node24",
     "memorysize:1024",
     "cold_start:false",
-    "datadog_lambda:vX.X.X"
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs24.x"
   ],
   "v": 1
 }
@@ -50,7 +52,8 @@ START
     "resource:integration-tests-js-XXXX-http-requests_node24",
     "memorysize:1024",
     "cold_start:false",
-    "datadog_lambda:vX.X.X"
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs24.x"
   ],
   "v": 1
 }
@@ -70,7 +73,8 @@ START
     "resource:integration-tests-js-XXXX-http-requests_node24",
     "memorysize:1024",
     "cold_start:false",
-    "datadog_lambda:vX.X.X"
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs24.x"
   ],
   "v": 1
 }
@@ -90,7 +94,8 @@ START
     "resource:integration-tests-js-XXXX-http-requests_node24",
     "memorysize:1024",
     "cold_start:false",
-    "datadog_lambda:vX.X.X"
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs24.x"
   ],
   "v": 1
 }
@@ -110,7 +115,8 @@ START
     "resource:integration-tests-js-XXXX-http-requests_node24",
     "memorysize:1024",
     "cold_start:false",
-    "datadog_lambda:vX.X.X"
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs24.x"
   ],
   "v": 1
 }
@@ -130,7 +136,8 @@ START
     "resource:integration-tests-js-XXXX-http-requests_node24",
     "memorysize:1024",
     "cold_start:false",
-    "datadog_lambda:vX.X.X"
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs24.x"
   ],
   "v": 1
 }
@@ -150,7 +157,8 @@ START
     "resource:integration-tests-js-XXXX-http-requests_node24",
     "memorysize:1024",
     "cold_start:false",
-    "datadog_lambda:vX.X.X"
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs24.x"
   ],
   "v": 1
 }
@@ -170,7 +178,8 @@ START
     "resource:integration-tests-js-XXXX-http-requests_node24",
     "memorysize:1024",
     "cold_start:false",
-    "datadog_lambda:vX.X.X"
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs24.x"
   ],
   "v": 1
 }
