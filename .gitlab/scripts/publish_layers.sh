@@ -10,10 +10,10 @@
 set -e
 
 # Available runtimes: https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html
-AWS_CLI_NODE_VERSIONS=("nodejs18.x" "nodejs20.x" "nodejs22.x")
-LAYER_PATHS=(".layers/datadog_lambda_node18.12.zip" ".layers/datadog_lambda_node20.19.zip" ".layers/datadog_lambda_node22.11.zip")
-LAYERS=("Datadog-Node18-x" "Datadog-Node20-x" "Datadog-Node22-x")
-NODE_VERSIONS=("18.12" "20.19" "22.11")
+AWS_CLI_NODE_VERSIONS=("nodejs18.x" "nodejs20.x" "nodejs22.x" "nodejs24.x")
+LAYER_PATHS=(".layers/datadog_lambda_node18.12.zip" ".layers/datadog_lambda_node20.19.zip" ".layers/datadog_lambda_node22.11.zip" ".layers/datadog_lambda_node24.11.zip")
+LAYERS=("Datadog-Node18-x" "Datadog-Node20-x" "Datadog-Node22-x" "Datadog-Node24-x")
+NODE_VERSIONS=("18.12" "20.19" "22.11" "24.11")
 STAGES=('prod', 'sandbox', 'staging')
 
 printf "Starting script...\n\n"

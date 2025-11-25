@@ -10,9 +10,9 @@
 # VERSION is required.
 set -e
 
-NODE_VERSIONS_FOR_AWS_CLI=("nodejs18.x" "nodejs20.x" "nodejs22.x")
-LAYER_PATHS=(".layers/datadog_lambda_node18.12.zip" ".layers/datadog_lambda_node20.19.zip" ".layers/datadog_lambda_node22.11.zip")
-AVAILABLE_LAYERS=("Datadog-Node18-x" "Datadog-Node20-x" "Datadog-Node22-x")
+NODE_VERSIONS_FOR_AWS_CLI=("nodejs18.x" "nodejs20.x" "nodejs22.x" "nodejs24.x")
+LAYER_PATHS=(".layers/datadog_lambda_node18.12.zip" ".layers/datadog_lambda_node20.19.zip" ".layers/datadog_lambda_node22.11.zip" ".layers/datadog_lambda_node24.11.zip")
+AVAILABLE_LAYERS=("Datadog-Node18-x" "Datadog-Node20-x" "Datadog-Node22-x" "Datadog-Node24-x")
 AVAILABLE_REGIONS=$(aws ec2 describe-regions | jq -r '.[] | .[] | .RegionName')
 BATCH_SIZE=60
 PIDS=()

@@ -32,8 +32,9 @@ mismatch_found=false
 node18=("nodejs18.x" "18.12" $(xxd -l 4 -c 4 -p < /dev/random))
 node20=("nodejs20.x" "20.19" $(xxd -l 4 -c 4 -p < /dev/random))
 node22=("nodejs22.x" "22.11" $(xxd -l 4 -c 4 -p < /dev/random))
+node24=("nodejs24.x" "24.11" $(xxd -l 4 -c 4 -p < /dev/random))
 
-PARAMETERS_SETS=("node18" "node20" "node22")
+PARAMETERS_SETS=("node18" "node20" "node22" "node24")
 
 if [ -z "$RUNTIME_PARAM" ]; then
     echo "Node version not specified, running for all node versions."
