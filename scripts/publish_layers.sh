@@ -10,15 +10,26 @@
 # VERSION is required.
 set -e
 
-NODE_VERSIONS_FOR_AWS_CLI=("nodejs18.x" "nodejs20.x" "nodejs22.x")
-LAYER_PATHS=(".layers/datadog_lambda_node18.12.zip" ".layers/datadog_lambda_node20.19.zip" ".layers/datadog_lambda_node22.11.zip")
-AVAILABLE_LAYERS=("Datadog-Node18-x" "Datadog-Node20-x" "Datadog-Node22-x")
+NODE_VERSIONS_FOR_AWS_CLI=("nodejs18.x" "nodejs20.x" "nodejs22.x" "nodejs24.x")
+LAYER_PATHS=(".layers/datadog_lambda_node18.12.zip" ".layers/datadog_lambda_node20.19.zip" ".layers/datadog_lambda_node22.11.zip" ".layers/datadog_lambda_node24.11.zip")
+AVAILABLE_LAYERS=("Datadog-Node18-x" "Datadog-Node20-x" "Datadog-Node22-x" "Datadog-Node24-x")
 AVAILABLE_REGIONS=$(aws ec2 describe-regions | jq -r '.[] | .[] | .RegionName')
 BATCH_SIZE=60
 PIDS=()
 
 # Makes sure any subprocesses will be terminated with this process
 trap "pkill -P $$; exit 1;" INT
+
+# Ensure the argument arrays have the same length
+expected_length=${#NODE_VERSIONS_FOR_AWS_CLI[@]}
+if [[ ${#LAYER_PATHS[@]} -ne $expected_length ]] || \
+   [[ ${#AVAILABLE_LAYERS[@]} -ne $expected_length ]]; then
+    echo "ERROR: arguments NODE_VERSIONS_FOR_AWS_CLI, LAYER_PATHS, and AVAILABLE_LAYERS must have the same number of entries."
+    echo "NODE_VERSIONS_FOR_AWS_CLI has ${#NODE_VERSIONS_FOR_AWS_CLI[@]} entries."
+    echo "LAYER_PATHS has ${#LAYER_PATHS[@]} entries."
+    echo "AVAILABLE_LAYERS has ${#AVAILABLE_LAYERS[@]} entries."
+    exit 1
+fi
 
 # Check that the layer files exist
 for layer_file in "${LAYER_PATHS[@]}"

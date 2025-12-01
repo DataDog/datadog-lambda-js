@@ -10,11 +10,24 @@
 set -e
 
 # Available runtimes: https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html
-AWS_CLI_NODE_VERSIONS=("nodejs18.x" "nodejs20.x" "nodejs22.x")
-LAYER_PATHS=(".layers/datadog_lambda_node18.12.zip" ".layers/datadog_lambda_node20.19.zip" ".layers/datadog_lambda_node22.11.zip")
-LAYERS=("Datadog-Node18-x" "Datadog-Node20-x" "Datadog-Node22-x")
-NODE_VERSIONS=("18.12" "20.19" "22.11")
+AWS_CLI_NODE_VERSIONS=("nodejs18.x" "nodejs20.x" "nodejs22.x" "nodejs24.x")
+LAYER_PATHS=(".layers/datadog_lambda_node18.12.zip" ".layers/datadog_lambda_node20.19.zip" ".layers/datadog_lambda_node22.11.zip" ".layers/datadog_lambda_node24.11.zip")
+LAYERS=("Datadog-Node18-x" "Datadog-Node20-x" "Datadog-Node22-x" "Datadog-Node24-x")
+NODE_VERSIONS=("18.12" "20.19" "22.11" "24.11")
 STAGES=('prod', 'sandbox', 'staging')
+
+# Ensure the argument arrays have the same length
+expected_length=${#AWS_CLI_NODE_VERSIONS[@]}
+if [[ ${#LAYER_PATHS[@]} -ne $expected_length ]] || \
+   [[ ${#LAYERS[@]} -ne $expected_length ]] || \
+   [[ ${#AVAILABLE_LAYERS[@]} -ne $expected_length ]]; then; then
+    echo "ERROR: arguments AWS_CLI_NODE_VERSIONS, LAYER_PATHS, LAYERS, and NODE_VERSIONS must have the same number of entries."
+    echo "AWS_CLI_NODE_VERSIONS has ${#AWS_CLI_NODE_VERSIONS[@]} entries."
+    echo "LAYER_PATHS has ${#LAYER_PATHS[@]} entries."
+    echo "LAYERS has ${#LAYERS[@]} entries."
+    echo "NODE_VERSIONS has ${#NODE_VERSIONS[@]} entries."
+    exit 1
+fi
 
 printf "Starting script...\n\n"
 
