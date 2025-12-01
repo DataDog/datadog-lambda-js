@@ -6,7 +6,7 @@ LAYER_NAMES=("Datadog-Node18-x", "Datadog-Node20-x" "Datadog-Node22-x" "Datadog-
 NODE_VERSIONS_FOR_AWS_CLI=("nodejs18.x" "nodejs20.x" "nodejs22.x" "nodejs24.x")
 
 # Ensure the argument arrays have the same length
-if [[ ${#LAYER_NAMES[@]} -ne ${#NODE_VERSIONS_FOR_AWS_CLI[@]} ]] then
+if [[ ${#LAYER_NAMES[@]} -ne ${#NODE_VERSIONS_FOR_AWS_CLI[@]} ]]; then
     echo "ERROR: arguments LAYER_NAMES and NODE_VERSIONS_FOR_AWS_CLI must have the same number of entries."
     echo "LAYER_NAMES has ${#LAYER_NAMES[@]} entries."
     echo "NODE_VERSIONS_FOR_AWS_CLI has ${#NODE_VERSIONS_FOR_AWS_CLI[@]} entries."
