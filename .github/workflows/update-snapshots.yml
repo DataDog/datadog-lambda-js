@@ -1,8 +1,7 @@
 name: update-snapshots
 
 on:
-  schedule:
-    - cron: "0 15 * * *" # every day 11am EST
+  workflow_dispatch:
 
 jobs:
   check:
