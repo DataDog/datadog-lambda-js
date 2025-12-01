@@ -1,5 +1,5 @@
 ARG image
-FROM $image as builder
+FROM $image AS builder
 ARG image
 
 # Create the directory structure required for AWS Lambda Layer
