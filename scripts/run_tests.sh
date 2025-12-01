@@ -9,7 +9,7 @@
 # For local use only
 set -e
 
-NODE_VERSIONS=("18.12" "20.19" "22.11")
+NODE_VERSIONS=("18.12" "20.19" "22.11" "24.11")
 
 for node_version in "${NODE_VERSIONS[@]}"
 do
