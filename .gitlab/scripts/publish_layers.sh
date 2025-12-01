@@ -20,7 +20,7 @@ STAGES=('prod', 'sandbox', 'staging')
 expected_length=${#AWS_CLI_NODE_VERSIONS[@]}
 if [[ ${#LAYER_PATHS[@]} -ne $expected_length ]] || \
    [[ ${#LAYERS[@]} -ne $expected_length ]] || \
-   [[ ${#AVAILABLE_LAYERS[@]} -ne $expected_length ]]; then
+   [[ ${#NODE_VERSIONS[@]} -ne $expected_length ]]; then
     echo "ERROR: arguments AWS_CLI_NODE_VERSIONS, LAYER_PATHS, LAYERS, and NODE_VERSIONS must have the same number of entries."
     echo "AWS_CLI_NODE_VERSIONS has ${#AWS_CLI_NODE_VERSIONS[@]} entries."
     echo "LAYER_PATHS has ${#LAYER_PATHS[@]} entries."
