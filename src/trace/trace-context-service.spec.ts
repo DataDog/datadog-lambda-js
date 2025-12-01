@@ -14,6 +14,7 @@ describe("TraceContextService", () => {
     mockXRayShouldThrow = false;
     const traceWrapper = {
       traceContext: () => spanContextWrapper,
+      closeScope: jest.fn(),
     };
     traceContextService = new TraceContextService(traceWrapper as any, {} as any);
   });
@@ -125,5 +126,55 @@ describe("TraceContextService", () => {
     // Verify old context was cleared and new context was set
     expect(result?.toTraceId()).toBe("newTraceId");
     expect(traceContextService.traceSource).toBe("event");
+  });
+
+  it("should not leak dd-trace context from previous invocation when extract is called", async () => {
+    // Simulate dd-trace having a stale active span from a previous invocation (warm start scenario)
+    const staleDdTraceContext = {
+      toTraceId: () => "staleTraceId_999",
+      toSpanId: () => "staleSpanId_888",
+      sampleMode: () => 1,
+      source: TraceSource.DdTrace,
+      spanContext: {},
+    };
+
+    // Mock tracerWrapper that returns stale context initially, then null after closeScope is called
+    let traceContextValue: any = staleDdTraceContext;
+    const mockCloseScopeFn = jest.fn(() => {
+      // After closeScope is called, traceContext should return null
+      traceContextValue = null;
+    });
+
+    const mockTracerWrapper = {
+      traceContext: jest.fn(() => traceContextValue),
+      closeScope: mockCloseScopeFn,
+    };
+
+    const service = new TraceContextService(mockTracerWrapper as any, {} as any);
+
+    // Mock the extractor to return a NEW context for the current invocation
+    const newEventContext = {
+      toTraceId: () => "newTraceId_123",
+      toSpanId: () => "newSpanId_456",
+      sampleMode: () => 2,
+      source: TraceSource.Event,
+      spanContext: {},
+    };
+    const mockExtract = jest.fn().mockResolvedValue(newEventContext);
+    service["traceExtractor"] = { extract: mockExtract } as any;
+
+    // Call extract for the new invocation
+    await service.extract({}, {} as any);
+
+    // Verify that closeScope was called to clear the stale context
+    expect(mockCloseScopeFn).toHaveBeenCalled();
+
+    // After the fix: currentTraceHeaders should return the NEW context from the event
+    // not the stale dd-trace context from the previous invocation
+    const headers = service.currentTraceHeaders;
+
+    expect(headers["x-datadog-trace-id"]).toBe("newTraceId_123");
+    expect(headers["x-datadog-parent-id"]).toBe("newSpanId_456");
+    expect(headers["x-datadog-sampling-priority"]).toBe("2");
   });
 });
