@@ -4,7 +4,7 @@
 // USAGE: ./move_dd_trace_dependency.js "$(cat package.json)" > package.json
 
 const file = JSON.parse(process.argv[2]);
-const ddTraceVersion = file.devDependencies["dd-trace"];
+const ddTraceVersion = 'file:/tmp/dd-trace.tgz';
 delete file.devDependencies["dd-trace"];
 file.dependencies["dd-trace"] = ddTraceVersion;
 console.log(JSON.stringify(file, null, 2));
