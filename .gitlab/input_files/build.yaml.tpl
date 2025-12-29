@@ -187,7 +187,6 @@ update-layer-versions-docs:
     - publish layer prod ({{ $runtime.name }})
   {{- end }}
     - publish npm package
-  {{ end }}
   variables:
     RUN_LAMBDA_LAYER_DOCUMENTATION: "true"
     RUN_LAMBDA_DATADOG_CI: "true"
