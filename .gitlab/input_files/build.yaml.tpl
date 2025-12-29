@@ -183,9 +183,8 @@ update-layer-versions-docs:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v.*/'
   needs:
-  {{ if or (eq $environment.name "prod") }}
   {{ range $runtime := (ds "runtimes").runtimes }}
-    - publish layer {{ $environment.name }} ({{ $runtime.name }})
+    - publish layer prod ({{ $runtime.name }})
   {{- end }}
     - publish npm package
   {{ end }}
