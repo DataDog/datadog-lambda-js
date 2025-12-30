@@ -176,6 +176,23 @@ publish npm package:
   script:
     - .gitlab/scripts/publish_npm.sh
 
+update-layer-versions-docs:
+  stage: publish
+  trigger:
+    project: DataDog/serverless-ci
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v.*/'
+  needs:
+  {{ range $runtime := (ds "runtimes").runtimes }}
+    - publish layer prod ({{ $runtime.name }})
+  {{- end }}
+    - publish npm package
+  variables:
+    RUN_LAMBDA_LAYER_DOCUMENTATION: "true"
+    RUN_LAMBDA_DATADOG_CI: "true"
+    RUN_LAMBDA_UI_LAYER_VERSIONS: "true"
+    RUN_LAMBDA_RUNTIMES: "true"
+
 {{ range $environment := (ds "environments").environments }}
 
 {{ if eq $environment.name "prod" }}signed {{ end }}layer bundle:
