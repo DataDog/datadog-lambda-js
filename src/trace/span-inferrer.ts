@@ -127,7 +127,7 @@ export class SpanInferrer {
       request_id: context?.awsRequestId,
       service: serviceName,
       "service.name": serviceName,
-      "span.type": "http",
+      "span.type": "web",
       "resource.name": resourceName,
       "peer.service": this.service,
       "span.kind": "server",
