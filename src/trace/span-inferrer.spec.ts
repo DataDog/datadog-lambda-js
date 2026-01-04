@@ -1066,6 +1066,36 @@ describe("SpanInferrer", () => {
       },
     });
   });
+
+  it("includes _dd.appsec.enabled tag when DD_APPSEC_ENABLED is true", () => {
+    process.env.DD_APPSEC_ENABLED = "true";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(apiGatewayV1, {} as any, {} as SpanContext);
+
+    const callArgs = mockWrapper.startSpan.mock.calls[0];
+    expect(callArgs[1].tags["_dd.appsec.enabled"]).toBe(1);
+    delete process.env.DD_APPSEC_ENABLED;
+  });
+
+  it("does not include _dd.appsec.enabled tag when DD_APPSEC_ENABLED is not set", () => {
+    delete process.env.DD_APPSEC_ENABLED;
+    delete process.env.DD_SERVERLESS_APPSEC_ENABLED;
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(apiGatewayV1, {} as any, {} as SpanContext);
+
+    const callArgs = mockWrapper.startSpan.mock.calls[0];
+    expect(callArgs[1].tags["_dd.appsec.enabled"]).toBeUndefined();
+  });
+
+  it("includes _dd.appsec.enabled tag when DD_SERVERLESS_APPSEC_ENABLED is true", () => {
+    process.env.DD_SERVERLESS_APPSEC_ENABLED = "true";
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(apiGatewayV1, {} as any, {} as SpanContext);
+
+    const callArgs = mockWrapper.startSpan.mock.calls[0];
+    expect(callArgs[1].tags["_dd.appsec.enabled"]).toBe(1);
+    delete process.env.DD_SERVERLESS_APPSEC_ENABLED;
+  });
 });
 
 const mockFinish = () => undefined;

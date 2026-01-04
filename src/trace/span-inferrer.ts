@@ -97,6 +97,10 @@ export class SpanInferrer {
     return extractedKey?.trim() ? extractedKey : fallback;
   }
 
+  private static isAppsecEnabled(): boolean {
+    return process.env.DD_APPSEC_ENABLED === "true" || process.env.DD_SERVERLESS_APPSEC_ENABLED === "true";
+  }
+
   createInferredSpanForApiGateway(
     event: any,
     context: Context | undefined,
@@ -147,6 +151,10 @@ export class SpanInferrer {
       options.tags.message_direction = event.requestContext.messageDirection;
       options.tags.connection_id = event.requestContext.connectionId;
       options.tags.event_type = event.requestContext.eventType;
+    }
+
+    if (SpanInferrer.isAppsecEnabled()) {
+      options.tags["_dd.appsec.enabled"] = 1;
     }
     let upstreamAuthorizerSpan: SpanWrapper | undefined;
     const eventSourceSubType: HTTPEventSubType = HTTPEventTraceExtractor.getEventSubType(event);
