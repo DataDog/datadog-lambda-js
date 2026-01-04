@@ -120,7 +120,6 @@ export class SpanInferrer {
     const serviceName = SpanInferrer.determineServiceName(apiId, "lambda_api_gateway", domain, domain);
 
     options.tags = {
-      operation_name: "aws.apigateway",
       "http.url": httpUrl,
       endpoint: path,
       resource_names: resourceName,
@@ -160,12 +159,11 @@ export class SpanInferrer {
           // getting an approximated endTime
           if (eventSourceSubType === HTTPEventSubType.ApiGatewayV2) {
             options.startTime = startTime; // not inserting authorizer span
-            options.tags.operation_name = "aws.httpapi";
           } else {
             upstreamSpanOptions = {
               startTime,
               childOf: parentSpanContext,
-              tags: { operation_name: "aws.apigateway.authorizer", ...options.tags },
+              tags: { ...options.tags },
             };
             upstreamAuthorizerSpan = new SpanWrapper(
               this.traceWrapper.startSpan("aws.apigateway.authorizer", upstreamSpanOptions),
