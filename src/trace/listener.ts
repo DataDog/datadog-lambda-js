@@ -267,6 +267,15 @@ export class TraceListener {
         logDebug("Setting error tag to inferred span");
         this.inferredSpan.setTag("error", error);
       }
+
+      const lambdaSpan = this.tracerWrapper.currentSpan;
+      if (lambdaSpan) {
+        const appsecJson = lambdaSpan._tags?.["_dd.appsec.json"];
+        if (appsecJson) {
+          this.inferredSpan.setTag("_dd.appsec.json", appsecJson);
+        }
+      }
+
       if (this.inferredSpan.isAsync()) {
         finishTime = this.wrappedCurrentSpan?.startTime() || Date.now();
       } else {

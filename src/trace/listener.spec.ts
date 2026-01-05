@@ -16,6 +16,7 @@ let mockExtract: jest.Mock<any, any>;
 let mockSpanContextWrapper: any;
 let mockSpanContext: any;
 let mockTraceSource: TraceSource | undefined = undefined;
+let mockCurrentSpan: any = null;
 
 jest.mock("./tracer-wrapper", () => {
   mockWrap = jest.fn().mockImplementation((name, options, func) => func);
@@ -24,6 +25,10 @@ jest.mock("./tracer-wrapper", () => {
     public isTracerAvailable = true;
 
     constructor() {}
+
+    get currentSpan(): any {
+      return mockCurrentSpan;
+    }
 
     wrap(name: any, options: any, fn: any): any {
       return mockWrap(name, options, fn);
@@ -558,6 +563,99 @@ describe("TraceListener", () => {
         }),
         unwrappedFunc,
       );
+    });
+  });
+
+  describe("AppSec tag propagation", () => {
+    beforeEach(() => {
+      mockWrap.mockClear();
+      mockExtract.mockClear();
+      mockSpanContext = undefined;
+      mockSpanContextWrapper = undefined;
+      mockTraceSource = undefined;
+      mockCurrentSpan = null;
+      process.env = { ...oldEnv };
+    });
+
+    afterEach(() => {
+      process.env = oldEnv;
+      mockCurrentSpan = null;
+    });
+
+    it("copies _dd.appsec.json from lambda span to inferred span when present", async () => {
+      const mockSetTag = jest.fn();
+      const appsecJsonValue = '{"triggers":[{"rule":{"id":"rule-1"}}]}';
+
+      mockCurrentSpan = {
+        _tags: {
+          "_dd.appsec.json": appsecJsonValue,
+        },
+      };
+
+      const listener = new TraceListener(defaultConfig);
+      await listener.onStartInvocation({}, context as any);
+
+      const mockInferredSpan = {
+        isAsync: () => false,
+        setTag: mockSetTag,
+        finish: jest.fn(),
+      };
+      (listener as any).inferredSpan = mockInferredSpan;
+
+      const unwrappedFunc = () => {};
+      const wrappedFunc = listener.onWrap(unwrappedFunc);
+      wrappedFunc();
+      await listener.onCompleteInvocation();
+
+      expect(mockSetTag).toHaveBeenCalledWith("_dd.appsec.json", appsecJsonValue);
+    });
+
+    it("does not set _dd.appsec.json on inferred span when not present on lambda span", async () => {
+      const mockSetTag = jest.fn();
+
+      mockCurrentSpan = {
+        _tags: {},
+      };
+
+      const listener = new TraceListener(defaultConfig);
+      await listener.onStartInvocation({}, context as any);
+
+      const mockInferredSpan = {
+        isAsync: () => false,
+        setTag: mockSetTag,
+        finish: jest.fn(),
+      };
+      (listener as any).inferredSpan = mockInferredSpan;
+
+      const unwrappedFunc = () => {};
+      const wrappedFunc = listener.onWrap(unwrappedFunc);
+      wrappedFunc();
+      await listener.onCompleteInvocation();
+
+      expect(mockSetTag).not.toHaveBeenCalledWith("_dd.appsec.json", expect.anything());
+    });
+
+    it("does not set _dd.appsec.json when lambda span is not available", async () => {
+      const mockSetTag = jest.fn();
+
+      mockCurrentSpan = null;
+
+      const listener = new TraceListener(defaultConfig);
+      await listener.onStartInvocation({}, context as any);
+
+      const mockInferredSpan = {
+        isAsync: () => false,
+        setTag: mockSetTag,
+        finish: jest.fn(),
+      };
+      (listener as any).inferredSpan = mockInferredSpan;
+
+      const unwrappedFunc = () => {};
+      const wrappedFunc = listener.onWrap(unwrappedFunc);
+      wrappedFunc();
+      await listener.onCompleteInvocation();
+
+      expect(mockSetTag).not.toHaveBeenCalledWith("_dd.appsec.json", expect.anything());
     });
   });
 });
