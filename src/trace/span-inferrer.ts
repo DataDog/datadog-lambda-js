@@ -97,6 +97,10 @@ export class SpanInferrer {
     return extractedKey?.trim() ? extractedKey : fallback;
   }
 
+  private static isAppsecEnabled(): boolean {
+    return process.env.DD_APPSEC_ENABLED === "true" || process.env.DD_SERVERLESS_APPSEC_ENABLED === "true";
+  }
+
   createInferredSpanForApiGateway(
     event: any,
     context: Context | undefined,
@@ -120,14 +124,13 @@ export class SpanInferrer {
     const serviceName = SpanInferrer.determineServiceName(apiId, "lambda_api_gateway", domain, domain);
 
     options.tags = {
-      operation_name: "aws.apigateway",
       "http.url": httpUrl,
       endpoint: path,
       resource_names: resourceName,
       request_id: context?.awsRequestId,
       service: serviceName,
       "service.name": serviceName,
-      "span.type": "http",
+      "span.type": "web",
       "resource.name": resourceName,
       "peer.service": this.service,
       "span.kind": "server",
@@ -149,6 +152,10 @@ export class SpanInferrer {
       options.tags.connection_id = event.requestContext.connectionId;
       options.tags.event_type = event.requestContext.eventType;
     }
+
+    if (SpanInferrer.isAppsecEnabled()) {
+      options.tags["_dd.appsec.enabled"] = 1;
+    }
     let upstreamAuthorizerSpan: SpanWrapper | undefined;
     const eventSourceSubType: HTTPEventSubType = HTTPEventTraceExtractor.getEventSubType(event);
     if (decodeAuthorizerContext) {
@@ -160,12 +167,11 @@ export class SpanInferrer {
           // getting an approximated endTime
           if (eventSourceSubType === HTTPEventSubType.ApiGatewayV2) {
             options.startTime = startTime; // not inserting authorizer span
-            options.tags.operation_name = "aws.httpapi";
           } else {
             upstreamSpanOptions = {
               startTime,
               childOf: parentSpanContext,
-              tags: { operation_name: "aws.apigateway.authorizer", ...options.tags },
+              tags: { ...options.tags },
             };
             upstreamAuthorizerSpan = new SpanWrapper(
               this.traceWrapper.startSpan("aws.apigateway.authorizer", upstreamSpanOptions),
