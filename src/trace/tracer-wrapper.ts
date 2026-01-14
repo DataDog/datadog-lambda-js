@@ -101,7 +101,7 @@ export class TracerWrapper {
         const context = activeSpan.context();
         const traceId = context?.toTraceId?.() ?? "unknown";
         const spanId = context?.toSpanId?.() ?? "unknown";
-        logWarning(
+        logDebug(
           `Detected stale span from previous invocation, finishing it to prevent trace context leakage. TraceId: ${traceId}, SpanId: ${spanId}`,
         );
         activeSpan.finish();
