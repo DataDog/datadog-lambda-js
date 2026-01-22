@@ -26,6 +26,21 @@ function isJsonStyleLog(value: unknown): value is Record<string, unknown> {
 }
 
 /**
+ * Checks if a value is a plain object (not null, not an array).
+ */
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+/**
+ * Extracts the existing `dd` property from a log object if it's a plain object.
+ * Returns an empty object if `dd` is missing or not a plain object.
+ */
+function getExistingDdContext(logObject: Record<string, unknown>): Record<string, unknown> {
+  return isPlainObject(logObject.dd) ? logObject.dd : {};
+}
+
+/**
  * Patches console output to include DataDog's trace context.
  * @param contextService Provides up to date tracing context.
  */
@@ -80,15 +95,11 @@ function patchMethod(mod: wrappedConsole, method: LogMethod, contextService: Tra
             arguments[0] = `[dd.trace_id=${traceId} dd.span_id=${spanId}]`;
           } else if (arguments.length === 1 && isJsonStyleLog(arguments[0])) {
             // Single plain object: inject dd property to preserve JSON format
-            // Merge with existing dd property if present
-            const existingDd =
-              arguments[0].dd && typeof arguments[0].dd === "object" && !Array.isArray(arguments[0].dd)
-                ? arguments[0].dd
-                : {};
             arguments[0] = {
               ...arguments[0],
               dd: {
-                ...existingDd,
+                ...getExistingDdContext(arguments[0]),
+                // Overwrite trace_id and span_id to ensure we have the latest values
                 trace_id: traceId,
                 span_id: spanId,
               },
