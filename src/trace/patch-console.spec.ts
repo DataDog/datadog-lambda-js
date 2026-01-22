@@ -46,7 +46,7 @@ describe("patchConsole", () => {
     cnsole.log("Hello");
     expect(log).toHaveBeenCalledWith("[dd.trace_id=123456 dd.span_id=78910] Hello");
   });
-  it("injects trace context into debug messages", () => {
+  it("injects trace context into info messages", () => {
     patchConsole(cnsole as any, contextService);
     cnsole.info("Hello");
     expect(info).toHaveBeenCalledWith("[dd.trace_id=123456 dd.span_id=78910] Hello");
@@ -61,12 +61,12 @@ describe("patchConsole", () => {
     cnsole.error("Hello");
     expect(error).toHaveBeenCalledWith("[dd.trace_id=123456 dd.span_id=78910] Hello");
   });
-  it("injects trace context into error messages", () => {
+  it("injects trace context into warn messages", () => {
     patchConsole(cnsole as any, contextService);
     cnsole.warn("Hello");
     expect(warn).toHaveBeenCalledWith("[dd.trace_id=123456 dd.span_id=78910] Hello");
   });
-  it("injects trace context into error messages", () => {
+  it("injects trace context into trace messages", () => {
     patchConsole(cnsole as any, contextService);
     cnsole.trace("Hello");
     expect(trace).toHaveBeenCalledWith("[dd.trace_id=123456 dd.span_id=78910] Hello");
@@ -83,13 +83,107 @@ describe("patchConsole", () => {
     cnsole.log();
     expect(log).toHaveBeenCalledWith("[dd.trace_id=123456 dd.span_id=78910]");
   });
-  it("injects trace context into logged object message", () => {
+  it("injects trace context into JSON-style log by adding dd property", () => {
     patchConsole(cnsole as any, contextService);
 
     cnsole.log({ objectKey: "objectValue", otherObjectKey: "otherObjectValue" });
-    expect(log).toHaveBeenCalledWith(
-      "[dd.trace_id=123456 dd.span_id=78910] { objectKey: 'objectValue', otherObjectKey: 'otherObjectValue' }",
-    );
+    expect(log).toHaveBeenCalledWith({
+      objectKey: "objectValue",
+      otherObjectKey: "otherObjectValue",
+      dd: {
+        trace_id: "123456",
+        span_id: "78910",
+      },
+    });
+  });
+
+  it("injects trace context into logged array as string prefix", () => {
+    patchConsole(cnsole as any, contextService);
+
+    cnsole.log([1, 2, 3]);
+    expect(log).toHaveBeenCalledWith("[dd.trace_id=123456 dd.span_id=78910] 1,2,3");
+  });
+
+  it("injects trace context as string prefix when multiple arguments provided", () => {
+    patchConsole(cnsole as any, contextService);
+
+    cnsole.log({ key: "value" }, "extra arg");
+    expect(log).toHaveBeenCalledWith("[dd.trace_id=123456 dd.span_id=78910] [object Object]", "extra arg");
+  });
+
+  it("injects trace context as string prefix for class instances", () => {
+    patchConsole(cnsole as any, contextService);
+
+    class MyClass {
+      value = "test";
+    }
+    const instance = new MyClass();
+    cnsole.log(instance);
+    expect(log).toHaveBeenCalledWith("[dd.trace_id=123456 dd.span_id=78910] [object Object]");
+  });
+
+  it("injects trace context as string prefix for null", () => {
+    patchConsole(cnsole as any, contextService);
+
+    cnsole.log(null);
+    expect(log).toHaveBeenCalledWith("[dd.trace_id=123456 dd.span_id=78910] null");
+  });
+
+  it("injects trace context as string prefix for number", () => {
+    patchConsole(cnsole as any, contextService);
+
+    cnsole.log(42);
+    expect(log).toHaveBeenCalledWith("[dd.trace_id=123456 dd.span_id=78910] 42");
+  });
+
+  it("injects trace context as string prefix for undefined", () => {
+    patchConsole(cnsole as any, contextService);
+
+    cnsole.log(undefined);
+    expect(log).toHaveBeenCalledWith("[dd.trace_id=123456 dd.span_id=78910] undefined");
+  });
+
+  it("injects trace context into JSON-style log created with Object.create(null)", () => {
+    patchConsole(cnsole as any, contextService);
+
+    const obj = Object.create(null);
+    obj.message = "test";
+    cnsole.log(obj);
+    expect(log).toHaveBeenCalledWith({
+      message: "test",
+      dd: {
+        trace_id: "123456",
+        span_id: "78910",
+      },
+    });
+  });
+
+  it("preserves nested objects in JSON format", () => {
+    patchConsole(cnsole as any, contextService);
+
+    cnsole.log({ level: "info", nested: { foo: "bar" } });
+    expect(log).toHaveBeenCalledWith({
+      level: "info",
+      nested: { foo: "bar" },
+      dd: {
+        trace_id: "123456",
+        span_id: "78910",
+      },
+    });
+  });
+
+  it("merges trace context with existing dd property", () => {
+    patchConsole(cnsole as any, contextService);
+
+    cnsole.log({ message: "test", dd: { existing: "value" } });
+    expect(log).toHaveBeenCalledWith({
+      message: "test",
+      dd: {
+        existing: "value",
+        trace_id: "123456",
+        span_id: "78910",
+      },
+    });
   });
   it("leaves empty message unmodified when there is no trace context", () => {
     contextService["rootTraceContext"] = undefined as any;
