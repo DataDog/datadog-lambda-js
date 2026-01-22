@@ -41,14 +41,18 @@ describe("patchConsole", () => {
     unpatchConsole(cnsole as any);
   });
 
-  it.each(["log", "info", "debug", "error", "warn", "trace"] as const)(
-    "injects trace context into %s messages",
-    (method) => {
-      patchConsole(cnsole as any, contextService);
-      cnsole[method]("Hello");
-      expect(cnsole[method]).toHaveBeenCalledWith("[dd.trace_id=123456 dd.span_id=78910] Hello");
-    },
-  );
+  it.each([
+    { method: "log", mock: () => log },
+    { method: "info", mock: () => info },
+    { method: "debug", mock: () => debug },
+    { method: "error", mock: () => error },
+    { method: "warn", mock: () => warn },
+    { method: "trace", mock: () => trace },
+  ] as const)("injects trace context into $method messages", ({ method, mock }) => {
+    patchConsole(cnsole as any, contextService);
+    cnsole[method]("Hello");
+    expect(mock()).toHaveBeenCalledWith("[dd.trace_id=123456 dd.span_id=78910] Hello");
+  });
 
   it("doesn't inject trace context when none is present", () => {
     contextService["rootTraceContext"] = undefined as any;
