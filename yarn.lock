@@ -1186,10 +1186,10 @@
     "@datadog/flagging-core" "0.2.0"
     "@openfeature/server-sdk" "~1.18.0"
 
-"@datadog/pprof@5.13.1":
-  version "5.13.1"
-  resolved "https://registry.yarnpkg.com/@datadog/pprof/-/pprof-5.13.1.tgz#51c540d75cf4471806db65d0686cbe0a96125ce2"
-  integrity sha512-7yXQco1xOUFFEHN3UsRw/55603lQTctHcGx9N7PgkcgLGL8t/i5qKalF0AhOKBsLBUnbQ9Iv+ecC2YJErJ07PQ==
+"@datadog/pprof@5.13.2", "@datadog/pprof@^5.13.2":
+  version "5.13.2"
+  resolved "https://registry.yarnpkg.com/@datadog/pprof/-/pprof-5.13.2.tgz#9361809e712417e04c21e7f7ea239bfb3513c358"
+  integrity sha512-Th8u7pvoguTfbUx/mlZLHD9TxFCHO+wRAvlEaYFAYAmMvbPLww4YowvTy1UMvpi8LbUbwil3Fo8rKCrilvXHhQ==
   dependencies:
     delay "^5.0.0"
     node-gyp-build "<4.0"
@@ -2339,7 +2339,7 @@ acorn@^7.1.1:
   resolved "https://registry.npmjs.org/acorn/-/acorn-7.4.1.tgz"
   integrity sha512-nQyp0o1/mNdbTO1PO6kHkwSrmgZ0MT/jCCpNiwbUjGoRN4dlBhqJtoQuCnEOKzgTVwg0ZWiCoQy6SxMebQVh8A==
 
-acorn@^8.14.0, acorn@^8.2.4:
+acorn@^8.15.0, acorn@^8.2.4:
   version "8.15.0"
   resolved "https://registry.npmjs.org/acorn/-/acorn-8.15.0.tgz"
   integrity sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg==
@@ -2638,10 +2638,15 @@ ci-info@^3.2.0:
   resolved "https://registry.npmjs.org/ci-info/-/ci-info-3.9.0.tgz"
   integrity sha512-NIxF55hv4nSqQswkAeiOi1r83xy8JldOFDTWiug55KBu9Jnblncd2U6ViHmYgHf01TPZS77NJBhBMKdWj9HQMQ==
 
-cjs-module-lexer@^1.0.0, cjs-module-lexer@^1.2.2:
+cjs-module-lexer@^1.0.0:
   version "1.4.1"
   resolved "https://registry.npmjs.org/cjs-module-lexer/-/cjs-module-lexer-1.4.1.tgz"
   integrity sha512-cuSVIHi9/9E/+821Qjdvngor+xpnlwnuwIyZOaLmHBVdXL+gP+I6QQB9VkO7RI77YIcTV+S1W9AreJ5eN63JBA==
+
+cjs-module-lexer@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/cjs-module-lexer/-/cjs-module-lexer-2.2.0.tgz#b3ca5101843389259ade7d88c77bd06ce55849ca"
+  integrity sha512-4bHTS2YuzUvtoLjdy+98ykbNB5jS0+07EvFNXerqZQJ89F7DI6ET7OQo/HJuW6K0aVsKA9hj9/RVb2kQVOrPDQ==
 
 cliui@^7.0.2:
   version "7.0.4"
@@ -2758,20 +2763,20 @@ dc-polyfill@^0.1.3:
   resolved "https://registry.npmjs.org/dc-polyfill/-/dc-polyfill-0.1.9.tgz"
   integrity sha512-D5mJThEEk9hf+CJPwTf9JFsrWdlWp8Pccjxkhf7uUT/E/cU9Mx3ebWe2Bz2OawRmJ6WS9eaDPBkeBE4uOKq9uw==
 
-dd-trace@^5.82.0:
-  version "5.82.0"
-  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-5.82.0.tgz#00f3d71b66debf1e5326cdf415c9b039fecf7158"
-  integrity sha512-syHzhuQw6USxnAdaNho3BhAz4c3L3Ze79WJXiBAE28WRn6JZuyrYkTKT9+FKvCtK0eyDCx5zCjApohl1BIB0uA==
+dd-trace@^5.83.0:
+  version "5.83.0"
+  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-5.83.0.tgz#3f641c512c7f140d2b85cc7709b45aa2cf3f2787"
+  integrity sha512-12seR3wGc5Wp+NAHBO6gShCtg8wz0+p+rC6tc3G5MrSgowMqV0XdNqahOHqeM8kMRmSy1OnWRQcK8xjxVfnsew==
   dependencies:
     dc-polyfill "^0.1.10"
-    import-in-the-middle "2.0.0"
+    import-in-the-middle "2.0.3"
   optionalDependencies:
     "@datadog/libdatadog" "0.7.0"
     "@datadog/native-appsec" "10.3.0"
     "@datadog/native-iast-taint-tracking" "4.1.0"
     "@datadog/native-metrics" "3.1.1"
     "@datadog/openfeature-node-server" "^0.2.0"
-    "@datadog/pprof" "5.13.1"
+    "@datadog/pprof" "5.13.2"
     "@datadog/wasm-js-rewriter" "5.0.1"
     "@opentelemetry/api" ">=1.0.0 <1.10.0"
     "@opentelemetry/api-logs" "<1.0.0"
@@ -3238,15 +3243,15 @@ ieee754@^1.1.4:
   resolved "https://registry.npmjs.org/ieee754/-/ieee754-1.2.1.tgz"
   integrity sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==
 
-import-in-the-middle@2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/import-in-the-middle/-/import-in-the-middle-2.0.0.tgz#295948cee94d0565314824c6bd75379d13e5b1a5"
-  integrity sha512-yNZhyQYqXpkT0AKq3F3KLasUSK4fHvebNH5hOsKQw2dhGSALvQ4U0BqUc5suziKvydO5u5hgN2hy1RJaho8U5A==
+import-in-the-middle@2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/import-in-the-middle/-/import-in-the-middle-2.0.3.tgz#2ba36d716faa3531a7946c4ee52a8e553f6ee0bd"
+  integrity sha512-BhJ3Rc6x+kA3EE0apAuGc4rsihsUrEj31lCkXRfwGzLKqgzlSyBLvthIinsvLg6J4bCCTgVAoAgD+KwkISjmBQ==
   dependencies:
-    acorn "^8.14.0"
+    acorn "^8.15.0"
     acorn-import-attributes "^1.9.5"
-    cjs-module-lexer "^1.2.2"
-    module-details-from-path "^1.0.3"
+    cjs-module-lexer "^2.2.0"
+    module-details-from-path "^1.0.4"
 
 import-local@^3.0.2:
   version "3.2.0"
@@ -4000,7 +4005,7 @@ mock-fs@4.14.0:
   resolved "https://registry.npmjs.org/mock-fs/-/mock-fs-4.14.0.tgz"
   integrity sha512-qYvlv/exQ4+svI3UOvPUpLDF0OMX5euvUH0Ny4N5QyRyhNdgAgUrVH3iUINSzEPLvx0kbo/Bp28GJKIqvE7URw==
 
-module-details-from-path@^1.0.3:
+module-details-from-path@^1.0.3, module-details-from-path@^1.0.4:
   version "1.0.4"
   resolved "https://registry.npmjs.org/module-details-from-path/-/module-details-from-path-1.0.4.tgz"
   integrity sha512-EGWKgxALGMgzvxYF1UyGTy0HXX/2vHLkw6+NvDKW2jypWbHpjQuj4UMcqQWXHERJhVGKikolT06G3bcKe4fi7w==

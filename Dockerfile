@@ -31,5 +31,19 @@ RUN cp -rf node_modules/* /nodejs/node_modules
 RUN rm -rf /nodejs/node_modules/aws-sdk
 RUN rm -rf /nodejs/node_modules/aws-xray-sdk-core/node_modules/aws-sdk
 
+# Remove heavy files from @datadog/pprof which aren't used in a lambda environment
+RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/darwin-arm64
+RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/darwin-x64
+RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/linux-arm
+RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/linuxmusl-arm64
+RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/linuxmusl-x64
+RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/win32-ia32
+RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/win32-x64
+RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/node-108.node
+RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/node-111.node
+RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/node-120.node
+RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/node-131.node
+RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/node-141.node
+
 FROM scratch
 COPY --from=builder /nodejs /
