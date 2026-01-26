@@ -1186,7 +1186,7 @@
     "@datadog/flagging-core" "0.2.0"
     "@openfeature/server-sdk" "~1.18.0"
 
-"@datadog/pprof@5.13.2", "@datadog/pprof@^5.13.2":
+"@datadog/pprof@*", "@datadog/pprof@5.13.2":
   version "5.13.2"
   resolved "https://registry.yarnpkg.com/@datadog/pprof/-/pprof-5.13.2.tgz#9361809e712417e04c21e7f7ea239bfb3513c358"
   integrity sha512-Th8u7pvoguTfbUx/mlZLHD9TxFCHO+wRAvlEaYFAYAmMvbPLww4YowvTy1UMvpi8LbUbwil3Fo8rKCrilvXHhQ==
