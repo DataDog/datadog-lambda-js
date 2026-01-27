@@ -10,63 +10,25 @@ import {
   DATADOG_SAMPLING_PRIORITY_HEADER,
   DATADOG_TRACE_ID_HEADER,
 } from "./context/extractor";
+import { TracerWrapper } from "./tracer-wrapper";
 
-let mockWrap: jest.Mock<any, any>;
-let mockExtract: jest.Mock<any, any>;
-let mockSpanContextWrapper: any;
-let mockSpanContext: any;
-let mockTraceSource: TraceSource | undefined = undefined;
-
-jest.mock("./tracer-wrapper", () => {
-  mockWrap = jest.fn().mockImplementation((name, options, func) => func);
-  mockExtract = jest.fn().mockImplementation((val) => val);
-  class MockTraceWrapper {
-    public isTracerAvailable = true;
-
-    constructor() {}
-
-    wrap(name: any, options: any, fn: any): any {
-      return mockWrap(name, options, fn);
-    }
-
-    extract(event: any): any {
-      return mockExtract(event);
-    }
-
-    startSpan(name: any, options: any): any {
-      return {
-        toSpanId: () => "mockSpanId",
-        toTraceId: () => "mockTraceId",
-        finish: jest.fn(),
-        setTag: jest.fn(),
-      };
-    }
-
-    injectSpan(span: any): any {
-      return {
-        [DATADOG_PARENT_ID_HEADER]: span.toSpanId(),
-        [DATADOG_TRACE_ID_HEADER]: span.toTraceId(),
-        [DATADOG_SAMPLING_PRIORITY_HEADER]: 1,
-        [parentSpanFinishTimeHeader]: 1661189936981,
-      };
-    }
-  }
-  return {
-    TracerWrapper: MockTraceWrapper,
-  };
-});
+const mockController: {
+  mockSpanContext?: any;
+  mockSpanContextWrapper?: any;
+  mockTraceSource?: TraceSource;
+} = {};
 
 jest.mock("./trace-context-service", () => {
   class MockTraceContextService {
     extract(event: any, context: Context): SpanContextWrapper {
-      return mockSpanContextWrapper;
+      return mockController.mockSpanContextWrapper;
     }
 
     get traceSource() {
-      return mockTraceSource;
+      return mockController.mockTraceSource;
     }
     get currentTraceContext() {
-      return mockSpanContextWrapper;
+      return mockController.mockSpanContextWrapper;
     }
     reset() {
       // mocking
@@ -79,6 +41,22 @@ jest.mock("./trace-context-service", () => {
 });
 
 describe("TraceListener", () => {
+  jest.spyOn(TracerWrapper.prototype, "isTracerAvailable", "get").mockReturnValue(true);
+  jest.spyOn(TracerWrapper.prototype, "extract").mockImplementation((val) => val);
+  jest.spyOn(TracerWrapper.prototype, "startSpan").mockReturnValue({
+    toSpanId: () => "mockSpanId",
+    toTraceId: () => "mockTraceId",
+    finish: jest.fn(),
+    setTag: jest.fn(),
+  });
+  jest.spyOn(TracerWrapper.prototype, "injectSpan").mockImplementation((span) => ({
+    [DATADOG_PARENT_ID_HEADER]: span.toSpanId(),
+    [DATADOG_TRACE_ID_HEADER]: span.toTraceId(),
+    [DATADOG_SAMPLING_PRIORITY_HEADER]: 1,
+    [parentSpanFinishTimeHeader]: 1661189936981,
+  }));
+  const wrapSpy = jest.spyOn(TracerWrapper.prototype, "wrap").mockImplementation((name, options, func) => func);
+
   let oldEnv: any;
   const defaultConfig = {
     autoPatchHTTP: true,
@@ -108,11 +86,10 @@ describe("TraceListener", () => {
     invokedFunctionArn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda:1",
   };
   beforeEach(() => {
-    mockWrap.mockClear();
-    mockExtract.mockClear();
-    mockSpanContext = undefined;
-    mockSpanContextWrapper = undefined;
-    mockTraceSource = undefined;
+    wrapSpy.mockClear();
+    mockController.mockSpanContext = undefined;
+    mockController.mockSpanContextWrapper = undefined;
+    mockController.mockTraceSource = undefined;
     oldEnv = process.env;
     process.env = { ...oldEnv };
     delete process.env.DD_SERVICE;
@@ -130,7 +107,7 @@ describe("TraceListener", () => {
     wrappedFunc();
     await listener.onCompleteInvocation();
 
-    expect(mockWrap).toHaveBeenCalledWith(
+    expect(wrapSpy).toHaveBeenCalledWith(
       "aws.lambda",
       {
         resource: "my-Lambda",
@@ -153,16 +130,16 @@ describe("TraceListener", () => {
 
   it("wraps dd-trace span around invocation, with trace context from event", async () => {
     const listener = new TraceListener(defaultConfig);
-    mockTraceSource = TraceSource.Event;
-    mockSpanContext = {
+    mockController.mockTraceSource = TraceSource.Event;
+    mockController.mockSpanContext = {
       toTraceId: () => "4110911582297405551",
       toSpanId: () => "797643193680388251",
       _sampling: {
         priority: "2",
       },
     };
-    mockSpanContextWrapper = {
-      spanContext: mockSpanContext,
+    mockController.mockSpanContextWrapper = {
+      spanContext: mockController.mockSpanContext,
     };
     await listener.onStartInvocation({}, context as any);
     const unwrappedFunc = () => {};
@@ -170,7 +147,7 @@ describe("TraceListener", () => {
     wrappedFunc();
     await listener.onCompleteInvocation();
 
-    expect(mockWrap).toHaveBeenCalledWith(
+    expect(wrapSpy).toHaveBeenCalledWith(
       "aws.lambda",
       {
         resource: "my-Lambda",
@@ -187,7 +164,7 @@ describe("TraceListener", () => {
           dd_trace: ddtraceVersion,
         },
         type: "serverless",
-        childOf: mockSpanContext,
+        childOf: mockController.mockSpanContext,
       },
       unwrappedFunc,
     );
@@ -195,7 +172,7 @@ describe("TraceListener", () => {
 
   it("wraps dd-trace span around invocation, without trace context from xray", async () => {
     const listener = new TraceListener(defaultConfig);
-    mockTraceSource = TraceSource.Xray;
+    mockController.mockTraceSource = TraceSource.Xray;
 
     await listener.onStartInvocation({}, context as any);
     const unwrappedFunc = () => {};
@@ -203,7 +180,7 @@ describe("TraceListener", () => {
     wrappedFunc();
     await listener.onCompleteInvocation();
 
-    expect(mockWrap).toHaveBeenCalledWith(
+    expect(wrapSpy).toHaveBeenCalledWith(
       "aws.lambda",
       {
         resource: "my-Lambda",
@@ -226,16 +203,16 @@ describe("TraceListener", () => {
 
   it("wraps dd-trace span around invocation, with trace context from xray when mergeDatadogXrayTraces is enabled", async () => {
     const listener = new TraceListener({ ...defaultConfig, mergeDatadogXrayTraces: true });
-    mockTraceSource = TraceSource.Xray;
-    mockSpanContext = {
+    mockController.mockTraceSource = TraceSource.Xray;
+    mockController.mockSpanContext = {
       toTraceId: () => "4110911582297405551",
       toSpanId: () => "797643193680388251",
       _sampling: {
         priority: "2",
       },
     };
-    mockSpanContextWrapper = {
-      spanContext: mockSpanContext,
+    mockController.mockSpanContextWrapper = {
+      spanContext: mockController.mockSpanContext,
     };
 
     await listener.onStartInvocation({}, context as any);
@@ -244,7 +221,7 @@ describe("TraceListener", () => {
     wrappedFunc();
     await listener.onCompleteInvocation();
 
-    expect(mockWrap).toHaveBeenCalledWith(
+    expect(wrapSpy).toHaveBeenCalledWith(
       "aws.lambda",
       {
         resource: "my-Lambda",
@@ -261,7 +238,7 @@ describe("TraceListener", () => {
           dd_trace: ddtraceVersion,
         },
         type: "serverless",
-        childOf: mockSpanContext,
+        childOf: mockController.mockSpanContext,
       },
       unwrappedFunc,
     );
@@ -275,7 +252,7 @@ describe("TraceListener", () => {
     wrappedFunc();
     await listener.onCompleteInvocation();
 
-    expect(mockWrap).toHaveBeenCalledWith(
+    expect(wrapSpy).toHaveBeenCalledWith(
       "aws.lambda",
       {
         resource: "my-Lambda",
@@ -304,7 +281,7 @@ describe("TraceListener", () => {
     wrappedFunc();
     await listener.onCompleteInvocation();
 
-    expect(mockWrap).toHaveBeenCalledWith(
+    expect(wrapSpy).toHaveBeenCalledWith(
       "aws.lambda",
       {
         resource: "my-Lambda",
@@ -327,18 +304,18 @@ describe("TraceListener", () => {
 
   it("wraps dd-trace span around invocation with Step Function context", async () => {
     const listener = new TraceListener(defaultConfig);
-    mockTraceSource = TraceSource.Event;
+    mockController.mockTraceSource = TraceSource.Event;
 
     // Mock Step Function context with deterministic trace IDs
-    mockSpanContext = {
+    mockController.mockSpanContext = {
       toTraceId: () => "512d06a10e5e34cb", // Hex converted to decimal would be different
       toSpanId: () => "7069a031ef9ad2cc",
       _sampling: {
         priority: "1",
       },
     };
-    mockSpanContextWrapper = {
-      spanContext: mockSpanContext,
+    mockController.mockSpanContextWrapper = {
+      spanContext: mockController.mockSpanContext,
     };
 
     const stepFunctionSQSEvent = {
@@ -378,7 +355,7 @@ describe("TraceListener", () => {
     wrappedFunc();
     await listener.onCompleteInvocation();
 
-    expect(mockWrap).toHaveBeenCalledWith(
+    expect(wrapSpy).toHaveBeenCalledWith(
       "aws.lambda",
       {
         resource: "my-Lambda",
@@ -409,7 +386,7 @@ describe("TraceListener", () => {
 
   it("injects authorizer context if it exists", async () => {
     const listener = new TraceListener(defaultConfig);
-    mockTraceSource = TraceSource.Event;
+    mockController.mockTraceSource = TraceSource.Event;
     const inferredSpan = new SpanWrapper(
       {
         toSpanId: () => {
@@ -445,7 +422,7 @@ describe("TraceListener", () => {
     wrappedFunc();
     await listener.onCompleteInvocation();
 
-    expect(mockWrap).toHaveBeenCalledWith(
+    expect(wrapSpy).toHaveBeenCalledWith(
       "aws.lambda",
       {
         resource: "my-Lambda",
@@ -474,11 +451,10 @@ describe("TraceListener", () => {
     };
 
     beforeEach(() => {
-      mockWrap.mockClear();
-      mockExtract.mockClear();
-      mockSpanContext = undefined;
-      mockSpanContextWrapper = undefined;
-      mockTraceSource = undefined;
+      wrapSpy.mockClear();
+      mockController.mockSpanContext = undefined;
+      mockController.mockSpanContextWrapper = undefined;
+      mockController.mockTraceSource = undefined;
       process.env = { ...oldEnv }; // Restore original environment variables
       delete process.env.DD_SERVICE; // Ensure DD_SERVICE doesn't interfere
       delete process.env.DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED;
@@ -497,7 +473,7 @@ describe("TraceListener", () => {
       wrappedFunc();
       await listener.onCompleteInvocation();
 
-      expect(mockWrap).toHaveBeenCalledWith(
+      expect(wrapSpy).toHaveBeenCalledWith(
         "aws.lambda",
         expect.objectContaining({
           service: "aws.lambda",
@@ -515,7 +491,7 @@ describe("TraceListener", () => {
       wrappedFunc();
       await listener.onCompleteInvocation();
 
-      expect(mockWrap).toHaveBeenCalledWith(
+      expect(wrapSpy).toHaveBeenCalledWith(
         "aws.lambda",
         expect.objectContaining({
           service: "aws.lambda",
@@ -533,7 +509,7 @@ describe("TraceListener", () => {
       wrappedFunc();
       await listener.onCompleteInvocation();
 
-      expect(mockWrap).toHaveBeenCalledWith(
+      expect(wrapSpy).toHaveBeenCalledWith(
         "aws.lambda",
         expect.objectContaining({
           service: lambdaContext.functionName,
@@ -551,7 +527,7 @@ describe("TraceListener", () => {
       wrappedFunc();
       await listener.onCompleteInvocation();
 
-      expect(mockWrap).toHaveBeenCalledWith(
+      expect(wrapSpy).toHaveBeenCalledWith(
         "aws.lambda",
         expect.objectContaining({
           service: lambdaContext.functionName,

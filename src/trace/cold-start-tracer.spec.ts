@@ -1,35 +1,17 @@
 import { RequireNode } from "../runtime/require-tracer";
 import { ColdStartTracerConfig, ColdStartTracer } from "./cold-start-tracer";
-import { TracerWrapper, SpanOptions } from "./tracer-wrapper";
+import { TracerWrapper } from "./tracer-wrapper";
 import { SpanWrapper } from "./span-wrapper";
 
-let mockStartSpan: jest.Mock<any, any>;
-let mockFinishSpan: jest.Mock<any, any>;
-
-jest.mock("./tracer-wrapper", () => {
-  mockFinishSpan = jest.fn();
-  mockStartSpan = jest.fn().mockImplementation((spanName, spanOptions) => {
+describe("ColdStartTracer", () => {
+  jest.spyOn(TracerWrapper.prototype, "isTracerAvailable", "get").mockReturnValue(true);
+  const mockFinishSpan = jest.fn();
+  const startSpanSpy = jest.spyOn(TracerWrapper.prototype, "startSpan").mockImplementation((spanName, spanOptions) => {
     return { spanName, spanOptions, finish: mockFinishSpan };
   });
-  class MockTraceWrapper {
-    get isTraceAvailable() {
-      return true;
-    }
 
-    constructor() {}
-
-    startSpan(spanName: string, spanOptions: SpanOptions): any {
-      return mockStartSpan(spanName, spanOptions);
-    }
-  }
-  return {
-    TracerWrapper: MockTraceWrapper,
-  };
-});
-
-describe("ColdStartTracer", () => {
   beforeEach(() => {
-    mockStartSpan.mockClear();
+    startSpanSpy.mockClear();
     mockFinishSpan.mockClear();
   });
 
@@ -76,9 +58,9 @@ describe("ColdStartTracer", () => {
     };
     const coldStartTracer = new ColdStartTracer(coldStartConfig);
     coldStartTracer.trace(requireNodes);
-    expect(mockStartSpan).toHaveBeenCalledTimes(5);
+    expect(startSpanSpy).toHaveBeenCalledTimes(5);
     expect(mockFinishSpan).toHaveBeenCalledTimes(5);
-    const span1 = mockStartSpan.mock.calls[0];
+    const span1 = startSpanSpy.mock.calls[0];
     expect(span1[0]).toEqual("aws.lambda.load");
     expect(span1[1].tags).toEqual({
       operation_name: "aws.lambda.require",
@@ -86,7 +68,7 @@ describe("ColdStartTracer", () => {
       resource_names: "my-function-name",
       service: "aws.lambda",
     });
-    const span2 = mockStartSpan.mock.calls[1];
+    const span2 = startSpanSpy.mock.calls[1];
     expect(span2[0]).toEqual("aws.lambda.require");
     expect(span2[1].tags).toEqual({
       operation_name: "aws.lambda.require",
@@ -95,7 +77,7 @@ describe("ColdStartTracer", () => {
       service: "aws.lambda",
       filename: "/var/task/handler.js",
     });
-    const span3 = mockStartSpan.mock.calls[2];
+    const span3 = startSpanSpy.mock.calls[2];
     expect(span3[0]).toEqual("aws.lambda.require_layer");
     expect(span3[1].tags).toEqual({
       filename: "/opt/nodejs/node_modules/my-child-module.js",
@@ -104,7 +86,7 @@ describe("ColdStartTracer", () => {
       resource_names: "myChildModule",
       service: "aws.lambda",
     });
-    const span4 = mockStartSpan.mock.calls[3];
+    const span4 = startSpanSpy.mock.calls[3];
     expect(span4[0]).toEqual("aws.lambda.require_core_module");
     expect(span4[1].tags).toEqual({
       filename: "http",
@@ -113,7 +95,7 @@ describe("ColdStartTracer", () => {
       resource_names: "myCoreModule",
       service: "aws.lambda",
     });
-    const span5 = mockStartSpan.mock.calls[4];
+    const span5 = startSpanSpy.mock.calls[4];
     expect(span5[0]).toEqual("aws.lambda.require_runtime");
     expect(span5[1].tags).toEqual({
       filename: "/var/runtime/aws-sdk",
@@ -167,9 +149,9 @@ describe("ColdStartTracer", () => {
     };
     const coldStartTracer = new ColdStartTracer(coldStartConfig);
     coldStartTracer.trace(requireNodes);
-    expect(mockStartSpan).toHaveBeenCalledTimes(3);
+    expect(startSpanSpy).toHaveBeenCalledTimes(3);
     expect(mockFinishSpan).toHaveBeenCalledTimes(3);
-    const span1 = mockStartSpan.mock.calls[0];
+    const span1 = startSpanSpy.mock.calls[0];
     expect(span1[0]).toEqual("aws.lambda.load");
     expect(span1[1].tags).toEqual({
       operation_name: "aws.lambda.require",
@@ -177,7 +159,7 @@ describe("ColdStartTracer", () => {
       resource_names: "my-function-name",
       service: "aws.lambda",
     });
-    const span2 = mockStartSpan.mock.calls[1];
+    const span2 = startSpanSpy.mock.calls[1];
     expect(span2[0]).toEqual("aws.lambda.require");
     expect(span2[1].tags).toEqual({
       operation_name: "aws.lambda.require",
@@ -186,7 +168,7 @@ describe("ColdStartTracer", () => {
       service: "aws.lambda",
       filename: "/var/task/handler.js",
     });
-    const span3 = mockStartSpan.mock.calls[2];
+    const span3 = startSpanSpy.mock.calls[2];
     expect(span3[0]).toEqual("aws.lambda.require_runtime");
     expect(span3[1].tags).toEqual({
       filename: "/var/runtime/aws-sdk",
@@ -239,9 +221,9 @@ describe("ColdStartTracer", () => {
     };
     const coldStartTracer = new ColdStartTracer(coldStartConfig);
     coldStartTracer.trace(requireNodes);
-    expect(mockStartSpan).toHaveBeenCalledTimes(4);
+    expect(startSpanSpy).toHaveBeenCalledTimes(4);
     expect(mockFinishSpan).toHaveBeenCalledTimes(4);
-    const span1 = mockStartSpan.mock.calls[0];
+    const span1 = startSpanSpy.mock.calls[0];
     expect(span1[0]).toEqual("aws.lambda.require");
     expect(span1[1].tags).toEqual({
       operation_name: "aws.lambda.require",
@@ -250,7 +232,7 @@ describe("ColdStartTracer", () => {
       service: "aws.lambda",
       filename: "/var/task/handler.js",
     });
-    const span2 = mockStartSpan.mock.calls[1];
+    const span2 = startSpanSpy.mock.calls[1];
     expect(span2[0]).toEqual("aws.lambda.require_layer");
     expect(span2[1].tags).toEqual({
       filename: "/opt/nodejs/node_modules/my-child-module.js",
@@ -259,7 +241,7 @@ describe("ColdStartTracer", () => {
       resource_names: "myChildModule",
       service: "aws.lambda",
     });
-    const span3 = mockStartSpan.mock.calls[2];
+    const span3 = startSpanSpy.mock.calls[2];
     expect(span3[0]).toEqual("aws.lambda.require_core_module");
     expect(span3[1].tags).toEqual({
       filename: "http",
@@ -268,7 +250,7 @@ describe("ColdStartTracer", () => {
       resource_names: "myCoreModule",
       service: "aws.lambda",
     });
-    const span4 = mockStartSpan.mock.calls[3];
+    const span4 = startSpanSpy.mock.calls[3];
     expect(span4[0]).toEqual("aws.lambda.require_runtime");
     expect(span4[1].tags).toEqual({
       filename: "/var/runtime/aws-sdk",
