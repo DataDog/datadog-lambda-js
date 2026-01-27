@@ -3,13 +3,15 @@
 
 // USAGE: ./move_dd_trace_dependency.js "$(cat package.json)" > package.json
 
+const file = JSON.parse(process.argv[2]);
+
 moveDependency('dd-trace')
 moveDependency('@datadog/pprof')
 
+console.log(JSON.stringify(file, null, 2));
+
 function moveDependency (name) {
-  const file = JSON.parse(process.argv[2]);
   const ddTraceVersion = file.devDependencies[name];
   delete file.devDependencies[name];
   file.dependencies[name] = ddTraceVersion;
-  console.log(JSON.stringify(file, null, 2));
 }
