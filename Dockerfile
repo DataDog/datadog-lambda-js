@@ -39,7 +39,6 @@ RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/linuxmusl-arm64
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/linuxmusl-x64
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/win32-ia32
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/win32-x64
-RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/node-108.node
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/node-111.node
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/node-120.node
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/node-131.node
