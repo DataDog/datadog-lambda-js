@@ -31,7 +31,6 @@ START
           "_dd.origin": "lambda",
           "service": "remappedApiGatewayServiceName",
           "runtime-id":"XXXX",
-          "operation_name": "aws.apigateway",
           "http.url": "https://undefined",
           "resource_names": "GET /{proxy+}",
           "request_id":"XXXX",
@@ -58,7 +57,7 @@ START
         "duration":XXXX,
         "links": [],
         "service": "remappedApiGatewayServiceName",
-        "type": "http"
+        "type": "web"
       },
       {
         "trace_id":"XXXX",
