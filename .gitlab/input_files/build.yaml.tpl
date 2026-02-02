@@ -129,7 +129,7 @@ publish layer {{ $environment.name }} ({{ $runtime.name }}):
   tags: ["arch:amd64"]
   image: ${CI_DOCKER_TARGET_IMAGE}:${CI_DOCKER_TARGET_VERSION}
   rules:
-    - if: '"{{ $environment_name }}" == "sandbox" && $REGION == "{{ $e2e_region }}"'
+    - if: '"{{ $environment.name }}" == "sandbox" && $REGION == "{{ $e2e_region }}"'
       when: on_success
     - if: '"{{ $environment.name }}" =~ /^(sandbox|staging)/'
       when: manual
