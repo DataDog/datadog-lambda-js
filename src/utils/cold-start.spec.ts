@@ -1,4 +1,10 @@
-import { _resetColdStart, didFunctionColdStart, setSandboxInit, isProactiveInitialization, isManagedInstancesMode } from "./cold-start";
+import {
+  _resetColdStart,
+  didFunctionColdStart,
+  setSandboxInit,
+  isProactiveInitialization,
+  isManagedInstancesMode,
+} from "./cold-start";
 
 beforeEach(_resetColdStart);
 afterAll(_resetColdStart);
