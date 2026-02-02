@@ -1,4 +1,4 @@
-export { didFunctionColdStart, getSandboxInitTags, setSandboxInit, isProactiveInitialization } from "./cold-start";
+export { didFunctionColdStart, getSandboxInitTags, setSandboxInit, isProactiveInitialization, isManagedInstancesMode } from "./cold-start";
 export { promisifiedHandler } from "./handler";
 export { Timer } from "./timer";
 export { logWarning, logError, logDebug, Logger, setLogLevel, setLogger, LogLevel } from "./log";
