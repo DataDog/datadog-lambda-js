@@ -23,6 +23,8 @@
     "@aws-sdk/client-kms": "^3.366.0",
     "@aws-sdk/client-secrets-manager": "^3.721.0",
     "@datadog/pprof": "*",
+    "@opentelemetry/api": "*",
+    "@opentelemetry/api-logs": "*",
     "@types/aws-lambda": "^8.10.136",
     "@types/aws-sdk": "^2.7.0",
     "@types/jest": "^27.5.2",
