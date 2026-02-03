@@ -215,17 +215,17 @@ e2e-test:
     project: DataDog/serverless-e2e-tests
     strategy: depend
   variables:
-      LANGUAGES_SUBSET: node
-      # These env vars are inherited from the dotenv reports of the publish-layer jobs
-    {{ range $runtime := (ds "runtimes").runtimes }}
+    LANGUAGES_SUBSET: node
+    # These env vars are inherited from the dotenv reports of the publish-layer jobs
+    {{- range (ds "runtimes").runtimes }}
     {{- if eq .arch "amd64" }}
     {{- $runtime.node_version := print (.name | strings.Trim "node") }}
-      NODEJS_{{ $runtime.node_version }}_VERSION: $NODEJS_{{ $runtime.node_version }}_VERSION
+      NODEJS_{{ .node_version }}_VERSION: $NODEJS_{{ .node_version }}_VERSION
     {{- end }}
     {{- end }}
   needs: {{ range (ds "runtimes").runtimes }}
     {{- if eq .arch "amd64" }}
-      - "publish-layer-sandbox ({{ $environment.name }}): [{{ $e2e_region }}]"
+      - "publish layer sandbox ({{ .name }}): [{{ $e2e_region }}]"
     {{- end }}
     {{- end }}
 
