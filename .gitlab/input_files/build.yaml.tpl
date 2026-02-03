@@ -219,7 +219,7 @@ e2e-test:
     # These env vars are inherited from the dotenv reports of the publish-layer jobs
     {{- range (ds "runtimes").runtimes }}
     {{- if eq .arch "amd64" }}
-    {{- $runtime.node_version := print (.name | strings.Trim "node") }}
+    {{- .node_version := print (.name | strings.Trim "node") }}
       NODEJS_{{ .node_version }}_VERSION: $NODEJS_{{ .node_version }}_VERSION
     {{- end }}
     {{- end }}
