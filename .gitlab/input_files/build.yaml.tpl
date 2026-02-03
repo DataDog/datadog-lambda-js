@@ -218,14 +218,10 @@ e2e-test:
     LANGUAGES_SUBSET: node
     # These env vars are inherited from the dotenv reports of the publish-layer jobs
     {{- range (ds "runtimes").runtimes }}
-    {{- if eq .arch "amd64" }}
       NODEJS_{{ .node_version }}_VERSION: $NODEJS_{{ .node_version }}_VERSION
     {{- end }}
-    {{- end }}
   needs: {{ range (ds "runtimes").runtimes }}
-    {{- if eq .arch "amd64" }}
       - "publish layer sandbox ({{ .name }}): [{{ $e2e_region }}]"
-    {{- end }}
     {{- end }}
 
 e2e-test-status:
