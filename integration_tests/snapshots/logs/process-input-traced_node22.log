@@ -49,6 +49,7 @@ START
           "http.method": "GET",
           "stage": "test",
           "domain_name": "",
+          "dd_resource_key": "arn:aws:apigateway:eu-west-1::/restapis/wt6mne2s9k",
           "http.status_code": "200",
           "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node22",
