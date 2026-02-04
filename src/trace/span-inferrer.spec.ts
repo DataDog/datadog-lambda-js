@@ -934,7 +934,7 @@ describe("SpanInferrer", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(apiGatewayV2, {} as any, {} as SpanContext);
 
-    expect(mockWrapper.startSpan).toBeCalledWith("aws.apigateway", {
+    expect(mockWrapper.startSpan).toBeCalledWith("aws.httpapi", {
       childOf: {},
       startTime: 1583817383220,
       tags: {
@@ -988,7 +988,7 @@ describe("SpanInferrer", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(apiGatewayV2Parametrized, {} as any, {} as SpanContext);
 
-    expect(mockWrapper.startSpan).toBeCalledWith("aws.apigateway", {
+    expect(mockWrapper.startSpan).toBeCalledWith("aws.httpapi", {
       childOf: {},
       startTime: 1710529905066,
       tags: {
@@ -1266,7 +1266,7 @@ describe("Authorizer Spans", () => {
     const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
     inferrer.createInferredSpan(apiGatewayV2RequestAuthorizer, {} as any, {} as SpanContext);
     expect(mockWrapperWithFinish.startSpan.mock.calls[0]).toEqual([
-      "aws.apigateway",
+      "aws.httpapi",
       {
         childOf: {},
         startTime: 1665596771812,
@@ -1295,7 +1295,7 @@ describe("Authorizer Spans", () => {
     const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
     inferrer.createInferredSpan(apiGatewayV2TokenAuthorizerCached, {} as any, {} as SpanContext);
     expect(mockWrapperWithFinish.startSpan.mock.calls[0]).toEqual([
-      "aws.apigateway",
+      "aws.httpapi",
       {
         childOf: {},
         startTime: 1665596856876,
