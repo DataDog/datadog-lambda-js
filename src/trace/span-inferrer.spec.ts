@@ -1011,6 +1011,47 @@ describe("SpanInferrer", () => {
     });
   });
 
+  it("sets dd_resource_key with restapis ARN for API Gateway V1 events", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    const mockContext = {
+      invokedFunctionArn: "arn:aws:lambda:us-east-1:123456789012:function:my-function",
+    };
+    inferrer.createInferredSpan(apiGatewayV1, mockContext as any, {} as SpanContext);
+
+    const callArgs = mockWrapper.startSpan.mock.calls[0];
+    expect(callArgs[1].tags.dd_resource_key).toBe("arn:aws:apigateway:us-east-1::/restapis/id");
+  });
+
+  it("sets dd_resource_key with apis ARN for API Gateway V2 events", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    const mockContext = {
+      invokedFunctionArn: "arn:aws:lambda:us-east-2:123456789012:function:my-function",
+    };
+    inferrer.createInferredSpan(apiGatewayV2, mockContext as any, {} as SpanContext);
+
+    const callArgs = mockWrapper.startSpan.mock.calls[0];
+    expect(callArgs[1].tags.dd_resource_key).toBe("arn:aws:apigateway:us-east-2::/apis/r3pmxmplak");
+  });
+
+  it("sets dd_resource_key with restapis ARN for WebSocket events", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    const mockContext = {
+      invokedFunctionArn: "arn:aws:lambda:us-east-1:123456789012:function:my-function",
+    };
+    inferrer.createInferredSpan(webSocketEvent, mockContext as any, {} as SpanContext);
+
+    const callArgs = mockWrapper.startSpan.mock.calls[0];
+    expect(callArgs[1].tags.dd_resource_key).toBe("arn:aws:apigateway:us-east-1::/restapis/08se3mvh28");
+  });
+
+  it("does not set dd_resource_key when context is missing invokedFunctionArn", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(apiGatewayV1, {} as any, {} as SpanContext);
+
+    const callArgs = mockWrapper.startSpan.mock.calls[0];
+    expect(callArgs[1].tags.dd_resource_key).toBeUndefined();
+  });
+
   it("creates an inferred span for Lambda Function URL Events", () => {
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
     inferrer.createInferredSpan(functionUrlEvent, {} as any, {} as SpanContext);

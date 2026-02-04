@@ -13,6 +13,7 @@ import { eventTypes, parseEventSource } from "./trigger";
 import { SpanWrapper } from "./span-wrapper";
 import { DD_SERVICE_ENV_VAR, parentSpanFinishTimeHeader } from "./constants";
 import { logDebug } from "../utils";
+import { parseLambdaARN } from "../utils/arn";
 import { HTTPEventTraceExtractor } from "./context/extractors";
 import { HTTPEventSubType } from "./context/extractors/http";
 
@@ -189,6 +190,19 @@ export class SpanInferrer {
         options.startTime = event.requestContext.timeEpoch;
       }
     }
+
+    // Compute API Gateway ARN for dd_resource_key
+    if (context?.invokedFunctionArn && apiId) {
+      const { region } = parseLambdaARN(context.invokedFunctionArn);
+      if (region) {
+        const apiGatewayArn =
+          eventSourceSubType === HTTPEventSubType.ApiGatewayV2
+            ? `arn:aws:apigateway:${region}::/apis/${apiId}`
+            : `arn:aws:apigateway:${region}::/restapis/${apiId}`;
+        options.tags.dd_resource_key = apiGatewayArn;
+      }
+    }
+
     options.childOf = upstreamAuthorizerSpan ? upstreamAuthorizerSpan.span : parentSpanContext;
 
     const spanWrapperOptions = {
