@@ -17,10 +17,9 @@ jest.mock("dd-trace/packages/dd-trace/src/datastreams/checkpointer", () => {
 // Mocking extract is needed, due to dd-trace being a No-op
 // if the detected environment is testing. This is expected, since
 // we don't want to test dd-trace extraction, but our components.
-const ddTrace = require("dd-trace");
 jest.mock("dd-trace", () => {
   return {
-    ...ddTrace,
+    ...jest.requireActual("dd-trace"),
     _tracer: { _service: {} },
     extract: (_carrier: any, _headers: any) => mockSpanContext,
     dataStreamsCheckpointer: mockDataStreamsCheckpointer,
