@@ -216,9 +216,9 @@ e2e-test:
     strategy: depend
   variables:
     LANGUAGES_SUBSET: node
-    # These env vars are inherited from the dotenv reports of the publish-layer jobs
     {{- range (ds "runtimes").runtimes }}
-    NODEJS_{{ .node_version }}_VERSION: $NODEJS_{{ .node_version }}_VERSION
+    {{- $version := print (.name | strings.Trim "node") }}
+    NODEJS_{{ $version }}_VERSION: $NODEJS_{{ $version }}_VERSION
     {{- end }}
   needs: {{ range (ds "runtimes").runtimes }}
     - "publish layer sandbox ({{ .name }}): [{{ $e2e_region }}]"
