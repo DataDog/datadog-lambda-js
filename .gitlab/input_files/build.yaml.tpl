@@ -1,3 +1,5 @@
+{{- $e2e_region := "us-west-2" -}}
+
 variables:
   CI_DOCKER_TARGET_IMAGE: registry.ddbuild.io/ci/datadog-lambda-js
   CI_DOCKER_TARGET_VERSION: latest
@@ -7,6 +9,7 @@ stages:
  - test
  - sign
  - publish
+ - e2e
 
 default:
   retry:
@@ -126,6 +129,8 @@ publish layer {{ $environment.name }} ({{ $runtime.name }}):
   tags: ["arch:amd64"]
   image: ${CI_DOCKER_TARGET_IMAGE}:${CI_DOCKER_TARGET_VERSION}
   rules:
+    - if: '"{{ $environment.name }}" == "sandbox" && $REGION == "{{ $e2e_region }}"'
+      when: on_success
     - if: '"{{ $environment.name }}" =~ /^(sandbox|staging)/'
       when: manual
       allow_failure: true
@@ -203,3 +208,52 @@ publish npm package:
     - mkdir -p datadog_lambda_js-{{ if eq $environment.name "prod"}}signed-{{ end }}bundle-${CI_JOB_ID}
     - cp .layers/datadog_lambda_node*.zip datadog_lambda_js-{{ if eq $environment.name "prod"}}signed-{{ end }}bundle-${CI_JOB_ID}
 {{ end }}
+
+e2e-test:
+  stage: e2e
+  trigger:
+    project: DataDog/serverless-e2e-tests
+    strategy: depend
+  variables:
+    LANGUAGES_SUBSET: node
+    {{- range (ds "runtimes").runtimes }}
+    {{- $version := print (.name | strings.Trim "node") }}
+    NODEJS_{{ $version }}_VERSION: "NODEJS_{{ $version }}_VERSION"
+    {{- end }}
+  needs: {{ range (ds "runtimes").runtimes }}
+    - "publish layer sandbox ({{ .name }}): [{{ $e2e_region }}]"
+    {{- end }}
+
+
+e2e-test-status:
+  stage: e2e
+  image: registry.ddbuild.io/images/docker:20.10-py3
+  tags: ["arch:amd64"]
+  timeout: 3h
+  script: |
+      GITLAB_API_TOKEN=$(aws ssm get-parameter --region us-east-1 --name "ci.${CI_PROJECT_NAME}.serverless-e2e-gitlab-token" --with-decryption --query "Parameter.Value" --out text)
+      URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/pipelines/${CI_PIPELINE_ID}/bridges"
+      echo "Fetching E2E job status from: $URL"
+      while true; do
+        RESPONSE=$(curl -s --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" "$URL")
+        E2E_JOB_STATUS=$(echo "$RESPONSE" | jq -r '.[] | select(.name=="e2e-test") | .downstream_pipeline.status')
+        echo -n "E2E job status: $E2E_JOB_STATUS, "
+        if [ "$E2E_JOB_STATUS" == "success" ]; then
+          echo "✅ E2E tests completed successfully"
+          exit 0
+        elif [ "$E2E_JOB_STATUS" == "failed" ]; then
+          echo "❌ E2E tests failed"
+          exit 1
+        elif [ "$E2E_JOB_STATUS" == "running" ]; then
+          echo "⏳ E2E tests are still running, retrying in 1 minute..."
+        elif [ "$E2E_JOB_STATUS" == "canceled" ]; then
+          echo "🚫 E2E tests were canceled"
+          exit 1
+        elif [ "$E2E_JOB_STATUS" == "skipped" ]; then
+          echo "⏭️ E2E tests were skipped"
+          exit 0
+        else
+          echo "❓ Unknown E2E test status: $E2E_JOB_STATUS, retrying in 1 minute..."
+        fi
+        sleep 60
+      done
