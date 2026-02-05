@@ -215,7 +215,7 @@ e2e-test:
     project: DataDog/serverless-e2e-tests
     strategy: depend
   variables:
-    LANGUAGES_SUBSET: node
+    LANGUAGES_SUBSET: python
     # These env vars are inherited from the dotenv reports of the publish-layer jobs
     {{- range (ds "runtimes").runtimes }}
       NODEJS_{{ .node_version }}_VERSION: $NODEJS_{{ .node_version }}_VERSION
