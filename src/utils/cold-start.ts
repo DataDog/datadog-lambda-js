@@ -37,6 +37,16 @@ export function getSandboxInitTags(): string[] {
   return tags;
 }
 
+/**
+ * Checks if the Lambda function is running in managed instances mode.
+ * In managed instances mode, we should not create cold start tracing spans
+ * as the tracer library handles this independently.
+ * @returns true if running in managed instances mode, false otherwise
+ */
+export function isManagedInstancesMode(): boolean {
+  return process.env.AWS_LAMBDA_INITIALIZATION_TYPE === "lambda-managed-instances";
+}
+
 // For testing, reset the globals to their original values
 export function _resetColdStart() {
   functionDidColdStart = true;
