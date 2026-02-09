@@ -231,7 +231,8 @@ e2e-test-status:
   tags: ["arch:amd64"]
   timeout: 3h
   script: |
-      GITLAB_API_TOKEN=$(aws ssm get-parameter --region us-east-1 --name "ci.${CI_PROJECT_NAME}.serverless-e2e-gitlab-token" --with-decryption --query "Parameter.Value" --out text)
+      GITLAB_API_TOKEN=$(curl -H "$(ddtool auth token sdm-staging --datacenter us1.ddbuild.staging.dog --http-header)" \
+      "https://bti-ci-api.us1.ddbuild.staging.dog/internal/ci/gitlab/token?owner=DataDog&repository=serverless-e2e-tests")
       URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/pipelines/${CI_PIPELINE_ID}/bridges"
       echo "Fetching E2E job status from: $URL"
       while true; do
