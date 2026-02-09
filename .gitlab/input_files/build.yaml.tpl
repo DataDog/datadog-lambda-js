@@ -227,11 +227,12 @@ e2e-test:
 
 e2e-test-status:
   stage: e2e
-  image: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$CI_IMAGE_LINUX_SUFFIX:$CI_IMAGE_LINUX
+  image: registry.ddbuild.io/images/docker:20.10-py3
   tags: ["arch:amd64"]
   timeout: 3h
   script: |
-      GITLAB_API_TOKEN=$(curl -H "$(ddtool auth token sdm-staging --datacenter us1.ddbuild.staging.dog --http-header)" \
+      auth_header=$(authanywhere --audience rapid-foo-bar)
+      GITLAB_API_TOKEN=$(curl -H "${auth_header}" "$(ddtool auth token sdm-staging --datacenter us1.ddbuild.staging.dog --http-header)" \
       "https://bti-ci-api.us1.ddbuild.staging.dog/internal/ci/gitlab/token?owner=DataDog&repository=serverless-e2e-tests")
       URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/pipelines/${CI_PIPELINE_ID}/bridges"
       echo "Fetching E2E job status from: $URL"
