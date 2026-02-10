@@ -239,6 +239,7 @@ e2e-test-status:
       echo "Fetching E2E job status from: $URL"
       while true; do
         RESPONSE=$(curl -s --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" "$URL")
+        echo $RESPONSE
         E2E_JOB_STATUS=$(echo "$RESPONSE" | jq -r '.[] | select(.name=="e2e-test") | .downstream_pipeline.status')
         echo -n "E2E job status: $E2E_JOB_STATUS, "
         if [ "$E2E_JOB_STATUS" == "success" ]; then
