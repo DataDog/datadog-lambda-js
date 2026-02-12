@@ -238,7 +238,7 @@ e2e-test-status:
       URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/pipelines/${CI_PIPELINE_ID}/bridges"
       echo "Fetching E2E job status from: $URL"
       while true; do
-        RESPONSE=$(curl -s --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" "$URL")
+        RESPONSE=$(curl -s "$URL")
         echo $RESPONSE
         E2E_JOB_STATUS=$(echo "$RESPONSE" | jq -r '.[] | select(.name=="e2e-test") | .downstream_pipeline.status')
         echo -n "E2E job status: $E2E_JOB_STATUS, "
