@@ -232,7 +232,7 @@ e2e-test-status:
   timeout: 3h
   script: |
       curl -OL "binaries.ddbuild.io/dd-source/authanywhere/LATEST/authanywhere-linux-amd64" && mv "authanywhere-linux-amd64" /bin/authanywhere && chmod +x /bin/authanywhere
-      auth_header=$(authanywhere)
+      auth_header=$(authanywhere --audience rapid-devex-ci)
       GITLAB_API_TOKEN=$(curl -H "${auth_header}"  \
       "https://bti-ci-api.us1.ddbuild.staging.dog/internal/ci/gitlab/token?owner=DataDog&repository=serverless-e2e-tests")
       URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/pipelines/${CI_PIPELINE_ID}/bridges"
