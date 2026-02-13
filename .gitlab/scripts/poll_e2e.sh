@@ -1,5 +1,7 @@
 curl -OL "binaries.ddbuild.io/dd-source/authanywhere/LATEST/authanywhere-linux-amd64" && mv "authanywhere-linux-amd64" /bin/authanywhere && chmod +x /bin/authanywhere
 
+/bin/authanywhere
+
 BTI_CI_API_TOKEN=$(authanywhere --audience rapid-devex-ci)
 
 BTI_RESPONSE= $(curl --silent --request GET \
