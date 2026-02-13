@@ -236,7 +236,7 @@ e2e-test-status:
       BTI_RESPONSE= $(curl --silent --request GET \
           --header "$BTI_CI_API_TOKEN" \
           --header "Content-Type: application/vnd.api+json" \
-          "https://bti-ci-api.us1.ddbuild.staging.dog/internal/ci/gitlab/token?owner=DataDog&repository=serverless-e2e-tests")
+          "https://bti-ci-api.us1.ddbuild.io/internal/ci/gitlab/token?owner=DataDog&repository=datadog-lambda-js")
       GITLAB_TOKEN=$(echo "$BTI_RESPONSE" | jq -r '.token // empty') 
       if [ -z "$GITLAB_TOKEN" ]; then
         echo "Error: Failed to get GitLab token from BTI CI API. Response: $BTI_RESPONSE"
