@@ -232,13 +232,20 @@ e2e-test-status:
   timeout: 3h
   script: |
       curl -OL "binaries.ddbuild.io/dd-source/authanywhere/LATEST/authanywhere-linux-amd64" && mv "authanywhere-linux-amd64" /bin/authanywhere && chmod +x /bin/authanywhere
-      auth_header=$(authanywhere --audience rapid-devex-ci)
-      GITLAB_API_TOKEN=$(curl -H "${auth_header}"  \
-      "https://bti-ci-api.us1.ddbuild.staging.dog/internal/ci/gitlab/token?owner=DataDog&repository=serverless-e2e-tests")
+      BTI_CI_API_TOKEN=$(authanywhere --audience rapid-devex-ci)
+      BTI_RESPONSE= $(curl --silent --request GET \
+          --header "$BTI_CI_API_TOKEN" \
+          --header "Content-Type: application/vnd.api+json" \
+          "https://bti-ci-api.us1.ddbuild.io/internal/ci/gitlab/token?owner=DataDog&repository=serverless-e2e-tests")
+      GITLAB_TOKEN=$(echo "$BTI_RESPONSE" | jq -r '.token // empty') 
+      if [ -z "$GITLAB_TOKEN" ]; then
+        echo "Error: Failed to get GitLab token from BTI CI API. Response: $BTI_RESPONSE"
+        exit 1
+      fi
       URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/pipelines/${CI_PIPELINE_ID}/bridges"
       echo "Fetching E2E job status from: $URL"
       while true; do
-        RESPONSE=$(curl -s "$URL")
+        RESPONSE=$(curl -s --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" "$URL")
         echo $RESPONSE
         E2E_JOB_STATUS=$(echo "$RESPONSE" | jq -r '.[] | select(.name=="e2e-test") | .downstream_pipeline.status')
         echo -n "E2E job status: $E2E_JOB_STATUS, "
