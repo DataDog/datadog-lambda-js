@@ -28,7 +28,8 @@ describe("durable-function-context", () => {
     });
 
     it("returns undefined for malformed ARN with empty execution name", () => {
-      const arn = "arn:aws:lambda:us-east-1:123456789012:function:my-func:$LATEST/durable-execution//550e8400-e29b-41d4-a716-446655440002";
+      const arn =
+        "arn:aws:lambda:us-east-1:123456789012:function:my-func:$LATEST/durable-execution//550e8400-e29b-41d4-a716-446655440002";
       const result = parseDurableExecutionArn(arn);
 
       expect(result).toBeUndefined();
@@ -40,7 +41,6 @@ describe("durable-function-context", () => {
 
       expect(result).toBeUndefined();
     });
-
   });
 
   describe("extractDurableFunctionContext", () => {
@@ -93,6 +93,5 @@ describe("durable-function-context", () => {
 
       expect(result).toBeUndefined();
     });
-
   });
 });
