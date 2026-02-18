@@ -24,7 +24,7 @@ while true; do
         echo "❌ E2E tests failed"
         exit 1
     elif [ "$E2E_JOB_STATUS" == "running" ]; then
-        echo "⏳ E2E tests are still running, retrying in 1 minute..."
+        echo "⏳ E2E tests are still running, retrying in 2 minutes..."
     elif [ "$E2E_JOB_STATUS" == "canceled" ]; then
         echo "🚫 E2E tests were canceled"
         exit 1
