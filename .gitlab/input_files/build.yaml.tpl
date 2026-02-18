@@ -97,6 +97,7 @@ integration test ({{ $runtime.name }}):
     - RUNTIME_PARAM={{ $runtime.node_major_version }} ./scripts/run_integration_tests.sh
 
 {{ range $environment := (ds "environments").environments }}
+{{ $dotenv := print $runtime.name "_" $environment_name ".env" }}
 
 {{ if or (eq $environment.name "prod") }}
 sign layer ({{ $runtime.name }}):
@@ -135,6 +136,9 @@ publish layer {{ $environment.name }} ({{ $runtime.name }}):
       when: manual
       allow_failure: true
     - if: '$CI_COMMIT_TAG =~ /^v.*/'
+  artifacts:
+    reports:
+      dotenv: {{ $dotenv }}
   needs:
 {{ if or (eq $environment.name "prod") }}
       - sign layer ({{ $runtime.name }})
@@ -159,7 +163,8 @@ publish layer {{ $environment.name }} ({{ $runtime.name }}):
   before_script:
     - EXTERNAL_ID_NAME={{ $environment.external_id }} ROLE_TO_ASSUME={{ $environment.role_to_assume }} AWS_ACCOUNT={{ $environment.account }} source .gitlab/scripts/get_secrets.sh
   script:
-    - STAGE={{ $environment.name }} NODE_VERSION={{ $runtime.node_version }} .gitlab/scripts/publish_layers.sh
+    - version := print (.name | strings.Trim "node")
+    - STAGE={{ $environment.name }} NODE_VERSION={{ $runtime.node_version }} DOTENV={{ $dotenv }} MAJOR_VERSION=version .gitlab/scripts/publish_layers.sh
 
 {{- end }}
 
