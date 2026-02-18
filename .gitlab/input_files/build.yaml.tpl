@@ -97,7 +97,7 @@ integration test ({{ $runtime.name }}):
     - RUNTIME_PARAM={{ $runtime.node_major_version }} ./scripts/run_integration_tests.sh
 
 {{ range $environment := (ds "environments").environments }}
-{{ $dotenv := print $runtime.name "_" $environment_name ".env" }}
+{{ $dotenv := print $runtime.name "_" $environment.name ".env" }}
 
 {{ if or (eq $environment.name "prod") }}
 sign layer ({{ $runtime.name }}):
