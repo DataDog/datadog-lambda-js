@@ -146,6 +146,8 @@ fi
 while [ $latest_version -lt $VERSION ]; do
     latest_version=$(publish_layer $REGION $layer $aws_cli_node_version_key $layer_path)
     printf "[$REGION] Published version $latest_version for layer $layer in region $REGION\n"
+    latest_arn=$(aws lambda get-layer-version --layer-name $layer --version-number $latest_version --region $REGION --query 'LayerVersionArn' --output text)
+    printf "[$REGION] Published arn $latest_arn\n"
 
     # This shouldn't happen unless someone manually deleted the latest version, say 28, and
     # then tries to republish 28 again. The published version would actually be 29, because
