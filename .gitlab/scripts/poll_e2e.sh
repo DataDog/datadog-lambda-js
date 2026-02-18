@@ -1,23 +1,13 @@
 curl -OL "binaries.ddbuild.io/dd-source/authanywhere/LATEST/authanywhere-linux-amd64" && mv "authanywhere-linux-amd64" /bin/authanywhere && chmod +x /bin/authanywhere
 
-/bin/authanywhere
-
-echo "here"
-
 BTI_CI_API_TOKEN=$(authanywhere --audience rapid-devex-ci)
-
-echo "there"
 
 BTI_RESPONSE=$(curl --silent --request GET \
     --header "$BTI_CI_API_TOKEN" \
     --header "Content-Type: application/vnd.api+json" \
     "https://bti-ci-api.us1.ddbuild.io/internal/ci/gitlab/token?owner=DataDog&repository=datadog-lambda-js")
 
-echo "where"
-
 GITLAB_TOKEN=$(echo "$BTI_RESPONSE" | jq -r '.token // empty') 
-
-echo "bear"
 
 URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/pipelines/${CI_PIPELINE_ID}/bridges"
 

@@ -218,7 +218,7 @@ e2e-test:
     LANGUAGES_SUBSET: node
     {{- range (ds "runtimes").runtimes }}
     {{- $version := print (.name | strings.Trim "node") }}
-    NODEJS_{{ $version }}_VERSION: "NODEJS_{{ $version }}_VERSION"
+    NODEJS_{{ $version }}_VERSION: $NODEJS_{{ $version }}_VERSION
     {{- end }}
   needs: {{ range (ds "runtimes").runtimes }}
     - "publish layer sandbox ({{ .name }}): [{{ $e2e_region }}]"
