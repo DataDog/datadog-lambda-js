@@ -2,19 +2,22 @@ curl -OL "binaries.ddbuild.io/dd-source/authanywhere/LATEST/authanywhere-linux-a
 
 /bin/authanywhere
 
+echo "here"
+
 BTI_CI_API_TOKEN=$(authanywhere --audience rapid-devex-ci)
+
+echo "there"
 
 BTI_RESPONSE=$(curl --silent --request GET \
     --header "$BTI_CI_API_TOKEN" \
     --header "Content-Type: application/vnd.api+json" \
     "https://bti-ci-api.us1.ddbuild.io/internal/ci/gitlab/token?owner=DataDog&repository=datadog-lambda-js")
 
+echo "where"
+
 GITLAB_TOKEN=$(echo "$BTI_RESPONSE" | jq -r '.token // empty') 
 
-if [ -z "$GITLAB_TOKEN" ]; then
-echo "Error: Failed to get GitLab token from BTI CI API. Response: $BTI_RESPONSE"
-exit 1
-fi
+echo "bear"
 
 URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/pipelines/${CI_PIPELINE_ID}/bridges"
 
@@ -39,7 +42,7 @@ while true; do
         echo "⏭️ E2E tests were skipped"
         exit 0
     else
-        echo "❓ Unknown E2E test status: $E2E_JOB_STATUS, retrying in 1 minute..."
+        echo "❓ Unknown E2E test status: $E2E_JOB_STATUS, retrying in 2 minutes..."
     fi
-    sleep 60
+    sleep 120
 done
