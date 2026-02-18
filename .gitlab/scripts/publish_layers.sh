@@ -156,10 +156,10 @@ while [ $latest_version -lt $VERSION ]; do
     fi
 done
 
-echo $MAJOR_VERSION
 if [ -n "$DOTENV" ]; then
     printf "[$REGION] Exporting layer version to $DOTENV file...\n"
-    echo "NODE_${MAJOR_VERSION}_VERSION=$latest_arn" >> "$DOTENV"
+    major_version="${$NODE_VERSION:0:2}"
+    echo "NODE_${major_version}_VERSION=$latest_arn" >> "$DOTENV"
     cat "$DOTENV"
 fi
 

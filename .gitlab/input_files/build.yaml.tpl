@@ -163,8 +163,7 @@ publish layer {{ $environment.name }} ({{ $runtime.name }}):
   before_script:
     - EXTERNAL_ID_NAME={{ $environment.external_id }} ROLE_TO_ASSUME={{ $environment.role_to_assume }} AWS_ACCOUNT={{ $environment.account }} source .gitlab/scripts/get_secrets.sh
   script:
-    - version := print (.name | strings.Trim "node")
-    - STAGE={{ $environment.name }} NODE_VERSION={{ $runtime.node_version }} DOTENV={{ $dotenv }} MAJOR_VERSION=version .gitlab/scripts/publish_layers.sh
+    - STAGE={{ $environment.name }} NODE_VERSION={{ $runtime.node_version }} DOTENV={{ $dotenv }} .gitlab/scripts/publish_layers.sh
 
 {{- end }}
 
