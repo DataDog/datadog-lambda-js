@@ -29,6 +29,7 @@ export function extractDurableFunctionContext(event: any): DurableFunctionContex
  * ARN format: arn:aws:lambda:{region}:{account}:function:{func}:{version}/durable-execution/{name}/{id}
  */
 export function parseDurableExecutionArn(arn: string): { executionName: string; executionId: string } | undefined {
+  // Match only the trailing durable execution segment.
   const match = arn.match(/\/durable-execution\/([^/]+)\/([^/]+)$/);
   if (!match) return undefined;
   const [, executionName, executionId] = match;
