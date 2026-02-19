@@ -13,6 +13,7 @@ import { eventTypes, parseEventSource } from "./trigger";
 import { SpanWrapper } from "./span-wrapper";
 import { DD_SERVICE_ENV_VAR, parentSpanFinishTimeHeader } from "./constants";
 import { logDebug } from "../utils";
+import { parseLambdaARN } from "../utils/arn";
 import { HTTPEventTraceExtractor } from "./context/extractors";
 import { HTTPEventSubType } from "./context/extractors/http";
 
@@ -120,14 +121,13 @@ export class SpanInferrer {
     const serviceName = SpanInferrer.determineServiceName(apiId, "lambda_api_gateway", domain, domain);
 
     options.tags = {
-      operation_name: "aws.apigateway",
       "http.url": httpUrl,
       endpoint: path,
       resource_names: resourceName,
       request_id: context?.awsRequestId,
       service: serviceName,
       "service.name": serviceName,
-      "span.type": "http",
+      "span.type": "web",
       "resource.name": resourceName,
       "peer.service": this.service,
       "span.kind": "server",
@@ -160,12 +160,11 @@ export class SpanInferrer {
           // getting an approximated endTime
           if (eventSourceSubType === HTTPEventSubType.ApiGatewayV2) {
             options.startTime = startTime; // not inserting authorizer span
-            options.tags.operation_name = "aws.httpapi";
           } else {
             upstreamSpanOptions = {
               startTime,
               childOf: parentSpanContext,
-              tags: { operation_name: "aws.apigateway.authorizer", ...options.tags },
+              tags: { ...options.tags },
             };
             upstreamAuthorizerSpan = new SpanWrapper(
               this.traceWrapper.startSpan("aws.apigateway.authorizer", upstreamSpanOptions),
@@ -191,12 +190,26 @@ export class SpanInferrer {
         options.startTime = event.requestContext.timeEpoch;
       }
     }
+
+    // Compute API Gateway ARN for dd_resource_key
+    if (context?.invokedFunctionArn && apiId) {
+      const { region } = parseLambdaARN(context.invokedFunctionArn);
+      if (region) {
+        const apiGatewayArn =
+          eventSourceSubType === HTTPEventSubType.ApiGatewayV2
+            ? `arn:aws:apigateway:${region}::/apis/${apiId}`
+            : `arn:aws:apigateway:${region}::/restapis/${apiId}`;
+        options.tags.dd_resource_key = apiGatewayArn;
+      }
+    }
+
     options.childOf = upstreamAuthorizerSpan ? upstreamAuthorizerSpan.span : parentSpanContext;
 
     const spanWrapperOptions = {
       isAsync: this.isApiGatewayAsync(event) === "async",
     };
-    return new SpanWrapper(this.traceWrapper.startSpan("aws.apigateway", options), spanWrapperOptions);
+    const spanName = eventSourceSubType === HTTPEventSubType.ApiGatewayV2 ? "aws.httpapi" : "aws.apigateway";
+    return new SpanWrapper(this.traceWrapper.startSpan(spanName, options), spanWrapperOptions);
   }
 
   createInferredSpanForLambdaUrl(

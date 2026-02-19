@@ -1,6 +1,6 @@
 {
   "name": "datadog-lambda-js",
-  "version": "12.133.0",
+  "version": "12.134.0",
   "description": "Lambda client library that supports hybrid tracing in node js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -23,6 +23,8 @@
     "@aws-sdk/client-kms": "^3.366.0",
     "@aws-sdk/client-secrets-manager": "^3.721.0",
     "@datadog/pprof": "*",
+    "@opentelemetry/api": "*",
+    "@opentelemetry/api-logs": "*",
     "@types/aws-lambda": "^8.10.136",
     "@types/aws-sdk": "^2.7.0",
     "@types/jest": "^27.5.2",

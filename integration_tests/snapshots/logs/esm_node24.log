@@ -31,7 +31,6 @@ START
           "_dd.origin": "lambda",
           "service": "remappedApiGatewayServiceName",
           "runtime-id":"XXXX",
-          "operation_name": "aws.apigateway",
           "http.url": "https://undefined",
           "resource_names": "GET /{proxy+}",
           "request_id":"XXXX",
@@ -42,6 +41,7 @@ START
           "http.method": "GET",
           "stage": "test",
           "domain_name": "",
+          "dd_resource_key": "arn:aws:apigateway:eu-west-1::/restapis/wt6mne2s9k",
           "http.status_code": "200",
           "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-esm_node24",
@@ -58,7 +58,7 @@ START
         "duration":XXXX,
         "links": [],
         "service": "remappedApiGatewayServiceName",
-        "type": "http"
+        "type": "web"
       },
       {
         "trace_id":"XXXX",
