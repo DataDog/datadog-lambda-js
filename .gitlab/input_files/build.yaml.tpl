@@ -1,3 +1,5 @@
+{{- $e2e_region := "us-west-2" -}}
+
 variables:
   CI_DOCKER_TARGET_IMAGE: registry.ddbuild.io/ci/datadog-lambda-js
   CI_DOCKER_TARGET_VERSION: latest
@@ -7,6 +9,7 @@ stages:
  - test
  - sign
  - publish
+ - e2e
 
 default:
   retry:
@@ -94,6 +97,7 @@ integration test ({{ $runtime.name }}):
     - RUNTIME_PARAM={{ $runtime.node_major_version }} ./scripts/run_integration_tests.sh
 
 {{ range $environment := (ds "environments").environments }}
+{{ $dotenv := print $runtime.name "_" $environment.name ".env" }}
 
 {{ if or (eq $environment.name "prod") }}
 sign layer ({{ $runtime.name }}):
@@ -126,10 +130,15 @@ publish layer {{ $environment.name }} ({{ $runtime.name }}):
   tags: ["arch:amd64"]
   image: ${CI_DOCKER_TARGET_IMAGE}:${CI_DOCKER_TARGET_VERSION}
   rules:
+    - if: '"{{ $environment.name }}" == "sandbox" && $REGION == "{{ $e2e_region }}"'
+      when: on_success
     - if: '"{{ $environment.name }}" =~ /^(sandbox|staging)/'
       when: manual
       allow_failure: true
     - if: '$CI_COMMIT_TAG =~ /^v.*/'
+  artifacts:
+    reports:
+      dotenv: {{ $dotenv }}
   needs:
 {{ if or (eq $environment.name "prod") }}
       - sign layer ({{ $runtime.name }})
@@ -154,7 +163,7 @@ publish layer {{ $environment.name }} ({{ $runtime.name }}):
   before_script:
     - EXTERNAL_ID_NAME={{ $environment.external_id }} ROLE_TO_ASSUME={{ $environment.role_to_assume }} AWS_ACCOUNT={{ $environment.account }} source .gitlab/scripts/get_secrets.sh
   script:
-    - STAGE={{ $environment.name }} NODE_VERSION={{ $runtime.node_version }} .gitlab/scripts/publish_layers.sh
+    - STAGE={{ $environment.name }} NODE_VERSION={{ $runtime.node_version }} DOTENV={{ $dotenv }} .gitlab/scripts/publish_layers.sh
 
 {{- end }}
 
@@ -203,3 +212,27 @@ publish npm package:
     - mkdir -p datadog_lambda_js-{{ if eq $environment.name "prod"}}signed-{{ end }}bundle-${CI_JOB_ID}
     - cp .layers/datadog_lambda_node*.zip datadog_lambda_js-{{ if eq $environment.name "prod"}}signed-{{ end }}bundle-${CI_JOB_ID}
 {{ end }}
+
+e2e-test:
+  stage: e2e
+  trigger:
+    project: DataDog/serverless-e2e-tests
+    strategy: depend
+  variables:
+    LANGUAGES_SUBSET: node
+    {{- range (ds "runtimes").runtimes }}
+    {{- $version := print (.name | strings.Trim "node") }}
+    NODEJS_{{ $version }}_VERSION: $NODE_{{ $version }}_VERSION
+    {{- end }}
+  needs: {{ range (ds "runtimes").runtimes }}
+    - "publish layer sandbox ({{ .name }}): [{{ $e2e_region }}]"
+    {{- end }}
+
+
+e2e-test-status:
+  stage: e2e
+  image: registry.ddbuild.io/images/docker:20.10-py3
+  tags: ["arch:amd64"]
+  timeout: 3h
+  script:
+      - .gitlab/scripts/poll_e2e.sh
