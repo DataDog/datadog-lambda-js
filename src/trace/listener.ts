@@ -15,6 +15,7 @@ import { SpanWrapper } from "./span-wrapper";
 import { getTraceTree, clearTraceTree } from "../runtime/index";
 import { TraceContext, TraceContextService, TraceSource } from "./trace-context-service";
 import { StepFunctionContext, StepFunctionContextService } from "./step-function-service";
+import { DurableFunctionContext, extractDurableFunctionContext } from "./durable-function-context";
 import { XrayService } from "./xray-service";
 import { AUTHORIZING_REQUEST_ID_HEADER } from "./context/extractors/http";
 import { getSpanPointerAttributes, SpanPointerAttributes } from "../utils/span-pointers";
@@ -85,6 +86,7 @@ export class TraceListener {
   private contextService: TraceContextService;
   private context?: Context;
   private stepFunctionContext?: StepFunctionContext;
+  private durableFunctionContext?: DurableFunctionContext;
   private tracerWrapper: TracerWrapper;
   private inferrer: SpanInferrer;
   private inferredSpan?: SpanWrapper;
@@ -146,6 +148,7 @@ export class TraceListener {
     const eventSource = parseEventSource(event);
     this.triggerTags = extractTriggerTags(event, context, eventSource);
     this.stepFunctionContext = StepFunctionContextService.instance().context;
+    this.durableFunctionContext = extractDurableFunctionContext(event);
 
     if (this.config.addSpanPointers) {
       this.spanPointerAttributesList = getSpanPointerAttributes(eventSource, event);
@@ -288,6 +291,7 @@ export class TraceListener {
 
     // Reset singletons and trace context
     this.stepFunctionContext = undefined;
+    this.durableFunctionContext = undefined;
     StepFunctionContextService.reset();
     this.contextService.reset();
   }
@@ -326,6 +330,13 @@ export class TraceListener {
       options.tags = {
         ...options.tags,
         ...this.stepFunctionContext,
+      };
+    }
+    if (this.durableFunctionContext) {
+      logDebug("Applying durable function context to the aws.lambda span");
+      options.tags = {
+        ...options.tags,
+        ...this.durableFunctionContext,
       };
     }
     if (this.lambdaSpanParentContext) {
