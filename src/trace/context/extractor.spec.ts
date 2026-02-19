@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { Context, EventBridgeEvent, KinesisStreamEvent, SNSEvent, SQSEvent } from "aws-lambda";
 import { TraceConfig } from "../listener";
 import { TracerWrapper } from "../tracer-wrapper";
@@ -21,19 +22,23 @@ import {
 import { StepFunctionContextService } from "../step-function-service";
 import { SpanContextWrapper } from "../span-context-wrapper";
 
-let mockSpanContext: any = null;
-let sentSegment: any;
-let closedSocket = false;
+const mockController: {
+  sentSegment?: any;
+  closedSocket: boolean;
+  mockSpanContext: any;
+} = {
+  closedSocket: false,
+  mockSpanContext: null,
+};
 
 // Mocking extract is needed, due to dd-trace being a No-op
 // if the detected environment is testing. This is expected, since
 // we don't want to test dd-trace extraction, but our components.
-const ddTrace = require("dd-trace");
 jest.mock("dd-trace", () => {
   return {
-    ...ddTrace,
+    ...jest.requireActual("dd-trace"),
     _tracer: { _service: {} },
-    extract: (_carrier: any, _headers: any) => mockSpanContext,
+    extract: (_carrier: any, _headers: any) => mockController.mockSpanContext,
   };
 });
 
@@ -48,28 +53,23 @@ jest.mock("dgram", () => ({
         address: string,
         callback: (error: string | undefined, bytes: number) => void,
       ) => {
-        sentSegment = message;
+        mockController.sentSegment = message;
         callback(undefined, 1);
       },
       close: () => {
-        closedSocket = true;
+        mockController.closedSocket = true;
       },
     };
   },
 }));
-
-jest.mock("crypto", () => {
-  return {
-    randomBytes: () => "11111",
-  };
-});
 
 const spyTracerWrapper = jest.spyOn(TracerWrapper.prototype, "extract");
 
 describe("TraceContextExtractor", () => {
   describe("extract", () => {
     beforeEach(() => {
-      mockSpanContext = null;
+      jest.spyOn(crypto, "randomBytes").mockImplementation(() => "11111");
+      mockController.mockSpanContext = null;
       StepFunctionContextService["_instance"] = undefined as any;
     });
 
@@ -153,7 +153,7 @@ describe("TraceContextExtractor", () => {
       });
       // HTTP event
       it("extracts trace context from HTTP headers", async () => {
-        mockSpanContext = {
+        mockController.mockSpanContext = {
           toTraceId: () => "4110911582297405551",
           toSpanId: () => "797643193680388251",
           _sampling: {
@@ -188,7 +188,7 @@ describe("TraceContextExtractor", () => {
 
       // SNS message event (String Value)
       it("extracts trace context from SNS event - String Value", async () => {
-        mockSpanContext = {
+        mockController.mockSpanContext = {
           toTraceId: () => "6966585609680374559",
           toSpanId: () => "4297634551783724228",
           _sampling: {
@@ -250,7 +250,7 @@ describe("TraceContextExtractor", () => {
 
       // SNS message event (Binary Value)
       it("extracts trace context from SNS event - Binary Value", async () => {
-        mockSpanContext = {
+        mockController.mockSpanContext = {
           toTraceId: () => "7102291628443134919",
           toSpanId: () => "4247550101648618618",
           _sampling: {
@@ -311,7 +311,7 @@ describe("TraceContextExtractor", () => {
 
       // SNS message delivered to SQS queue event (String Value)
       it("extracts trace context from SNS to SQS event - String Value", async () => {
-        mockSpanContext = {
+        mockController.mockSpanContext = {
           toTraceId: () => "2776434475358637757",
           toSpanId: () => "4493917105238181843",
           _sampling: {
@@ -362,7 +362,7 @@ describe("TraceContextExtractor", () => {
 
       // SNS message delivered to SQS queue event (Binary Value)
       it("extracts trace context from SNS to SQS event - Binary Value", async () => {
-        mockSpanContext = {
+        mockController.mockSpanContext = {
           toTraceId: () => "7102291628443134919",
           toSpanId: () => "4247550101648618618",
           _sampling: {
@@ -412,7 +412,7 @@ describe("TraceContextExtractor", () => {
 
       // EventBridge message delivered to SQS queue event
       it("extracts trace context from EventBridge to SQS event", async () => {
-        mockSpanContext = {
+        mockController.mockSpanContext = {
           toTraceId: () => "7379586022458917877",
           toSpanId: () => "2644033662113726488",
           _sampling: {
@@ -464,7 +464,7 @@ describe("TraceContextExtractor", () => {
 
       // AppSync event
       it("extracts trace context from AppSync event", async () => {
-        mockSpanContext = {
+        mockController.mockSpanContext = {
           toTraceId: () => "797643193680388254",
           toSpanId: () => "4110911582297405557",
           _sampling: {
@@ -504,7 +504,7 @@ describe("TraceContextExtractor", () => {
 
       // SQS queue message event
       it("extracts trace context from SQS event", async () => {
-        mockSpanContext = {
+        mockController.mockSpanContext = {
           toTraceId: () => "4555236104497098341",
           toSpanId: () => "3369753143434738315",
           _sampling: {
@@ -562,7 +562,7 @@ describe("TraceContextExtractor", () => {
 
       // Kinesis stream event
       it("extracts trace context from Kinesis event", async () => {
-        mockSpanContext = {
+        mockController.mockSpanContext = {
           toTraceId: () => "667309514221035538",
           toSpanId: () => "1350735035497811828",
           _sampling: {
@@ -612,7 +612,7 @@ describe("TraceContextExtractor", () => {
 
       // EventBridge message event
       it("extracts trace context from EventBridge event", async () => {
-        mockSpanContext = {
+        mockController.mockSpanContext = {
           toTraceId: () => "5827606813695714842",
           toSpanId: () => "4726693487091824375",
           _sampling: {
@@ -745,7 +745,7 @@ describe("TraceContextExtractor", () => {
 
     describe("lambda context", () => {
       it("extracts trace context from Lambda context", async () => {
-        mockSpanContext = {
+        mockController.mockSpanContext = {
           toTraceId: () => "667309514221035538",
           toSpanId: () => "1350735035497811828",
           _sampling: {
@@ -926,8 +926,8 @@ describe("getTraceEventExtractor", () => {
   describe("addTraceContextToXray", () => {
     beforeEach(() => {
       StepFunctionContextService["_instance"] = undefined as any;
-      sentSegment = undefined;
-      closedSocket = false;
+      mockController.sentSegment = undefined;
+      mockController.closedSocket = false;
       process.env["_X_AMZN_TRACE_ID"] = undefined;
       process.env["AWS_XRAY_DAEMON_ADDRESS"] = undefined;
     });
@@ -979,10 +979,10 @@ describe("getTraceEventExtractor", () => {
 
       extractor["addTraceContextToXray"](spanContext);
 
-      expect(sentSegment).toBeInstanceOf(Buffer);
-      expect(closedSocket).toBeTruthy();
+      expect(mockController.sentSegment).toBeInstanceOf(Buffer);
+      expect(mockController.closedSocket).toBeTruthy();
 
-      const sentMessage = sentSegment.toString();
+      const sentMessage = mockController.sentSegment.toString();
       expect(sentMessage).toEqual(
         '{"format": "json", "version": 1}\n{"id":"11111","trace_id":"1-5e272390-8c398be037738dc042009320","parent_id":"94ae789b969f1cc5","name":"datadog-metadata","start_time":1487076708,"end_time":1487076708,"type":"subsegment","metadata":{"datadog":{"root_span_metadata":{"execution_id":"arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf","redrive_count":"0","retry_count":"2","state_entered_time":"2022-12-08T21:08:19.224Z","state_name":"step-one"}}}}',
       );
@@ -1010,10 +1010,10 @@ describe("getTraceEventExtractor", () => {
 
       extractor["addTraceContextToXray"](spanContext);
 
-      expect(sentSegment).toBeInstanceOf(Buffer);
-      expect(closedSocket).toBeTruthy();
+      expect(mockController.sentSegment).toBeInstanceOf(Buffer);
+      expect(mockController.closedSocket).toBeTruthy();
 
-      const sentMessage = sentSegment.toString();
+      const sentMessage = mockController.sentSegment.toString();
       expect(sentMessage).toEqual(
         '{"format": "json", "version": 1}\n{"id":"11111","trace_id":"1-5e272390-8c398be037738dc042009320","parent_id":"94ae789b969f1cc5","name":"datadog-metadata","start_time":1487076708,"end_time":1487076708,"type":"subsegment","metadata":{"datadog":{"trace":{"trace-id":"4110911582297405551","parent-id":"797643193680388251","sampling-priority":"2"}}}}',
       );
