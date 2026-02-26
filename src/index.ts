@@ -21,6 +21,7 @@ import {
   setSandboxInit,
   setLogger,
   setLogLevel,
+  isManagedInstancesMode,
 } from "./utils";
 import { getEnhancedMetricTags } from "./metrics/enhanced-metrics";
 import { DatadogTraceHeaders } from "./trace/context/extractor";
@@ -106,7 +107,9 @@ export const _metricsQueue: MetricsQueue = new MetricsQueue();
 let currentMetricsListener: MetricsListener | undefined;
 let currentTraceListener: TraceListener | undefined;
 
-if (getEnvValue(coldStartTracingEnvVar, "true").toLowerCase() === "true") {
+// Skip cold start tracing subscription in managed instances mode
+// In managed instances, the tracer library handles cold start independently
+if (getEnvValue(coldStartTracingEnvVar, "true").toLowerCase() === "true" && !isManagedInstancesMode()) {
   subscribeToDC();
 }
 
