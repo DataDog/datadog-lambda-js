@@ -6,8 +6,8 @@ START
   "t": [
     "region:eu-west-1",
     "account_id:XXXX",
-    "functionname:integration-tests-js-XXXX-async-metrics_node20",
-    "resource:integration-tests-js-XXXX-async-metrics_node20",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node20",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node20",
     "memorysize:1024",
     "cold_start:true",
     "datadog_lambda:vX.X.X",
@@ -17,64 +17,31 @@ START
 }
 {
   "e": XXXX,
-  "m": "serverless.integration_test.outside_handler",
+  "m": "aws.lambda.enhanced.errors",
   "t": [
-    "tagkey:tagvalue",
-    "eventsource:outside_handler",
-    "dd_lambda_layer:datadog-nodev20.XX.X"
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node20",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node20",
+    "memorysize:1024",
+    "cold_start:true",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs20.x"
   ],
   "v": 1
 }
-XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed APIGateway request
-{
-  "e": XXXX,
-  "m": "serverless.integration_test.execution",
-  "t": [
-    "tagkey:tagvalue",
-    "eventsource:APIGateway",
-    "dd_lambda_layer:datadog-nodev20.XX.X"
-  ],
-  "v": 1
-}
+XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at Runtime.wrappedFunc [as handler] (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)"]}
 END Duration: XXXX ms (init: XXXX ms) Memory Used: XXXX MB
 START
+XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at Runtime.wrappedFunc [as handler] (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)"]}
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
   "t": [
     "region:eu-west-1",
     "account_id:XXXX",
-    "functionname:integration-tests-js-XXXX-async-metrics_node20",
-    "resource:integration-tests-js-XXXX-async-metrics_node20",
-    "memorysize:1024",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejs20.x"
-  ],
-  "v": 1
-}
-XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed undefined request
-{
-  "e": XXXX,
-  "m": "serverless.integration_test.execution",
-  "t": [
-    "tagkey:tagvalue",
-    "eventsource:undefined",
-    "dd_lambda_layer:datadog-nodev20.XX.X"
-  ],
-  "v": 1
-}
-END Duration: XXXX ms Memory Used: XXXX MB
-START
-XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed undefined request
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.invocations",
-  "t": [
-    "region:eu-west-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-XXXX-async-metrics_node20",
-    "resource:integration-tests-js-XXXX-async-metrics_node20",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node20",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node20",
     "memorysize:1024",
     "cold_start:false",
     "datadog_lambda:vX.X.X",
@@ -84,161 +51,16 @@ XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed undefi
 }
 {
   "e": XXXX,
-  "m": "serverless.integration_test.execution",
-  "t": [
-    "tagkey:tagvalue",
-    "eventsource:undefined",
-    "dd_lambda_layer:datadog-nodev20.XX.X"
-  ],
-  "v": 1
-}
-END Duration: XXXX ms Memory Used: XXXX MB
-START
-XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed undefined request
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.invocations",
+  "m": "aws.lambda.enhanced.errors",
   "t": [
     "region:eu-west-1",
     "account_id:XXXX",
-    "functionname:integration-tests-js-XXXX-async-metrics_node20",
-    "resource:integration-tests-js-XXXX-async-metrics_node20",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node20",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node20",
     "memorysize:1024",
     "cold_start:false",
     "datadog_lambda:vX.X.X",
     "runtime:nodejs20.x"
-  ],
-  "v": 1
-}
-{
-  "e": XXXX,
-  "m": "serverless.integration_test.execution",
-  "t": [
-    "tagkey:tagvalue",
-    "eventsource:undefined",
-    "dd_lambda_layer:datadog-nodev20.XX.X"
-  ],
-  "v": 1
-}
-END Duration: XXXX ms Memory Used: XXXX MB
-START
-XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed undefined request
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.invocations",
-  "t": [
-    "region:eu-west-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-XXXX-async-metrics_node20",
-    "resource:integration-tests-js-XXXX-async-metrics_node20",
-    "memorysize:1024",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejs20.x"
-  ],
-  "v": 1
-}
-{
-  "e": XXXX,
-  "m": "serverless.integration_test.execution",
-  "t": [
-    "tagkey:tagvalue",
-    "eventsource:undefined",
-    "dd_lambda_layer:datadog-nodev20.XX.X"
-  ],
-  "v": 1
-}
-END Duration: XXXX ms Memory Used: XXXX MB
-START
-XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed undefined request
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.invocations",
-  "t": [
-    "region:eu-west-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-XXXX-async-metrics_node20",
-    "resource:integration-tests-js-XXXX-async-metrics_node20",
-    "memorysize:1024",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejs20.x"
-  ],
-  "v": 1
-}
-{
-  "e": XXXX,
-  "m": "serverless.integration_test.execution",
-  "t": [
-    "tagkey:tagvalue",
-    "eventsource:undefined",
-    "dd_lambda_layer:datadog-nodev20.XX.X"
-  ],
-  "v": 1
-}
-END Duration: XXXX ms Memory Used: XXXX MB
-START
-XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed undefined request
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.invocations",
-  "t": [
-    "region:eu-west-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-XXXX-async-metrics_node20",
-    "resource:integration-tests-js-XXXX-async-metrics_node20",
-    "memorysize:1024",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejs20.x"
-  ],
-  "v": 1
-}
-{
-  "e": XXXX,
-  "m": "serverless.integration_test.execution",
-  "t": [
-    "tagkey:tagvalue",
-    "eventsource:undefined",
-    "dd_lambda_layer:datadog-nodev20.XX.X"
-  ],
-  "v": 1
-}
-END Duration: XXXX ms Memory Used: XXXX MB
-START
-XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SNS request
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.invocations",
-  "t": [
-    "region:eu-west-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-XXXX-async-metrics_node20",
-    "resource:integration-tests-js-XXXX-async-metrics_node20",
-    "memorysize:1024",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejs20.x"
-  ],
-  "v": 1
-}
-{
-  "e": XXXX,
-  "m": "serverless.integration_test.records_processed",
-  "t": [
-    "tagkey:tagvalue",
-    "eventsource:SNS",
-    "dd_lambda_layer:datadog-nodev20.XX.X"
-  ],
-  "v": 1
-}
-{
-  "e": XXXX,
-  "m": "serverless.integration_test.execution",
-  "t": [
-    "tagkey:tagvalue",
-    "eventsource:SNS",
-    "dd_lambda_layer:datadog-nodev20.XX.X"
   ],
   "v": 1
 }
@@ -250,8 +72,8 @@ START
   "t": [
     "region:eu-west-1",
     "account_id:XXXX",
-    "functionname:integration-tests-js-XXXX-async-metrics_node20",
-    "resource:integration-tests-js-XXXX-async-metrics_node20",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node20",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node20",
     "memorysize:1024",
     "cold_start:false",
     "datadog_lambda:vX.X.X",
@@ -259,34 +81,217 @@ START
   ],
   "v": 1
 }
-XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SQS request
 {
   "e": XXXX,
-  "m": "serverless.integration_test.records_processed",
+  "m": "aws.lambda.enhanced.errors",
   "t": [
-    "tagkey:tagvalue",
-    "eventsource:SQS",
-    "dd_lambda_layer:datadog-nodev20.XX.X"
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node20",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node20",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs20.x"
+  ],
+  "v": 1
+}
+XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at Runtime.wrappedFunc [as handler] (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)"]}
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at Runtime.wrappedFunc [as handler] (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)"]}
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node20",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node20",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs20.x"
   ],
   "v": 1
 }
 {
   "e": XXXX,
-  "m": "serverless.integration_test.records_processed",
+  "m": "aws.lambda.enhanced.errors",
   "t": [
-    "tagkey:tagvalue",
-    "eventsource:SQS",
-    "dd_lambda_layer:datadog-nodev20.XX.X"
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node20",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node20",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs20.x"
+  ],
+  "v": 1
+}
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node20",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node20",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs20.x"
   ],
   "v": 1
 }
 {
   "e": XXXX,
-  "m": "serverless.integration_test.execution",
+  "m": "aws.lambda.enhanced.errors",
   "t": [
-    "tagkey:tagvalue",
-    "eventsource:SQS",
-    "dd_lambda_layer:datadog-nodev20.XX.X"
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node20",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node20",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs20.x"
+  ],
+  "v": 1
+}
+XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at Runtime.wrappedFunc [as handler] (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)"]}
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node20",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node20",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs20.x"
+  ],
+  "v": 1
+}
+XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at Runtime.wrappedFunc [as handler] (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)"]}
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.errors",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node20",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node20",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs20.x"
+  ],
+  "v": 1
+}
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node20",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node20",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs20.x"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.errors",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node20",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node20",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs20.x"
+  ],
+  "v": 1
+}
+XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at Runtime.wrappedFunc [as handler] (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)"]}
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at Runtime.wrappedFunc [as handler] (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)"]}
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node20",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node20",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs20.x"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.errors",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node20",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node20",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs20.x"
+  ],
+  "v": 1
+}
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at Runtime.wrappedFunc [as handler] (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)"]}
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node20",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node20",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs20.x"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.errors",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node20",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node20",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs20.x"
   ],
   "v": 1
 }
