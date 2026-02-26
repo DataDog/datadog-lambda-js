@@ -5,7 +5,12 @@ import { patchHttp, unpatchHttp } from "./patch-http";
 import { extractTriggerTags, extractHTTPStatusCodeTag, parseEventSource } from "./trigger";
 import { ColdStartTracerConfig, ColdStartTracer } from "./cold-start-tracer";
 import { logDebug, tagObject } from "../utils";
-import { didFunctionColdStart, isProactiveInitialization, isManagedInstancesMode } from "../utils/cold-start";
+import {
+  didFunctionColdStart,
+  isProactiveInitialization,
+  isManagedInstancesMode,
+  isProvisionedConcurrency,
+} from "../utils/cold-start";
 import { datadogLambdaVersion } from "../constants";
 import { ddtraceVersion, parentSpanFinishTimeHeader, DD_SERVICE_ENV_VAR } from "./constants";
 import { patchConsole } from "./patch-console";
@@ -182,11 +187,10 @@ export class TraceListener {
     }
     const coldStartNodes = getTraceTree();
     if (coldStartNodes.length > 0) {
-      // Skip creating cold start spans in managed instances mode
-      // since the gap between the sandbox init and the function
-      // invocation might be too large to provide a useful trace and
-      // experience
-      if (!isManagedInstancesMode()) {
+      // Skip creating cold start spans in managed instances mode or provisioned concurrency
+      // since the gap between the sandbox init and the function invocation might be very
+      // large (minutes or hours), making the spans misleading and not useful
+      if (!isManagedInstancesMode() && !isProvisionedConcurrency()) {
         const coldStartConfig: ColdStartTracerConfig = {
           tracerWrapper: this.tracerWrapper,
           parentSpan:

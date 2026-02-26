@@ -4,6 +4,7 @@ export {
   setSandboxInit,
   isProactiveInitialization,
   isManagedInstancesMode,
+  isProvisionedConcurrency,
 } from "./cold-start";
 export { promisifiedHandler } from "./handler";
 export { Timer } from "./timer";
