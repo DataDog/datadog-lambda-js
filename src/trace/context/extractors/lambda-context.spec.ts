@@ -9,7 +9,7 @@ let mockSpanContext: any = null;
 const ddTrace = require("dd-trace");
 jest.mock("dd-trace", () => {
   return {
-    ...ddTrace,
+    ...jest.requireActual("dd-trace"),
     _tracer: { _service: {} },
     extract: (_carrier: any, _headers: any) => mockSpanContext,
   };
