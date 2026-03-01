@@ -95,7 +95,6 @@ else
         rm -rf ./dist
     fi
     yarn build
-    cp ./dist/handler.cjs ./dist/handler.js
     yarn publish --new-version "$NEW_VERSION"
 fi
 
