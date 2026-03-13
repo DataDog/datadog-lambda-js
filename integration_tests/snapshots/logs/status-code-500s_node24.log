@@ -86,6 +86,7 @@ START
           "version": "1.0.0",
           "runtime-id":"XXXX",
           "cold_start": "true",
+          "span.kind": "server",
           "function_arn":"XXXX_node24",
           "function_version": "$LATEST",
           "request_id":"XXXX",
