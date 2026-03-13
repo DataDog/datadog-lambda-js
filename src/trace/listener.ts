@@ -307,6 +307,7 @@ export class TraceListener {
       const functionArn = (this.context.invokedFunctionArn ?? "").toLowerCase();
       const tk = functionArn.split(":");
       options.tags = {
+        "span.kind": "server",
         cold_start: String(didFunctionColdStart()).toLowerCase(),
         function_arn: tk.length > 7 ? tk.slice(0, 7).join(":") : functionArn,
         function_version: tk.length > 7 ? tk[7] : "$LATEST",
