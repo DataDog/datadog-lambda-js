@@ -16,12 +16,13 @@ RUN cp -r dist /nodejs/node_modules/datadog-lambda-js
 RUN cp ./src/runtime/module_importer.js /nodejs/node_modules/datadog-lambda-js/runtime
 
 RUN cp ./src/handler.mjs /nodejs/node_modules/datadog-lambda-js
-RUN rm -rf node_modules
 
 # Move dd-trace from devDependencies to production dependencies
 # That way it is included in our layer, while keeping it an optional dependency for npm
 RUN node ./scripts/move_ddtrace_dependency.js "$(cat package.json)" > package-new.json
 RUN mv package-new.json package.json
+RUN rm -rf node_modules
+
 # Install dependencies
 RUN yarn install --production=true --ignore-optional
 # Copy the dependencies to the modules folder
@@ -45,6 +46,15 @@ RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/node-111.node
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/node-120.node
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/node-131.node
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/node-141.node
+
+# Remove unused @datadog/native-appsec prebuilds for non-Lambda platforms.
+# Lambda runs on Amazon Linux 2 (glibc), on x64 or arm64.
+RUN rm -rf /nodejs/node_modules/@datadog/native-appsec/prebuilds/darwin-arm64
+RUN rm -rf /nodejs/node_modules/@datadog/native-appsec/prebuilds/darwin-x64
+RUN rm -rf /nodejs/node_modules/@datadog/native-appsec/prebuilds/win32-ia32
+RUN rm -rf /nodejs/node_modules/@datadog/native-appsec/prebuilds/win32-x64
+RUN rm -rf /nodejs/node_modules/@datadog/native-appsec/prebuilds/linuxmusl-arm64
+RUN rm -rf /nodejs/node_modules/@datadog/native-appsec/prebuilds/linuxmusl-x64
 
 # Remove heavy files from @opentelemetry/api which aren't used in a lambda environment.
 # TODO: Create a completely separate Datadog scoped package for OpenTelemetry instead.
