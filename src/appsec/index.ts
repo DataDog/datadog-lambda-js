@@ -17,7 +17,7 @@ export function processAppsecRequest(event: any, span: any): void {
   if (!enabled || !span || !startInvocationChannel.hasSubscribers) return;
 
   const httpData = extractHTTPDataFromEvent(event);
-  if (!httpData ) {
+  if (!httpData) {
     return;
   }
 
