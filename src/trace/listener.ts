@@ -28,6 +28,8 @@ import {
 import { XrayService } from "./xray-service";
 import { AUTHORIZING_REQUEST_ID_HEADER } from "./context/extractors/http";
 import { getSpanPointerAttributes, SpanPointerAttributes } from "../utils/span-pointers";
+import { initAppsec, processAppsecRequest, processAppsecResponse } from "../appsec";
+
 export type TraceExtractor = (event: any, context: Context) => Promise<TraceContext> | TraceContext;
 
 export interface TraceConfig {
@@ -115,6 +117,8 @@ export class TraceListener {
   }
 
   public async onStartInvocation(event: any, context: Context) {
+    initAppsec();
+
     const tracerInitialized = this.tracerWrapper.isTracerAvailable;
     if (this.config.injectLogContext) {
       patchConsole(console, this.contextService);
@@ -179,6 +183,9 @@ export class TraceListener {
     // so we won't crash user code.
     if (!this.tracerWrapper.currentSpan) return false;
     this.wrappedCurrentSpan = new SpanWrapper(this.tracerWrapper.currentSpan, {});
+
+    processAppsecResponse(event, this.tracerWrapper.currentSpan);
+
     if (this.config.captureLambdaPayload) {
       tagObject(this.tracerWrapper.currentSpan, "function.request", event, 0, this.config.captureLambdaPayloadMaxDepth);
       tagObject(
@@ -213,6 +220,10 @@ export class TraceListener {
       // Always clear the tree to prevent memory leaks, even if we skip span creation
       clearTraceTree();
     }
+    const responseStatusCode = result?.statusCode?.toString();
+    const responseHeaders = result?.headers as Record<string, string> | undefined;
+    processAppsecResponse(this.tracerWrapper.currentSpan, responseStatusCode, responseHeaders);
+
     if (this.triggerTags) {
       const statusCode = extractHTTPStatusCodeTag(this.triggerTags, result, isResponseStreamFunction);
 
