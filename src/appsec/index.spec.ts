@@ -3,6 +3,7 @@ const mockPublish = jest.fn();
 jest.mock("dc-polyfill", () => ({
   channel: jest.fn(() => ({
     publish: mockPublish,
+    hasSubscribers: true,
   })),
 }));
 
