@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
 
       - name: Set up Node 18.12
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3.9.1
         with:
           node-version: 18.12
 
@@ -24,7 +24,7 @@ jobs:
 
       - name: Restore node modules from cache
         id: cache-node-modules
-        uses: actions/cache@v3
+        uses: actions/cache@6f8efc29b200d32929f49075959781ed54ec270c # v3.5.0
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
@@ -47,10 +47,10 @@ jobs:
         node-version: [18.12, 20.19, 22.11, 24.11]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
 
       - name: Set up Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3.9.1
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -60,7 +60,7 @@ jobs:
 
       - name: Restore node modules from cache
         id: cache-node-modules
-        uses: actions/cache@v3
+        uses: actions/cache@6f8efc29b200d32929f49075959781ed54ec270c # v3.5.0
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
