@@ -1,8 +1,8 @@
 import { logDebug } from "../utils";
 
 export interface DurableFunctionContext {
-  durable_function_execution_name: string;
-  durable_function_execution_id: string;
+  "aws.lambda.durable_function.execution_name": string;
+  "aws.lambda.durable_function.execution_id": string;
 }
 
 export function extractDurableFunctionContext(event: any): DurableFunctionContext | undefined {
@@ -19,8 +19,8 @@ export function extractDurableFunctionContext(event: any): DurableFunctionContex
   }
 
   return {
-    durable_function_execution_name: parsed.executionName,
-    durable_function_execution_id: parsed.executionId,
+    "aws.lambda.durable_function.execution_name": parsed.executionName,
+    "aws.lambda.durable_function.execution_id": parsed.executionId,
   };
 }
 
