@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
 
       - name: Build layer for Node ${{ matrix.node_version }}
         run: |
@@ -30,7 +30,7 @@ jobs:
           rm -rf $temp_dir
 
       - name: Upload layer artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           path: .layers/datadog_lambda_node${{ matrix.node_version }}.zip
           name: datadog_lambda_node${{ matrix.node_version }}
