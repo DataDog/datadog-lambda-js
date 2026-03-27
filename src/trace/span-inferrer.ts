@@ -170,7 +170,10 @@ export class SpanInferrer {
               this.traceWrapper.startSpan("aws.apigateway.authorizer", upstreamSpanOptions),
               { isAsync: false },
             );
-            const endTime = event.requestContext.requestTimeEpoch + event.requestContext.authorizer.integrationLatency;
+            const endTime = Math.max(
+              startTime,
+              event.requestContext.requestTimeEpoch + event.requestContext.authorizer.integrationLatency,
+            );
             upstreamAuthorizerSpan.finish(endTime);
             options.startTime = endTime; // For the main function's inferred span
           }
