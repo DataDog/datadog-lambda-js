@@ -56,8 +56,8 @@ describe("durable-function-context", () => {
       const result = extractDurableFunctionContext(event);
 
       expect(result).toEqual({
-        durable_function_execution_name: "my-execution",
-        durable_function_execution_id: "550e8400-e29b-41d4-a716-446655440004",
+        "aws_lambda.durable_function.execution_name": "my-execution",
+        "aws_lambda.durable_function.execution_id": "550e8400-e29b-41d4-a716-446655440004",
       });
     });
 
