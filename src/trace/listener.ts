@@ -21,6 +21,7 @@ import { getTraceTree, clearTraceTree } from "../runtime/index";
 import { TraceContext, TraceContextService, TraceSource } from "./trace-context-service";
 import { StepFunctionContext, StepFunctionContextService } from "./step-function-service";
 import { DurableFunctionContext, extractDurableFunctionContext } from "./durable-function-context";
+import { DurableFunctionContextService } from "./durable-function-service";
 import { XrayService } from "./xray-service";
 import { AUTHORIZING_REQUEST_ID_HEADER } from "./context/extractors/http";
 import { getSpanPointerAttributes, SpanPointerAttributes } from "../utils/span-pointers";
@@ -297,6 +298,7 @@ export class TraceListener {
     this.stepFunctionContext = undefined;
     this.durableFunctionContext = undefined;
     StepFunctionContextService.reset();
+    DurableFunctionContextService.reset();
     this.contextService.reset();
   }
 

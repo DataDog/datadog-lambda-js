@@ -14,8 +14,10 @@ import {
   SNSSQSEventTraceExtractor,
   SQSEventTraceExtractor,
   StepFunctionEventTraceExtractor,
+  DurableFunctionEventTraceExtractor,
 } from "./extractors";
 import { StepFunctionContextService } from "../step-function-service";
+import { DurableFunctionContextService } from "../durable-function-service";
 import { EventValidator } from "../../utils/event-validator";
 import { TracerWrapper } from "../tracer-wrapper";
 import { SpanContextWrapper } from "../span-context-wrapper";
@@ -37,6 +39,7 @@ export interface DatadogTraceHeaders {
 export class TraceContextExtractor {
   private xrayService: XrayService;
   private stepFunctionContextService?: StepFunctionContextService;
+  private durableFunctionContextService?: DurableFunctionContextService;
 
   constructor(private tracerWrapper: TracerWrapper, private config: TraceConfig) {
     this.xrayService = new XrayService();
@@ -61,6 +64,14 @@ export class TraceContextExtractor {
       if (this.stepFunctionContextService?.context) {
         const extractor = new StepFunctionEventTraceExtractor();
         spanContext = extractor?.extract(event);
+      }
+    }
+
+    if (spanContext === null) {
+      this.durableFunctionContextService = DurableFunctionContextService.instance(event);
+      if (this.durableFunctionContextService?.context) {
+        const extractor = new DurableFunctionEventTraceExtractor();
+        spanContext = extractor.extract(event);
       }
     }
 

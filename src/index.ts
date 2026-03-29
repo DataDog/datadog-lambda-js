@@ -27,6 +27,7 @@ import { getEnhancedMetricTags } from "./metrics/enhanced-metrics";
 import { DatadogTraceHeaders } from "./trace/context/extractor";
 import { SpanWrapper } from "./trace/span-wrapper";
 import { SpanOptions, TracerWrapper } from "./trace/tracer-wrapper";
+import { initDurableFunctionTracing } from "./trace/durable-function-patch";
 
 // Backwards-compatible export, TODO deprecate in next major
 export { DatadogTraceHeaders as TraceHeaders } from "./trace/context/extractor";
@@ -112,6 +113,9 @@ let currentTraceListener: TraceListener | undefined;
 if (getEnvValue(coldStartTracingEnvVar, "true").toLowerCase() === "true" && !isManagedInstancesMode()) {
   subscribeToDC();
 }
+
+// Initialize durable function tracing if SDK is present
+initDurableFunctionTracing();
 
 const initTime = Date.now();
 

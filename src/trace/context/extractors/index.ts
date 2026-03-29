@@ -7,5 +7,6 @@ export { SQSEventTraceExtractor } from "./sqs";
 export { SNSEventTraceExtractor } from "./sns";
 export { SNSSQSEventTraceExtractor } from "./sns-sqs";
 export { StepFunctionEventTraceExtractor } from "./step-function";
+export { DurableFunctionEventTraceExtractor } from "./durable-function";
 export { LambdaContextTraceExtractor } from "./lambda-context";
 export { CustomTraceExtractor } from "./custom";
