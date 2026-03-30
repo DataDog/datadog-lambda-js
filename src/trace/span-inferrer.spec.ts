@@ -1414,6 +1414,29 @@ describe("Authorizer Spans", () => {
     ]);
   });
 
+  it("clamps authorizer span endTime to startTime when clock skew causes negative duration", () => {
+    // Simulate the case where requestTimeEpoch + integrationLatency < parentSpanFinishTime
+    // (i.e., API Gateway's reported end is before the authorizer lambda's self-reported finish).
+    // This 1ms discrepancy would produce a negative duration.
+    const skewedEvent = JSON.parse(JSON.stringify(apiGatewayV1RequestAuthorizer));
+    const authorizerHeaders = JSON.parse(
+      Buffer.from(skewedEvent.requestContext.authorizer._datadog, "base64").toString(),
+    );
+    const parentSpanFinishTimeMs = authorizerHeaders["x-datadog-parent-span-finish-time"] / 1e6;
+    const { requestTimeEpoch } = skewedEvent.requestContext;
+
+    // Set integrationLatency so that requestTimeEpoch + integrationLatency < parentSpanFinishTimeMs
+    skewedEvent.requestContext.authorizer.integrationLatency = parentSpanFinishTimeMs - requestTimeEpoch - 1;
+
+    const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
+    inferrer.createInferredSpan(skewedEvent, {} as any, {} as SpanContext);
+
+    // The second apigateway span must not start before the first one ends,
+    // otherwise the authorizer span gets a negative duration.
+    const secondApiGatewayStartTime = (mockWrapperWithFinish.startSpan.mock.calls[1] as any)[1].startTime;
+    expect(secondApiGatewayStartTime).toBeGreaterThanOrEqual(parentSpanFinishTimeMs);
+  });
+
   it("No inferred span for API Gateway Websocket Message event with traced authorizers [Request Type]", () => {
     const inferrer = new SpanInferrer(mockWrapperWithFinish as unknown as TracerWrapper);
     inferrer.createInferredSpan(apiGatewayWSSRequestAuthorizerMessage, {} as any, {} as SpanContext);
