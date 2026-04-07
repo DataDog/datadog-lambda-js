@@ -71,7 +71,7 @@ else
 fi
 
 cd $integration_tests_dir
-yarn
+npm install
 
 input_event_files=$(ls ./input_events)
 # Sort event files by name so that snapshots stay consistent

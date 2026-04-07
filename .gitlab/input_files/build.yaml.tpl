@@ -20,16 +20,14 @@ default:
 
 .node-before-script: &node-before-script
   - yarn --version
-  - echo 'yarn-offline-mirror ".yarn-cache/"' >> .yarnrc
-  - echo 'yarn-offline-mirror-pruning true' >> .yarnrc
-  - yarn install --frozen-lockfile --no-progress
+  - yarn install --immutable
 
 {{ range $runtime := (ds "runtimes").runtimes }}
 
 .{{ $runtime.name }}-cache: &{{ $runtime.name }}-cache
   key: "$CI_JOB_STAGE-$CI_COMMIT_REF_SLUG"
   paths:
-    - $CI_PROJECT_DIR/.yarn-cache
+    - $CI_PROJECT_DIR/.yarn/cache
   policy: pull
 
 build layer ({{ $runtime.name }}):
@@ -92,7 +90,7 @@ integration test ({{ $runtime.name }}):
     CI_ENABLE_CONTAINER_IMAGE_BUILDS: "true"
   before_script:
     - EXTERNAL_ID_NAME=integration-test-externalid ROLE_TO_ASSUME=sandbox-integration-test-deployer AWS_ACCOUNT=425362996713 source .gitlab/scripts/get_secrets.sh
-    - cd integration_tests && yarn install && cd ..
+    - cd integration_tests && npm install && cd ..
   script:
     - RUNTIME_PARAM={{ $runtime.node_major_version }} ./scripts/run_integration_tests.sh
 
