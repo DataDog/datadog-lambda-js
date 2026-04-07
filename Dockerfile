@@ -21,7 +21,14 @@ RUN cp ./src/handler.mjs /nodejs/node_modules/datadog-lambda-js
 # This preserves exact lockfile-pinned versions (unlike a fresh npm install).
 RUN node ./scripts/move_ddtrace_dependency.js "$(cat package.json)" > package-new.json
 RUN mv package-new.json package.json
+# Remove devDependencies from node_modules (preserving lockfile-pinned prod deps)
 RUN node -e "const d=Object.keys(require('./package.json').devDependencies||{}); d.forEach(n=>{try{require('fs').rmSync('node_modules/'+n,{recursive:true,force:true})}catch(e){}})"
+# Remove heavy optional native modules that aren't needed in Lambda
+RUN rm -rf node_modules/@datadog/native-appsec \
+    node_modules/@datadog/native-iast-rewriter \
+    node_modules/@datadog/native-iast-taint-tracking \
+    node_modules/@datadog/native-metrics \
+    node_modules/@datadog/libdatadog
 # Copy the dependencies to the modules folder
 RUN cp -rf node_modules/* /nodejs/node_modules
 
