@@ -20,9 +20,11 @@ RUN cp ./src/handler.mjs /nodejs/node_modules/datadog-lambda-js
 # That way it is included in our layer, while keeping it an optional dependency for npm
 RUN node ./scripts/move_ddtrace_dependency.js "$(cat package.json)" > package-new.json
 RUN mv package-new.json package.json
-# Prune dev and optional deps from the existing lockfile-pinned install
-# (keeps exact versions from yarn.lock, unlike a fresh npm install)
-RUN npm prune --omit=dev --omit=optional
+# Prune dev deps from the existing lockfile-pinned install.
+# Using npm prune (not a fresh install) preserves exact versions from yarn.lock.
+# Note: not using --omit=optional because npm's optional handling differs from
+# Yarn Classic -- npm removes transitive optional deps that dd-trace needs.
+RUN npm prune --omit=dev
 # Copy the dependencies to the modules folder
 RUN cp -rf node_modules/* /nodejs/node_modules
 
