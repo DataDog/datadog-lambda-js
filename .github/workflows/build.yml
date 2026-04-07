@@ -72,4 +72,4 @@ jobs:
         run: yarn test
 
       - name: Upload code coverage report
-        run: bash <(curl -s https://codecov.io/bash)
+        uses: codecov/codecov-action@3f20e214133d0983f9a10f3d63b0faf9241a3daa # v6.0.0
