@@ -23,8 +23,8 @@ RUN rm -rf node_modules
 RUN node ./scripts/move_ddtrace_dependency.js "$(cat package.json)" > package-new.json
 RUN mv package-new.json package.json
 # Install dependencies
-# Use yarn workspaces focus for production-only install (Yarn Berry equivalent of --production)
-RUN yarn plugin import workspace-tools && yarn workspaces focus --production
+# Yarn Berry equivalent of --production (workspace-tools is built-in since Yarn 4)
+RUN yarn workspaces focus --production
 # Copy the dependencies to the modules folder
 RUN cp -rf node_modules/* /nodejs/node_modules
 
