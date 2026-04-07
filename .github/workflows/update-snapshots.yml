@@ -32,7 +32,7 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - name: Install Serverless Framework
-        run: sudo npm install -g serverless
+        run: sudo npm install -g serverless@4.33.3
 
       - name: Install dependencies
         working-directory: integration_tests

@@ -60,7 +60,7 @@ jobs:
             ${{ runner.os }}-yarn-
       - name: Install NodeGYP 
         if: matrix.node-version == '20.19' || matrix.node-version == '22.11' || matrix.node-version == '24.11'
-        run: npm install -g node-gyp
+        run: npm install -g node-gyp@12.2.0
 
       - name: Install dependencies
         run: yarn install
