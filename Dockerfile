@@ -16,15 +16,13 @@ RUN cp -r dist /nodejs/node_modules/datadog-lambda-js
 RUN cp ./src/runtime/module_importer.js /nodejs/node_modules/datadog-lambda-js/runtime
 
 RUN cp ./src/handler.mjs /nodejs/node_modules/datadog-lambda-js
-RUN rm -rf node_modules
-
 # Move dd-trace from devDependencies to production dependencies
 # That way it is included in our layer, while keeping it an optional dependency for npm
 RUN node ./scripts/move_ddtrace_dependency.js "$(cat package.json)" > package-new.json
 RUN mv package-new.json package.json
-# Install dependencies
-# Yarn Berry equivalent of --production (workspace-tools is built-in since Yarn 4)
-RUN yarn workspaces focus --production
+# Prune dev and optional deps from the existing lockfile-pinned install
+# (keeps exact versions from yarn.lock, unlike a fresh npm install)
+RUN npm prune --omit=dev --omit=optional
 # Copy the dependencies to the modules folder
 RUN cp -rf node_modules/* /nodejs/node_modules
 
