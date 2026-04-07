@@ -16,19 +16,14 @@ RUN cp -r dist /nodejs/node_modules/datadog-lambda-js
 RUN cp ./src/runtime/module_importer.js /nodejs/node_modules/datadog-lambda-js/runtime
 
 RUN cp ./src/handler.mjs /nodejs/node_modules/datadog-lambda-js
-# Move dd-trace from devDependencies to production dependencies,
-# then remove the remaining devDependencies from node_modules.
-# This preserves exact lockfile-pinned versions (unlike a fresh npm install).
+# Move dd-trace from devDependencies to production dependencies
+# That way it is included in our layer, while keeping it an optional dependency for npm
 RUN node ./scripts/move_ddtrace_dependency.js "$(cat package.json)" > package-new.json
 RUN mv package-new.json package.json
-# Remove devDependencies from node_modules (preserving lockfile-pinned prod deps)
-RUN node -e "const d=Object.keys(require('./package.json').devDependencies||{}); d.forEach(n=>{try{require('fs').rmSync('node_modules/'+n,{recursive:true,force:true})}catch(e){}})"
-# Remove heavy optional native modules that aren't needed in Lambda
-RUN rm -rf node_modules/@datadog/native-appsec \
-    node_modules/@datadog/native-iast-rewriter \
-    node_modules/@datadog/native-iast-taint-tracking \
-    node_modules/@datadog/native-metrics \
-    node_modules/@datadog/libdatadog
+# Install production deps using system yarn (v1), bypassing the Berry yarnPath.
+# This preserves Yarn Classic's --ignore-optional semantics which npm handles differently.
+RUN rm -rf node_modules .yarnrc.yml .yarn
+RUN yarn install --production=true --ignore-optional
 # Copy the dependencies to the modules folder
 RUN cp -rf node_modules/* /nodejs/node_modules
 
