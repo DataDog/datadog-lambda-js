@@ -7,9 +7,17 @@ coverage
 .vendored
 package-lock.json
 
+# Yarn Berry non-zero-install gitignore patterns.
+# .yarn/releases and .yarn/plugins are version-controlled so all contributors
+# use the same Yarn binary and plugins. The rest (.yarn/cache, install-state, etc.)
+# is generated at install time.
+# See: https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
 .yarn/*
-!.yarn/releases
+!.yarn/patches
 !.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
 
 **/.serverless
 /.idea/
