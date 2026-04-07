@@ -71,5 +71,6 @@
     "collectCoverageFrom": [
       "src/**/*.ts"
     ]
-  }
+  },
+  "packageManager": "yarn@4.12.0"
 }

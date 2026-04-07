@@ -7,8 +7,9 @@ coverage
 .vendored
 package-lock.json
 
-.yarn/
-.yarnrc.yml
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
 
 **/.serverless
 /.idea/

@@ -2,7 +2,7 @@
 set -e
 echo "Updating version constants"
 DATADOG_LAMBDA_VERSION=$(node -pe "require('./package.json').version")
-DD_TRACE_VERSION=$(sed -n -E "s/dd-trace@([0-9]*\.[0-9]*\.[0-9]*):/\1/p" yarn.lock)
+DD_TRACE_VERSION=$(node -pe "require('./node_modules/dd-trace/package.json').version")
 echo "Datadog Lambda Library Version ${DATADOG_LAMBDA_VERSION}"
 echo "Datadog Trace Library Version ${DD_TRACE_VERSION}"
 

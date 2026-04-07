@@ -46,7 +46,7 @@ if [ "$CONT" != "y" ]; then
     echo "Skipping updating package.json version"
 else
     # Update the version without committing
-    yarn version --no-git-tag-version --new-version $NEW_VERSION
+    npm version --no-git-tag-version $NEW_VERSION
 fi
 
 echo
@@ -88,7 +88,7 @@ if [ "$CONT" != "y" ]; then
     echo "Skipping publishing to NPM"
 else
     echo "Ensuring you have access to the datadog NPM service account"
-    yarn login
+    npm login
 
     echo 'Publishing to NPM'
     if [ -d "./dist" ]; then
@@ -96,7 +96,7 @@ else
     fi
     yarn build
     cp ./dist/handler.cjs ./dist/handler.js
-    yarn publish --new-version "$NEW_VERSION"
+    npm publish
 fi
 
 echo "Answer 'n' if you already released in GitHub"

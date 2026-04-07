@@ -23,7 +23,7 @@ RUN rm -rf node_modules
 RUN node ./scripts/move_ddtrace_dependency.js "$(cat package.json)" > package-new.json
 RUN mv package-new.json package.json
 # Install dependencies
-RUN yarn install --production=true --ignore-optional
+RUN npm install --omit=dev --omit=optional
 # Copy the dependencies to the modules folder
 RUN cp -rf node_modules/* /nodejs/node_modules
 
