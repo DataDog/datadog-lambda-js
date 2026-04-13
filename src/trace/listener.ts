@@ -227,6 +227,7 @@ export class TraceListener {
       }
     }
     if (this.durableFunctionContext) {
+      logDebug("Applying durable function context to the aws.lambda span");
       for (const [key, value] of Object.entries(this.durableFunctionContext)) {
         if (value !== undefined) {
           this.tracerWrapper.currentSpan.setTag(key, value);
