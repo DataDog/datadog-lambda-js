@@ -544,4 +544,28 @@ describe("TraceListener", () => {
       );
     });
   });
+
+  it("sets durable function context tags directly on the aws.lambda span", async () => {
+    const mockSetTag = jest.fn();
+    const mockSpan = { setTag: mockSetTag };
+    const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
+
+    try {
+      const listener = new TraceListener(defaultConfig);
+      const durableEvent = {
+        DurableExecutionArn:
+          "arn:aws:lambda:us-east-1:123456789012:function:my-func:1/durable-execution/my-execution/550e8400-e29b-41d4-a716-446655440004",
+      };
+      await listener.onStartInvocation(durableEvent, context as any);
+      listener.onEndingInvocation(durableEvent, {}, false);
+
+      expect(mockSetTag).toHaveBeenCalledWith("aws_lambda.durable_function.execution_name", "my-execution");
+      expect(mockSetTag).toHaveBeenCalledWith(
+        "aws_lambda.durable_function.execution_id",
+        "550e8400-e29b-41d4-a716-446655440004",
+      );
+    } finally {
+      currentSpanSpy.mockRestore();
+    }
+  });
 });
