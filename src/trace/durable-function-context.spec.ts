@@ -1,4 +1,8 @@
-import { parseDurableExecutionArn, extractDurableFunctionContext } from "./durable-function-context";
+import {
+  parseDurableExecutionArn,
+  extractDurableFunctionContext,
+  extractDurableExecutionStatus,
+} from "./durable-function-context";
 
 describe("durable-function-context", () => {
   describe("parseDurableExecutionArn", () => {
@@ -92,6 +96,58 @@ describe("durable-function-context", () => {
       const result = extractDurableFunctionContext(event);
 
       expect(result).toBeUndefined();
+    });
+  });
+
+  describe("extractDurableExecutionStatus", () => {
+    const durableEvent = {
+      DurableExecutionArn: "arn:aws:lambda:us-east-1:123456789012:function:my-func:1/durable-execution/exec/id-1",
+    };
+
+    it("returns SUCCEEDED for a durable invocation with Status SUCCEEDED", () => {
+      expect(extractDurableExecutionStatus({ Status: "SUCCEEDED" }, durableEvent)).toBe("SUCCEEDED");
+    });
+
+    it("returns FAILED for a durable invocation with Status FAILED", () => {
+      expect(extractDurableExecutionStatus({ Status: "FAILED" }, durableEvent)).toBe("FAILED");
+    });
+
+    it("returns STOPPED for a durable invocation with Status STOPPED", () => {
+      expect(extractDurableExecutionStatus({ Status: "STOPPED" }, durableEvent)).toBe("STOPPED");
+    });
+
+    it("returns TIMED_OUT for a durable invocation with Status TIMED_OUT", () => {
+      expect(extractDurableExecutionStatus({ Status: "TIMED_OUT" }, durableEvent)).toBe("TIMED_OUT");
+    });
+
+    it("returns undefined for unrecognized status value", () => {
+      expect(extractDurableExecutionStatus({ Status: "RUNNING" }, durableEvent)).toBeUndefined();
+    });
+
+    it("returns undefined when Status field is absent from result", () => {
+      expect(extractDurableExecutionStatus({}, durableEvent)).toBeUndefined();
+    });
+
+    it("returns undefined when event does not have DurableExecutionArn", () => {
+      const nonDurableEvent = { body: '{"key":"value"}' };
+      expect(extractDurableExecutionStatus({ Status: "SUCCEEDED" }, nonDurableEvent)).toBeUndefined();
+    });
+
+    it("returns undefined when event is null", () => {
+      expect(extractDurableExecutionStatus({ Status: "SUCCEEDED" }, null)).toBeUndefined();
+    });
+
+    it("returns undefined when result is null", () => {
+      expect(extractDurableExecutionStatus(null, durableEvent)).toBeUndefined();
+    });
+
+    it("returns undefined when result is a non-object (string)", () => {
+      expect(extractDurableExecutionStatus("SUCCEEDED", durableEvent)).toBeUndefined();
+    });
+
+    it("does not apply status from non-durable invocations that happen to return Status field", () => {
+      const nonDurableEvent = { httpMethod: "GET" };
+      expect(extractDurableExecutionStatus({ Status: "SUCCEEDED" }, nonDurableEvent)).toBeUndefined();
     });
   });
 });

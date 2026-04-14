@@ -20,7 +20,11 @@ import { SpanWrapper } from "./span-wrapper";
 import { getTraceTree, clearTraceTree } from "../runtime/index";
 import { TraceContext, TraceContextService, TraceSource } from "./trace-context-service";
 import { StepFunctionContext, StepFunctionContextService } from "./step-function-service";
-import { DurableFunctionContext, extractDurableFunctionContext } from "./durable-function-context";
+import {
+  DurableFunctionContext,
+  extractDurableFunctionContext,
+  extractDurableExecutionStatus,
+} from "./durable-function-context";
 import { XrayService } from "./xray-service";
 import { AUTHORIZING_REQUEST_ID_HEADER } from "./context/extractors/http";
 import { getSpanPointerAttributes, SpanPointerAttributes } from "../utils/span-pointers";
@@ -225,6 +229,12 @@ export class TraceListener {
           return true;
         }
       }
+    }
+
+    const durableExecutionStatus = extractDurableExecutionStatus(result, event);
+    if (durableExecutionStatus !== undefined) {
+      logDebug("Applying durable function execution status to the aws.lambda span");
+      this.tracerWrapper.currentSpan.setTag("aws_lambda.durable_function.execution_status", durableExecutionStatus);
     }
 
     let rootSpan = this.inferredSpan;

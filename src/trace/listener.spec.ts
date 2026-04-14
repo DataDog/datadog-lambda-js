@@ -544,4 +544,75 @@ describe("TraceListener", () => {
       );
     });
   });
+
+  describe("onEndingInvocation durable function execution status", () => {
+    const durableEvent = {
+      DurableExecutionArn:
+        "arn:aws:lambda:us-east-1:123456789012:function:my-func:1/durable-execution/my-execution/550e8400-e29b-41d4-a716-446655440004",
+    };
+
+    let mockSpan: { setTag: jest.Mock };
+    let currentSpanSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      mockSpan = { setTag: jest.fn() };
+      currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
+    });
+
+    afterEach(() => {
+      currentSpanSpy.mockRestore();
+    });
+
+    it("sets aws_lambda.durable_function.execution_status tag on durable invocation with SUCCEEDED", () => {
+      const listener = new TraceListener(defaultConfig);
+      listener.onEndingInvocation(durableEvent, { Status: "SUCCEEDED" }, false);
+
+      expect(mockSpan.setTag).toHaveBeenCalledWith("aws_lambda.durable_function.execution_status", "SUCCEEDED");
+    });
+
+    it("sets aws_lambda.durable_function.execution_status tag on durable invocation with FAILED", () => {
+      const listener = new TraceListener(defaultConfig);
+      listener.onEndingInvocation(durableEvent, { Status: "FAILED" }, false);
+
+      expect(mockSpan.setTag).toHaveBeenCalledWith("aws_lambda.durable_function.execution_status", "FAILED");
+    });
+
+    it("sets aws_lambda.durable_function.execution_status tag on durable invocation with STOPPED", () => {
+      const listener = new TraceListener(defaultConfig);
+      listener.onEndingInvocation(durableEvent, { Status: "STOPPED" }, false);
+
+      expect(mockSpan.setTag).toHaveBeenCalledWith("aws_lambda.durable_function.execution_status", "STOPPED");
+    });
+
+    it("does not set execution_status tag for non-durable invocations", () => {
+      const listener = new TraceListener(defaultConfig);
+      const nonDurableEvent = { httpMethod: "GET", body: "{}" };
+      listener.onEndingInvocation(nonDurableEvent, { Status: "SUCCEEDED" }, false);
+
+      const statusTagCalls = mockSpan.setTag.mock.calls.filter(
+        ([key]: [string]) => key === "aws_lambda.durable_function.execution_status",
+      );
+      expect(statusTagCalls).toHaveLength(0);
+    });
+
+    it("does not set execution_status tag when result has no Status field", () => {
+      const listener = new TraceListener(defaultConfig);
+      listener.onEndingInvocation(durableEvent, {}, false);
+
+      const statusTagCalls = mockSpan.setTag.mock.calls.filter(
+        ([key]: [string]) => key === "aws_lambda.durable_function.execution_status",
+      );
+      expect(statusTagCalls).toHaveLength(0);
+    });
+
+    it("does not set execution_status tag for unrecognized status values", () => {
+      const listener = new TraceListener(defaultConfig);
+      listener.onEndingInvocation(durableEvent, { Status: "RUNNING" }, false);
+
+      const statusTagCalls = mockSpan.setTag.mock.calls.filter(
+        ([key]: [string]) => key === "aws_lambda.durable_function.execution_status",
+      );
+      expect(statusTagCalls).toHaveLength(0);
+    });
+  });
 });

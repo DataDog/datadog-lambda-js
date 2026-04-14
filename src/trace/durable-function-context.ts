@@ -35,3 +35,24 @@ export function parseDurableExecutionArn(arn: string): { executionName: string; 
   const [, executionName, executionId] = match;
   return { executionName, executionId };
 }
+
+const VALID_EXECUTION_STATUSES = new Set(["SUCCEEDED", "FAILED", "STOPPED", "TIMED_OUT"]);
+
+/**
+ * Extracts the durable function execution status from the Lambda result.
+ * Only applies when the event contains a DurableExecutionArn (i.e., this is a durable function invocation).
+ * Returns undefined if the event is not a durable invocation or if the status is absent/unrecognized.
+ */
+export function extractDurableExecutionStatus(result: any, event: any): string | undefined {
+  if (typeof event?.DurableExecutionArn !== "string") {
+    return undefined;
+  }
+  if (result === null || typeof result !== "object") {
+    return undefined;
+  }
+  const status = result.Status;
+  if (typeof status === "string" && VALID_EXECUTION_STATUSES.has(status)) {
+    return status;
+  }
+  return undefined;
+}
