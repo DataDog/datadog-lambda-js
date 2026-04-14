@@ -58,7 +58,45 @@ describe("durable-function-context", () => {
       expect(result).toEqual({
         "aws_lambda.durable_function.execution_name": "my-execution",
         "aws_lambda.durable_function.execution_id": "550e8400-e29b-41d4-a716-446655440004",
+        "aws_lambda.durable_function.first_invocation": "false",
       });
+    });
+
+    it("sets first_invocation to true when Operations has exactly one entry", () => {
+      const event = {
+        DurableExecutionArn:
+          "arn:aws:lambda:us-east-1:123456789012:function:my-func:1/durable-execution/my-execution/550e8400-e29b-41d4-a716-446655440004",
+        InitialExecutionState: {
+          Operations: [{ type: "TaskScheduled" }],
+        },
+      };
+      const result = extractDurableFunctionContext(event);
+
+      expect(result?.["aws_lambda.durable_function.first_invocation"]).toBe("true");
+    });
+
+    it("sets first_invocation to false when Operations has more than one entry", () => {
+      const event = {
+        DurableExecutionArn:
+          "arn:aws:lambda:us-east-1:123456789012:function:my-func:1/durable-execution/my-execution/550e8400-e29b-41d4-a716-446655440004",
+        InitialExecutionState: {
+          Operations: [{ type: "TaskScheduled" }, { type: "TaskCompleted" }],
+        },
+      };
+      const result = extractDurableFunctionContext(event);
+
+      expect(result?.["aws_lambda.durable_function.first_invocation"]).toBe("false");
+    });
+
+    it("omits first_invocation when InitialExecutionState is absent", () => {
+      const event = {
+        DurableExecutionArn:
+          "arn:aws:lambda:us-east-1:123456789012:function:my-func:1/durable-execution/my-execution/550e8400-e29b-41d4-a716-446655440004",
+      };
+      const result = extractDurableFunctionContext(event);
+
+      expect(result).toBeDefined();
+      expect(result?.["aws_lambda.durable_function.first_invocation"]).toBeUndefined();
     });
 
     it("returns undefined for regular Lambda event without DurableExecutionArn", () => {
