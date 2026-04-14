@@ -226,6 +226,14 @@ export class TraceListener {
         }
       }
     }
+    if (this.durableFunctionContext) {
+      logDebug("Applying durable function context to the aws.lambda span");
+      for (const [key, value] of Object.entries(this.durableFunctionContext)) {
+        if (value !== undefined) {
+          this.tracerWrapper.currentSpan.setTag(key, value);
+        }
+      }
+    }
 
     let rootSpan = this.inferredSpan;
     if (!rootSpan) {
@@ -335,13 +343,6 @@ export class TraceListener {
       options.tags = {
         ...options.tags,
         ...this.stepFunctionContext,
-      };
-    }
-    if (this.durableFunctionContext) {
-      logDebug("Applying durable function context to the aws.lambda span");
-      options.tags = {
-        ...options.tags,
-        ...this.durableFunctionContext,
       };
     }
     if (this.lambdaSpanParentContext) {
