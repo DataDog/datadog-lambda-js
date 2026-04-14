@@ -20,7 +20,7 @@ import { SpanWrapper } from "./span-wrapper";
 import { getTraceTree, clearTraceTree } from "../runtime/index";
 import { TraceContext, TraceContextService, TraceSource } from "./trace-context-service";
 import { StepFunctionContext, StepFunctionContextService } from "./step-function-service";
-import { DurableFunctionContext, extractDurableFunctionContext } from "./durable-function-context";
+import { DurableFunctionContext, extractDurableFunctionContext, extractDurableExecutionStatus } from "./durable-function-context";
 import { XrayService } from "./xray-service";
 import { AUTHORIZING_REQUEST_ID_HEADER } from "./context/extractors/http";
 import { getSpanPointerAttributes, SpanPointerAttributes } from "../utils/span-pointers";
@@ -232,6 +232,10 @@ export class TraceListener {
         if (value !== undefined) {
           this.tracerWrapper.currentSpan.setTag(key, value);
         }
+      }
+      const executionStatus = extractDurableExecutionStatus(event, result);
+      if (executionStatus !== undefined) {
+        this.tracerWrapper.currentSpan.setTag("aws_lambda.durable_function.execution_status", executionStatus);
       }
     }
 
