@@ -1,4 +1,8 @@
-import { parseDurableExecutionArn, extractDurableFunctionContext, extractDurableExecutionStatus } from "./durable-function-context";
+import {
+  parseDurableExecutionArn,
+  extractDurableFunctionContext,
+  extractDurableExecutionStatus,
+} from "./durable-function-context";
 
 describe("durable-function-context", () => {
   describe("parseDurableExecutionArn", () => {
