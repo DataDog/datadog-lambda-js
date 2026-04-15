@@ -6,7 +6,7 @@ export interface DurableFunctionContext {
   "aws_lambda.durable_function.first_invocation"?: string;
 }
 
-const VALID_DURABLE_EXECUTION_STATUSES = new Set(["SUCCEEDED", "FAILED", "STOPPED", "TIMED_OUT"]);
+const VALID_DURABLE_EXECUTION_STATUSES = new Set(["SUCCEEDED", "FAILED", "PENDING"]);
 
 export function extractDurableFunctionContext(event: any): DurableFunctionContext | undefined {
   const durableExecutionArn = event?.DurableExecutionArn;

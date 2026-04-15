@@ -143,7 +143,7 @@ describe("durable-function-context", () => {
         "arn:aws:lambda:us-east-1:123456789012:function:my-func:1/durable-execution/my-execution/550e8400-e29b-41d4-a716-446655440004",
     };
 
-    it.each(["SUCCEEDED", "FAILED", "STOPPED", "TIMED_OUT"])("returns %s when result.Status is %s", (status) => {
+    it.each(["SUCCEEDED", "FAILED", "PENDING"])("returns %s when result.Status is %s", (status) => {
       const result = extractDurableExecutionStatus(durableEvent, { Status: status });
       expect(result).toBe(status);
     });
