@@ -237,10 +237,10 @@ export class TraceListener {
           this.tracerWrapper.currentSpan.setTag(key, value);
         }
       }
-      const executionStatus = extractDurableExecutionStatus(event, result);
-      if (executionStatus !== undefined) {
-        this.tracerWrapper.currentSpan.setTag("aws_lambda.durable_function.execution_status", executionStatus);
-      }
+    }
+    const executionStatus = extractDurableExecutionStatus(event, result);
+    if (executionStatus !== undefined) {
+      this.tracerWrapper.currentSpan.setTag("aws_lambda.durable_function.execution_status", executionStatus);
     }
 
     let rootSpan = this.inferredSpan;

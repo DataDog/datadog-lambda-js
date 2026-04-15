@@ -40,7 +40,7 @@ export function extractDurableFunctionContext(event: any): DurableFunctionContex
  * Only applies when the event contains a DurableExecutionArn.
  */
 export function extractDurableExecutionStatus(event: any, result: any): string | undefined {
-  if (!event?.DurableExecutionArn) {
+  if (typeof event?.DurableExecutionArn !== "string") {
     return undefined;
   }
 

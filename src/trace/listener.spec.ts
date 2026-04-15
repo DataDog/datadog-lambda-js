@@ -568,4 +568,44 @@ describe("TraceListener", () => {
       currentSpanSpy.mockRestore();
     }
   });
+
+  it("sets execution_status tag on the aws.lambda span when result.Status is valid", async () => {
+    const mockSetTag = jest.fn();
+    const mockSpan = { setTag: mockSetTag };
+    const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
+
+    try {
+      const listener = new TraceListener(defaultConfig);
+      const durableEvent = {
+        DurableExecutionArn:
+          "arn:aws:lambda:us-east-1:123456789012:function:my-func:1/durable-execution/my-execution/550e8400-e29b-41d4-a716-446655440004",
+      };
+      await listener.onStartInvocation(durableEvent, context as any);
+      listener.onEndingInvocation(durableEvent, { Status: "SUCCEEDED" }, false);
+
+      expect(mockSetTag).toHaveBeenCalledWith("aws_lambda.durable_function.execution_status", "SUCCEEDED");
+    } finally {
+      currentSpanSpy.mockRestore();
+    }
+  });
+
+  it("does not set execution_status tag when result.Status is invalid", async () => {
+    const mockSetTag = jest.fn();
+    const mockSpan = { setTag: mockSetTag };
+    const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
+
+    try {
+      const listener = new TraceListener(defaultConfig);
+      const durableEvent = {
+        DurableExecutionArn:
+          "arn:aws:lambda:us-east-1:123456789012:function:my-func:1/durable-execution/my-execution/550e8400-e29b-41d4-a716-446655440004",
+      };
+      await listener.onStartInvocation(durableEvent, context as any);
+      listener.onEndingInvocation(durableEvent, { Status: "UNKNOWN" }, false);
+
+      expect(mockSetTag).not.toHaveBeenCalledWith("aws_lambda.durable_function.execution_status", expect.anything());
+    } finally {
+      currentSpanSpy.mockRestore();
+    }
+  });
 });
