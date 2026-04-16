@@ -1,4 +1,8 @@
-import { parseDurableExecutionArn, extractDurableFunctionContext } from "./durable-function-context";
+import {
+  parseDurableExecutionArn,
+  extractDurableFunctionContext,
+  extractDurableExecutionStatus,
+} from "./durable-function-context";
 
 describe("durable-function-context", () => {
   describe("parseDurableExecutionArn", () => {
@@ -129,6 +133,43 @@ describe("durable-function-context", () => {
       };
       const result = extractDurableFunctionContext(event);
 
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe("extractDurableExecutionStatus", () => {
+    const durableEvent = {
+      DurableExecutionArn:
+        "arn:aws:lambda:us-east-1:123456789012:function:my-func:1/durable-execution/my-execution/550e8400-e29b-41d4-a716-446655440004",
+    };
+
+    it.each(["SUCCEEDED", "FAILED", "PENDING"])("returns %s when result.Status is %s", (status) => {
+      const result = extractDurableExecutionStatus(durableEvent, { Status: status });
+      expect(result).toBe(status);
+    });
+
+    it("returns undefined when result.Status is not a valid status", () => {
+      const result = extractDurableExecutionStatus(durableEvent, { Status: "UNKNOWN" });
+      expect(result).toBeUndefined();
+    });
+
+    it("returns undefined when result has no Status field", () => {
+      const result = extractDurableExecutionStatus(durableEvent, {});
+      expect(result).toBeUndefined();
+    });
+
+    it("returns undefined when result is null", () => {
+      const result = extractDurableExecutionStatus(durableEvent, null);
+      expect(result).toBeUndefined();
+    });
+
+    it("returns undefined when event has no DurableExecutionArn", () => {
+      const result = extractDurableExecutionStatus({ body: "{}" }, { Status: "SUCCEEDED" });
+      expect(result).toBeUndefined();
+    });
+
+    it("returns undefined when event is null", () => {
+      const result = extractDurableExecutionStatus(null, { Status: "SUCCEEDED" });
       expect(result).toBeUndefined();
     });
   });

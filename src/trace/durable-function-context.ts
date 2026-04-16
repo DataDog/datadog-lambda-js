@@ -6,6 +6,8 @@ export interface DurableFunctionContext {
   "aws_lambda.durable_function.first_invocation"?: string;
 }
 
+const VALID_DURABLE_EXECUTION_STATUSES = new Set(["SUCCEEDED", "FAILED", "PENDING"]);
+
 export function extractDurableFunctionContext(event: any): DurableFunctionContext | undefined {
   const durableExecutionArn = event?.DurableExecutionArn;
 
@@ -31,6 +33,23 @@ export function extractDurableFunctionContext(event: any): DurableFunctionContex
   }
 
   return context;
+}
+
+/**
+ * Extracts the durable function execution status from the handler result.
+ * Only applies when the event contains a DurableExecutionArn.
+ */
+export function extractDurableExecutionStatus(event: any, result: any): string | undefined {
+  if (typeof event?.DurableExecutionArn !== "string") {
+    return undefined;
+  }
+
+  const status = result?.Status;
+  if (typeof status !== "string" || !VALID_DURABLE_EXECUTION_STATUSES.has(status)) {
+    return undefined;
+  }
+
+  return status;
 }
 
 /**
