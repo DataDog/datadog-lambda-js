@@ -22,6 +22,7 @@
   "devDependencies": {
     "@aws-sdk/client-kms": "^3.366.0",
     "@aws-sdk/client-secrets-manager": "^3.721.0",
+    "@datadog/native-appsec": "*",
     "@datadog/pprof": "5.14.4",
     "@opentelemetry/api": ">=1.0.0 <1.10.0",
     "@opentelemetry/api-logs": "<1.0.0",

@@ -8,11 +8,10 @@
 const file = JSON.parse(process.argv[2]);
 
 moveDependency('dd-trace')
+moveDependency('@datadog/native-appsec')
 moveDependency('@datadog/pprof')
 moveDependency('@opentelemetry/api')
 moveDependency('@opentelemetry/api-logs')
-
-addOptionalFromDdTrace('@datadog/native-appsec')
 
 console.log(JSON.stringify(file, null, 2));
 
@@ -20,17 +19,5 @@ function moveDependency (name) {
   const ddTraceVersion = file.devDependencies[name];
   delete file.devDependencies[name];
   file.dependencies[name] = ddTraceVersion;
-}
-
-function addOptionalFromDdTrace (name) {
-  try {
-    const ddTracePkg = require('dd-trace/package.json')
-    const version = ddTracePkg.optionalDependencies?.[name]
-    if (version) {
-      file.dependencies[name] = version
-    }
-  } catch {
-    // dd-trace not installed yet; skip
-  }
 }
 
