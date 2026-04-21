@@ -94,6 +94,23 @@ describe("extractHTTPDataFromEvent", () => {
       expect(result!.body).toBe("plain text body");
     });
 
+    it("should not include cookies when cookie header is absent", () => {
+      const event = {
+        ...baseEvent,
+        headers: { Host: "example.com" },
+      };
+      const result = extractHTTPDataFromEvent(event);
+      expect(result!.cookies).toBeUndefined();
+      expect("cookies" in result!).toBe(false);
+    });
+
+    it("should not include route when resource is empty string", () => {
+      const event = { ...baseEvent, resource: "" };
+      const result = extractHTTPDataFromEvent(event);
+      expect(result!.route).toBeUndefined();
+      expect("route" in result!).toBe(false);
+    });
+
     it("should merge multi-value query params", () => {
       const event = {
         ...baseEvent,
@@ -150,6 +167,27 @@ describe("extractHTTPDataFromEvent", () => {
     it("should extract route from routeKey", () => {
       const result = extractHTTPDataFromEvent(baseEvent);
       expect(result!.route).toBe("/my/{id}");
+    });
+
+    it("should not include route when routeKey is absent", () => {
+      const event = { ...baseEvent, routeKey: undefined };
+      const result = extractHTTPDataFromEvent(event);
+      expect(result!.route).toBeUndefined();
+      expect("route" in result!).toBe(false);
+    });
+
+    it("should not include route when routeKey produces an empty string", () => {
+      const event = { ...baseEvent, routeKey: "" };
+      const result = extractHTTPDataFromEvent(event);
+      expect(result!.route).toBeUndefined();
+      expect("route" in result!).toBe(false);
+    });
+
+    it("should not include cookies when cookies array is absent", () => {
+      const event = { ...baseEvent, cookies: undefined };
+      const result = extractHTTPDataFromEvent(event);
+      expect(result!.cookies).toBeUndefined();
+      expect("cookies" in result!).toBe(false);
     });
   });
 
