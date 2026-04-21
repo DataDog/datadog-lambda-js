@@ -184,7 +184,7 @@ export class TraceListener {
     if (!this.tracerWrapper.currentSpan) return false;
     this.wrappedCurrentSpan = new SpanWrapper(this.tracerWrapper.currentSpan, {});
 
-    processAppsecResponse(event, this.tracerWrapper.currentSpan);
+    processAppsecRequest(event, this.tracerWrapper.currentSpan);
 
     if (this.config.captureLambdaPayload) {
       tagObject(this.tracerWrapper.currentSpan, "function.request", event, 0, this.config.captureLambdaPayloadMaxDepth);
