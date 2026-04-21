@@ -1156,7 +1156,7 @@
   resolved "https://registry.yarnpkg.com/@datadog/libdatadog/-/libdatadog-0.9.2.tgz#d7a0193ab656bd9cc40649f300ef6c54d9bea52d"
   integrity sha512-grOerTYuU3wHuFIOBGg3jB144A3KEthEdVEL3meeiXYo7E7fBXXGRgAOwVE42VXFXfl0r8kDKCL7KupBc511tg==
 
-"@datadog/native-appsec@11.0.1":
+"@datadog/native-appsec@*", "@datadog/native-appsec@11.0.1":
   version "11.0.1"
   resolved "https://registry.yarnpkg.com/@datadog/native-appsec/-/native-appsec-11.0.1.tgz#8b545a9d968131d9cd7b43fd9594228dfcc18f3c"
   integrity sha512-Y/XfknUmmJcw4hhQVhqzgdQvfjy+EGmXuUBgtVkI1r+/qS00egYu+wD/x7pOvjdbZNqN96znVszAnXvDQAzMDQ==
