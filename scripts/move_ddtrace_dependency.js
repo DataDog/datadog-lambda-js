@@ -1,6 +1,4 @@
 // Moves the dd-trace dependency from devDependencies to dependencies within package.json.
-// Also promotes selected dd-trace optionalDependencies to direct dependencies so they
-// survive `yarn install --production=true --ignore-optional`.
 // This is used when building the Layer
 
 // USAGE: ./move_dd_trace_dependency.js "$(cat package.json)" > package.json
@@ -20,4 +18,3 @@ function moveDependency (name) {
   delete file.devDependencies[name];
   file.dependencies[name] = ddTraceVersion;
 }
-
