@@ -37,7 +37,7 @@ function extractFromApiGatewayV1(event: any): ExtractedHTTPData {
   const headers = normalizeHeaders(event.headers, event.multiValueHeaders);
   const { cookies, headersNoCookies } = separateCookies(headers);
 
-  return {
+  const result: ExtractedHTTPData = {
     headers: headersNoCookies,
     method: event.httpMethod || "",
     path: event.requestContext?.path || event.path || "/",
@@ -46,9 +46,12 @@ function extractFromApiGatewayV1(event: any): ExtractedHTTPData {
     isBase64Encoded: !!event.isBase64Encoded,
     clientIp: event.requestContext?.identity?.sourceIp,
     pathParams: event.pathParameters || undefined,
-    cookies,
-    route: event.resource,
   };
+
+  if (cookies) result.cookies = cookies;
+  if (event.resource) result.route = event.resource;
+
+  return result;
 }
 
 function extractFromApiGatewayV2(event: any): ExtractedHTTPData {
@@ -60,10 +63,11 @@ function extractFromApiGatewayV2(event: any): ExtractedHTTPData {
   let route: string | undefined;
   if (event.routeKey) {
     const parts = event.routeKey.split(" ");
-    route = parts.length > 1 ? parts[parts.length - 1] : parts[0];
+    const candidate = parts.length > 1 ? parts[parts.length - 1] : parts[0];
+    if (candidate) route = candidate;
   }
 
-  return {
+  const result: ExtractedHTTPData = {
     headers: headersNoCookies,
     method: event.requestContext?.http?.method || "",
     path: event.rawPath || event.requestContext?.http?.path || "/",
@@ -72,9 +76,12 @@ function extractFromApiGatewayV2(event: any): ExtractedHTTPData {
     isBase64Encoded: !!event.isBase64Encoded,
     clientIp: event.requestContext?.http?.sourceIp,
     pathParams: event.pathParameters || undefined,
-    cookies,
-    route,
   };
+
+  if (cookies) result.cookies = cookies;
+  if (route) result.route = route;
+
+  return result;
 }
 
 function extractFromALB(event: any): ExtractedHTTPData {
@@ -84,7 +91,7 @@ function extractFromALB(event: any): ExtractedHTTPData {
   const forwardedFor = headers["x-forwarded-for"];
   const clientIp = forwardedFor ? forwardedFor.split(",")[0].trim() : undefined;
 
-  return {
+  const result: ExtractedHTTPData = {
     headers: headersNoCookies,
     method: event.httpMethod || "",
     path: event.path || "/",
@@ -92,8 +99,11 @@ function extractFromALB(event: any): ExtractedHTTPData {
     body: decodeBody(event.body, event.isBase64Encoded),
     isBase64Encoded: !!event.isBase64Encoded,
     clientIp,
-    cookies,
   };
+
+  if (cookies) result.cookies = cookies;
+
+  return result;
 }
 
 function extractFromLambdaUrl(event: any): ExtractedHTTPData {
@@ -102,7 +112,7 @@ function extractFromLambdaUrl(event: any): ExtractedHTTPData {
 
   const cookies = parseCookieArray(event.cookies) || parseCookieHeader(headers.cookie);
 
-  return {
+  const result: ExtractedHTTPData = {
     headers: headersNoCookies,
     method: event.requestContext?.http?.method || "",
     path: event.rawPath || event.requestContext?.http?.path || "/",
@@ -110,8 +120,11 @@ function extractFromLambdaUrl(event: any): ExtractedHTTPData {
     body: decodeBody(event.body, event.isBase64Encoded),
     isBase64Encoded: !!event.isBase64Encoded,
     clientIp: event.requestContext?.http?.sourceIp,
-    cookies,
   };
+
+  if (cookies) result.cookies = cookies;
+
+  return result;
 }
 
 function normalizeHeaders(
