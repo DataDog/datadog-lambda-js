@@ -61,6 +61,17 @@ elif [ $ENVIRONMENT = "us1-fed" ]; then
 # sso_region=us-gov-west-1
 # region=us-gov-west-1
 
+elif [ $ENVIRONMENT = "us2-fed" ]; then
+    AWS_VAULT_ROLE=sso-govcloud-fed-us2-engineering
+
+# this role looks like this in ~/.aws/config:
+# [profile sso-govcloud-fed-us2-engineering]
+# sso_start_url=https://start.us-gov-west-1.us-gov-home.awsapps.com/directory/d-98671fdc8b
+# sso_account_id=486696501492
+# sso_role_name=engineering
+# sso_region=us-gov-west-1
+# region=us-gov-west-1
+
     export STAGE="prod"
     if [[ ! "$PACKAGE_NAME" =~ ^datadog_lambda_js-signed-bundle-[0-9]+$ ]]; then
         echo "[ERROR]: Unexpected package name: $PACKAGE_NAME"
