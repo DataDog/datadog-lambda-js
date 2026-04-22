@@ -79,7 +79,7 @@ elif [ $ENVIRONMENT = "us2-fed" ]; then
     fi
 
 else
-    printf "[ERROR]: ENVIRONMENT not supported, must be us1-staging-fed or us1-fed.\n"
+    printf "[ERROR]: ENVIRONMENT not supported, must be us1-staging-fed, us1-fed, or us2-fed.\n"
     exit 1
 fi
 
