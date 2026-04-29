@@ -5,9 +5,11 @@ import { XrayService } from "../xray-service";
 import {
   AppSyncEventTraceExtractor,
   CustomTraceExtractor,
+  DurableExecutionEventTraceExtractor,
   EventBridgeEventTraceExtractor,
   EventBridgeSQSEventTraceExtractor,
   HTTPEventTraceExtractor,
+  isDurableExecutionEvent,
   KinesisEventTraceExtractor,
   LambdaContextTraceExtractor,
   SNSEventTraceExtractor,
@@ -44,6 +46,12 @@ export class TraceContextExtractor {
 
   async extract(event: any, context: Context): Promise<SpanContextWrapper | null> {
     let spanContext: SpanContextWrapper | null = null;
+    const durableTraceDebugEnabled = (() => {
+      const value = process.env.DD_DURABLE_TRACE_DEBUG;
+      if (!value) return false;
+      const normalized = value.toLowerCase();
+      return normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "on";
+    })();
     if (this.config.traceExtractor) {
       const customExtractor = new CustomTraceExtractor(this.config.traceExtractor);
       spanContext = await customExtractor.extract(event, context);
@@ -53,8 +61,20 @@ export class TraceContextExtractor {
       const eventExtractor = this.getTraceEventExtractor(event);
       if (eventExtractor !== undefined) {
         spanContext = eventExtractor.extract(event);
+        if (durableTraceDebugEnabled && isDurableExecutionEvent(event)) {
+          console.log("[dd-lambda][durable-trace] Event extractor result", {
+            extractor: eventExtractor.constructor?.name,
+            extracted: spanContext ? {
+              traceId: spanContext.toTraceId(),
+              parentId: spanContext.toSpanId(),
+              sampleMode: spanContext.sampleMode(),
+            } : null,
+          });
+        }
       }
     }
+
+    // No stripping needed — deterministic approach never modifies checkpoint payloads.
 
     if (spanContext === null) {
       this.stepFunctionContextService = StepFunctionContextService.instance(event);
@@ -67,6 +87,15 @@ export class TraceContextExtractor {
     if (spanContext === null) {
       const contextExtractor = new LambdaContextTraceExtractor(this.tracerWrapper);
       spanContext = contextExtractor.extract(context);
+      if (durableTraceDebugEnabled && isDurableExecutionEvent(event)) {
+        console.log("[dd-lambda][durable-trace] Falling back to Lambda context extraction", {
+          extracted: spanContext ? {
+            traceId: spanContext.toTraceId(),
+            parentId: spanContext.toSpanId(),
+            sampleMode: spanContext.sampleMode(),
+          } : null,
+        });
+      }
     }
 
     if (spanContext !== null) {
@@ -80,6 +109,9 @@ export class TraceContextExtractor {
 
   private getTraceEventExtractor(event: any): EventTraceExtractor | undefined {
     if (!event || typeof event !== "object") return;
+
+    // Check for durable execution event first (has DurableExecutionArn + CheckpointToken)
+    if (isDurableExecutionEvent(event)) return new DurableExecutionEventTraceExtractor();
 
     const headers = event.headers ?? event.multiValueHeaders;
     if (headers !== null && typeof headers === "object") {

@@ -27,6 +27,7 @@ import {
 } from "./durable-function-context";
 import { XrayService } from "./xray-service";
 import { AUTHORIZING_REQUEST_ID_HEADER } from "./context/extractors/http";
+import { createDurableExecutionRootSpan } from "./context/extractors/durable-execution";
 import { getSpanPointerAttributes, SpanPointerAttributes } from "../utils/span-pointers";
 export type TraceExtractor = (event: any, context: Context) => Promise<TraceContext> | TraceContext;
 
@@ -102,6 +103,7 @@ export class TraceListener {
   private wrappedCurrentSpan?: SpanWrapper;
   private triggerTags?: { [key: string]: string };
   private lambdaSpanParentContext?: SpanContext;
+  private durableRootSpan?: { span: any; finish: () => void };
   private spanPointerAttributesList: SpanPointerAttributes[] | undefined;
 
   public get currentTraceHeaders() {
@@ -115,6 +117,12 @@ export class TraceListener {
   }
 
   public async onStartInvocation(event: any, context: Context) {
+    const durableTraceDebugEnabled = (() => {
+      const value = process.env.DD_DURABLE_TRACE_DEBUG;
+      if (!value) return false;
+      const normalized = value.toLowerCase();
+      return normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "on";
+    })();
     const tracerInitialized = this.tracerWrapper.isTracerAvailable;
     if (this.config.injectLogContext) {
       patchConsole(console, this.contextService);
@@ -143,6 +151,32 @@ export class TraceListener {
         traceSource: this.contextService.traceSource,
       });
     }
+    // Create the durable execution root span before everything else.
+    // This span uses the propagated root span_id and is re-emitted on every
+    // invocation (last one wins in the backend with correct total duration).
+    if (durableTraceDebugEnabled && spanContextWrapper) {
+      console.log("[dd-lambda][durable-trace] Listener root-span inputs", {
+        traceSource: this.contextService.traceSource,
+        extracted: {
+          traceId: spanContextWrapper.toTraceId(),
+          parentId: spanContextWrapper.toSpanId(),
+          sampleMode: spanContextWrapper.sampleMode(),
+        },
+      });
+    }
+    this.durableRootSpan = createDurableExecutionRootSpan(event, spanContextWrapper) ?? undefined;
+    if (durableTraceDebugEnabled) {
+      const durableRootSpanContext = this.durableRootSpan?.span?.context?.();
+      console.log("[dd-lambda][durable-trace] Listener root-span creation result", {
+        created: Boolean(this.durableRootSpan),
+        rootSpan: durableRootSpanContext ? {
+          traceId: durableRootSpanContext.toTraceId?.(),
+          spanId: durableRootSpanContext.toSpanId?.(),
+          parentId: durableRootSpanContext._parentId?.toString?.(10) ?? durableRootSpanContext._parentId?.toString?.(),
+        } : null,
+      });
+    }
+
     if (this.config.createInferredSpan) {
       this.inferredSpan = this.inferrer.createInferredSpan(
         event,
@@ -307,6 +341,13 @@ export class TraceListener {
     if (this.config.encodeAuthorizerContext && result?.principalId && result?.policyDocument) {
       // We're in an authorizer, pass on the trace context, requestId and finishTime to make the authorizer span
       this.injectAuthorizerSpan(result, event?.requestContext?.requestId, finishTime || Date.now());
+    }
+
+    // Finish the durable execution root span after all other spans.
+    // Re-emitted every invocation; the last one wins in the backend.
+    if (this.durableRootSpan) {
+      this.durableRootSpan.finish();
+      this.durableRootSpan = undefined;
     }
 
     // Reset singletons and trace context
