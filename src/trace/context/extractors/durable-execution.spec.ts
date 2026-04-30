@@ -1,15 +1,8 @@
-import { createHash } from "crypto";
 import { createDurableExecutionRootSpan, DurableExecutionEventTraceExtractor } from "./durable-execution";
 
 jest.mock("dd-trace", () => ({
   startSpan: jest.fn(),
 }));
-
-function deterministicRootSpanId(executionArn: string): string {
-  const hash = createHash("sha256").update(`durable-root:${executionArn}`).digest("hex");
-  const masked = BigInt(`0x${hash}`) & 0x7fffffffffffffffn;
-  return masked === 0n ? "1" : masked.toString(10);
-}
 
 describe("DurableExecutionEventTraceExtractor", () => {
   const tracer = require("dd-trace");
@@ -19,7 +12,7 @@ describe("DurableExecutionEventTraceExtractor", () => {
     jest.clearAllMocks();
   });
 
-  it("extracts a deterministic durable root span id from executionArn", () => {
+  it("extracts trace context from the latest trace checkpoint", () => {
     const executionArn =
       "arn:aws:lambda:us-east-2:123456789012:function:demo:$LATEST/durable-execution/demo/abc";
 
@@ -30,7 +23,7 @@ describe("DurableExecutionEventTraceExtractor", () => {
         Operations: [
           {
             Id: "op-1",
-            Name: "_dd_trace_context_0",
+            Name: "_datadog_0",
             Status: "SUCCEEDED",
             StepDetails: {
               Result: JSON.stringify({
@@ -93,7 +86,7 @@ describe("DurableExecutionEventTraceExtractor", () => {
 
     expect(root).not.toBeNull();
     expect(startSpanMock).toHaveBeenCalledTimes(1);
-    expect(root?.span.context()._spanId.toString(10)).toBe("2222222222222222222");
+    expect(root?.span.context()._spanId.toString(10)).toBe(extracted?.toSpanId());
   });
 
   it("skips durable root span creation on replay invocations", () => {
@@ -134,4 +127,3 @@ describe("DurableExecutionEventTraceExtractor", () => {
     expect(startSpanMock).not.toHaveBeenCalled();
   });
 });
-

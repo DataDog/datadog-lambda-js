@@ -1,28 +1,14 @@
 /**
- * Durable Execution Trace Extractor — Deterministic Approach
- *
- * Generates deterministic trace context from AWS Lambda Durable Execution events
- * using SHA-256 hashing of the execution ARN and operation identifiers.
+ * Durable Execution Trace Extractor — Checkpoint/Upstream Approach
  *
  * Strategy:
- * 1. First, try to extract a real trace context from the original customer event
- *    (stored in Operations[0].ExecutionDetails.InputPayload). If found, the durable
- *    execution trace connects to the upstream caller's trace.
- * 2. If no upstream context exists, fall back to deterministic hashing from the
- *    execution ARN, generating a full 128-bit trace ID (lower 64 bits + _dd.p.tid)
- *    for W3C/OpenTelemetry compatibility.
- *
- * Flow:
- * 1. Every invocation receives the same DurableExecutionArn
- * 2. The original customer event is stored in Operations[0].ExecutionDetails.InputPayload
- *    and is identical across all invocations — any upstream trace headers persist
- * 3. trace_id = real upstream or hash("durable-trace:{arn}") lower 64 bits
- * 4. _dd.p.tid = real upstream or hash("durable-trace:{arn}") upper 64 bits
- * 5. parent_id = hash("durable-span:{arn}#{last_completed_op_id}") — links to previous invocation
- * 6. Checkpoint payloads are never modified
+ * 1. Prefer trace context from the latest `_datadog_{N}` checkpoint.
+ * 2. If no trace checkpoint exists (first invocation), try upstream trace context
+ *    from the original customer event stored in `Operations[0].ExecutionDetails.InputPayload`.
+ * 3. If neither exists, start a new trace with random IDs.
  */
 
-import { createHash, randomBytes } from "crypto";
+import { randomBytes } from "crypto";
 import { logDebug } from "../../../utils";
 import { SpanContextWrapper } from "../../span-context-wrapper";
 import { SampleMode, TraceSource } from "../../trace-context-service";
@@ -262,37 +248,45 @@ function bufferToBigInt(buf: Buffer): bigint {
 // Terminal operation statuses that indicate an operation has completed
 const TERMINAL_STATUSES = new Set(["SUCCEEDED", "FAILED", "CANCELLED", "STOPPED", "TIMED_OUT"]);
 
-const TRACE_CHECKPOINT_NAME_PREFIX = "_dd_trace_context_";
+const TRACE_CHECKPOINT_NAME_PREFIX = "_datadog_";
+const LEGACY_TRACE_CHECKPOINT_NAME_PREFIX = "_dd_trace_context_";
+const TRACE_CHECKPOINT_NAME_PREFIXES = [
+  TRACE_CHECKPOINT_NAME_PREFIX,
+  LEGACY_TRACE_CHECKPOINT_NAME_PREFIX,
+];
 
-function deterministicSha256Hash(s: string): string {
-  const hash = createHash("sha256").update(s).digest("hex");
-  const fullBigInt = BigInt("0x" + hash);
-  const masked = fullBigInt & 0x7fffffffffffffffn;
-  return masked === 0n ? "1" : masked.toString(10);
+function parseTraceCheckpointNumber(name: unknown): number | null {
+  if (typeof name !== "string") return null;
+
+  const prefix = TRACE_CHECKPOINT_NAME_PREFIXES.find((candidate) => name.startsWith(candidate));
+  if (!prefix) return null;
+
+  const suffix = name.slice(prefix.length);
+  const n = Number.parseInt(suffix, 10);
+  if (Number.isNaN(n) || String(n) !== suffix) return null;
+  return n;
 }
 
-function getDurableExecutionRootSpanId(executionArn: string): string {
-  return deterministicSha256Hash(`durable-root:${executionArn}`);
+function isTraceCheckpointName(name: unknown): boolean {
+  return parseTraceCheckpointNumber(name) !== null;
 }
 
 /**
- * Find the highest-numbered `_dd_trace_context_{N}` checkpoint in the event.
+ * Find the highest-numbered `_datadog_{N}` checkpoint in the event.
+ * Also supports legacy `_dd_trace_context_{N}` checkpoints for compatibility.
  * Each invocation that changes trace context saves a new checkpoint with
  * N+1; the one with the highest N is the most recent.
  */
 function findLatestTraceContextCheckpoint(
   event: DurableExecutionEvent,
-): { number: number; headers: Record<string, string> } | null {
+): { number: number; name: string; headers: Record<string, string> } | null {
   const operations = event.InitialExecutionState?.Operations;
   if (!operations || operations.length === 0) return null;
 
   let best: { number: number; op: DurableExecutionOperation } | null = null;
   for (const op of operations) {
-    const name = op?.Name;
-    if (!name || !name.startsWith(TRACE_CHECKPOINT_NAME_PREFIX)) continue;
-    const suffix = name.slice(TRACE_CHECKPOINT_NAME_PREFIX.length);
-    const n = Number.parseInt(suffix, 10);
-    if (Number.isNaN(n) || String(n) !== suffix) continue;
+    const n = parseTraceCheckpointNumber(op?.Name);
+    if (n === null) continue;
     if (best === null || n > best.number) {
       best = { number: n, op };
     }
@@ -311,7 +305,11 @@ function findLatestTraceContextCheckpoint(
         hasPayload: Boolean(best.op.Payload),
         hasStepResult: Boolean(best.op.StepDetails?.Result),
       });
-      return { number: best.number, headers: parsed as Record<string, string> };
+      return {
+        number: best.number,
+        name: String(best.op.Name),
+        headers: parsed as Record<string, string>,
+      };
     }
   } catch (e) {
     logDebug(`Failed to parse trace checkpoint payload: ${e}`);
@@ -398,15 +396,12 @@ function parsePtid(tags: string): string {
 }
 
 /**
- * Durable Execution Trace Extractor — Deterministic Approach with W3C Support
+ * Durable Execution Trace Extractor
  *
  * Strategy:
- * 1. Try to extract real upstream trace context from customer event
- * 2. Fall back to deterministic 128-bit trace ID from execution ARN
- *
- * In both cases:
- * - parent_id links to the last completed operation for replay chaining
- * - _dd.p.tid is set for full 128-bit W3C trace ID support
+ * 1. Prefer `_datadog_{N}` checkpoint context when present.
+ * 2. Otherwise, derive trace linkage from upstream customer event context.
+ * 3. If none exists, start a new random trace context.
  */
 export class DurableExecutionEventTraceExtractor implements EventTraceExtractor {
   extract(event: unknown): SpanContextWrapper | null {
@@ -429,7 +424,7 @@ export class DurableExecutionEventTraceExtractor implements EventTraceExtractor 
     });
     if (operations?.length) {
       const checkpointOperations = operations
-        .filter((op) => typeof op?.Name === "string" && op.Name.startsWith(TRACE_CHECKPOINT_NAME_PREFIX))
+        .filter((op) => isTraceCheckpointName(op?.Name))
         .map((op) => ({
           id: op.Id,
           name: op.Name,
@@ -443,14 +438,13 @@ export class DurableExecutionEventTraceExtractor implements EventTraceExtractor 
     }
 
     // --- Step 0: Prefer a previously-saved trace-context checkpoint ---
-    // If a previous invocation saved a `_dd_trace_context_{N}` checkpoint, use
+    // If a previous invocation saved a `_datadog_{N}` checkpoint, use
     // the one with the highest N — it reflects the latest trace-context state
     // of the ongoing durable execution.  Same scheme as dd-trace-py.
     const latestCheckpoint = findLatestTraceContextCheckpoint(event);
-    const executionRootSpanId = getDurableExecutionRootSpanId(executionArn);
     if (latestCheckpoint) {
       logDebug(
-        `Using trace context from checkpoint _dd_trace_context_${latestCheckpoint.number}`,
+        `Using trace context from checkpoint ${latestCheckpoint.name}`,
       );
       const traceIdStr = latestCheckpoint.headers["x-datadog-trace-id"];
       const parentIdStr = latestCheckpoint.headers["x-datadog-parent-id"];
@@ -488,7 +482,6 @@ export class DurableExecutionEventTraceExtractor implements EventTraceExtractor 
         rawParentId: effectiveParentId,
         normalizedTraceId: normalizedTraceId.traceId,
         normalizedParentId,
-        executionRootSpanId,
         ptid: ptidFromTags,
       });
 
@@ -501,16 +494,14 @@ export class DurableExecutionEventTraceExtractor implements EventTraceExtractor 
         ptid: ptidFromTags,
       });
 
-      if (normalizedTraceId.traceId) {
+      if (normalizedTraceId.traceId && normalizedParentId) {
         try {
           const _DatadogSpanContext = require("dd-trace/packages/dd-trace/src/opentracing/span_context");
           const id = require("dd-trace/packages/dd-trace/src/id");
 
           const ddSpanContext = new _DatadogSpanContext({
             traceId: id(normalizedTraceId.traceId, 10),
-            // Use deterministic root span id from executionArn so all invocations
-            // remain anchored to the same durable root regardless of checkpoint payload format.
-            spanId: id(executionRootSpanId, 10),
+            spanId: id(normalizedParentId, 10),
             sampling: { priority: samplingPriorityStr },
           });
 
@@ -521,9 +512,8 @@ export class DurableExecutionEventTraceExtractor implements EventTraceExtractor 
           durableTraceDebugLog("Activated trace context from checkpoint", {
             checkpointNumber: latestCheckpoint.number,
             activatedTraceId: normalizedTraceId.traceId,
-            activatedParentId: executionRootSpanId,
+            activatedParentId: normalizedParentId,
             activatedPtid: ptidFromTags,
-            checkpointParentId: normalizedParentId,
           });
           return new SpanContextWrapper(ddSpanContext, TraceSource.Event);
         } catch (e) {
@@ -532,16 +522,24 @@ export class DurableExecutionEventTraceExtractor implements EventTraceExtractor 
             checkpointNumber: latestCheckpoint.number,
             activationError: e instanceof Error ? e.message : String(e),
             traceId: normalizedTraceId.traceId,
-            parentId: executionRootSpanId,
+            parentId: normalizedParentId,
             ptid: ptidFromTags,
           });
-          // Fall through to existing paths
+          const fallback = SpanContextWrapper.fromTraceContext({
+            traceId: normalizedTraceId.traceId,
+            parentId: normalizedParentId,
+            sampleMode: parseInt(samplingPriorityStr, 10),
+            source: TraceSource.Event,
+          });
+          if (fallback) {
+            return fallback;
+          }
         }
       } else {
         durableTraceDebugLog("Checkpoint did not contain usable trace identifiers", {
           checkpointNumber: latestCheckpoint.number,
           hasTraceId: Boolean(normalizedTraceId.traceId),
-          hasParentId: Boolean(normalizedParentId || executionRootSpanId),
+          hasParentId: Boolean(normalizedParentId),
           traceparent: latestCheckpoint.headers.traceparent,
         });
       }
@@ -557,7 +555,7 @@ export class DurableExecutionEventTraceExtractor implements EventTraceExtractor 
 
     let traceId: string;
     let ptid: string;
-    const rootSpanId = executionRootSpanId;
+    const rootSpanId = generateRandomPositiveId();
     let samplingPriority: string;
 
     if (upstream) {
@@ -577,8 +575,7 @@ export class DurableExecutionEventTraceExtractor implements EventTraceExtractor 
         logDebug(`Upstream trace_id invalid, generated new trace_id=${traceId}, _dd.p.tid=${ptid}`);
       }
 
-      // For the first invocation (no checkpoint), use the deterministic durable
-      // root span id derived from executionArn.
+      // For first invocation, create a new durable root span id and chain aws.lambda to it.
       durableTraceDebugLog("No checkpoint found; generated durable root context from upstream trace", {
         traceId,
         rootSpanId,
@@ -588,8 +585,8 @@ export class DurableExecutionEventTraceExtractor implements EventTraceExtractor 
       });
     } else {
       // --- Step 2: No checkpoint and no upstream context ---
-      // Start a new trace and use deterministic root span id that will be
-      // referenced by checkpoints in later invocations.
+      // Start a new trace and create a random durable root span id that
+      // checkpoints will carry across subsequent invocations.
       const randomTrace = generateRandomTraceId128();
       traceId = randomTrace.traceId;
       ptid = randomTrace.ptid;
@@ -735,7 +732,7 @@ export function createDurableExecutionRootSpan(
 
   const operations = event.InitialExecutionState?.Operations;
   const hasCheckpoint = Boolean(
-    operations?.some((op) => typeof op?.Name === "string" && op.Name.startsWith(TRACE_CHECKPOINT_NAME_PREFIX)),
+    operations?.some((op) => isTraceCheckpointName(op?.Name)),
   );
   const hasCompletedOperation = Boolean(operations?.some((op) => TERMINAL_STATUSES.has(op.Status)));
   const isLikelyFirstInvocation = !hasCheckpoint && !hasCompletedOperation && (operations?.length ?? 0) <= 1;
@@ -750,9 +747,9 @@ export function createDurableExecutionRootSpan(
     return null;
   }
 
-  const rootSpanId = getDurableExecutionRootSpanId(executionArn);
   const extractedTraceId = extractedRootContext?.toTraceId();
   const extractedSpanId = extractedRootContext?.toSpanId();
+  const rootSpanId = extractedSpanId || generateRandomPositiveId();
   durableTraceDebugLog("Preparing durable root span creation", {
     executionArn,
     extractedTraceId,

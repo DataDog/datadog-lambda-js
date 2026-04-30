@@ -46,12 +46,6 @@ export class TraceContextExtractor {
 
   async extract(event: any, context: Context): Promise<SpanContextWrapper | null> {
     let spanContext: SpanContextWrapper | null = null;
-    const durableTraceDebugEnabled = (() => {
-      const value = process.env.DD_DURABLE_TRACE_DEBUG;
-      if (!value) return false;
-      const normalized = value.toLowerCase();
-      return normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "on";
-    })();
     if (this.config.traceExtractor) {
       const customExtractor = new CustomTraceExtractor(this.config.traceExtractor);
       spanContext = await customExtractor.extract(event, context);
@@ -61,20 +55,11 @@ export class TraceContextExtractor {
       const eventExtractor = this.getTraceEventExtractor(event);
       if (eventExtractor !== undefined) {
         spanContext = eventExtractor.extract(event);
-        if (durableTraceDebugEnabled && isDurableExecutionEvent(event)) {
-          console.log("[dd-lambda][durable-trace] Event extractor result", {
-            extractor: eventExtractor.constructor?.name,
-            extracted: spanContext ? {
-              traceId: spanContext.toTraceId(),
-              parentId: spanContext.toSpanId(),
-              sampleMode: spanContext.sampleMode(),
-            } : null,
-          });
-        }
       }
     }
 
-    // No stripping needed — deterministic approach never modifies checkpoint payloads.
+    // No stripping needed — trace context is stored in dedicated
+    // `_datadog_{N}` checkpoint operations.
 
     if (spanContext === null) {
       this.stepFunctionContextService = StepFunctionContextService.instance(event);
@@ -87,15 +72,6 @@ export class TraceContextExtractor {
     if (spanContext === null) {
       const contextExtractor = new LambdaContextTraceExtractor(this.tracerWrapper);
       spanContext = contextExtractor.extract(context);
-      if (durableTraceDebugEnabled && isDurableExecutionEvent(event)) {
-        console.log("[dd-lambda][durable-trace] Falling back to Lambda context extraction", {
-          extracted: spanContext ? {
-            traceId: spanContext.toTraceId(),
-            parentId: spanContext.toSpanId(),
-            sampleMode: spanContext.sampleMode(),
-          } : null,
-        });
-      }
     }
 
     if (spanContext !== null) {
