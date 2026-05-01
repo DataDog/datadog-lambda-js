@@ -148,19 +148,22 @@ export class TraceListener {
     // Create the durable execution root span before everything else so later
     // spans can parent correctly. Root creation is gated in
     // createDurableExecutionRootSpan() and only happens for likely first
-    // invocations; replay invocations return null.
+    // invocations; replay invocations return null. The root span inherits
+    // trace_id and sampling from spanContextWrapper, so anything parented to
+    // it (aws.lambda below) joins the same trace automatically.
     this.durableRootSpan = createDurableExecutionRootSpan(event, spanContextWrapper) ?? undefined;
+    const durableRootSpanContext = this.durableRootSpan?.span?.context();
 
     if (this.config.createInferredSpan) {
       this.inferredSpan = this.inferrer.createInferredSpan(
         event,
         context,
-        parentSpanContext,
+        durableRootSpanContext || parentSpanContext,
         this.config.encodeAuthorizerContext,
       );
     }
 
-    this.lambdaSpanParentContext = this.inferredSpan?.span || parentSpanContext;
+    this.lambdaSpanParentContext = this.inferredSpan?.span || durableRootSpanContext || parentSpanContext;
     this.context = context;
     const eventSource = parseEventSource(event);
     this.triggerTags = extractTriggerTags(event, context, eventSource);

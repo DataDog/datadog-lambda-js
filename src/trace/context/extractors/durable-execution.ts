@@ -12,7 +12,6 @@
  * so we just hand the resulting header dict back to `tracer.extract` here.
  */
 
-import { randomBytes } from "crypto";
 import { logDebug } from "../../../utils";
 import { SpanContextWrapper } from "../../span-context-wrapper";
 import { TracerWrapper } from "../../tracer-wrapper";
@@ -105,21 +104,6 @@ export function getCheckpointToken(event: unknown): string | undefined {
     return undefined;
   }
   return event.CheckpointToken;
-}
-
-function generateRandomPositiveId(): string {
-  const bytes = randomBytes(8);
-  bytes[0] = bytes[0] & 0x7f; // keep it positive int64
-  const value = bufferToBigInt(bytes);
-  return value === 0n ? "1" : value.toString(10);
-}
-
-function bufferToBigInt(buf: Buffer): bigint {
-  let result = 0n;
-  for (let i = 0; i < buf.length; i++) {
-    result = (result << 8n) | BigInt(buf[i]);
-  }
-  return result;
 }
 
 // Terminal operation statuses that indicate an operation has completed
@@ -362,25 +346,21 @@ export function createDurableExecutionRootSpan(
     return null;
   }
 
-  const rootSpanId = extractedRootContext?.toSpanId() || generateRandomPositiveId();
-
-  // Determine consistent start_time from the first operation's StartTimestamp
-  // StartTimestamp is unix milliseconds from the durable execution SDK
+  // Use the first operation's StartTimestamp (unix milliseconds) so the root
+  // span's start time matches the actual start of the durable execution.
   let startTime: number | undefined;
-  const replayOperations = event.InitialExecutionState?.Operations;
-  if (replayOperations && replayOperations.length > 0) {
-    const firstStartTs = replayOperations[0].StartTimestamp;
+  if (operations && operations.length > 0) {
+    const firstStartTs = operations[0].StartTimestamp;
     if (firstStartTs != null) {
       const parsed = Number(firstStartTs);
       if (!isNaN(parsed)) {
-        startTime = parsed;  // already in millis, dd-trace startSpan expects millis
+        startTime = parsed;
       }
     }
   }
 
   try {
     const tracer = require("dd-trace");
-    const id = require("dd-trace/packages/dd-trace/src/id");
 
     const serviceName = process.env.DD_DURABLE_EXECUTION_SERVICE || "aws.durable-execution";
     const resourceName = executionArn.includes(":") ? executionArn.split(":").pop() : executionArn;
@@ -392,7 +372,7 @@ export function createDurableExecutionRootSpan(
         "resource.name": resourceName,
         "durable.execution_arn": executionArn,
         "durable.is_root_span": true,
-        "durable.invocation_count": replayOperations?.length ?? 0,
+        "durable.invocation_count": operations?.length ?? 0,
       },
     };
 
@@ -400,40 +380,14 @@ export function createDurableExecutionRootSpan(
       spanOptions.startTime = startTime;
     }
     if (extractedRootContext?.spanContext) {
-      // Ensure the durable root span stays in the same trace as the extracted
-      // durable invocation context even when there is no active scope.
+      // Stay in the same trace as the upstream caller even when there is no
+      // active scope yet. aws.lambda will be parented to this span downstream.
       spanOptions.childOf = extractedRootContext.spanContext;
     }
 
     const span = tracer.startSpan("aws.durable-execution", spanOptions);
 
-    // Use the extracted durable root span_id when available to keep the
-    // durable root identity stable with propagated checkpoint context.
-    try {
-      if (rootSpanId) {
-        span.context()._spanId = id(rootSpanId, 10);
-      }
-    } catch (e) {
-      logDebug(`Failed to set durable root span_id: ${e}`);
-    }
-
-    // Fix parent_id: when an extracted span context exists, tracer.startSpan()
-    // inherits its span_id as parent_id and we just overwrote our own span_id
-    // to match — that would self-parent. The root span's parent should be the
-    // upstream caller (if any) or 0 (true root).
-    try {
-      const upstreamHeaders = findUpstreamHeaders(event as DurableExecutionEvent);
-      const upstreamParentId = upstreamHeaders?.["x-datadog-parent-id"];
-      if (upstreamParentId) {
-        span.context()._parentId = id(String(upstreamParentId), 10);
-      } else {
-        span.context()._parentId = id("0", 10);
-      }
-    } catch (e) {
-      logDebug(`Failed to set root span parent_id: ${e}`);
-    }
-
-    logDebug(`Created root execution span: span_id=${rootSpanId ?? "auto"}, start_time=${startTime}`);
+    logDebug(`Created root execution span: start_time=${startTime}`);
 
     return {
       span,
