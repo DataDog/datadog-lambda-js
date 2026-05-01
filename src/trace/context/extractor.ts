@@ -87,7 +87,7 @@ export class TraceContextExtractor {
     if (!event || typeof event !== "object") return;
 
     // Check for durable execution event first (has DurableExecutionArn + CheckpointToken)
-    if (isDurableExecutionEvent(event)) return new DurableExecutionEventTraceExtractor();
+    if (isDurableExecutionEvent(event)) return new DurableExecutionEventTraceExtractor(this.tracerWrapper);
 
     const headers = event.headers ?? event.multiValueHeaders;
     if (headers !== null && typeof headers === "object") {

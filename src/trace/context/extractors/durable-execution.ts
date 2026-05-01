@@ -5,106 +5,18 @@
  * 1. Prefer trace context from the latest `_datadog_{N}` checkpoint.
  * 2. If no trace checkpoint exists (first invocation), try upstream trace context
  *    from the original customer event stored in `Operations[0].ExecutionDetails.InputPayload`.
- * 3. If neither exists, start a new trace with random IDs.
+ * 3. If neither exists, return null and let the default extraction path create the context.
+ *
+ * The dd-trace-js durable-execution plugin writes checkpoint headers via the
+ * standard HTTP propagator (`tracer.inject(span, 'http_headers', headers)`),
+ * so we just hand the resulting header dict back to `tracer.extract` here.
  */
 
 import { randomBytes } from "crypto";
 import { logDebug } from "../../../utils";
 import { SpanContextWrapper } from "../../span-context-wrapper";
-import { SampleMode, TraceSource } from "../../trace-context-service";
+import { TracerWrapper } from "../../tracer-wrapper";
 import { EventTraceExtractor } from "../extractor";
-
-function parseTraceparentHex(
-  traceparent: unknown,
-): { traceIdHex: string; parentIdHex: string; lower64TraceIdDec: string; upper64TraceIdHex: string; parentIdDec: string } | null {
-  if (typeof traceparent !== "string") return null;
-  const parts = traceparent.split("-");
-  if (parts.length !== 4) return null;
-  const [, traceIdHex, parentIdHex] = parts;
-  if (!/^[0-9a-f]{32}$/i.test(traceIdHex) || !/^[0-9a-f]{16}$/i.test(parentIdHex)) {
-    return null;
-  }
-
-  const lower64TraceIdHex = traceIdHex.slice(16);
-  const upper64TraceIdHex = traceIdHex.slice(0, 16);
-
-  try {
-    return {
-      traceIdHex,
-      parentIdHex,
-      lower64TraceIdDec: BigInt(`0x${lower64TraceIdHex}`).toString(10),
-      upper64TraceIdHex,
-      parentIdDec: BigInt(`0x${parentIdHex}`).toString(10),
-    };
-  } catch {
-    return null;
-  }
-}
-
-function normalizeParentIdToDecimal(parentId: unknown): string | null {
-  if (typeof parentId !== "string") return null;
-  const value = parentId.trim();
-  if (!value) return null;
-
-  if (/^[0-9]+$/.test(value)) {
-    return value;
-  }
-
-  if (/^[0-9a-f]+$/i.test(value)) {
-    const hex = value.length > 16 ? value.slice(-16) : value;
-    try {
-      return BigInt(`0x${hex}`).toString(10);
-    } catch {
-      return null;
-    }
-  }
-
-  return null;
-}
-
-function normalizeTraceIdToDecimal(
-  traceId: unknown,
-): { traceId: string | null; ptidFromTraceId?: string } {
-  if (typeof traceId !== "string") {
-    return { traceId: null };
-  }
-
-  const value = traceId.trim();
-  if (!value) {
-    return { traceId: null };
-  }
-
-  if (/^[0-9]+$/.test(value)) {
-    return { traceId: value };
-  }
-
-  if (/^[0-9a-f]+$/i.test(value)) {
-    // If a 128-bit hex trace ID was accidentally put here, split it like traceparent:
-    // lower 64 bits for Datadog trace_id, upper 64 bits for _dd.p.tid.
-    if (value.length > 16) {
-      const upperHex = value.slice(-32, -16).padStart(16, "0");
-      const lowerHex = value.slice(-16);
-      try {
-        return {
-          traceId: BigInt(`0x${lowerHex}`).toString(10),
-          ptidFromTraceId: upperHex.toLowerCase(),
-        };
-      } catch {
-        return { traceId: null };
-      }
-    }
-
-    try {
-      return {
-        traceId: BigInt(`0x${value}`).toString(10),
-      };
-    } catch {
-      return { traceId: null };
-    }
-  }
-
-  return { traceId: null };
-}
 
 /**
  * Interface for operation data in durable execution state
@@ -202,23 +114,6 @@ function generateRandomPositiveId(): string {
   return value === 0n ? "1" : value.toString(10);
 }
 
-function generateRandomTraceId128(): { traceId: string; ptid: string } {
-  const bytes = randomBytes(16);
-
-  // Upper 64 bits -> _dd.p.tid
-  const upperBytes = Buffer.from(bytes.subarray(0, 8));
-  const upperValue = bufferToBigInt(upperBytes);
-  const ptid = (upperValue === 0n ? 1n : upperValue).toString(16).padStart(16, "0");
-
-  // Lower 64 bits -> Datadog trace_id (decimal)
-  const lowerBytes = Buffer.from(bytes.subarray(8, 16));
-  lowerBytes[0] = lowerBytes[0] & 0x7f; // keep positive int64
-  const lowerValue = bufferToBigInt(lowerBytes);
-  const traceId = lowerValue === 0n ? "1" : lowerValue.toString(10);
-
-  return { traceId, ptid };
-}
-
 function bufferToBigInt(buf: Buffer): bigint {
   let result = 0n;
   for (let i = 0; i < buf.length; i++) {
@@ -254,14 +149,17 @@ function isTraceCheckpointName(name: unknown): boolean {
 }
 
 /**
- * Find the highest-numbered `_datadog_{N}` checkpoint in the event.
- * Also supports legacy `_dd_trace_context_{N}` checkpoints for compatibility.
- * Each invocation that changes trace context saves a new checkpoint with
- * N+1; the one with the highest N is the most recent.
+ * Find the highest-numbered `_datadog_{N}` checkpoint in the event and return
+ * its parsed header dict.
+ *
+ * Each invocation that changes trace context saves a new checkpoint with N+1;
+ * the one with the highest N is the most recent. Headers are written by the
+ * dd-trace-js plugin via `tracer.inject(span, 'http_headers', headers)` so the
+ * payload is a standard HTTP-style header dict.
+ *
+ * Also accepts legacy `_dd_trace_context_{N}` names for compatibility.
  */
-function findLatestTraceContextCheckpoint(
-  event: DurableExecutionEvent,
-): { number: number; name: string; headers: Record<string, string> } | null {
+function findLatestCheckpointHeaders(event: DurableExecutionEvent): Record<string, string> | null {
   const operations = event.InitialExecutionState?.Operations;
   if (!operations || operations.length === 0) return null;
 
@@ -280,11 +178,7 @@ function findLatestTraceContextCheckpoint(
   try {
     const parsed = JSON.parse(raw);
     if (parsed && typeof parsed === "object") {
-      return {
-        number: best.number,
-        name: String(best.op.Name),
-        headers: parsed as Record<string, string>,
-      };
+      return parsed as Record<string, string>;
     }
   } catch (e) {
     logDebug(`Failed to parse trace checkpoint payload: ${e}`);
@@ -293,230 +187,73 @@ function findLatestTraceContextCheckpoint(
 }
 
 /**
- * Try to extract a real Datadog trace context from the original customer event
- * stored inside the durable execution envelope.
- *
- * The original event is stored in Operations[0].ExecutionDetails.InputPayload.
- * Since all invocations replay the same stored event, any trace headers injected
- * by an upstream Datadog-traced service will be present on every invocation.
- *
- * Returns extracted context info or null.
+ * Find upstream HTTP headers carried by the original customer event stored in
+ * `Operations[0].ExecutionDetails.InputPayload`. Returns the standard header
+ * dict (keys like `x-datadog-trace-id`, `traceparent`, etc.) or null.
  */
-function extractUpstreamTraceContext(
-  event: DurableExecutionEvent,
-): { traceId: string; parentId: string; samplingPriority: string; ptid: string } | null {
+function findUpstreamHeaders(event: DurableExecutionEvent): Record<string, string> | null {
   try {
     const operations = event.InitialExecutionState?.Operations;
     if (!operations || operations.length === 0) return null;
 
-    const firstOp = operations[0];
-    const inputPayloadStr = firstOp.ExecutionDetails?.InputPayload;
+    const inputPayloadStr = operations[0].ExecutionDetails?.InputPayload;
     if (!inputPayloadStr) return null;
 
     const customerEvent = JSON.parse(inputPayloadStr);
     if (!customerEvent || typeof customerEvent !== "object") return null;
 
-    // Try headers (API Gateway, ALB, Function URL)
     const headers = customerEvent.headers;
     if (headers && typeof headers === "object") {
-      const traceId = headers["x-datadog-trace-id"];
-      const parentId = headers["x-datadog-parent-id"];
-      if (traceId && parentId) {
-        const samplingPriority = headers["x-datadog-sampling-priority"] || "1";
-        const tags = headers["x-datadog-tags"] || "";
-        const ptid = parsePtid(tags);
-        logDebug(`Found upstream trace context in customer event headers`);
-        return { traceId, parentId, samplingPriority, ptid };
-      }
+      return headers as Record<string, string>;
     }
 
-    // Try _datadog field (direct invocation / Step Functions)
     const ddData = customerEvent._datadog;
     if (ddData && typeof ddData === "object") {
-      const traceId = ddData["x-datadog-trace-id"];
-      const parentId = ddData["x-datadog-parent-id"];
-      if (traceId && parentId) {
-        const samplingPriority = ddData["x-datadog-sampling-priority"] || "1";
-        const tags = ddData["x-datadog-tags"] || "";
-        const ptid = parsePtid(tags);
-        logDebug(`Found upstream trace context in customer event _datadog field`);
-        return { traceId, parentId, samplingPriority, ptid };
-      }
+      return ddData as Record<string, string>;
     }
   } catch (e) {
-    logDebug(`Failed to extract upstream trace context from durable event: ${e}`);
+    logDebug(`Failed to read upstream headers from durable input payload: ${e}`);
   }
 
   return null;
 }
 
 /**
- * Parse _dd.p.tid from x-datadog-tags string.
- * Format: "_dd.p.tid=66bcb5eb00000000,_dd.p.dm=-0"
- */
-function parsePtid(tags: string): string {
-  if (!tags) return "";
-  for (const tag of tags.split(",")) {
-    if (tag.includes("_dd.p.tid=")) {
-      return tag.split("=")[1] || "";
-    }
-  }
-  return "";
-}
-
-/**
  * Durable Execution Trace Extractor
  *
- * Strategy:
- * 1. Prefer `_datadog_{N}` checkpoint context when present.
- * 2. Otherwise, derive trace linkage from upstream customer event context.
- * 3. If none exists, start a new random trace context.
+ * Locates trace headers carried inside the durable execution envelope and hands
+ * them to the standard dd-trace propagator via `TracerWrapper.extract`. Order:
+ * 1. Latest `_datadog_{N}` checkpoint payload.
+ * 2. Upstream customer event headers from `InputPayload`.
+ * 3. Otherwise return null and let the default extraction path take over.
  */
 export class DurableExecutionEventTraceExtractor implements EventTraceExtractor {
+  constructor(private tracerWrapper: TracerWrapper) {}
+
   extract(event: unknown): SpanContextWrapper | null {
     if (!isDurableExecutionEvent(event)) {
       logDebug("Event is not a durable execution event");
       return null;
     }
-
-    const executionArn = event.DurableExecutionArn;
-    if (!executionArn) {
+    if (!event.DurableExecutionArn) {
       logDebug("No DurableExecutionArn in event");
       return null;
     }
 
-    // --- Step 0: Prefer a previously-saved trace-context checkpoint ---
-    // If a previous invocation saved a `_datadog_{N}` checkpoint, use
-    // the one with the highest N — it reflects the latest trace-context state
-    // of the ongoing durable execution.  Same scheme as dd-trace-py.
-    const latestCheckpoint = findLatestTraceContextCheckpoint(event);
-    if (latestCheckpoint) {
-      logDebug(
-        `Using trace context from checkpoint ${latestCheckpoint.name}`,
-      );
-      const traceIdStr = latestCheckpoint.headers["x-datadog-trace-id"];
-      const parentIdStr = latestCheckpoint.headers["x-datadog-parent-id"];
-      const samplingPriorityStr = latestCheckpoint.headers["x-datadog-sampling-priority"] || "1";
-      const tagsStr = latestCheckpoint.headers["x-datadog-tags"] || "";
-      let ptidFromTags = parsePtid(tagsStr);
-      let effectiveTraceId = traceIdStr;
-      let effectiveParentId = parentIdStr;
-
-      if ((!effectiveTraceId || !effectiveParentId) && latestCheckpoint.headers.traceparent) {
-        const parsedTraceparent = parseTraceparentHex(latestCheckpoint.headers.traceparent);
-        if (parsedTraceparent) {
-          effectiveTraceId = effectiveTraceId || parsedTraceparent.lower64TraceIdDec;
-          effectiveParentId = effectiveParentId || parsedTraceparent.parentIdDec;
-          ptidFromTags = ptidFromTags || parsedTraceparent.upper64TraceIdHex;
-        }
-      }
-
-      const normalizedTraceId = normalizeTraceIdToDecimal(effectiveTraceId);
-      const normalizedParentId = normalizeParentIdToDecimal(effectiveParentId);
-      if (!ptidFromTags && normalizedTraceId.ptidFromTraceId) {
-        ptidFromTags = normalizedTraceId.ptidFromTraceId;
-      }
-
-      if (normalizedTraceId.traceId && normalizedParentId) {
-        try {
-          const _DatadogSpanContext = require("dd-trace/packages/dd-trace/src/opentracing/span_context");
-          const id = require("dd-trace/packages/dd-trace/src/id");
-
-          const ddSpanContext = new _DatadogSpanContext({
-            traceId: id(normalizedTraceId.traceId, 10),
-            spanId: id(normalizedParentId, 10),
-            sampling: { priority: samplingPriorityStr },
-          });
-
-          if (ptidFromTags) {
-            ddSpanContext._trace.tags["_dd.p.tid"] = ptidFromTags;
-          }
-          return new SpanContextWrapper(ddSpanContext, TraceSource.Event);
-        } catch (e) {
-          logDebug(`Failed to construct SpanContext from checkpoint: ${e}`);
-          const fallback = SpanContextWrapper.fromTraceContext({
-            traceId: normalizedTraceId.traceId,
-            parentId: normalizedParentId,
-            sampleMode: parseInt(samplingPriorityStr, 10),
-            source: TraceSource.Event,
-          });
-          if (fallback) {
-            return fallback;
-          }
-        }
-      }
+    const checkpointHeaders = findLatestCheckpointHeaders(event);
+    if (checkpointHeaders) {
+      logDebug("Extracting trace context from durable checkpoint");
+      return this.tracerWrapper.extract(checkpointHeaders);
     }
 
-    // --- Step 1: Try to use real upstream trace context ---
-    const upstream = extractUpstreamTraceContext(event);
-
-    let traceId: string;
-    let ptid: string;
-    const rootSpanId = generateRandomPositiveId();
-    let samplingPriority: string;
-
-    if (upstream) {
-      const normalizedUpstreamTrace = normalizeTraceIdToDecimal(upstream.traceId);
-      const normalizedTraceId = normalizedUpstreamTrace.traceId;
-
-      if (normalizedTraceId) {
-        traceId = normalizedTraceId;
-        ptid = upstream.ptid || normalizedUpstreamTrace.ptidFromTraceId || "";
-        samplingPriority = upstream.samplingPriority;
-        logDebug(`Using upstream trace_id=${traceId}, _dd.p.tid=${ptid}`);
-      } else {
-        const randomTrace = generateRandomTraceId128();
-        traceId = randomTrace.traceId;
-        ptid = randomTrace.ptid;
-        samplingPriority = SampleMode.AUTO_KEEP.toString();
-        logDebug(`Upstream trace_id invalid, generated new trace_id=${traceId}, _dd.p.tid=${ptid}`);
-      }
-
-    } else {
-      // --- Step 2: No checkpoint and no upstream context ---
-      // Start a new trace and create a random durable root span id that
-      // checkpoints will carry across subsequent invocations.
-      const randomTrace = generateRandomTraceId128();
-      traceId = randomTrace.traceId;
-      ptid = randomTrace.ptid;
-      samplingPriority = SampleMode.AUTO_KEEP.toString();
-
-      logDebug(`No upstream context, generated trace_id=${traceId}, root_span_id=${rootSpanId}, _dd.p.tid=${ptid}`);
+    const upstreamHeaders = findUpstreamHeaders(event);
+    if (upstreamHeaders) {
+      logDebug("Extracting trace context from upstream durable input payload");
+      return this.tracerWrapper.extract(upstreamHeaders);
     }
 
-    logDebug(`Generated initial durable root context: trace_id=${traceId}, root_span_id=${rootSpanId}, _dd.p.tid=${ptid}`);
-
-    // Construct span context with _dd.p.tid for 128-bit W3C trace ID support
-    // Similar to Step Functions' approach in step-function-service.ts
-    try {
-      const _DatadogSpanContext = require("dd-trace/packages/dd-trace/src/opentracing/span_context");
-      const id = require("dd-trace/packages/dd-trace/src/id");
-
-      const ddSpanContext = new _DatadogSpanContext({
-        traceId: id(traceId, 10),
-        spanId: id(rootSpanId, 10),
-        sampling: { priority: samplingPriority },
-      });
-
-      // Set _dd.p.tid for upper 64 bits of 128-bit trace ID
-      if (ptid) {
-        ddSpanContext._trace.tags["_dd.p.tid"] = ptid;
-      }
-
-      return new SpanContextWrapper(ddSpanContext, TraceSource.Event);
-    } catch (error) {
-      if (error instanceof Error) {
-        logDebug("Couldn't generate SpanContext with tracer, falling back.", error);
-      }
-    }
-
-    // Fallback without _dd.p.tid if dd-trace is not available
-    return SpanContextWrapper.fromTraceContext({
-      traceId,
-      parentId: rootSpanId,
-      sampleMode: parseInt(samplingPriority, 10),
-      source: TraceSource.Event,
-    });
+    logDebug("No durable trace context found; deferring to default extraction");
+    return null;
   }
 }
 
@@ -680,14 +417,15 @@ export function createDurableExecutionRootSpan(
       logDebug(`Failed to set durable root span_id: ${e}`);
     }
 
-    // Fix parent_id: the active context has span_id=root_span_id (set by
-    // DurableExecutionEventTraceExtractor.extract), so tracer.startSpan()
-    // inherits that as parent_id, causing self-parenting. The root span's
-    // parent should be the upstream caller (if extracted) or 0 (true root).
+    // Fix parent_id: when an extracted span context exists, tracer.startSpan()
+    // inherits its span_id as parent_id and we just overwrote our own span_id
+    // to match — that would self-parent. The root span's parent should be the
+    // upstream caller (if any) or 0 (true root).
     try {
-      const upstream = extractUpstreamTraceContext(event as DurableExecutionEvent);
-      if (upstream) {
-        span.context()._parentId = id(upstream.parentId, 10);
+      const upstreamHeaders = findUpstreamHeaders(event as DurableExecutionEvent);
+      const upstreamParentId = upstreamHeaders?.["x-datadog-parent-id"];
+      if (upstreamParentId) {
+        span.context()._parentId = id(String(upstreamParentId), 10);
       } else {
         span.context()._parentId = id("0", 10);
       }

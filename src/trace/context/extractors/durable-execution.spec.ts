@@ -1,8 +1,13 @@
 import { createDurableExecutionRootSpan, DurableExecutionEventTraceExtractor } from "./durable-execution";
+import { TracerWrapper } from "../../tracer-wrapper";
 
 jest.mock("dd-trace", () => ({
   startSpan: jest.fn(),
 }));
+
+function makeTracerWrapper(extractReturn: any = null): TracerWrapper {
+  return { extract: jest.fn().mockReturnValue(extractReturn) } as unknown as TracerWrapper;
+}
 
 describe("DurableExecutionEventTraceExtractor", () => {
   const tracer = require("dd-trace");
@@ -12,9 +17,15 @@ describe("DurableExecutionEventTraceExtractor", () => {
     jest.clearAllMocks();
   });
 
-  it("extracts trace context from the latest trace checkpoint", () => {
+  it("delegates checkpoint headers to the standard propagator", () => {
     const executionArn =
       "arn:aws:lambda:us-east-2:123456789012:function:demo:$LATEST/durable-execution/demo/abc";
+
+    const checkpointHeaders = {
+      "x-datadog-trace-id": "149750110124521191",
+      "x-datadog-parent-id": "987654321012345678",
+      "x-datadog-sampling-priority": "1",
+    };
 
     const event = {
       DurableExecutionArn: executionArn,
@@ -26,23 +37,34 @@ describe("DurableExecutionEventTraceExtractor", () => {
             Name: "_datadog_0",
             Status: "SUCCEEDED",
             StepDetails: {
-              Result: JSON.stringify({
-                "x-datadog-trace-id": "149750110124521191",
-                "x-datadog-parent-id": "987654321012345678",
-                "x-datadog-sampling-priority": "1",
-              }),
+              Result: JSON.stringify(checkpointHeaders),
             },
           },
         ],
       },
     };
 
-    const extractor = new DurableExecutionEventTraceExtractor();
+    const sentinelContext = { sentinel: true };
+    const tracerWrapper = makeTracerWrapper(sentinelContext);
+    const extractor = new DurableExecutionEventTraceExtractor(tracerWrapper);
     const context = extractor.extract(event);
 
-    expect(context).not.toBeNull();
-    expect(context?.toTraceId()).toBe("149750110124521191");
-    expect(context?.toSpanId()).toBe("987654321012345678");
+    expect(tracerWrapper.extract).toHaveBeenCalledWith(checkpointHeaders);
+    expect(context).toBe(sentinelContext);
+  });
+
+  it("returns null when no checkpoint or upstream context exists", () => {
+    const tracerWrapper = makeTracerWrapper();
+    const extractor = new DurableExecutionEventTraceExtractor(tracerWrapper);
+
+    const context = extractor.extract({
+      DurableExecutionArn: "arn:aws:lambda:us-east-2:123:function:demo",
+      CheckpointToken: "t-empty",
+      InitialExecutionState: { Operations: [] },
+    });
+
+    expect(context).toBeNull();
+    expect(tracerWrapper.extract).not.toHaveBeenCalled();
   });
 
   it("creates durable root span only for first invocation", () => {
@@ -79,14 +101,10 @@ describe("DurableExecutionEventTraceExtractor", () => {
       },
     };
 
-    const extractor = new DurableExecutionEventTraceExtractor();
-    const extracted = extractor.extract(firstInvocationEvent);
-
-    const root = createDurableExecutionRootSpan(firstInvocationEvent, extracted);
+    const root = createDurableExecutionRootSpan(firstInvocationEvent, null);
 
     expect(root).not.toBeNull();
     expect(startSpanMock).toHaveBeenCalledTimes(1);
-    expect(root?.span.context()._spanId.toString(10)).toBe(extracted?.toSpanId());
   });
 
   it("skips durable root span creation on replay invocations", () => {
@@ -119,7 +137,8 @@ describe("DurableExecutionEventTraceExtractor", () => {
       },
     };
 
-    const extractor = new DurableExecutionEventTraceExtractor();
+    const tracerWrapper = makeTracerWrapper({ source: "Event" });
+    const extractor = new DurableExecutionEventTraceExtractor(tracerWrapper);
     const extracted = extractor.extract(replayEvent);
     const root = createDurableExecutionRootSpan(replayEvent, extracted);
 

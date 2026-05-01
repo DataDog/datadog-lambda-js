@@ -318,7 +318,6 @@ export class TraceListener {
     }
 
     // Finish the durable execution root span after all other spans.
-    // Re-emitted every invocation; the last one wins in the backend.
     if (this.durableRootSpan) {
       this.durableRootSpan.finish();
       this.durableRootSpan = undefined;
