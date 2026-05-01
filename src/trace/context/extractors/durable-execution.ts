@@ -591,11 +591,12 @@ export function getCompletedOperationCount(event: unknown): number {
 }
 
 /**
- * Create (or re-emit) the durable execution root span.
+ * Create the durable execution root span for likely first invocations only.
  *
- * Every invocation emits this span with the same propagated root span_id.
- * The Datadog backend deduplicates by span_id, so the last invocation's
- * version wins with the correct total duration (start → final end).
+ * Replay invocations return null. The current first-invocation heuristic is:
+ * - no trace checkpoint operation exists
+ * - no operation has terminal status
+ * - operation count is <= 1
  *
  * Returns an object with { span, finish() } or null if not a durable execution.
  * Caller must call finish() when the invocation ends.
@@ -669,8 +670,8 @@ export function createDurableExecutionRootSpan(
 
     const span = tracer.startSpan("aws.durable-execution", spanOptions);
 
-    // Re-emit root span using the extracted root span_id so all invocations
-    // refer to the same durable execution root (propagated by checkpoints).
+    // Use the extracted durable root span_id when available to keep the
+    // durable root identity stable with propagated checkpoint context.
     try {
       if (rootSpanId) {
         span.context()._spanId = id(rootSpanId, 10);

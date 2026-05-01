@@ -145,9 +145,10 @@ export class TraceListener {
         traceSource: this.contextService.traceSource,
       });
     }
-    // Create the durable execution root span before everything else.
-    // This span uses the propagated root span_id and is re-emitted on every
-    // invocation (last one wins in the backend with correct total duration).
+    // Create the durable execution root span before everything else so later
+    // spans can parent correctly. Root creation is gated in
+    // createDurableExecutionRootSpan() and only happens for likely first
+    // invocations; replay invocations return null.
     this.durableRootSpan = createDurableExecutionRootSpan(event, spanContextWrapper) ?? undefined;
 
     if (this.config.createInferredSpan) {
