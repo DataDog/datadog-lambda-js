@@ -14,24 +14,6 @@ import { SpanContextWrapper } from "../../span-context-wrapper";
 import { SampleMode, TraceSource } from "../../trace-context-service";
 import { EventTraceExtractor } from "../extractor";
 
-const DURABLE_TRACE_DEBUG_ENV = "DD_DURABLE_TRACE_DEBUG";
-
-function durableTraceDebugEnabled(): boolean {
-  const value = process.env[DURABLE_TRACE_DEBUG_ENV];
-  if (!value) return false;
-  const normalized = value.toLowerCase();
-  return normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "on";
-}
-
-function durableTraceDebugLog(message: string, details?: Record<string, unknown>): void {
-  if (!durableTraceDebugEnabled()) return;
-  if (details) {
-    console.log(`[dd-lambda][durable-trace] ${message}`, details);
-    return;
-  }
-  console.log(`[dd-lambda][durable-trace] ${message}`);
-}
-
 function parseTraceparentHex(
   traceparent: unknown,
 ): { traceIdHex: string; parentIdHex: string; lower64TraceIdDec: string; upper64TraceIdHex: string; parentIdDec: string } | null {
@@ -298,13 +280,6 @@ function findLatestTraceContextCheckpoint(
   try {
     const parsed = JSON.parse(raw);
     if (parsed && typeof parsed === "object") {
-      durableTraceDebugLog("Found latest trace-context checkpoint", {
-        checkpointName: best.op.Name,
-        checkpointNumber: best.number,
-        operationId: best.op.Id,
-        hasPayload: Boolean(best.op.Payload),
-        hasStepResult: Boolean(best.op.StepDetails?.Result),
-      });
       return {
         number: best.number,
         name: String(best.op.Name),
@@ -313,12 +288,6 @@ function findLatestTraceContextCheckpoint(
     }
   } catch (e) {
     logDebug(`Failed to parse trace checkpoint payload: ${e}`);
-    durableTraceDebugLog("Failed to parse trace-context checkpoint payload", {
-      checkpointName: best.op.Name,
-      checkpointNumber: best.number,
-      operationId: best.op.Id,
-      parseError: e instanceof Error ? e.message : String(e),
-    });
   }
   return null;
 }
@@ -416,27 +385,6 @@ export class DurableExecutionEventTraceExtractor implements EventTraceExtractor 
       return null;
     }
 
-    const operations = event.InitialExecutionState?.Operations;
-    durableTraceDebugLog("Durable invocation event received", {
-      executionArn,
-      checkpointToken: event.CheckpointToken,
-      operationCount: operations?.length ?? 0,
-    });
-    if (operations?.length) {
-      const checkpointOperations = operations
-        .filter((op) => isTraceCheckpointName(op?.Name))
-        .map((op) => ({
-          id: op.Id,
-          name: op.Name,
-          status: op.Status,
-          hasPayload: Boolean(op.Payload),
-          hasStepResult: Boolean(op.StepDetails?.Result),
-        }));
-      durableTraceDebugLog("Trace-context checkpoint operations present in event", {
-        checkpoints: checkpointOperations,
-      });
-    }
-
     // --- Step 0: Prefer a previously-saved trace-context checkpoint ---
     // If a previous invocation saved a `_datadog_{N}` checkpoint, use
     // the one with the highest N — it reflects the latest trace-context state
@@ -460,13 +408,6 @@ export class DurableExecutionEventTraceExtractor implements EventTraceExtractor 
           effectiveTraceId = effectiveTraceId || parsedTraceparent.lower64TraceIdDec;
           effectiveParentId = effectiveParentId || parsedTraceparent.parentIdDec;
           ptidFromTags = ptidFromTags || parsedTraceparent.upper64TraceIdHex;
-          durableTraceDebugLog("Derived Datadog IDs from traceparent in checkpoint", {
-            checkpointNumber: latestCheckpoint.number,
-            traceparent: latestCheckpoint.headers.traceparent,
-            derivedTraceId: effectiveTraceId,
-            derivedParentId: effectiveParentId,
-            derivedPtid: ptidFromTags,
-          });
         }
       }
 
@@ -475,24 +416,6 @@ export class DurableExecutionEventTraceExtractor implements EventTraceExtractor 
       if (!ptidFromTags && normalizedTraceId.ptidFromTraceId) {
         ptidFromTags = normalizedTraceId.ptidFromTraceId;
       }
-
-      durableTraceDebugLog("Normalized checkpoint IDs", {
-        checkpointNumber: latestCheckpoint.number,
-        rawTraceId: effectiveTraceId,
-        rawParentId: effectiveParentId,
-        normalizedTraceId: normalizedTraceId.traceId,
-        normalizedParentId,
-        ptid: ptidFromTags,
-      });
-
-      durableTraceDebugLog("Checkpoint headers selected for extraction", {
-        checkpointNumber: latestCheckpoint.number,
-        headerKeys: Object.keys(latestCheckpoint.headers),
-        traceId: normalizedTraceId.traceId,
-        parentId: normalizedParentId,
-        samplingPriority: samplingPriorityStr,
-        ptid: ptidFromTags,
-      });
 
       if (normalizedTraceId.traceId && normalizedParentId) {
         try {
@@ -508,23 +431,9 @@ export class DurableExecutionEventTraceExtractor implements EventTraceExtractor 
           if (ptidFromTags) {
             ddSpanContext._trace.tags["_dd.p.tid"] = ptidFromTags;
           }
-
-          durableTraceDebugLog("Activated trace context from checkpoint", {
-            checkpointNumber: latestCheckpoint.number,
-            activatedTraceId: normalizedTraceId.traceId,
-            activatedParentId: normalizedParentId,
-            activatedPtid: ptidFromTags,
-          });
           return new SpanContextWrapper(ddSpanContext, TraceSource.Event);
         } catch (e) {
           logDebug(`Failed to construct SpanContext from checkpoint: ${e}`);
-          durableTraceDebugLog("Failed to activate trace context from checkpoint", {
-            checkpointNumber: latestCheckpoint.number,
-            activationError: e instanceof Error ? e.message : String(e),
-            traceId: normalizedTraceId.traceId,
-            parentId: normalizedParentId,
-            ptid: ptidFromTags,
-          });
           const fallback = SpanContextWrapper.fromTraceContext({
             traceId: normalizedTraceId.traceId,
             parentId: normalizedParentId,
@@ -535,19 +444,7 @@ export class DurableExecutionEventTraceExtractor implements EventTraceExtractor 
             return fallback;
           }
         }
-      } else {
-        durableTraceDebugLog("Checkpoint did not contain usable trace identifiers", {
-          checkpointNumber: latestCheckpoint.number,
-          hasTraceId: Boolean(normalizedTraceId.traceId),
-          hasParentId: Boolean(normalizedParentId),
-          traceparent: latestCheckpoint.headers.traceparent,
-        });
       }
-    } else {
-      durableTraceDebugLog("No trace-context checkpoint found in event operations", {
-        executionArn,
-        operationCount: operations?.length ?? 0,
-      });
     }
 
     // --- Step 1: Try to use real upstream trace context ---
@@ -575,14 +472,6 @@ export class DurableExecutionEventTraceExtractor implements EventTraceExtractor 
         logDebug(`Upstream trace_id invalid, generated new trace_id=${traceId}, _dd.p.tid=${ptid}`);
       }
 
-      // For first invocation, create a new durable root span id and chain aws.lambda to it.
-      durableTraceDebugLog("No checkpoint found; generated durable root context from upstream trace", {
-        traceId,
-        rootSpanId,
-        upstreamParentId: upstream.parentId,
-        samplingPriority,
-        ptid,
-      });
     } else {
       // --- Step 2: No checkpoint and no upstream context ---
       // Start a new trace and create a random durable root span id that
@@ -593,12 +482,6 @@ export class DurableExecutionEventTraceExtractor implements EventTraceExtractor 
       samplingPriority = SampleMode.AUTO_KEEP.toString();
 
       logDebug(`No upstream context, generated trace_id=${traceId}, root_span_id=${rootSpanId}, _dd.p.tid=${ptid}`);
-      durableTraceDebugLog("No checkpoint/upstream found; generated new durable trace context", {
-        executionArn,
-        traceId,
-        rootSpanId,
-        ptid,
-      });
     }
 
     logDebug(`Generated initial durable root context: trace_id=${traceId}, root_span_id=${rootSpanId}, _dd.p.tid=${ptid}`);
@@ -738,25 +621,10 @@ export function createDurableExecutionRootSpan(
   const isLikelyFirstInvocation = !hasCheckpoint && !hasCompletedOperation && (operations?.length ?? 0) <= 1;
 
   if (!isLikelyFirstInvocation) {
-    durableTraceDebugLog("Skipping durable root span creation for replay invocation", {
-      executionArn,
-      operationCount: operations?.length ?? 0,
-      hasCheckpoint,
-      hasCompletedOperation,
-    });
     return null;
   }
 
-  const extractedTraceId = extractedRootContext?.toTraceId();
-  const extractedSpanId = extractedRootContext?.toSpanId();
-  const rootSpanId = extractedSpanId || generateRandomPositiveId();
-  durableTraceDebugLog("Preparing durable root span creation", {
-    executionArn,
-    extractedTraceId,
-    extractedSpanId,
-    expectedRootSpanId: rootSpanId,
-    operationCount: operations?.length ?? 0,
-  });
+  const rootSpanId = extractedRootContext?.toSpanId() || generateRandomPositiveId();
 
   // Determine consistent start_time from the first operation's StartTimestamp
   // StartTimestamp is unix milliseconds from the durable execution SDK
@@ -799,22 +667,6 @@ export function createDurableExecutionRootSpan(
       spanOptions.childOf = extractedRootContext.spanContext;
     }
 
-    let activeBefore: any;
-    try {
-      activeBefore = tracer?.scope?.().active?.();
-    } catch {
-      activeBefore = undefined;
-    }
-    durableTraceDebugLog("Creating durable root span", {
-      executionArn,
-      startTime,
-      expectedRootSpanId: rootSpanId,
-      activeScopeBefore: activeBefore ? {
-        traceId: activeBefore.context?.()?.toTraceId?.(),
-        spanId: activeBefore.context?.()?.toSpanId?.(),
-      } : null,
-    });
-
     const span = tracer.startSpan("aws.durable-execution", spanOptions);
 
     // Re-emit root span using the extracted root span_id so all invocations
@@ -842,40 +694,11 @@ export function createDurableExecutionRootSpan(
       logDebug(`Failed to set root span parent_id: ${e}`);
     }
 
-    const createdTraceId = span.context().toTraceId?.();
-    const createdSpanId = span.context().toSpanId?.();
-    const createdParentId = span.context()._parentId?.toString?.(10) ?? span.context()._parentId?.toString?.();
-    durableTraceDebugLog("Durable root span created", {
-      executionArn,
-      createdTraceId,
-      createdSpanId,
-      createdParentId,
-      expectedRootSpanId: rootSpanId,
-      extractedTraceId,
-      extractedSpanId,
-      traceMatchesExtracted: extractedTraceId ? createdTraceId === extractedTraceId : undefined,
-      spanMatchesExpectedRoot: createdSpanId === rootSpanId,
-    });
-    if (extractedTraceId && createdTraceId && extractedTraceId !== createdTraceId) {
-      durableTraceDebugLog("WARNING: durable root span trace differs from extracted durable context", {
-        executionArn,
-        extractedTraceId,
-        createdTraceId,
-        note: "This can cause the durable root span to appear standalone.",
-      });
-    }
-
     logDebug(`Created root execution span: span_id=${rootSpanId ?? "auto"}, start_time=${startTime}`);
 
     return {
       span,
       finish: () => {
-        durableTraceDebugLog("Finishing durable root span", {
-          executionArn,
-          traceId: span.context().toTraceId?.(),
-          spanId: span.context().toSpanId?.(),
-          parentId: span.context()._parentId?.toString?.(10) ?? span.context()._parentId?.toString?.(),
-        });
         span.finish();
         logDebug("Finished root execution span");
       },
