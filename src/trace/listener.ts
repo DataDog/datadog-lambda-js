@@ -27,7 +27,6 @@ import {
 } from "./durable-function-context";
 import { XrayService } from "./xray-service";
 import { AUTHORIZING_REQUEST_ID_HEADER } from "./context/extractors/http";
-import { createDurableExecutionRootSpan } from "./context/extractors/durable-execution";
 import { getSpanPointerAttributes, SpanPointerAttributes } from "../utils/span-pointers";
 export type TraceExtractor = (event: any, context: Context) => Promise<TraceContext> | TraceContext;
 
@@ -103,7 +102,6 @@ export class TraceListener {
   private wrappedCurrentSpan?: SpanWrapper;
   private triggerTags?: { [key: string]: string };
   private lambdaSpanParentContext?: SpanContext;
-  private durableRootSpan?: { span: any; finish: () => void };
   private spanPointerAttributesList: SpanPointerAttributes[] | undefined;
 
   public get currentTraceHeaders() {
@@ -145,25 +143,16 @@ export class TraceListener {
         traceSource: this.contextService.traceSource,
       });
     }
-    // Create the durable execution root span before everything else so later
-    // spans can parent correctly. Root creation is gated in
-    // createDurableExecutionRootSpan() and only happens for likely first
-    // invocations; replay invocations return null. The root span inherits
-    // trace_id and sampling from spanContextWrapper, so anything parented to
-    // it (aws.lambda below) joins the same trace automatically.
-    this.durableRootSpan = createDurableExecutionRootSpan(event, spanContextWrapper) ?? undefined;
-    const durableRootSpanContext = this.durableRootSpan?.span?.context();
-
     if (this.config.createInferredSpan) {
       this.inferredSpan = this.inferrer.createInferredSpan(
         event,
         context,
-        durableRootSpanContext || parentSpanContext,
+        parentSpanContext,
         this.config.encodeAuthorizerContext,
       );
     }
 
-    this.lambdaSpanParentContext = this.inferredSpan?.span || durableRootSpanContext || parentSpanContext;
+    this.lambdaSpanParentContext = this.inferredSpan?.span || parentSpanContext;
     this.context = context;
     const eventSource = parseEventSource(event);
     this.triggerTags = extractTriggerTags(event, context, eventSource);
@@ -318,12 +307,6 @@ export class TraceListener {
     if (this.config.encodeAuthorizerContext && result?.principalId && result?.policyDocument) {
       // We're in an authorizer, pass on the trace context, requestId and finishTime to make the authorizer span
       this.injectAuthorizerSpan(result, event?.requestContext?.requestId, finishTime || Date.now());
-    }
-
-    // Finish the durable execution root span after all other spans.
-    if (this.durableRootSpan) {
-      this.durableRootSpan.finish();
-      this.durableRootSpan = undefined;
     }
 
     // Reset singletons and trace context

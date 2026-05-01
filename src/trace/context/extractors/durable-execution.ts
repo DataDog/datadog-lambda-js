@@ -110,19 +110,12 @@ export function getCheckpointToken(event: unknown): string | undefined {
 const TERMINAL_STATUSES = new Set(["SUCCEEDED", "FAILED", "CANCELLED", "STOPPED", "TIMED_OUT"]);
 
 const TRACE_CHECKPOINT_NAME_PREFIX = "_datadog_";
-const LEGACY_TRACE_CHECKPOINT_NAME_PREFIX = "_dd_trace_context_";
-const TRACE_CHECKPOINT_NAME_PREFIXES = [
-  TRACE_CHECKPOINT_NAME_PREFIX,
-  LEGACY_TRACE_CHECKPOINT_NAME_PREFIX,
-];
 
 function parseTraceCheckpointNumber(name: unknown): number | null {
   if (typeof name !== "string") return null;
 
-  const prefix = TRACE_CHECKPOINT_NAME_PREFIXES.find((candidate) => name.startsWith(candidate));
-  if (!prefix) return null;
-
-  const suffix = name.slice(prefix.length);
+  if (!name.startsWith(TRACE_CHECKPOINT_NAME_PREFIX)) return null;
+  const suffix = name.slice(TRACE_CHECKPOINT_NAME_PREFIX.length);
   const n = Number.parseInt(suffix, 10);
   if (Number.isNaN(n) || String(n) !== suffix) return null;
   return n;
@@ -141,7 +134,6 @@ function isTraceCheckpointName(name: unknown): boolean {
  * dd-trace-js plugin via `tracer.inject(span, 'http_headers', headers)` so the
  * payload is a standard HTTP-style header dict.
  *
- * Also accepts legacy `_dd_trace_context_{N}` names for compatibility.
  */
 function findLatestCheckpointHeaders(event: DurableExecutionEvent): Record<string, string> | null {
   const operations = event.InitialExecutionState?.Operations;
@@ -319,12 +311,14 @@ export function getCompletedOperationCount(event: unknown): number {
  * - no operation has terminal status
  * - operation count is <= 1
  *
+ * The created span is parented to the current aws.lambda span context.
+ *
  * Returns an object with { span, finish() } or null if not a durable execution.
  * Caller must call finish() when the invocation ends.
  */
 export function createDurableExecutionRootSpan(
   event: unknown,
-  extractedRootContext?: SpanContextWrapper | null,
+  parentSpanContext?: unknown,
 ): { span: any; finish: () => void } | null {
   if (!isDurableExecutionEvent(event)) {
     return null;
@@ -379,10 +373,9 @@ export function createDurableExecutionRootSpan(
     if (startTime !== undefined) {
       spanOptions.startTime = startTime;
     }
-    if (extractedRootContext?.spanContext) {
-      // Stay in the same trace as the upstream caller even when there is no
-      // active scope yet. aws.lambda will be parented to this span downstream.
-      spanOptions.childOf = extractedRootContext.spanContext;
+    if (parentSpanContext) {
+      // Root span is modeled as a child of aws.lambda.
+      spanOptions.childOf = parentSpanContext;
     }
 
     const span = tracer.startSpan("aws.durable-execution", spanOptions);

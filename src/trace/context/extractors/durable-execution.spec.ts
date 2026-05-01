@@ -116,12 +116,12 @@ describe("DurableExecutionEventTraceExtractor", () => {
       CheckpointToken: "t-replay",
       InitialExecutionState: {
         Operations: [
-          {
-            Id: "op-1",
-            Name: "_dd_trace_context_0",
-            Status: "SUCCEEDED",
-            StepDetails: {
-              Result: JSON.stringify({
+            {
+              Id: "op-1",
+              Name: "_datadog_0",
+              Status: "SUCCEEDED",
+              StepDetails: {
+                Result: JSON.stringify({
                 "x-datadog-trace-id": "149750110124521191",
                 "x-datadog-parent-id": "538591322263933970",
                 "x-datadog-sampling-priority": "1",
