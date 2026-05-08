@@ -6,6 +6,21 @@
 # Copyright 2019 Datadog, Inc.
 
 # Builds Datadog node layers for lambda functions, using Docker
+#
+# Usage:
+#   NODE_VERSION=20.19 ./scripts/build_layers.sh
+#
+# dd-trace-js overrides (highest priority first):
+#   DD_TRACE_PACKAGE       Exact package spec to use for dd-trace.
+#   DD_TRACE_COMMIT        Specific dd-trace-js commit SHA to build from GitHub.
+#   DD_TRACE_COMMIT_BRANCH dd-trace-js branch name to build from GitHub.
+#
+# Examples:
+#   # Build a single layer for Node 20
+#   NODE_VERSION=20.19 ./scripts/build_layers.sh
+#
+#   # Build a single layer with dd-trace from a branch
+#   DD_TRACE_COMMIT_BRANCH=joey/cross-invocation-tracecontext-propagation NODE_VERSION=20.19 ./scripts/build_layers.sh
 set -e
 
 LAYER_DIR=".layers"
@@ -27,6 +42,21 @@ else
     fi
 fi
 
+function resolve_dd_trace_package {
+    if [ -n "$DD_TRACE_PACKAGE" ]; then
+        echo "$DD_TRACE_PACKAGE"
+    elif [ -n "$DD_TRACE_COMMIT" ]; then
+        echo "git+https://github.com/DataDog/dd-trace-js.git#$DD_TRACE_COMMIT"
+    elif [ -n "$DD_TRACE_COMMIT_BRANCH" ]; then
+        echo "git+https://github.com/DataDog/dd-trace-js.git#$DD_TRACE_COMMIT_BRANCH"
+    fi
+}
+
+DD_TRACE_PACKAGE_SPEC=$(resolve_dd_trace_package)
+if [ -n "$DD_TRACE_PACKAGE_SPEC" ]; then
+    echo "Using dd-trace package spec: $DD_TRACE_PACKAGE_SPEC"
+fi
+
 function make_path_absolute {
     echo "$(cd "$(dirname "$1")"; pwd)/$(basename "$1")"
 }
@@ -40,7 +70,9 @@ function docker_build_zip {
     # between different node runtimes.
     temp_dir=$(mktemp -d)
     docker buildx build -t datadog-lambda-layer-node:$1 . --no-cache \
-        --build-arg image=registry.ddbuild.io/images/mirror/node:${node_image_version}-bullseye --progress=plain -o $temp_dir/nodejs
+        --build-arg image=registry.ddbuild.io/images/mirror/node:${node_image_version}-bullseye \
+        --build-arg dd_trace_package="$DD_TRACE_PACKAGE_SPEC" \
+        --progress=plain -o $temp_dir/nodejs
 
     # Zip to destination, and keep directory structure as based in $temp_dir
     (cd $temp_dir && zip -q -r $destination ./)
