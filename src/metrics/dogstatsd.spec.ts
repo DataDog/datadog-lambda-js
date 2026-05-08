@@ -7,12 +7,15 @@ jest.mock("node:dgram", () => ({
 
 describe("LambdaDogStatsD", () => {
   let mockSend: jest.Mock;
+  let mockUnref: jest.Mock;
 
   beforeEach(() => {
     // A send() that immediately calls its callback
     mockSend = jest.fn((msg, port, host, cb) => cb());
+    mockUnref = jest.fn();
     (dgram.createSocket as jest.Mock).mockReturnValue({
       send: mockSend,
+      unref: mockUnref,
       getSendBufferSize: jest.fn().mockReturnValue(64 * 1024),
       setSendBufferSize: jest.fn(),
       bind: jest.fn(),
@@ -63,10 +66,17 @@ describe("LambdaDogStatsD", () => {
     await expect(client.flush()).resolves.toBeUndefined();
   });
 
+  it("unrefs socket on client creation", () => {
+    // Constructor should avoid keeping Node's event loop alive.
+    new LambdaDogStatsD();
+    expect(mockUnref).toHaveBeenCalledTimes(1);
+  });
+
   it("flush() times out if a send never invokes its callback", async () => {
     // replace socket.send with a never‐calling callback
     (dgram.createSocket as jest.Mock).mockReturnValue({
       send: jest.fn(), // never calls callback
+      unref: jest.fn(),
       getSendBufferSize: jest.fn(),
       setSendBufferSize: jest.fn(),
       bind: jest.fn(),

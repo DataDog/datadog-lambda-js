@@ -5,7 +5,12 @@ import { patchHttp, unpatchHttp } from "./patch-http";
 import { extractTriggerTags, extractHTTPStatusCodeTag, parseEventSource } from "./trigger";
 import { ColdStartTracerConfig, ColdStartTracer } from "./cold-start-tracer";
 import { logDebug, tagObject } from "../utils";
-import { didFunctionColdStart, isProactiveInitialization, isManagedInstancesMode } from "../utils/cold-start";
+import {
+  didFunctionColdStart,
+  isProactiveInitialization,
+  isManagedInstancesMode,
+  isProvisionedConcurrency,
+} from "../utils/cold-start";
 import { datadogLambdaVersion } from "../constants";
 import { ddtraceVersion, parentSpanFinishTimeHeader, DD_SERVICE_ENV_VAR } from "./constants";
 import { patchConsole } from "./patch-console";
@@ -15,6 +20,11 @@ import { SpanWrapper } from "./span-wrapper";
 import { getTraceTree, clearTraceTree } from "../runtime/index";
 import { TraceContext, TraceContextService, TraceSource } from "./trace-context-service";
 import { StepFunctionContext, StepFunctionContextService } from "./step-function-service";
+import {
+  DurableFunctionContext,
+  extractDurableFunctionContext,
+  extractDurableExecutionStatus,
+} from "./durable-function-context";
 import { XrayService } from "./xray-service";
 import { AUTHORIZING_REQUEST_ID_HEADER } from "./context/extractors/http";
 import { getSpanPointerAttributes, SpanPointerAttributes } from "../utils/span-pointers";
@@ -85,6 +95,7 @@ export class TraceListener {
   private contextService: TraceContextService;
   private context?: Context;
   private stepFunctionContext?: StepFunctionContext;
+  private durableFunctionContext?: DurableFunctionContext;
   private tracerWrapper: TracerWrapper;
   private inferrer: SpanInferrer;
   private inferredSpan?: SpanWrapper;
@@ -146,6 +157,7 @@ export class TraceListener {
     const eventSource = parseEventSource(event);
     this.triggerTags = extractTriggerTags(event, context, eventSource);
     this.stepFunctionContext = StepFunctionContextService.instance().context;
+    this.durableFunctionContext = extractDurableFunctionContext(event);
 
     if (this.config.addSpanPointers) {
       this.spanPointerAttributesList = getSpanPointerAttributes(eventSource, event);
@@ -179,11 +191,10 @@ export class TraceListener {
     }
     const coldStartNodes = getTraceTree();
     if (coldStartNodes.length > 0) {
-      // Skip creating cold start spans in managed instances mode
-      // since the gap between the sandbox init and the function
-      // invocation might be too large to provide a useful trace and
-      // experience
-      if (!isManagedInstancesMode()) {
+      // Skip creating cold start spans in managed instances mode or provisioned concurrency
+      // since the gap between the sandbox init and the function invocation might be very
+      // large (minutes or hours), making the spans misleading and not useful
+      if (!isManagedInstancesMode() && !isProvisionedConcurrency()) {
         const coldStartConfig: ColdStartTracerConfig = {
           tracerWrapper: this.tracerWrapper,
           parentSpan:
@@ -218,6 +229,18 @@ export class TraceListener {
           return true;
         }
       }
+    }
+    if (this.durableFunctionContext) {
+      logDebug("Applying durable function context to the aws.lambda span");
+      for (const [key, value] of Object.entries(this.durableFunctionContext)) {
+        if (value !== undefined) {
+          this.tracerWrapper.currentSpan.setTag(key, value);
+        }
+      }
+    }
+    const executionStatus = extractDurableExecutionStatus(event, result);
+    if (executionStatus !== undefined) {
+      this.tracerWrapper.currentSpan.setTag("aws_lambda.durable_function.execution_status", executionStatus);
     }
 
     let rootSpan = this.inferredSpan;
@@ -288,6 +311,7 @@ export class TraceListener {
 
     // Reset singletons and trace context
     this.stepFunctionContext = undefined;
+    this.durableFunctionContext = undefined;
     StepFunctionContextService.reset();
     this.contextService.reset();
   }
@@ -299,6 +323,7 @@ export class TraceListener {
       const functionArn = (this.context.invokedFunctionArn ?? "").toLowerCase();
       const tk = functionArn.split(":");
       options.tags = {
+        "span.kind": "server",
         cold_start: String(didFunctionColdStart()).toLowerCase(),
         function_arn: tk.length > 7 ? tk.slice(0, 7).join(":") : functionArn,
         function_version: tk.length > 7 ? tk[7] : "$LATEST",

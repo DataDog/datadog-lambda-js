@@ -10,6 +10,9 @@ ci image:
   stage: build
   image: registry.ddbuild.io/images/docker:20.10
   tags: ["arch:arm64"]
+  id_tokens:
+    DDSIGN_ID_TOKEN:
+      aud: image-integrity
   needs: []
   rules:
     - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"'
@@ -19,7 +22,9 @@ ci image:
   variables:
     DOCKER_TARGET: ${DOCKER_TARGET_IMAGE}:${DOCKER_TARGET_VERSION}
   script:
-    - docker buildx build --platform linux/amd64,linux/arm64 --no-cache --pull --push --tag ${DOCKER_TARGET} -f .gitlab/Dockerfile .
+    - METADATA_FILE=$(mktemp)
+    - docker buildx build --platform linux/amd64,linux/arm64 --no-cache --pull ---tag ${DOCKER_TARGET} -f .gitlab/Dockerfile -push --metadata-file ${METADATA_FILE} .
+    - ddsign sign ${DOCKER_TARGET} --docker-metadata-file ${METADATA_FILE}
 
 .go-cache: &go-cache
   key: datadog-lambda-js-go-cache

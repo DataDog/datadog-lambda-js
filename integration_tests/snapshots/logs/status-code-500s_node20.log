@@ -59,6 +59,7 @@ START
           "http.status_code": "500",
           "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-status-code-500s_node20",
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-status-code-500s_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -86,6 +87,7 @@ START
           "version": "1.0.0",
           "runtime-id":"XXXX",
           "cold_start": "true",
+          "span.kind": "server",
           "function_arn":"XXXX_node20",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -162,6 +164,7 @@ START
           "stream_view_type": "KEYS_ONLY",
           "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-status-code-500s_node20",
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-status-code-500s_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -190,6 +193,7 @@ START
           "version": "1.0.0",
           "runtime-id":"XXXX",
           "cold_start": "false",
+          "span.kind": "server",
           "function_arn":"XXXX_node20",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -263,6 +267,7 @@ START
           "stream_view_type": "KEYS_ONLY",
           "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-status-code-500s_node20",
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-status-code-500s_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -291,6 +296,7 @@ START
           "version": "1.0.0",
           "runtime-id":"XXXX",
           "cold_start": "false",
+          "span.kind": "server",
           "function_arn":"XXXX_node20",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -364,6 +370,7 @@ START
           "stream_view_type": "KEYS_ONLY",
           "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-status-code-500s_node20",
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-status-code-500s_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -392,6 +399,7 @@ START
           "version": "1.0.0",
           "runtime-id":"XXXX",
           "cold_start": "false",
+          "span.kind": "server",
           "function_arn":"XXXX_node20",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -464,6 +472,7 @@ START
           "object_etag": "09876543210987654321098765432109-2",
           "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-status-code-500s_node20",
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-status-code-500s_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -492,6 +501,7 @@ START
           "version": "1.0.0",
           "runtime-id":"XXXX",
           "cold_start": "false",
+          "span.kind": "server",
           "function_arn":"XXXX_node20",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -564,6 +574,7 @@ START
           "object_etag": "01234567890123456789012345678901",
           "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-status-code-500s_node20",
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-status-code-500s_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -592,6 +603,7 @@ START
           "version": "1.0.0",
           "runtime-id":"XXXX",
           "cold_start": "false",
+          "span.kind": "server",
           "function_arn":"XXXX_node20",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -664,6 +676,7 @@ START
           "object_etag": "abcdef0123456789abcdef01234567890",
           "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-status-code-500s_node20",
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-status-code-500s_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -692,6 +705,7 @@ START
           "version": "1.0.0",
           "runtime-id":"XXXX",
           "cold_start": "false",
+          "span.kind": "server",
           "function_arn":"XXXX_node20",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -764,6 +778,7 @@ START
           "event_subscription_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda:21be56ed-a058-49f5-8c98-aedd2564c486",
           "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-status-code-500s_node20",
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-status-code-500s_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -791,6 +806,7 @@ START
           "version": "1.0.0",
           "runtime-id":"XXXX",
           "cold_start": "false",
+          "span.kind": "server",
           "function_arn":"XXXX_node20",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -861,6 +877,7 @@ START
           "sender_id": "AIDAIENQZJOLO23YVJ4VO",
           "_dd.integration": "opentracing",
           "_dd.base_service": "integration-tests-js-XXXX-status-code-500s_node20",
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-status-code-500s_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -889,6 +906,7 @@ START
           "version": "1.0.0",
           "runtime-id":"XXXX",
           "cold_start": "false",
+          "span.kind": "server",
           "function_arn":"XXXX_node20",
           "function_version": "$LATEST",
           "request_id":"XXXX",

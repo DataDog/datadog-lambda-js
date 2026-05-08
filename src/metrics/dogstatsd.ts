@@ -18,6 +18,7 @@ export class LambdaDogStatsD {
 
   constructor() {
     this.socket = dgram.createSocket(LambdaDogStatsD.SOCKET_TYPE);
+    this.socket.unref?.();
   }
 
   /**

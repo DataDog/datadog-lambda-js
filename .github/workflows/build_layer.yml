@@ -1,0 +1,36 @@
+name: Build Layers for System Tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node_version: ["18.12", "20.19", "22.11", "24.11"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+
+      - name: Build layer for Node ${{ matrix.node_version }}
+        run: |
+          NODE_MAJOR=$(echo "${{ matrix.node_version }}" | cut -d '.' -f 1)
+          temp_dir=$(mktemp -d)
+          docker buildx build -t datadog-lambda-layer-node:${{ matrix.node_version }} . --no-cache \
+            --build-arg image=node:${NODE_MAJOR}-bullseye --progress=plain -o $temp_dir/nodejs
+          mkdir -p .layers
+          (cd $temp_dir && zip -q -r $GITHUB_WORKSPACE/.layers/datadog_lambda_node${{ matrix.node_version }}.zip ./)
+          rm -rf $temp_dir
+
+      - name: Upload layer artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          path: .layers/datadog_lambda_node${{ matrix.node_version }}.zip
+          name: datadog_lambda_node${{ matrix.node_version }}
