@@ -1,7 +1,6 @@
 ARG image
 FROM $image AS builder
 ARG image
-ARG dd_trace_package
 
 # Create the directory structure required for AWS Lambda Layer
 RUN mkdir -p /nodejs/node_modules/
