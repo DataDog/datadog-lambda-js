@@ -9,4 +9,4 @@ export { SNSSQSEventTraceExtractor } from "./sns-sqs";
 export { StepFunctionEventTraceExtractor } from "./step-function";
 export { LambdaContextTraceExtractor } from "./lambda-context";
 export { CustomTraceExtractor } from "./custom";
-export { DurableExecutionEventTraceExtractor, isDurableExecutionEvent, isDurableExecutionReplay, createDurableExecutionRootSpan } from "./durable-execution";
+export { DurableExecutionEventTraceExtractor, isDurableExecutionEvent, isDurableExecutionReplay } from "./durable-execution";

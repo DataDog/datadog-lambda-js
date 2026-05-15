@@ -1,23 +1,19 @@
-import { createDurableExecutionRootSpan, DurableExecutionEventTraceExtractor } from "./durable-execution";
+import { DurableExecutionEventTraceExtractor } from "./durable-execution";
 import { TracerWrapper } from "../../tracer-wrapper";
 
-jest.mock("dd-trace", () => ({
-  startSpan: jest.fn(),
-}));
-
-function makeTracerWrapper(extractReturn: any = null): TracerWrapper {
-  return { extract: jest.fn().mockReturnValue(extractReturn) } as unknown as TracerWrapper;
+function makeTracerWrapper(opts: { datadogOnly?: any; standard?: any } = {}): TracerWrapper {
+  return {
+    extract: jest.fn().mockReturnValue(opts.standard ?? null),
+    extractDatadogOnly: jest.fn().mockReturnValue(opts.datadogOnly ?? null),
+  } as unknown as TracerWrapper;
 }
 
 describe("DurableExecutionEventTraceExtractor", () => {
-  const tracer = require("dd-trace");
-  const startSpanMock = tracer.startSpan as jest.Mock;
-
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it("delegates checkpoint headers to the standard propagator", () => {
+  it("extracts checkpoint headers with the datadog-only propagator", () => {
     const executionArn = "arn:aws:lambda:us-east-2:123456789012:function:demo:$LATEST/durable-execution/demo/abc";
 
     const checkpointHeaders = {
@@ -44,11 +40,51 @@ describe("DurableExecutionEventTraceExtractor", () => {
     };
 
     const sentinelContext = { sentinel: true };
-    const tracerWrapper = makeTracerWrapper(sentinelContext);
+    const tracerWrapper = makeTracerWrapper({ datadogOnly: sentinelContext });
     const extractor = new DurableExecutionEventTraceExtractor(tracerWrapper);
     const context = extractor.extract(event);
 
-    expect(tracerWrapper.extract).toHaveBeenCalledWith(checkpointHeaders);
+    // Checkpoints are written by dd-trace-js in Datadog style only — extract
+    // must use the matching forced-datadog propagator, not the user-configured one.
+    expect(tracerWrapper.extractDatadogOnly).toHaveBeenCalledWith(checkpointHeaders);
+    expect(tracerWrapper.extract).not.toHaveBeenCalled();
+    expect(context).toBe(sentinelContext);
+  });
+
+  it("falls back to standard extract for upstream customer headers", () => {
+    const executionArn = "arn:aws:lambda:us-east-2:123456789012:function:demo:$LATEST/durable-execution/demo/upstream";
+
+    const upstreamHeaders = {
+      "x-datadog-trace-id": "111",
+      traceparent: "00-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbb-01",
+    };
+
+    const event = {
+      DurableExecutionArn: executionArn,
+      CheckpointToken: "t-upstream",
+      InitialExecutionState: {
+        Operations: [
+          {
+            Id: "op-1",
+            Name: "input",
+            Status: "RUNNING",
+            ExecutionDetails: {
+              InputPayload: JSON.stringify({ headers: upstreamHeaders }),
+            },
+          },
+        ],
+      },
+    };
+
+    const sentinelContext = { sentinel: "upstream" };
+    const tracerWrapper = makeTracerWrapper({ standard: sentinelContext });
+    const extractor = new DurableExecutionEventTraceExtractor(tracerWrapper);
+    const context = extractor.extract(event);
+
+    // Upstream headers come from arbitrary services; honor the user's
+    // propagation-style configuration here.
+    expect(tracerWrapper.extract).toHaveBeenCalledWith(upstreamHeaders);
+    expect(tracerWrapper.extractDatadogOnly).not.toHaveBeenCalled();
     expect(context).toBe(sentinelContext);
   });
 
@@ -64,82 +100,6 @@ describe("DurableExecutionEventTraceExtractor", () => {
 
     expect(context).toBeNull();
     expect(tracerWrapper.extract).not.toHaveBeenCalled();
-  });
-
-  it("creates durable root span only for first invocation", () => {
-    const executionArn = "arn:aws:lambda:us-east-2:123456789012:function:demo:$LATEST/durable-execution/demo/first";
-
-    const spanContext: any = {
-      _spanId: null,
-      _parentId: null,
-      toTraceId: () => "1111111111111111111",
-      toSpanId: () => "2222222222222222222",
-    };
-    const span = {
-      context: () => spanContext,
-      finish: jest.fn(),
-    };
-    startSpanMock.mockReturnValue(span);
-
-    const firstInvocationEvent = {
-      DurableExecutionArn: executionArn,
-      CheckpointToken: "t-first",
-      InitialExecutionState: {
-        Operations: [
-          {
-            Id: "op-1",
-            Name: "input",
-            Status: "RUNNING",
-            StartTimestamp: 1710000000000,
-            ExecutionDetails: {
-              InputPayload: JSON.stringify({ hello: "world" }),
-            },
-          },
-        ],
-      },
-    };
-
-    const root = createDurableExecutionRootSpan(firstInvocationEvent, null);
-
-    expect(root).not.toBeNull();
-    expect(startSpanMock).toHaveBeenCalledTimes(1);
-  });
-
-  it("skips durable root span creation on replay invocations", () => {
-    const executionArn = "arn:aws:lambda:us-east-2:123456789012:function:demo:$LATEST/durable-execution/demo/replay";
-
-    const replayEvent = {
-      DurableExecutionArn: executionArn,
-      CheckpointToken: "t-replay",
-      InitialExecutionState: {
-        Operations: [
-          {
-            Id: "op-1",
-            Name: "_datadog_0",
-            Status: "SUCCEEDED",
-            StepDetails: {
-              Result: JSON.stringify({
-                "x-datadog-trace-id": "149750110124521191",
-                "x-datadog-parent-id": "538591322263933970",
-                "x-datadog-sampling-priority": "1",
-              }),
-            },
-          },
-          {
-            Id: "op-2",
-            Name: "callback_step_prepare",
-            Status: "SUCCEEDED",
-          },
-        ],
-      },
-    };
-
-    const tracerWrapper = makeTracerWrapper({ source: "Event" });
-    const extractor = new DurableExecutionEventTraceExtractor(tracerWrapper);
-    const extracted = extractor.extract(replayEvent);
-    const root = createDurableExecutionRootSpan(replayEvent, extracted);
-
-    expect(root).toBeNull();
-    expect(startSpanMock).not.toHaveBeenCalled();
+    expect(tracerWrapper.extractDatadogOnly).not.toHaveBeenCalled();
   });
 });

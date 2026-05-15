@@ -7,9 +7,17 @@
  *    from the original customer event stored in `Operations[0].ExecutionDetails.InputPayload`.
  * 3. If neither exists, return null and let the default extraction path create the context.
  *
- * The dd-trace-js durable-execution plugin writes checkpoint headers via the
- * standard HTTP propagator (`tracer.inject(span, 'http_headers', headers)`),
- * so we just hand the resulting header dict back to `tracer.extract` here.
+ * The extracted context becomes the parent of the `aws.lambda` span (and any
+ * downstream spans created by dd-trace-js, including `aws.durable.execute`).
+ * This integration no longer creates a separate root span — anchoring to the
+ * first `aws.durable.execute` span in dd-trace-js is the canonical entry point
+ * for a durable execution.
+ *
+ * The dd-trace-js plugin writes checkpoint headers in **Datadog style only**
+ * (regardless of `DD_TRACE_PROPAGATION_STYLE_INJECT`), so we extract them with
+ * a matching forced-datadog propagator via `TracerWrapper.extractDatadogOnly`.
+ * Upstream customer-event headers come from arbitrary services and continue to
+ * be extracted with the user-configured style via `TracerWrapper.extract`.
  */
 
 import { logDebug } from "../../../utils";
@@ -121,10 +129,6 @@ function parseTraceCheckpointNumber(name: unknown): number | null {
   return n;
 }
 
-function isTraceCheckpointName(name: unknown): boolean {
-  return parseTraceCheckpointNumber(name) !== null;
-}
-
 /**
  * Find the highest-numbered `_datadog_{N}` checkpoint in the event and return
  * its parsed header dict.
@@ -218,8 +222,8 @@ export class DurableExecutionEventTraceExtractor implements EventTraceExtractor 
 
     const checkpointHeaders = findLatestCheckpointHeaders(event);
     if (checkpointHeaders) {
-      logDebug("Extracting trace context from durable checkpoint");
-      return this.tracerWrapper.extract(checkpointHeaders);
+      logDebug("Extracting trace context from durable checkpoint (datadog-only)");
+      return this.tracerWrapper.extractDatadogOnly(checkpointHeaders);
     }
 
     const upstreamHeaders = findUpstreamHeaders(event);
@@ -301,92 +305,3 @@ export function getCompletedOperationCount(event: unknown): number {
   return operations.filter((op) => op.Status === "SUCCEEDED" || op.Status === "FAILED").length;
 }
 
-/**
- * Create the durable execution root span for likely first invocations only.
- *
- * Replay invocations return null. The current first-invocation heuristic is:
- * - no trace checkpoint operation exists
- * - no operation has terminal status
- * - operation count is <= 1
- *
- * The created span is parented to the current aws.lambda span context.
- *
- * Returns an object with { span, finish() } or null if not a durable execution.
- * Caller must call finish() when the invocation ends.
- */
-export function createDurableExecutionRootSpan(
-  event: unknown,
-  parentSpanContext?: unknown,
-): { span: any; finish: () => void } | null {
-  if (!isDurableExecutionEvent(event)) {
-    return null;
-  }
-
-  const executionArn = event.DurableExecutionArn;
-  if (!executionArn) {
-    return null;
-  }
-
-  const operations = event.InitialExecutionState?.Operations;
-  const hasCheckpoint = Boolean(operations?.some((op) => isTraceCheckpointName(op?.Name)));
-  const hasCompletedOperation = Boolean(operations?.some((op) => TERMINAL_STATUSES.has(op.Status)));
-  const isLikelyFirstInvocation = !hasCheckpoint && !hasCompletedOperation && (operations?.length ?? 0) <= 1;
-
-  if (!isLikelyFirstInvocation) {
-    return null;
-  }
-
-  // Use the first operation's StartTimestamp (unix milliseconds) so the root
-  // span's start time matches the actual start of the durable execution.
-  let startTime: number | undefined;
-  if (operations && operations.length > 0) {
-    const firstStartTs = operations[0].StartTimestamp;
-    if (firstStartTs != null) {
-      const parsed = Number(firstStartTs);
-      if (!isNaN(parsed)) {
-        startTime = parsed;
-      }
-    }
-  }
-
-  try {
-    const tracer = require("dd-trace");
-
-    const serviceName = process.env.DD_DURABLE_EXECUTION_SERVICE || "aws.durable-execution";
-    const resourceName = executionArn.includes(":") ? executionArn.split(":").pop() : executionArn;
-
-    const spanOptions: Record<string, any> = {
-      type: "serverless",
-      tags: {
-        "service.name": serviceName,
-        "resource.name": resourceName,
-        "durable.execution_arn": executionArn,
-        "durable.is_root_span": true,
-        "durable.invocation_count": operations?.length ?? 0,
-      },
-    };
-
-    if (startTime !== undefined) {
-      spanOptions.startTime = startTime;
-    }
-    if (parentSpanContext) {
-      // Root span is modeled as a child of aws.lambda.
-      spanOptions.childOf = parentSpanContext;
-    }
-
-    const span = tracer.startSpan("aws.durable-execution", spanOptions);
-
-    logDebug(`Created root execution span: start_time=${startTime}`);
-
-    return {
-      span,
-      finish: () => {
-        span.finish();
-        logDebug("Finished root execution span");
-      },
-    };
-  } catch (e) {
-    logDebug(`Failed to create durable execution root span: ${e}`);
-    return null;
-  }
-}
