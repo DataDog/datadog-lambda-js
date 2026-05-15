@@ -9,9 +9,6 @@ RUN mkdir -p /nodejs/node_modules/
 # Install dev dependencies
 COPY . datadog-lambda-js
 WORKDIR /datadog-lambda-js
-RUN if [ -n "$dd_trace_package" ]; then \
-    node -e 'const fs = require("fs"); const pkg = JSON.parse(fs.readFileSync("package.json", "utf8")); const spec = process.argv[1]; if (pkg.devDependencies && pkg.devDependencies["dd-trace"]) { pkg.devDependencies["dd-trace"] = spec; } else { pkg.dependencies = pkg.dependencies || {}; pkg.dependencies["dd-trace"] = spec; } fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2) + "\n");' "$dd_trace_package"; \
-    fi
 RUN yarn install
 
 # Build the lambda layer
