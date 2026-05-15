@@ -298,9 +298,7 @@ export function getCompletedOperationCount(event: unknown): number {
     return 0;
   }
 
-  return operations.filter((op) =>
-    op.Status === "SUCCEEDED" || op.Status === "FAILED"
-  ).length;
+  return operations.filter((op) => op.Status === "SUCCEEDED" || op.Status === "FAILED").length;
 }
 
 /**
@@ -330,9 +328,7 @@ export function createDurableExecutionRootSpan(
   }
 
   const operations = event.InitialExecutionState?.Operations;
-  const hasCheckpoint = Boolean(
-    operations?.some((op) => isTraceCheckpointName(op?.Name)),
-  );
+  const hasCheckpoint = Boolean(operations?.some((op) => isTraceCheckpointName(op?.Name)));
   const hasCompletedOperation = Boolean(operations?.some((op) => TERMINAL_STATUSES.has(op.Status)));
   const isLikelyFirstInvocation = !hasCheckpoint && !hasCompletedOperation && (operations?.length ?? 0) <= 1;
 

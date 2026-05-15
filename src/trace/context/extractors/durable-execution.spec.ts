@@ -18,8 +18,7 @@ describe("DurableExecutionEventTraceExtractor", () => {
   });
 
   it("delegates checkpoint headers to the standard propagator", () => {
-    const executionArn =
-      "arn:aws:lambda:us-east-2:123456789012:function:demo:$LATEST/durable-execution/demo/abc";
+    const executionArn = "arn:aws:lambda:us-east-2:123456789012:function:demo:$LATEST/durable-execution/demo/abc";
 
     const checkpointHeaders = {
       "x-datadog-trace-id": "149750110124521191",
@@ -68,8 +67,7 @@ describe("DurableExecutionEventTraceExtractor", () => {
   });
 
   it("creates durable root span only for first invocation", () => {
-    const executionArn =
-      "arn:aws:lambda:us-east-2:123456789012:function:demo:$LATEST/durable-execution/demo/first";
+    const executionArn = "arn:aws:lambda:us-east-2:123456789012:function:demo:$LATEST/durable-execution/demo/first";
 
     const spanContext: any = {
       _spanId: null,
@@ -108,20 +106,19 @@ describe("DurableExecutionEventTraceExtractor", () => {
   });
 
   it("skips durable root span creation on replay invocations", () => {
-    const executionArn =
-      "arn:aws:lambda:us-east-2:123456789012:function:demo:$LATEST/durable-execution/demo/replay";
+    const executionArn = "arn:aws:lambda:us-east-2:123456789012:function:demo:$LATEST/durable-execution/demo/replay";
 
     const replayEvent = {
       DurableExecutionArn: executionArn,
       CheckpointToken: "t-replay",
       InitialExecutionState: {
         Operations: [
-            {
-              Id: "op-1",
-              Name: "_datadog_0",
-              Status: "SUCCEEDED",
-              StepDetails: {
-                Result: JSON.stringify({
+          {
+            Id: "op-1",
+            Name: "_datadog_0",
+            Status: "SUCCEEDED",
+            StepDetails: {
+              Result: JSON.stringify({
                 "x-datadog-trace-id": "149750110124521191",
                 "x-datadog-parent-id": "538591322263933970",
                 "x-datadog-sampling-priority": "1",
