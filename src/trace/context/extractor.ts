@@ -5,9 +5,11 @@ import { XrayService } from "../xray-service";
 import {
   AppSyncEventTraceExtractor,
   CustomTraceExtractor,
+  DurableExecutionEventTraceExtractor,
   EventBridgeEventTraceExtractor,
   EventBridgeSQSEventTraceExtractor,
   HTTPEventTraceExtractor,
+  isDurableExecutionEvent,
   KinesisEventTraceExtractor,
   LambdaContextTraceExtractor,
   SNSEventTraceExtractor,
@@ -56,6 +58,9 @@ export class TraceContextExtractor {
       }
     }
 
+    // No stripping needed — trace context is stored in dedicated
+    // `_datadog_{N}` checkpoint operations.
+
     if (spanContext === null) {
       this.stepFunctionContextService = StepFunctionContextService.instance(event);
       if (this.stepFunctionContextService?.context) {
@@ -80,6 +85,9 @@ export class TraceContextExtractor {
 
   private getTraceEventExtractor(event: any): EventTraceExtractor | undefined {
     if (!event || typeof event !== "object") return;
+
+    // Check for durable execution event first (has DurableExecutionArn + CheckpointToken)
+    if (isDurableExecutionEvent(event)) return new DurableExecutionEventTraceExtractor(this.tracerWrapper);
 
     const headers = event.headers ?? event.multiValueHeaders;
     if (headers !== null && typeof headers === "object") {
