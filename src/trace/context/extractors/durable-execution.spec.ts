@@ -1,10 +1,9 @@
 import { DurableExecutionEventTraceExtractor } from "./durable-execution";
 import { TracerWrapper } from "../../tracer-wrapper";
 
-function makeTracerWrapper(opts: { datadogOnly?: any; standard?: any } = {}): TracerWrapper {
+function makeTracerWrapper(datadogOnlyReturn: any = null): TracerWrapper {
   return {
-    extract: jest.fn().mockReturnValue(opts.standard ?? null),
-    extractDatadogOnly: jest.fn().mockReturnValue(opts.datadogOnly ?? null),
+    extractDatadogOnly: jest.fn().mockReturnValue(datadogOnlyReturn),
   } as unknown as TracerWrapper;
 }
 
@@ -40,55 +39,17 @@ describe("DurableExecutionEventTraceExtractor", () => {
     };
 
     const sentinelContext = { sentinel: true };
-    const tracerWrapper = makeTracerWrapper({ datadogOnly: sentinelContext });
+    const tracerWrapper = makeTracerWrapper(sentinelContext);
     const extractor = new DurableExecutionEventTraceExtractor(tracerWrapper);
     const context = extractor.extract(event);
 
     // Checkpoints are written by dd-trace-js in Datadog style only — extract
     // must use the matching forced-datadog propagator, not the user-configured one.
     expect(tracerWrapper.extractDatadogOnly).toHaveBeenCalledWith(checkpointHeaders);
-    expect(tracerWrapper.extract).not.toHaveBeenCalled();
     expect(context).toBe(sentinelContext);
   });
 
-  it("falls back to standard extract for upstream customer headers", () => {
-    const executionArn = "arn:aws:lambda:us-east-2:123456789012:function:demo:$LATEST/durable-execution/demo/upstream";
-
-    const upstreamHeaders = {
-      "x-datadog-trace-id": "111",
-      traceparent: "00-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbb-01",
-    };
-
-    const event = {
-      DurableExecutionArn: executionArn,
-      CheckpointToken: "t-upstream",
-      InitialExecutionState: {
-        Operations: [
-          {
-            Id: "op-1",
-            Name: "input",
-            Status: "RUNNING",
-            ExecutionDetails: {
-              InputPayload: JSON.stringify({ headers: upstreamHeaders }),
-            },
-          },
-        ],
-      },
-    };
-
-    const sentinelContext = { sentinel: "upstream" };
-    const tracerWrapper = makeTracerWrapper({ standard: sentinelContext });
-    const extractor = new DurableExecutionEventTraceExtractor(tracerWrapper);
-    const context = extractor.extract(event);
-
-    // Upstream headers come from arbitrary services; honor the user's
-    // propagation-style configuration here.
-    expect(tracerWrapper.extract).toHaveBeenCalledWith(upstreamHeaders);
-    expect(tracerWrapper.extractDatadogOnly).not.toHaveBeenCalled();
-    expect(context).toBe(sentinelContext);
-  });
-
-  it("returns null when no checkpoint or upstream context exists", () => {
+  it("returns null when no checkpoint exists", () => {
     const tracerWrapper = makeTracerWrapper();
     const extractor = new DurableExecutionEventTraceExtractor(tracerWrapper);
 
@@ -99,7 +60,6 @@ describe("DurableExecutionEventTraceExtractor", () => {
     });
 
     expect(context).toBeNull();
-    expect(tracerWrapper.extract).not.toHaveBeenCalled();
     expect(tracerWrapper.extractDatadogOnly).not.toHaveBeenCalled();
   });
 });

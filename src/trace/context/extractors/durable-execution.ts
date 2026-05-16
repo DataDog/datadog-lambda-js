@@ -1,11 +1,10 @@
 /**
- * Durable Execution Trace Extractor — Checkpoint/Upstream Approach
+ * Durable Execution Trace Extractor — Checkpoint Approach
  *
  * Strategy:
- * 1. Prefer trace context from the latest `_datadog_{N}` checkpoint.
- * 2. If no trace checkpoint exists (first invocation), try upstream trace context
- *    from the original customer event stored in `Operations[0].ExecutionDetails.InputPayload`.
- * 3. If neither exists, return null and let the default extraction path create the context.
+ * 1. Look for trace context in the latest `_datadog_{N}` checkpoint.
+ * 2. If no trace checkpoint exists, return null and let the default extraction
+ *    path create the context.
  *
  * The extracted context becomes the parent of the `aws.lambda` span (and any
  * downstream spans created by dd-trace-js, including `aws.durable.execute`).
@@ -16,8 +15,6 @@
  * The dd-trace-js plugin writes checkpoint headers in **Datadog style only**
  * (regardless of `DD_TRACE_PROPAGATION_STYLE_INJECT`), so we extract them with
  * a matching forced-datadog propagator via `TracerWrapper.extractDatadogOnly`.
- * Upstream customer-event headers come from arbitrary services and continue to
- * be extracted with the user-configured style via `TracerWrapper.extract`.
  */
 
 import { logDebug } from "../../../utils";
@@ -166,47 +163,7 @@ function findLatestCheckpointHeaders(event: DurableExecutionEvent): Record<strin
   return null;
 }
 
-/**
- * Find upstream HTTP headers carried by the original customer event stored in
- * `Operations[0].ExecutionDetails.InputPayload`. Returns the standard header
- * dict (keys like `x-datadog-trace-id`, `traceparent`, etc.) or null.
- */
-function findUpstreamHeaders(event: DurableExecutionEvent): Record<string, string> | null {
-  try {
-    const operations = event.InitialExecutionState?.Operations;
-    if (!operations || operations.length === 0) return null;
 
-    const inputPayloadStr = operations[0].ExecutionDetails?.InputPayload;
-    if (!inputPayloadStr) return null;
-
-    const customerEvent = JSON.parse(inputPayloadStr);
-    if (!customerEvent || typeof customerEvent !== "object") return null;
-
-    const headers = customerEvent.headers;
-    if (headers && typeof headers === "object") {
-      return headers as Record<string, string>;
-    }
-
-    const ddData = customerEvent._datadog;
-    if (ddData && typeof ddData === "object") {
-      return ddData as Record<string, string>;
-    }
-  } catch (e) {
-    logDebug(`Failed to read upstream headers from durable input payload: ${e}`);
-  }
-
-  return null;
-}
-
-/**
- * Durable Execution Trace Extractor
- *
- * Locates trace headers carried inside the durable execution envelope and hands
- * them to the standard dd-trace propagator via `TracerWrapper.extract`. Order:
- * 1. Latest `_datadog_{N}` checkpoint payload.
- * 2. Upstream customer event headers from `InputPayload`.
- * 3. Otherwise return null and let the default extraction path take over.
- */
 export class DurableExecutionEventTraceExtractor implements EventTraceExtractor {
   constructor(private tracerWrapper: TracerWrapper) {}
 
@@ -224,12 +181,6 @@ export class DurableExecutionEventTraceExtractor implements EventTraceExtractor 
     if (checkpointHeaders) {
       logDebug("Extracting trace context from durable checkpoint (datadog-only)");
       return this.tracerWrapper.extractDatadogOnly(checkpointHeaders);
-    }
-
-    const upstreamHeaders = findUpstreamHeaders(event);
-    if (upstreamHeaders) {
-      logDebug("Extracting trace context from upstream durable input payload");
-      return this.tracerWrapper.extract(upstreamHeaders);
     }
 
     logDebug("No durable trace context found; deferring to default extraction");
