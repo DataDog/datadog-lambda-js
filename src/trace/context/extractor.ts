@@ -57,9 +57,6 @@ export class TraceContextExtractor {
       }
     }
 
-    // No stripping needed — trace context is stored in dedicated
-    // `_datadog_{N}` checkpoint operations.
-
     if (spanContext === null) {
       this.stepFunctionContextService = StepFunctionContextService.instance(event);
       if (this.stepFunctionContextService?.context) {

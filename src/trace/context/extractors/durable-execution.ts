@@ -23,67 +23,18 @@ import { SpanContextWrapper } from "../../span-context-wrapper";
 import { TracerWrapper } from "../../tracer-wrapper";
 import { EventTraceExtractor } from "../extractor";
 
-/**
- * Interface for operation data in durable execution state
- */
-export interface DurableExecutionOperation {
-  Id: string;
-  Status: string;
-  Type?: string;
-  Name?: string;
-  ExecutionDetails?: {
-    InputPayload?: string;
-  };
-  StepDetails?: {
-    Result?: string;
-    Error?: unknown;
-    NextAttemptTimestamp?: string;
-  };
-  Payload?: string;
-  CallbackDetails?: {
-    Result?: string;
-    CallbackId?: string;
-    Error?: unknown;
-  };
-  StartedAt?: string;
-  StartTimestamp?: number;
-  CompletedAt?: string;
-}
-
-/**
- * Interface for initial execution state in durable execution events
- */
-export interface InitialExecutionState {
-  Operations?: DurableExecutionOperation[];
-  Status?: string;
-}
-
-/**
- * Interface for durable execution event
- */
-export interface DurableExecutionEvent {
-  DurableExecutionArn?: string;
-  CheckpointToken?: string;
-  InitialExecutionState?: InitialExecutionState;
-  Input?: unknown;
-}
-
-
-/**
- * Get checkpoint token from event
- */
-export function getCheckpointToken(event: unknown): string | undefined {
-  const e = event as DurableExecutionEvent | undefined;
-  if (!e?.DurableExecutionArn) {
-    return undefined;
-  }
-  return e.CheckpointToken;
-}
-
-// Terminal operation statuses that indicate an operation has completed
-const TERMINAL_STATUSES = new Set(["SUCCEEDED", "FAILED", "CANCELLED", "STOPPED", "TIMED_OUT"]);
-
 const TRACE_CHECKPOINT_NAME_PREFIX = "_datadog_";
+
+interface CheckpointOperation {
+  Name?: string;
+  Payload?: string;
+  StepDetails?: { Result?: string };
+}
+
+interface DurableExecutionEventShape {
+  DurableExecutionArn?: string;
+  InitialExecutionState?: { Operations?: CheckpointOperation[] };
+}
 
 function parseTraceCheckpointNumber(name: unknown): number | null {
   if (typeof name !== "string") return null;
@@ -105,11 +56,11 @@ function parseTraceCheckpointNumber(name: unknown): number | null {
  * payload is a standard HTTP-style header dict.
  *
  */
-function findLatestCheckpointHeaders(event: DurableExecutionEvent): Record<string, string> | null {
+function findLatestCheckpointHeaders(event: DurableExecutionEventShape): Record<string, string> | null {
   const operations = event.InitialExecutionState?.Operations;
   if (!operations || operations.length === 0) return null;
 
-  let best: { number: number; op: DurableExecutionOperation } | null = null;
+  let best: { number: number; op: CheckpointOperation } | null = null;
   for (const op of operations) {
     const n = parseTraceCheckpointNumber(op?.Name);
     if (n === null) continue;
@@ -137,7 +88,7 @@ export class DurableExecutionEventTraceExtractor implements EventTraceExtractor 
   constructor(private tracerWrapper: TracerWrapper) {}
 
   extract(event: unknown): SpanContextWrapper | null {
-    const e = event as DurableExecutionEvent | undefined;
+    const e = event as DurableExecutionEventShape | undefined;
     if (!e?.DurableExecutionArn) {
       logDebug("No DurableExecutionArn in event");
       return null;
