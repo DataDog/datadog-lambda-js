@@ -68,47 +68,27 @@ export interface DurableExecutionEvent {
 }
 
 /**
- * Check if event is a durable execution event
- */
-export function isDurableExecutionEvent(event: unknown): event is DurableExecutionEvent {
-  if (!event || typeof event !== "object") {
-    return false;
-  }
-
-  const maybeEvent = event as Record<string, unknown>;
-  return Boolean(maybeEvent.DurableExecutionArn && maybeEvent.CheckpointToken);
-}
-
-/**
  * Check if this is a replay invocation (has previous operations)
  */
 export function isDurableExecutionReplay(event: unknown): boolean {
-  if (!isDurableExecutionEvent(event)) {
+  const e = event as DurableExecutionEvent | undefined;
+  if (!e?.DurableExecutionArn) {
     return false;
   }
 
-  const operations = event.InitialExecutionState?.Operations;
+  const operations = e.InitialExecutionState?.Operations;
   return Array.isArray(operations) && operations.length > 0;
-}
-
-/**
- * Get durable execution ARN from event
- */
-export function getDurableExecutionArn(event: unknown): string | undefined {
-  if (!isDurableExecutionEvent(event)) {
-    return undefined;
-  }
-  return event.DurableExecutionArn;
 }
 
 /**
  * Get checkpoint token from event
  */
 export function getCheckpointToken(event: unknown): string | undefined {
-  if (!isDurableExecutionEvent(event)) {
+  const e = event as DurableExecutionEvent | undefined;
+  if (!e?.DurableExecutionArn) {
     return undefined;
   }
-  return event.CheckpointToken;
+  return e.CheckpointToken;
 }
 
 // Terminal operation statuses that indicate an operation has completed
@@ -168,16 +148,13 @@ export class DurableExecutionEventTraceExtractor implements EventTraceExtractor 
   constructor(private tracerWrapper: TracerWrapper) {}
 
   extract(event: unknown): SpanContextWrapper | null {
-    if (!isDurableExecutionEvent(event)) {
-      logDebug("Event is not a durable execution event");
-      return null;
-    }
-    if (!event.DurableExecutionArn) {
+    const e = event as DurableExecutionEvent | undefined;
+    if (!e?.DurableExecutionArn) {
       logDebug("No DurableExecutionArn in event");
       return null;
     }
 
-    const checkpointHeaders = findLatestCheckpointHeaders(event);
+    const checkpointHeaders = findLatestCheckpointHeaders(e);
     if (checkpointHeaders) {
       logDebug("Extracting trace context from durable checkpoint (datadog-only)");
       return this.tracerWrapper.extractDatadogOnly(checkpointHeaders);
@@ -199,11 +176,12 @@ export class DurableExecutionEventTraceExtractor implements EventTraceExtractor 
  * @returns true if the operation is a replay
  */
 export function isOperationReplay(event: unknown, stepId: string): boolean {
-  if (!isDurableExecutionEvent(event)) {
+  const e = event as DurableExecutionEvent | undefined;
+  if (!e?.DurableExecutionArn) {
     return false;
   }
 
-  const operations = event.InitialExecutionState?.Operations;
+  const operations = e.InitialExecutionState?.Operations;
   if (!operations || operations.length === 0) {
     return false;
   }
@@ -224,11 +202,12 @@ export function isOperationReplay(event: unknown, stepId: string): boolean {
  * @returns Operation status if found, undefined otherwise
  */
 export function getOperationStatus(event: unknown, stepId: string): string | undefined {
-  if (!isDurableExecutionEvent(event)) {
+  const e = event as DurableExecutionEvent | undefined;
+  if (!e?.DurableExecutionArn) {
     return undefined;
   }
 
-  const operations = event.InitialExecutionState?.Operations;
+  const operations = e.InitialExecutionState?.Operations;
   if (!operations) {
     return undefined;
   }
@@ -244,11 +223,12 @@ export function getOperationStatus(event: unknown, stepId: string): string | und
  * @returns Number of completed operations
  */
 export function getCompletedOperationCount(event: unknown): number {
-  if (!isDurableExecutionEvent(event)) {
+  const e = event as DurableExecutionEvent | undefined;
+  if (!e?.DurableExecutionArn) {
     return 0;
   }
 
-  const operations = event.InitialExecutionState?.Operations;
+  const operations = e.InitialExecutionState?.Operations;
   if (!operations) {
     return 0;
   }

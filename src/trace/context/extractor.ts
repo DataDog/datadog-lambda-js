@@ -9,7 +9,6 @@ import {
   EventBridgeEventTraceExtractor,
   EventBridgeSQSEventTraceExtractor,
   HTTPEventTraceExtractor,
-  isDurableExecutionEvent,
   KinesisEventTraceExtractor,
   LambdaContextTraceExtractor,
   SNSEventTraceExtractor,
@@ -86,8 +85,7 @@ export class TraceContextExtractor {
   private getTraceEventExtractor(event: any): EventTraceExtractor | undefined {
     if (!event || typeof event !== "object") return;
 
-    // Check for durable execution event first (has DurableExecutionArn + CheckpointToken)
-    if (isDurableExecutionEvent(event)) return new DurableExecutionEventTraceExtractor(this.tracerWrapper);
+    if (event.DurableExecutionArn) return new DurableExecutionEventTraceExtractor(this.tracerWrapper);
 
     const headers = event.headers ?? event.multiValueHeaders;
     if (headers !== null && typeof headers === "object") {
