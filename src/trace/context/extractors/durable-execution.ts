@@ -8,7 +8,7 @@
  *
  * The extracted context becomes the parent of the `aws.lambda` span (and any
  * downstream spans created by dd-trace-js, including `aws.durable.execute`).
- * Therefore all `aws.lambda` spans will be anchored to the first 
+ * Therefore all `aws.lambda` spans will be anchored to the first
  * `aws.durable.execute` span for a durable execution.
  *
  * Checkpoint data will be written by the dd-trace-js plugin in Datadog style
@@ -83,7 +83,6 @@ function findLatestCheckpointHeaders(event: DurableExecutionEventShape): Record<
   return null;
 }
 
-
 export class DurableExecutionEventTraceExtractor implements EventTraceExtractor {
   constructor(private tracerWrapper: TracerWrapper) {}
 
@@ -104,5 +103,3 @@ export class DurableExecutionEventTraceExtractor implements EventTraceExtractor 
     return null;
   }
 }
-
-
