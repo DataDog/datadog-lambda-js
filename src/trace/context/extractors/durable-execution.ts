@@ -8,13 +8,14 @@
  *
  * The extracted context becomes the parent of the `aws.lambda` span (and any
  * downstream spans created by dd-trace-js, including `aws.durable.execute`).
- * This integration no longer creates a separate root span — anchoring to the
- * first `aws.durable.execute` span in dd-trace-js is the canonical entry point
- * for a durable execution.
+ * Therefore all `aws.lambda` spans will be anchored to the first 
+ * `aws.durable.execute` span for a durable execution.
  *
- * The dd-trace-js plugin writes checkpoint headers in **Datadog style only**
- * (regardless of `DD_TRACE_PROPAGATION_STYLE_INJECT`), so we extract them with
- * a matching forced-datadog propagator via `TracerWrapper.extractDatadogOnly`.
+ * Checkpoint data will be written by the dd-trace-js plugin in Datadog style
+ * (`x-datadog-*`). Extraction goes through the standard `TracerWrapper.extract`
+ * path, which honors `DD_TRACE_PROPAGATION_STYLE_EXTRACT`. The default extract
+ * list (`datadog, tracecontext, baggage`) already includes `datadog`. Customers
+ *  who override the extract list MUST keep `datadog` in it.
  */
 
 import { logDebug } from "../../../utils";
@@ -144,8 +145,8 @@ export class DurableExecutionEventTraceExtractor implements EventTraceExtractor 
 
     const checkpointHeaders = findLatestCheckpointHeaders(e);
     if (checkpointHeaders) {
-      logDebug("Extracting trace context from durable checkpoint (datadog-only)");
-      return this.tracerWrapper.extractDatadogOnly(checkpointHeaders);
+      logDebug("Extracting trace context from durable checkpoint");
+      return this.tracerWrapper.extract(checkpointHeaders);
     }
 
     logDebug("No durable trace context found; deferring to default extraction");

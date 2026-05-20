@@ -1,9 +1,9 @@
 import { DurableExecutionEventTraceExtractor } from "./durable-execution";
 import { TracerWrapper } from "../../tracer-wrapper";
 
-function makeTracerWrapper(datadogOnlyReturn: any = null): TracerWrapper {
+function makeTracerWrapper(extractReturn: any = null): TracerWrapper {
   return {
-    extractDatadogOnly: jest.fn().mockReturnValue(datadogOnlyReturn),
+    extract: jest.fn().mockReturnValue(extractReturn),
   } as unknown as TracerWrapper;
 }
 
@@ -12,7 +12,7 @@ describe("DurableExecutionEventTraceExtractor", () => {
     jest.clearAllMocks();
   });
 
-  it("extracts checkpoint headers with the datadog-only propagator", () => {
+  it("extracts checkpoint headers via the standard propagator", () => {
     const executionArn = "arn:aws:lambda:us-east-2:123456789012:function:demo:$LATEST/durable-execution/demo/abc";
 
     const checkpointHeaders = {
@@ -43,9 +43,9 @@ describe("DurableExecutionEventTraceExtractor", () => {
     const extractor = new DurableExecutionEventTraceExtractor(tracerWrapper);
     const context = extractor.extract(event);
 
-    // Checkpoints are written by dd-trace-js in Datadog style only — extract
-    // must use the matching forced-datadog propagator, not the user-configured one.
-    expect(tracerWrapper.extractDatadogOnly).toHaveBeenCalledWith(checkpointHeaders);
+    // Checkpoint headers are Datadog-style; the default extract list includes
+    // `datadog`, so the standard extract path picks them up.
+    expect(tracerWrapper.extract).toHaveBeenCalledWith(checkpointHeaders);
     expect(context).toBe(sentinelContext);
   });
 
@@ -60,6 +60,6 @@ describe("DurableExecutionEventTraceExtractor", () => {
     });
 
     expect(context).toBeNull();
-    expect(tracerWrapper.extractDatadogOnly).not.toHaveBeenCalled();
+    expect(tracerWrapper.extract).not.toHaveBeenCalled();
   });
 });
