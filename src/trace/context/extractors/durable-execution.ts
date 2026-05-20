@@ -67,18 +67,6 @@ export interface DurableExecutionEvent {
   Input?: unknown;
 }
 
-/**
- * Check if this is a replay invocation (has previous operations)
- */
-export function isDurableExecutionReplay(event: unknown): boolean {
-  const e = event as DurableExecutionEvent | undefined;
-  if (!e?.DurableExecutionArn) {
-    return false;
-  }
-
-  const operations = e.InitialExecutionState?.Operations;
-  return Array.isArray(operations) && operations.length > 0;
-}
 
 /**
  * Get checkpoint token from event
