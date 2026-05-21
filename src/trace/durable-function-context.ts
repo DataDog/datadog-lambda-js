@@ -1,9 +1,9 @@
 import { logDebug } from "../utils";
 
 export interface DurableFunctionContext {
-  "aws_lambda.durable_function.execution_name": string;
-  "aws_lambda.durable_function.execution_id": string;
-  "aws_lambda.durable_function.first_invocation"?: string;
+  "aws.durable.execution_name": string;
+  "aws.durable.execution_id": string;
+  "aws.durable.first_invocation"?: string;
 }
 
 const VALID_DURABLE_EXECUTION_STATUSES = new Set(["SUCCEEDED", "FAILED", "PENDING"]);
@@ -22,14 +22,14 @@ export function extractDurableFunctionContext(event: any): DurableFunctionContex
   }
 
   const context: DurableFunctionContext = {
-    "aws_lambda.durable_function.execution_name": parsed.executionName,
-    "aws_lambda.durable_function.execution_id": parsed.executionId,
+    "aws.durable.execution_name": parsed.executionName,
+    "aws.durable.execution_id": parsed.executionId,
   };
 
   // Use the number of operations to determine if it's the first invocation.
   const operations = event?.InitialExecutionState?.Operations;
   if (Array.isArray(operations)) {
-    context["aws_lambda.durable_function.first_invocation"] = String(operations.length === 1);
+    context["aws.durable.first_invocation"] = String(operations.length === 1);
   }
 
   return context;
