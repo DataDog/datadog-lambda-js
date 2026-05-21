@@ -60,9 +60,9 @@ describe("durable-function-context", () => {
       const result = extractDurableFunctionContext(event);
 
       expect(result).toEqual({
-        "aws_lambda.durable_function.execution_name": "my-execution",
-        "aws_lambda.durable_function.execution_id": "550e8400-e29b-41d4-a716-446655440004",
-        "aws_lambda.durable_function.first_invocation": "false",
+        "aws.durable.execution_name": "my-execution",
+        "aws.durable.execution_id": "550e8400-e29b-41d4-a716-446655440004",
+        "aws.durable.first_invocation": "false",
       });
     });
 
@@ -76,7 +76,7 @@ describe("durable-function-context", () => {
       };
       const result = extractDurableFunctionContext(event);
 
-      expect(result?.["aws_lambda.durable_function.first_invocation"]).toBe("true");
+      expect(result?.["aws.durable.first_invocation"]).toBe("true");
     });
 
     it("sets first_invocation to false when Operations has more than one entry", () => {
@@ -89,7 +89,7 @@ describe("durable-function-context", () => {
       };
       const result = extractDurableFunctionContext(event);
 
-      expect(result?.["aws_lambda.durable_function.first_invocation"]).toBe("false");
+      expect(result?.["aws.durable.first_invocation"]).toBe("false");
     });
 
     it("omits first_invocation when InitialExecutionState is absent", () => {
@@ -100,7 +100,7 @@ describe("durable-function-context", () => {
       const result = extractDurableFunctionContext(event);
 
       expect(result).toBeDefined();
-      expect(result?.["aws_lambda.durable_function.first_invocation"]).toBeUndefined();
+      expect(result?.["aws.durable.first_invocation"]).toBeUndefined();
     });
 
     it("returns undefined for regular Lambda event without DurableExecutionArn", () => {
