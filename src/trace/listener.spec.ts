@@ -560,10 +560,7 @@ describe("TraceListener", () => {
       listener.onEndingInvocation(durableEvent, {}, false);
 
       expect(mockSetTag).toHaveBeenCalledWith("aws.durable.execution_name", "my-execution");
-      expect(mockSetTag).toHaveBeenCalledWith(
-        "aws.durable.execution_id",
-        "550e8400-e29b-41d4-a716-446655440004",
-      );
+      expect(mockSetTag).toHaveBeenCalledWith("aws.durable.execution_id", "550e8400-e29b-41d4-a716-446655440004");
     } finally {
       currentSpanSpy.mockRestore();
     }
