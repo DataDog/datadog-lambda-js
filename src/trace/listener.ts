@@ -143,12 +143,14 @@ export class TraceListener {
         traceSource: this.contextService.traceSource,
       });
     }
+    this.durableFunctionContext = extractDurableFunctionContext(event);
     if (this.config.createInferredSpan) {
       this.inferredSpan = this.inferrer.createInferredSpan(
         event,
         context,
         parentSpanContext,
         this.config.encodeAuthorizerContext,
+        this.durableFunctionContext,
       );
     }
 
@@ -157,7 +159,6 @@ export class TraceListener {
     const eventSource = parseEventSource(event);
     this.triggerTags = extractTriggerTags(event, context, eventSource);
     this.stepFunctionContext = StepFunctionContextService.instance().context;
-    this.durableFunctionContext = extractDurableFunctionContext(event);
 
     if (this.config.addSpanPointers) {
       this.spanPointerAttributesList = getSpanPointerAttributes(eventSource, event);

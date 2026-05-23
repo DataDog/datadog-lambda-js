@@ -16,6 +16,7 @@ import { logDebug } from "../utils";
 import { parseLambdaARN } from "../utils/arn";
 import { HTTPEventTraceExtractor } from "./context/extractors";
 import { HTTPEventSubType } from "./context/extractors/http";
+import { DurableFunctionContext } from "./durable-function-context";
 
 export class SpanInferrer {
   private static serviceMapping: Record<string, string> = {};
@@ -47,7 +48,16 @@ export class SpanInferrer {
     context: Context | undefined,
     parentSpanContext: SpanContext | undefined,
     decodeAuthorizerContext: boolean = true,
+    durableFunctionContext?: DurableFunctionContext,
   ): any {
+    if (durableFunctionContext) {
+        return this.createInferredSpanForDurableExecutionInit(
+        event,
+        context,
+        parentSpanContext,
+        durableFunctionContext,
+      );
+    }
     const eventSource = parseEventSource(event);
     if (eventSource === eventTypes.lambdaUrl) {
       return this.createInferredSpanForLambdaUrl(event, context, parentSpanContext);
@@ -73,6 +83,54 @@ export class SpanInferrer {
     if (eventSource === eventTypes.eventBridge) {
       return this.createInferredSpanForEventBridge(event, context, parentSpanContext);
     }
+  }
+
+  createInferredSpanForDurableExecutionInit(
+    event: any,
+    context: Context | undefined,
+    parentSpanContext: SpanContext | undefined,
+    durableFunctionContext: DurableFunctionContext,
+  ): SpanWrapper | undefined {
+
+    if (durableFunctionContext["aws_lambda.durable_function.first_invocation"] !== "true") return;
+
+    const durableExecutionArn = event?.DurableExecutionArn;
+    const parsedStartTime = Number(event?.InitialExecutionState?.Operations?.[0]?.StartTimestamp);
+    if (!Number.isFinite(parsedStartTime)) {
+      return;
+    }
+
+    const serviceName = process.env.DD_DURABLE_EXECUTION_SERVICE || "aws.durable-execution";
+    const executionName = durableFunctionContext["aws_lambda.durable_function.execution_name"];
+    const executionId = durableFunctionContext["aws_lambda.durable_function.execution_id"];
+    const resourceName = executionName;
+
+    const options: SpanOptions = {
+      startTime: parsedStartTime,
+      tags: {
+        operation_name: "aws.durable.execution_init",
+        resource_names: resourceName,
+        request_id: context?.awsRequestId,
+        service: serviceName,
+        "service.name": serviceName,
+        "span.type": "serverless",
+        "resource.name": resourceName,
+        "peer.service": this.service,
+        "span.kind": "server",
+        "durable.execution_arn": durableExecutionArn,
+        "durable.execution_name": executionName,
+        "durable.execution_id": executionId,
+        _inferred_span: {
+          tag_source: "self",
+          synchronicity: "async",
+        },
+      },
+    };
+    if (parentSpanContext) {
+      options.childOf = parentSpanContext;
+    }
+
+    return new SpanWrapper(this.traceWrapper.startSpan("aws.durable.execution_init", options), { isAsync: true });
   }
 
   isApiGatewayAsync(event: any): string {

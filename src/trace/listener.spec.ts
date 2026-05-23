@@ -569,6 +569,62 @@ describe("TraceListener", () => {
     }
   });
 
+  it("parents aws.lambda to the durable execution init inferred span on first invocation", async () => {
+    const startSpanSpy = TracerWrapper.prototype.startSpan as jest.Mock;
+    startSpanSpy.mockClear();
+
+    const listener = new TraceListener(defaultConfig);
+    mockController.mockTraceSource = TraceSource.Event;
+    mockController.mockSpanContext = {
+      toTraceId: () => "4110911582297405551",
+      toSpanId: () => "797643193680388251",
+      _sampling: {
+        priority: "2",
+      },
+    };
+    mockController.mockSpanContextWrapper = {
+      spanContext: mockController.mockSpanContext,
+    };
+
+    const durableEvent = {
+      DurableExecutionArn:
+        "arn:aws:lambda:us-east-1:123456789012:function:my-func:1/durable-execution/my-execution/550e8400-e29b-41d4-a716-446655440004",
+      CheckpointToken: "checkpoint-token",
+      InitialExecutionState: {
+        Operations: [
+          {
+            Id: "op-1",
+            Name: "input",
+            Status: "RUNNING",
+            StartTimestamp: 1710000000000,
+          },
+        ],
+      },
+    };
+
+    await listener.onStartInvocation(durableEvent, context as any);
+    const unwrappedFunc = () => {};
+    listener.onWrap(unwrappedFunc);
+
+    expect(startSpanSpy).toHaveBeenCalledWith(
+      "aws.durable.execution_init",
+      expect.objectContaining({
+        childOf: mockController.mockSpanContext,
+        startTime: 1710000000000,
+      }),
+    );
+    expect(wrapSpy).toHaveBeenCalledWith(
+      "aws.lambda",
+      expect.objectContaining({
+        childOf: expect.objectContaining({
+          toSpanId: expect.any(Function),
+          toTraceId: expect.any(Function),
+        }),
+      }),
+      unwrappedFunc,
+    );
+  });
+
   it("sets execution_status tag on the aws.lambda span when result.Status is valid", async () => {
     const mockSetTag = jest.fn();
     const mockSpan = { setTag: mockSetTag };

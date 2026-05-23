@@ -24,6 +24,53 @@ const apiGatewayWSSRequestAuthorizerConnect = require("../../event_samples/api-g
 const apiGatewayWSSRequestAuthorizerMessage = require("../../event_samples/api-gateway-traced-authorizer-request-websocket-message.json");
 const s3Event = require("../../event_samples/s3.json");
 const functionUrlEvent = require("../../event_samples/lambda-function-urls.json");
+
+const durableFirstInvocationEvent = {
+  DurableExecutionArn:
+    "arn:aws:lambda:us-east-1:123456789012:function:my-func:1/durable-execution/my-execution/550e8400-e29b-41d4-a716-446655440004",
+  CheckpointToken: "checkpoint-token",
+  InitialExecutionState: {
+    Operations: [
+      {
+        Id: "op-1",
+        Name: "input",
+        Status: "RUNNING",
+        StartTimestamp: 1710000000000,
+      },
+    ],
+  },
+};
+
+const durableReplayInvocationEvent = {
+  ...durableFirstInvocationEvent,
+  InitialExecutionState: {
+    Operations: [
+      {
+        Id: "op-1",
+        Name: "input",
+        Status: "SUCCEEDED",
+        StartTimestamp: 1710000000000,
+      },
+      {
+        Id: "op-2",
+        Name: "step_1",
+        Status: "RUNNING",
+      },
+    ],
+  },
+};
+
+const durableFirstInvocationContext = {
+  "aws_lambda.durable_function.execution_name": "my-execution",
+  "aws_lambda.durable_function.execution_id": "550e8400-e29b-41d4-a716-446655440004",
+  "aws_lambda.durable_function.first_invocation": "true",
+};
+
+const durableReplayInvocationContext = {
+  ...durableFirstInvocationContext,
+  "aws_lambda.durable_function.first_invocation": "false",
+};
+
 const mockWrapper = {
   startSpan: jest.fn(),
 };
@@ -874,6 +921,51 @@ describe("SpanInferrer", () => {
         },
       ],
     ]);
+  });
+
+  it("creates an inferred execution init span for first durable execution invocation", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(
+      durableFirstInvocationEvent,
+      {} as any,
+      {} as SpanContext,
+      true,
+      durableFirstInvocationContext as any,
+    );
+
+    expect(mockWrapper.startSpan).toBeCalledWith("aws.durable.execution_init", {
+      childOf: {},
+      startTime: 1710000000000,
+      tags: {
+        _inferred_span: { synchronicity: "async", tag_source: "self" },
+        "durable.execution_arn":
+          "arn:aws:lambda:us-east-1:123456789012:function:my-func:1/durable-execution/my-execution/550e8400-e29b-41d4-a716-446655440004",
+        "durable.execution_id": "550e8400-e29b-41d4-a716-446655440004",
+        "durable.execution_name": "my-execution",
+        operation_name: "aws.durable.execution_init",
+        "peer.service": "mock-lambda-service",
+        request_id: undefined,
+        "resource.name": "my-execution",
+        resource_names: "my-execution",
+        service: "aws.durable-execution",
+        "service.name": "aws.durable-execution",
+        "span.kind": "server",
+        "span.type": "serverless",
+      },
+    });
+  });
+
+  it("does not create an execution init span for replay durable invocations", () => {
+    const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+    inferrer.createInferredSpan(
+      durableReplayInvocationEvent,
+      {} as any,
+      {} as SpanContext,
+      true,
+      durableReplayInvocationContext as any,
+    );
+
+    expect(mockWrapper.startSpan).not.toBeCalled();
   });
 
   it("creates an inferred span for websocket events", () => {
