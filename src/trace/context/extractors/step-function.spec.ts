@@ -45,6 +45,33 @@ describe("StepFunctionEventTraceExtractor", () => {
         Name: "abhinav-activity-state-machine",
       },
     };
+
+    const legacyLambdaRootPayload = {
+      Execution: {
+        Id: "arn:aws:states:sa-east-1:425362996713:execution:abhinav-activity-state-machine:72a7ca3e-901c-41bb-b5a3-5f279b92a316",
+        Name: "72a7ca3e-901c-41bb-b5a3-5f279b92a316",
+        RoleArn:
+          "arn:aws:iam::425362996713:role/service-role/StepFunctions-abhinav-activity-state-machine-role-22jpbgl6j",
+        StartTime: "2024-12-04T19:38:04.069Z",
+        RedriveCount: 1,
+        Input: {
+          MyInput: "MyValue",
+          _datadog: {
+            "x-datadog-trace-id": "10593586103637578129",
+            "x-datadog-tags": "_dd.p.dm=-0,_dd.p.tid=6734e7c300000000",
+          }
+        },
+      },
+      State: {
+        Name: "Lambda Invoke",
+        EnteredTime: "2024-12-04T19:38:04.118Z",
+        RetryCount: 0,
+      },
+      StateMachine: {
+        Id: "arn:aws:states:sa-east-1:425362996713:stateMachine:abhinav-activity-state-machine",
+        Name: "abhinav-activity-state-machine",
+      },
+    };
     it("extracts trace context with valid payload", () => {
       // Mimick TraceContextService.extract initialization
       StepFunctionContextService.instance(payload);
@@ -61,7 +88,21 @@ describe("StepFunctionEventTraceExtractor", () => {
       expect(traceContext?.source).toBe("event");
     });
 
-    // https://github.com/DataDog/logs-backend/blob/c17618cb552fc369ca40282bae0a65803f82f694/domains/serverless/apps/logs-to-traces-reducer/src/test/resources/test-json-files/stepfunctions/RedriveTest/snapshots/RedriveLambdaSuccessTraceMerging.json#L46
+    it("extracts trace context with valid legacy lambda root payload", () => {
+      // Mimick TraceContextService.extract initialization
+      StepFunctionContextService.instance(legacyLambdaRootPayload);
+
+      const extractor = new StepFunctionEventTraceExtractor();
+
+      // Payload is sent again for safety in case the instance wasn't previously initialized
+      const traceContext = extractor.extract(legacyLambdaRootPayload);
+      expect(traceContext).not.toBeNull();
+
+      expect(traceContext?.toTraceId()).toBe("10593586103637578129");
+      expect(traceContext?.sampleMode()).toBe("1");
+      expect(traceContext?.source).toBe("event");
+    });
+
     it("extracts trace context with valid redriven payload", () => {
       // Mimick TraceContextService.extract initialization
       StepFunctionContextService.instance(redrivePayload);

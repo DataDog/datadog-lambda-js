@@ -22,6 +22,33 @@ describe("StepFunctionContextService", () => {
       Name: "my-state-machine",
     },
   } as const;
+  const legacyLambdaRootStepFunctionEvent = {
+    _datadog: {
+      Execution: {
+        Id: "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
+        Input: {
+          MyInput: "MyValue",
+          _datadog: {
+            "x-datadog-trace-id": "10593586103637578129",
+            "x-datadog-tags": "_dd.p.dm=-0,_dd.p.tid=6734e7c300000000",
+          }
+        },
+        Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
+        RoleArn: "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",
+        RedriveCount: 0,
+        StartTime: "2022-12-08T21:08:17.924Z",
+      },
+      State: {
+        Name: "step-one",
+        EnteredTime: "2022-12-08T21:08:19.224Z",
+        RetryCount: 2,
+      },
+      StateMachine: {
+        Id: "arn:aws:states:sa-east-1:425362996713:stateMachine:logs-to-traces-sequential",
+        Name: "my-state-machine",
+      },
+    },
+  } as const;
   const lambdaRootStepFunctionEvent = {
     _datadog: {
       Execution: {
@@ -156,6 +183,23 @@ describe("StepFunctionContextService", () => {
       });
     });
 
+    it("sets context from valid legacy lambda root step function event", () => {
+      const instance = StepFunctionContextService.instance();
+      // Force setting event
+      instance["setContext"](legacyLambdaRootStepFunctionEvent);
+      expect(instance.context).toEqual({
+        execution_id:
+          "arn:aws:states:sa-east-1:425362996713:express:logs-to-traces-sequential:85a9933e-9e11-83dc-6a61-b92367b6c3be:3f7ef5c7-c8b8-4c88-90a1-d54aa7e7e2bf",
+        redrive_count: "0",
+        retry_count: "2",
+        state_entered_time: "2022-12-08T21:08:19.224Z",
+        state_name: "step-one",
+        trace_id: "10593586103637578129",
+        dd_p_tid: "6734e7c300000000",
+        serverless_version: "legacy-lambda-root",
+      });
+    });
+
     it("sets context from valid nested event", () => {
       const instance = StepFunctionContextService.instance();
       // Force setting event
@@ -206,6 +250,21 @@ describe("StepFunctionContextService", () => {
       expect(spanContext).not.toBeNull();
 
       expect(spanContext?.toTraceId()).toBe("1139193989631387307");
+      expect(spanContext?.toSpanId()).toBe("7747304477664363642");
+      expect(spanContext?.sampleMode()).toBe("1");
+      expect(spanContext?.source).toBe("event");
+    });
+
+    it("returns a SpanContextWrapper when legacy lambda root step function event is valid", () => {
+      const instance = StepFunctionContextService.instance();
+      // Force setting event
+      instance["setContext"](legacyLambdaRootStepFunctionEvent);
+
+      const spanContext = instance.spanContext;
+
+      expect(spanContext).not.toBeNull();
+
+      expect(spanContext?.toTraceId()).toBe("10593586103637578129");
       expect(spanContext?.toSpanId()).toBe("7747304477664363642");
       expect(spanContext?.sampleMode()).toBe("1");
       expect(spanContext?.source).toBe("event");
