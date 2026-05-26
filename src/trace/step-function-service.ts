@@ -123,7 +123,7 @@ export class StepFunctionContextService {
       const datadogContext = event.Execution?.Input?._datadog;
       if (typeof datadogContext === "object" &&
         datadogContext !== null &&
-        typeof datadogContext["x-datadog-trace-id"] === "string" && 
+        typeof datadogContext["x-datadog-trace-id"] === "string" &&
         typeof datadogContext["x-datadog-tags"] === "string") {
         this.context = {
           execution_id,
