@@ -31,7 +31,7 @@ describe("StepFunctionContextService", () => {
           _datadog: {
             "x-datadog-trace-id": "10593586103637578129",
             "x-datadog-tags": "_dd.p.dm=-0,_dd.p.tid=6734e7c300000000",
-          }
+          },
         },
         Name: "85a9933e-9e11-83dc-6a61-b92367b6c3be",
         RoleArn: "arn:aws:iam::425362996713:role/service-role/StepFunctions-logs-to-traces-sequential-role-ccd69c03",

@@ -59,7 +59,7 @@ describe("StepFunctionEventTraceExtractor", () => {
           _datadog: {
             "x-datadog-trace-id": "10593586103637578129",
             "x-datadog-tags": "_dd.p.dm=-0,_dd.p.tid=6734e7c300000000",
-          }
+          },
         },
       },
       State: {

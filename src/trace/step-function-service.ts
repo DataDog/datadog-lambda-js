@@ -121,10 +121,12 @@ export class StepFunctionContextService {
       }
     } else {
       const datadogContext = event.Execution?.Input?._datadog;
-      if (typeof datadogContext === "object" &&
+      if (
+        typeof datadogContext === "object" &&
         datadogContext !== null &&
         typeof datadogContext["x-datadog-trace-id"] === "string" &&
-        typeof datadogContext["x-datadog-tags"] === "string") {
+        typeof datadogContext["x-datadog-tags"] === "string"
+      ) {
         this.context = {
           execution_id,
           redrive_count,
