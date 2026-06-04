@@ -22,9 +22,9 @@
   "devDependencies": {
     "@aws-sdk/client-kms": "^3.366.0",
     "@aws-sdk/client-secrets-manager": "^3.721.0",
-    "@datadog/pprof": "*",
-    "@opentelemetry/api": "*",
-    "@opentelemetry/api-logs": "*",
+    "@datadog/pprof": "5.14.4",
+    "@opentelemetry/api": ">=1.0.0 <1.10.0",
+    "@opentelemetry/api-logs": "<1.0.0",
     "@types/aws-lambda": "^8.10.136",
     "@types/aws-sdk": "^2.7.0",
     "@types/jest": "^27.5.2",
