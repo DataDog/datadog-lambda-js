@@ -29,5 +29,4 @@ if [ -d "./dist" ]; then
     rm -rf ./dist
 fi
 yarn build
-cp ./dist/handler.cjs ./dist/handler.js
 npm publish
