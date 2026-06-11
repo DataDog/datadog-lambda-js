@@ -20,6 +20,11 @@ echo "Copying handler files"
 # `dist/handler.handler` to handler.mjs (it falls through `.js` -> `.mjs`),
 # and handler.mjs's async `load()` handles both CJS and ESM user modules, so
 # a separate `.js` / `.cjs` variant is no longer needed.
+#
+# Remove any stale `dist/handler.js` / `dist/handler.cjs` left over from prior
+# builds — tsc doesn't clean dist between incremental compiles, and shipping
+# either of those files would re-introduce the resolver bug this PR fixes.
+rm -f dist/handler.js dist/handler.cjs
 cp src/handler.mjs dist/
 cp src/init.js dist/init.js
 cp src/runtime/module_importer.js dist/runtime/

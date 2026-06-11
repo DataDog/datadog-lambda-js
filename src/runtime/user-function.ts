@@ -157,45 +157,6 @@ async function _tryRequire(appRoot: string, moduleRoot: string, module: string):
 }
 
 /**
- * Attempt to load the user's module.
- * Attempts to directly resolve the module relative to the application root,
- * then falls back to the more general require().
- */
-function _tryRequireSync(appRoot: string, moduleRoot: string, module: string): Promise<any> {
-  const lambdaStylePath = path.resolve(appRoot, moduleRoot, module);
-  // Extensionless files are loaded via require.
-  const extensionless = _tryRequireFile(lambdaStylePath);
-  if (extensionless) {
-    return extensionless;
-  }
-  // If package.json type != module, .js files are loaded via require.
-  const pjHasModule = _hasPackageJsonTypeModule(lambdaStylePath);
-  if (!pjHasModule) {
-    const loaded = _tryRequireFile(lambdaStylePath, ".js");
-    if (loaded) {
-      return loaded;
-    }
-  }
-  // If still not loaded, try .js, .mjs, and .cjs in that order.
-  // Files ending with .js are loaded as ES modules when the nearest parent package.json
-  // file contains a top-level field "type" with a value of "module".
-  // https://nodejs.org/api/packages.html#packages_type
-  const loaded = _tryRequireFile(lambdaStylePath, ".cjs");
-  if (loaded) {
-    return loaded;
-  }
-  // Why not just require(module)?
-  // Because require() is relative to __dirname, not process.cwd(). And the
-  // runtime implementation is not located in /var/task
-  // This won't work (yet) for esModules as import.meta.resolve is still experimental
-  // See: https://nodejs.org/api/esm.html#esm_import_meta_resolve_specifier_parent
-  const nodeStylePath = require.resolve(module, {
-    paths: [appRoot, moduleRoot],
-  });
-  return require(nodeStylePath);
-}
-
-/**
  * Load the user's application or throw a descriptive error.
  * @throws Runtime errors in two cases
  *   1 - UserCodeSyntaxError if there's a syntax error while loading the module
@@ -208,26 +169,6 @@ async function _loadUserApp(
 ): Promise<any> {
   try {
     return await _tryRequire(appRoot, moduleRoot, module);
-  } catch (e) {
-    if (e instanceof SyntaxError) {
-      throw new UserCodeSyntaxError(<any>e);
-      // @ts-ignore
-    } else if (e.code !== undefined && e.code === "MODULE_NOT_FOUND") {
-      // @ts-ignore
-      throw new ImportModuleError(e);
-    } else {
-      throw e;
-    }
-  }
-}
-
-function _loadUserAppSync(
-  appRoot: string,
-  moduleRoot: string,
-  module: string
-): Promise<any> {
-  try {
-    return _tryRequireSync(appRoot, moduleRoot, module);
   } catch (e) {
     if (e instanceof SyntaxError) {
       throw new UserCodeSyntaxError(<any>e);
@@ -280,52 +221,6 @@ export const load = async function (
   const [module, handlerPath] = _splitHandlerString(moduleAndHandler);
 
   const userApp = await _loadUserApp(appRoot, moduleRoot, module);
-  const handlerFunc = _resolveHandler(userApp, handlerPath);
-
-  if (!handlerFunc) {
-    throw new HandlerNotFound(
-      `${fullHandlerString} is undefined or not exported`
-    );
-  }
-
-  if (typeof handlerFunc !== "function") {
-    throw new HandlerNotFound(`${fullHandlerString} is not a function`);
-  }
-
-  return handlerFunc;
-};
-
-/**
- * Load the user's function with the approot and the handler string.
- * @param appRoot {string}
- *   The path to the application root.
- * @param handlerString {string}
- *   The user-provided handler function in the form 'module.function'.
- * @return userFuction {function}
- *   The user's handler function. This function will be passed the event body,
- *   the context object, and the callback function.
- * @throws In five cases:-
- *   1 - if the handler string is incorrectly formatted an error is thrown
- *   2 - if the module referenced by the handler cannot be loaded
- *   3 - if the function in the handler does not exist in the module
- *   4 - if a property with the same name, but isn't a function, exists on the
- *       module
- *   5 - the handler includes illegal character sequences (like relative paths
- *       for traversing up the filesystem '..')
- *   Errors for scenarios known by the runtime, will be wrapped by Runtime.* errors.
- */
-export const loadSync = function (
-  appRoot: string,
-  fullHandlerString: string
-) {
-  _throwIfInvalidHandler(fullHandlerString);
-
-  const [moduleRoot, moduleAndHandler] = _moduleRootAndHandler(
-    fullHandlerString
-  );
-  const [module, handlerPath] = _splitHandlerString(moduleAndHandler);
-
-  const userApp = _loadUserAppSync(appRoot, moduleRoot, module);
   const handlerFunc = _resolveHandler(userApp, handlerPath);
 
   if (!handlerFunc) {
