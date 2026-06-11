@@ -122,16 +122,78 @@ describe("promisifiedHandler", () => {
     await expect(result).rejects.toEqual(new Error("Some error"));
   });
 
-  it("completes when handler returns undefined", async () => {
+  it("waits for context.succeed when handler returns undefined and length < 3", async () => {
+    // A handler with no callback parameter that returns undefined must NOT cause the wrapper
+    // to resolve immediately with undefined. Real-world handlers (notably the ones using
+    // aws-serverless-express's `proxy(server, event, context)` with the default
+    // CONTEXT_SUCCEED resolution mode) finish via context.succeed long after the synchronous
+    // body returns. Eager-resolving on undefined truncates that work, makes Lambda return
+    // an empty response, and freezes the worker before stdout flushes (no CloudWatch output).
     const handler: Handler = (event, context) => {
-      // No return statement, implicitly returns undefined
+      setTimeout(() => {
+        context.succeed({ statusCode: 200, body: "deferred via context.succeed" });
+      }, 10);
+      // Implicitly returns undefined.
     };
 
     const promHandler = promisifiedHandler(handler) as any;
-
     const result = await promHandler({}, mockContext);
 
-    expect(result).toEqual(undefined);
+    expect(result).toEqual({ statusCode: 200, body: "deferred via context.succeed" });
+  });
+
+  it("waits for context.done when handler returns undefined and length < 3", async () => {
+    const handler: Handler = (event, context) => {
+      setTimeout(() => {
+        context.done(undefined, { statusCode: 200, body: "deferred via context.done" });
+      }, 10);
+    };
+
+    const promHandler = promisifiedHandler(handler) as any;
+    const result = await promHandler({}, mockContext);
+
+    expect(result).toEqual({ statusCode: 200, body: "deferred via context.done" });
+  });
+
+  it("waits for context.fail when handler returns undefined and length < 3", async () => {
+    const handler: Handler = (event, context) => {
+      setTimeout(() => {
+        context.fail(new Error("deferred failure"));
+      }, 10);
+    };
+
+    const promHandler = promisifiedHandler(handler) as any;
+    const result = promHandler({}, mockContext);
+
+    await expect(result).rejects.toEqual(new Error("deferred failure"));
+  });
+
+  it("simulates aws-serverless-express proxy() pattern", async () => {
+    // Closely mirrors a real-world handler shape:
+    //
+    //   exports.handler = (event, context) => {
+    //     proxy(server, event, context);   // called, NOT returned
+    //   };
+    //
+    // `proxy` here stands in for aws-serverless-express@3 in default CONTEXT_SUCCEED mode,
+    // which calls `context.succeed(response)` asynchronously once Express finishes handling
+    // the request. The handler itself returns undefined.
+    const proxy = (_server: unknown, _event: any, context: Context) => {
+      setImmediate(() => {
+        context.succeed({ statusCode: 200, body: "Express response" });
+      });
+    };
+    const server = { listen: () => {}, close: () => {} };
+
+    const handler = (event: any, context: Context) => {
+      proxy(server, event, context);
+      // No return — exactly the customer's handler shape.
+    };
+
+    const promHandler = promisifiedHandler(handler as any) as any;
+    const result = await promHandler({}, mockContext);
+
+    expect(result).toEqual({ statusCode: 200, body: "Express response" });
   });
 
   it("completes when handler returns a value directly (sync handler)", async () => {

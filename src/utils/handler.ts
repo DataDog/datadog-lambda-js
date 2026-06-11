@@ -63,16 +63,26 @@ export function promisifiedHandler<TEvent, TResult>(handler: Handler<TEvent, TRe
     } else if (handler.length >= 3) {
       // Handler takes a callback, wait for the callback to be called
       promise = callbackProm;
+    } else if (asyncProm === undefined) {
+      // Handler returned nothing (implicit `undefined`) and doesn't take a callback parameter.
+      // It must be relying on `context.succeed` / `context.done` / `context.fail` to signal
+      // completion (e.g. `aws-serverless-express`'s `proxy()` with the default
+      // `CONTEXT_SUCCEED` resolution mode, or any other fire-and-forget pattern that finishes
+      // asynchronously). Wait for callbackProm rather than resolving immediately, otherwise
+      // the wrapper would shortcut the function before its work finishes, which causes the
+      // Lambda runtime to return an empty response and freeze the worker before any pending
+      // stdout writes are flushed to CloudWatch.
+      promise = callbackProm;
     } else {
-      // Handler returned a value directly
+      // Handler returned a value directly (non-thenable).
       // Distinguish between:
       //  - ordinary sync return value -> resolve immediately
       //  - side-effect artifact (e.g. aws-serverless-express server) -> wait for context.done
 
       // Heuristic: trying to detect common types of side-effect artifacts
       const looksLikeArtifact =
-        asyncProm !== undefined &&
         typeof asyncProm === "object" &&
+        asyncProm !== null &&
         // 1. Node.js http.Server or similar
         ((typeof (asyncProm as any).listen === "function" && typeof (asyncProm as any).close === "function") ||
           // 2. EventEmitter-like (has .on and .emit)
