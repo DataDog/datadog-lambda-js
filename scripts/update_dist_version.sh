@@ -16,6 +16,10 @@ echo "$TRACE_CONSTANTS" |
   sed "s/\(ddtraceVersion =\) \"\(X\.X\.X\)\"/\1 \"$DD_TRACE_VERSION\"/" > ./dist/trace/constants.js
 
 echo "Copying handler js files"
-cp src/handler.* dist/
+# Be explicit about which handler files ship — a broader `src/handler.*` glob
+# would also pick up `src/handler.spec.ts`, which is a test fixture, not a
+# runtime artifact. The Dockerfile's layer build also assumes `dist/handler.js`
+# is the shim from `src/handler.js`, not some other file.
+cp src/handler.js src/handler.mjs dist/
 cp src/init.js dist/init.js
 cp src/runtime/module_importer.js dist/runtime/
