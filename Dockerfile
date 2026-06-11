@@ -13,17 +13,6 @@ RUN yarn install
 # Build the lambda layer
 RUN yarn build
 RUN cp -r dist /nodejs/node_modules/datadog-lambda-js
-# The CJS shim at dist/handler.js exists to route ESM Lambdas through
-# handler.mjs when the npm package is used directly (the publish scripts no
-# longer copy handler.cjs to handler.js). In the layer, Lambda's bootstrap
-# resolves `handler.handler` to handler.mjs as long as handler.js is absent,
-# which handles both CJS and ESM user code via the async load(). Drop the
-# shim here so the layer keeps that direct-to-mjs behavior.
-#
-# The file being removed is shipped into dist/ by the `cp src/handler.* dist/`
-# step in scripts/update_dist_version.sh — if that script changes how
-# src/handler.js gets copied, this rm must be revisited.
-RUN rm /nodejs/node_modules/datadog-lambda-js/handler.js
 RUN cp ./src/runtime/module_importer.js /nodejs/node_modules/datadog-lambda-js/runtime
 RUN node <<'EOF'
 const fs = require("fs");
