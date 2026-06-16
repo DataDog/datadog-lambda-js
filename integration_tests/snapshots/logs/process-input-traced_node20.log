@@ -33,8 +33,11 @@ START
         "parent_id":"XXXX",
         "name": "aws.apigateway",
         "resource": "GET /{proxy+}",
+        "service": "remappedApiGatewayServiceName",
+        "type": "web",
         "error": 0,
         "meta": {
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-process-input-traced_node20",
           "_dd.p.tid": "XXXX",
           "_dd.p.dm": "-0",
           "service": "remappedApiGatewayServiceName",
@@ -52,8 +55,8 @@ START
           "dd_resource_key": "arn:aws:apigateway:eu-west-1::/restapis/wt6mne2s9k",
           "http.status_code": "200",
           "_dd.integration": "opentracing",
+          "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node20",
-          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-process-input-traced_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -65,9 +68,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "remappedApiGatewayServiceName",
-        "type": "web"
+        "links": []
       },
       {
         "trace_id":"XXXX",
@@ -75,13 +76,15 @@ START
         "parent_id":"XXXX",
         "name": "aws.lambda",
         "resource": "integration-tests-js-XXXX-process-input-traced_node20",
+        "service": "integration-tests-js-XXXX-process-input-traced_node20",
+        "type": "serverless",
         "error": 0,
         "meta": {
-          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "runtime-id":"XXXX",
-          "cold_start": "true",
           "span.kind": "server",
+          "cold_start": "true",
           "function_arn":"XXXX_node20",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -106,9 +109,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-process-input-traced_node20",
-        "type": "serverless"
+        "links": []
       },
       {
         "trace_id":"XXXX",
@@ -116,10 +117,11 @@ START
         "parent_id":"XXXX",
         "name": "getRecordIds",
         "resource": "getRecordIds",
+        "service": "integration-tests-js-XXXX-process-input-traced_node20",
         "error": 0,
         "meta": {
-          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "runtime-id":"XXXX",
           "_dd.integration": "opentracing",
           "language": "javascript"
@@ -131,8 +133,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-process-input-traced_node20"
+        "links": []
       },
       {
         "trace_id":"XXXX",
@@ -140,10 +141,11 @@ START
         "parent_id":"XXXX",
         "name": "getAPIGatewayRequestId",
         "resource": "getAPIGatewayRequestId",
+        "service": "integration-tests-js-XXXX-process-input-traced_node20",
         "error": 0,
         "meta": {
-          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "runtime-id":"XXXX",
           "api_gateway_request_id": "41b45ea3-70b5-11e6-b7bd-69b5aaebc7d9",
           "event_type": "APIGateway",
@@ -157,8 +159,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-process-input-traced_node20"
+        "links": []
       }
     ]
   ]
@@ -198,9 +199,12 @@ START
         "parent_id":"XXXX",
         "name": "aws.dynamodb",
         "resource": "MODIFY someTableName",
+        "service": "remappedDynamoDbServiceName",
+        "type": "web",
         "error": 0,
         "meta": {
           "_dd.span_links": "[{\"trace_id\":\"00000000000000000000000000000000\",\"span_id\":\"0000000000000000\",\"attributes\":{\"ptr.kind\":\"aws.dynamodb.item\",\"ptr.dir\":\"u\",\"ptr.hash\":\"a23821b540813527937fbe833d70a005\",\"link.kind\":\"span-pointer\"}}]",
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-process-input-traced_node20",
           "_dd.p.tid": "XXXX",
           "_dd.p.dm": "-0",
           "service": "remappedDynamoDbServiceName",
@@ -218,8 +222,8 @@ START
           "event_id": "0123456789abcdef09123456789abcdef",
           "stream_view_type": "KEYS_ONLY",
           "_dd.integration": "opentracing",
+          "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node20",
-          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-process-input-traced_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -232,9 +236,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "remappedDynamoDbServiceName",
-        "type": "web"
+        "links": []
       },
       {
         "trace_id":"XXXX",
@@ -242,13 +244,15 @@ START
         "parent_id":"XXXX",
         "name": "aws.lambda",
         "resource": "integration-tests-js-XXXX-process-input-traced_node20",
+        "service": "integration-tests-js-XXXX-process-input-traced_node20",
+        "type": "serverless",
         "error": 0,
         "meta": {
-          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "runtime-id":"XXXX",
-          "cold_start": "false",
           "span.kind": "server",
+          "cold_start": "false",
           "function_arn":"XXXX_node20",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -268,9 +272,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-process-input-traced_node20",
-        "type": "serverless"
+        "links": []
       },
       {
         "trace_id":"XXXX",
@@ -278,10 +280,11 @@ START
         "parent_id":"XXXX",
         "name": "getRecordIds",
         "resource": "getRecordIds",
+        "service": "integration-tests-js-XXXX-process-input-traced_node20",
         "error": 0,
         "meta": {
-          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "runtime-id":"XXXX",
           "_dd.integration": "opentracing",
           "language": "javascript"
@@ -293,8 +296,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-process-input-traced_node20"
+        "links": []
       },
       {
         "trace_id":"XXXX",
@@ -302,10 +304,11 @@ START
         "parent_id":"XXXX",
         "name": "getAPIGatewayRequestId",
         "resource": "getAPIGatewayRequestId",
+        "service": "integration-tests-js-XXXX-process-input-traced_node20",
         "error": 0,
         "meta": {
-          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "runtime-id":"XXXX",
           "_dd.integration": "opentracing",
           "language": "javascript"
@@ -317,8 +320,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-process-input-traced_node20"
+        "links": []
       }
     ]
   ]
@@ -358,9 +360,12 @@ START
         "parent_id":"XXXX",
         "name": "aws.dynamodb",
         "resource": "REMOVE someTableName",
+        "service": "remappedDynamoDbServiceName",
+        "type": "web",
         "error": 0,
         "meta": {
           "_dd.span_links": "[{\"trace_id\":\"00000000000000000000000000000000\",\"span_id\":\"0000000000000000\",\"attributes\":{\"ptr.kind\":\"aws.dynamodb.item\",\"ptr.dir\":\"u\",\"ptr.hash\":\"a23821b540813527937fbe833d70a005\",\"link.kind\":\"span-pointer\"}}]",
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-process-input-traced_node20",
           "_dd.p.tid": "XXXX",
           "_dd.p.dm": "-0",
           "service": "remappedDynamoDbServiceName",
@@ -378,8 +383,8 @@ START
           "event_id": "0123456789abcdef09123456789abcdef",
           "stream_view_type": "KEYS_ONLY",
           "_dd.integration": "opentracing",
+          "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node20",
-          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-process-input-traced_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -392,9 +397,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "remappedDynamoDbServiceName",
-        "type": "web"
+        "links": []
       },
       {
         "trace_id":"XXXX",
@@ -402,13 +405,15 @@ START
         "parent_id":"XXXX",
         "name": "aws.lambda",
         "resource": "integration-tests-js-XXXX-process-input-traced_node20",
+        "service": "integration-tests-js-XXXX-process-input-traced_node20",
+        "type": "serverless",
         "error": 0,
         "meta": {
-          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "runtime-id":"XXXX",
-          "cold_start": "false",
           "span.kind": "server",
+          "cold_start": "false",
           "function_arn":"XXXX_node20",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -428,9 +433,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-process-input-traced_node20",
-        "type": "serverless"
+        "links": []
       },
       {
         "trace_id":"XXXX",
@@ -438,10 +441,11 @@ START
         "parent_id":"XXXX",
         "name": "getRecordIds",
         "resource": "getRecordIds",
+        "service": "integration-tests-js-XXXX-process-input-traced_node20",
         "error": 0,
         "meta": {
-          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "runtime-id":"XXXX",
           "_dd.integration": "opentracing",
           "language": "javascript"
@@ -453,8 +457,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-process-input-traced_node20"
+        "links": []
       },
       {
         "trace_id":"XXXX",
@@ -462,10 +465,11 @@ START
         "parent_id":"XXXX",
         "name": "getAPIGatewayRequestId",
         "resource": "getAPIGatewayRequestId",
+        "service": "integration-tests-js-XXXX-process-input-traced_node20",
         "error": 0,
         "meta": {
-          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "runtime-id":"XXXX",
           "_dd.integration": "opentracing",
           "language": "javascript"
@@ -477,8 +481,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-process-input-traced_node20"
+        "links": []
       }
     ]
   ]
@@ -518,9 +521,12 @@ START
         "parent_id":"XXXX",
         "name": "aws.dynamodb",
         "resource": "INSERT someTableName",
+        "service": "remappedDynamoDbServiceName",
+        "type": "web",
         "error": 0,
         "meta": {
           "_dd.span_links": "[{\"trace_id\":\"00000000000000000000000000000000\",\"span_id\":\"0000000000000000\",\"attributes\":{\"ptr.kind\":\"aws.dynamodb.item\",\"ptr.dir\":\"u\",\"ptr.hash\":\"843472b4a65c45fcc3f14939c6cae6d1\",\"link.kind\":\"span-pointer\"}}]",
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-process-input-traced_node20",
           "_dd.p.tid": "XXXX",
           "_dd.p.dm": "-0",
           "service": "remappedDynamoDbServiceName",
@@ -538,8 +544,8 @@ START
           "event_id": "0123456789abcdef09123456789abcdef",
           "stream_view_type": "KEYS_ONLY",
           "_dd.integration": "opentracing",
+          "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node20",
-          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-process-input-traced_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -552,9 +558,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "remappedDynamoDbServiceName",
-        "type": "web"
+        "links": []
       },
       {
         "trace_id":"XXXX",
@@ -562,13 +566,15 @@ START
         "parent_id":"XXXX",
         "name": "aws.lambda",
         "resource": "integration-tests-js-XXXX-process-input-traced_node20",
+        "service": "integration-tests-js-XXXX-process-input-traced_node20",
+        "type": "serverless",
         "error": 0,
         "meta": {
-          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "runtime-id":"XXXX",
-          "cold_start": "false",
           "span.kind": "server",
+          "cold_start": "false",
           "function_arn":"XXXX_node20",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -588,9 +594,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-process-input-traced_node20",
-        "type": "serverless"
+        "links": []
       },
       {
         "trace_id":"XXXX",
@@ -598,10 +602,11 @@ START
         "parent_id":"XXXX",
         "name": "getRecordIds",
         "resource": "getRecordIds",
+        "service": "integration-tests-js-XXXX-process-input-traced_node20",
         "error": 0,
         "meta": {
-          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "runtime-id":"XXXX",
           "_dd.integration": "opentracing",
           "language": "javascript"
@@ -613,8 +618,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-process-input-traced_node20"
+        "links": []
       },
       {
         "trace_id":"XXXX",
@@ -622,10 +626,11 @@ START
         "parent_id":"XXXX",
         "name": "getAPIGatewayRequestId",
         "resource": "getAPIGatewayRequestId",
+        "service": "integration-tests-js-XXXX-process-input-traced_node20",
         "error": 0,
         "meta": {
-          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "runtime-id":"XXXX",
           "_dd.integration": "opentracing",
           "language": "javascript"
@@ -637,8 +642,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-process-input-traced_node20"
+        "links": []
       }
     ]
   ]
@@ -678,9 +682,12 @@ START
         "parent_id":"XXXX",
         "name": "aws.s3",
         "resource": "my-bucket-name",
+        "service": "remappedS3ServiceName",
+        "type": "web",
         "error": 0,
         "meta": {
           "_dd.span_links": "[{\"trace_id\":\"00000000000000000000000000000000\",\"span_id\":\"0000000000000000\",\"attributes\":{\"ptr.kind\":\"aws.s3.object\",\"ptr.dir\":\"u\",\"ptr.hash\":\"5e945cd2009d743bdef019835b237969\",\"link.kind\":\"span-pointer\"}}]",
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-process-input-traced_node20",
           "_dd.p.tid": "XXXX",
           "_dd.p.dm": "-0",
           "service": "remappedS3ServiceName",
@@ -697,8 +704,8 @@ START
           "object_key": "multipart_object.txt",
           "object_etag": "09876543210987654321098765432109-2",
           "_dd.integration": "opentracing",
+          "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node20",
-          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-process-input-traced_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -711,9 +718,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "remappedS3ServiceName",
-        "type": "web"
+        "links": []
       },
       {
         "trace_id":"XXXX",
@@ -721,13 +726,15 @@ START
         "parent_id":"XXXX",
         "name": "aws.lambda",
         "resource": "integration-tests-js-XXXX-process-input-traced_node20",
+        "service": "integration-tests-js-XXXX-process-input-traced_node20",
+        "type": "serverless",
         "error": 0,
         "meta": {
-          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "runtime-id":"XXXX",
-          "cold_start": "false",
           "span.kind": "server",
+          "cold_start": "false",
           "function_arn":"XXXX_node20",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -748,9 +755,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-process-input-traced_node20",
-        "type": "serverless"
+        "links": []
       },
       {
         "trace_id":"XXXX",
@@ -758,10 +763,11 @@ START
         "parent_id":"XXXX",
         "name": "getRecordIds",
         "resource": "getRecordIds",
+        "service": "integration-tests-js-XXXX-process-input-traced_node20",
         "error": 0,
         "meta": {
-          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "runtime-id":"XXXX",
           "record_event_type": "S3",
           "record_ids":"XXXX/multipart_object.txt",
@@ -775,8 +781,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-process-input-traced_node20"
+        "links": []
       }
     ]
   ]
@@ -816,9 +821,12 @@ START
         "parent_id":"XXXX",
         "name": "aws.s3",
         "resource": "my-bucket-name",
+        "service": "remappedS3ServiceName",
+        "type": "web",
         "error": 0,
         "meta": {
           "_dd.span_links": "[{\"trace_id\":\"00000000000000000000000000000000\",\"span_id\":\"0000000000000000\",\"attributes\":{\"ptr.kind\":\"aws.s3.object\",\"ptr.dir\":\"u\",\"ptr.hash\":\"9b03fa9d6a34c7b40a2a2907eb0db1f6\",\"link.kind\":\"span-pointer\"}}]",
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-process-input-traced_node20",
           "_dd.p.tid": "XXXX",
           "_dd.p.dm": "-0",
           "service": "remappedS3ServiceName",
@@ -835,8 +843,8 @@ START
           "object_key": "copied_object.txt",
           "object_etag": "01234567890123456789012345678901",
           "_dd.integration": "opentracing",
+          "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node20",
-          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-process-input-traced_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -849,9 +857,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "remappedS3ServiceName",
-        "type": "web"
+        "links": []
       },
       {
         "trace_id":"XXXX",
@@ -859,13 +865,15 @@ START
         "parent_id":"XXXX",
         "name": "aws.lambda",
         "resource": "integration-tests-js-XXXX-process-input-traced_node20",
+        "service": "integration-tests-js-XXXX-process-input-traced_node20",
+        "type": "serverless",
         "error": 0,
         "meta": {
-          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "runtime-id":"XXXX",
-          "cold_start": "false",
           "span.kind": "server",
+          "cold_start": "false",
           "function_arn":"XXXX_node20",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -886,9 +894,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-process-input-traced_node20",
-        "type": "serverless"
+        "links": []
       },
       {
         "trace_id":"XXXX",
@@ -896,10 +902,11 @@ START
         "parent_id":"XXXX",
         "name": "getRecordIds",
         "resource": "getRecordIds",
+        "service": "integration-tests-js-XXXX-process-input-traced_node20",
         "error": 0,
         "meta": {
-          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "runtime-id":"XXXX",
           "record_event_type": "S3",
           "record_ids":"XXXX/copied_object.txt",
@@ -913,8 +920,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-process-input-traced_node20"
+        "links": []
       }
     ]
   ]
@@ -954,9 +960,12 @@ START
         "parent_id":"XXXX",
         "name": "aws.s3",
         "resource": "my-bucket-name",
+        "service": "remappedS3ServiceName",
+        "type": "web",
         "error": 0,
         "meta": {
           "_dd.span_links": "[{\"trace_id\":\"00000000000000000000000000000000\",\"span_id\":\"0000000000000000\",\"attributes\":{\"ptr.kind\":\"aws.s3.object\",\"ptr.dir\":\"u\",\"ptr.hash\":\"b2229b8289f3e49de4f01af8d228ebd8\",\"link.kind\":\"span-pointer\"}}]",
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-process-input-traced_node20",
           "_dd.p.tid": "XXXX",
           "_dd.p.dm": "-0",
           "service": "remappedS3ServiceName",
@@ -973,8 +982,8 @@ START
           "object_key": "test_object.txt",
           "object_etag": "abcdef0123456789abcdef01234567890",
           "_dd.integration": "opentracing",
+          "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node20",
-          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-process-input-traced_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -987,9 +996,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "remappedS3ServiceName",
-        "type": "web"
+        "links": []
       },
       {
         "trace_id":"XXXX",
@@ -997,13 +1004,15 @@ START
         "parent_id":"XXXX",
         "name": "aws.lambda",
         "resource": "integration-tests-js-XXXX-process-input-traced_node20",
+        "service": "integration-tests-js-XXXX-process-input-traced_node20",
+        "type": "serverless",
         "error": 0,
         "meta": {
-          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "runtime-id":"XXXX",
-          "cold_start": "false",
           "span.kind": "server",
+          "cold_start": "false",
           "function_arn":"XXXX_node20",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -1024,9 +1033,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-process-input-traced_node20",
-        "type": "serverless"
+        "links": []
       },
       {
         "trace_id":"XXXX",
@@ -1034,10 +1041,11 @@ START
         "parent_id":"XXXX",
         "name": "getRecordIds",
         "resource": "getRecordIds",
+        "service": "integration-tests-js-XXXX-process-input-traced_node20",
         "error": 0,
         "meta": {
-          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "runtime-id":"XXXX",
           "record_event_type": "S3",
           "record_ids":"XXXX/test_object.txt",
@@ -1051,8 +1059,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-process-input-traced_node20"
+        "links": []
       }
     ]
   ]
@@ -1092,8 +1099,11 @@ START
         "parent_id":"XXXX",
         "name": "aws.sns",
         "resource": "sns-lambda",
+        "service": "remappedSnsServiceName",
+        "type": "sns",
         "error": 0,
         "meta": {
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-process-input-traced_node20",
           "_dd.p.tid": "XXXX",
           "_dd.p.dm": "-0",
           "service": "remappedSnsServiceName",
@@ -1111,8 +1121,8 @@ START
           "topic_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda",
           "event_subscription_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda:21be56ed-a058-49f5-8c98-aedd2564c486",
           "_dd.integration": "opentracing",
+          "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node20",
-          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-process-input-traced_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -1124,9 +1134,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "remappedSnsServiceName",
-        "type": "sns"
+        "links": []
       },
       {
         "trace_id":"XXXX",
@@ -1134,13 +1142,15 @@ START
         "parent_id":"XXXX",
         "name": "aws.lambda",
         "resource": "integration-tests-js-XXXX-process-input-traced_node20",
+        "service": "integration-tests-js-XXXX-process-input-traced_node20",
+        "type": "serverless",
         "error": 0,
         "meta": {
-          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "runtime-id":"XXXX",
-          "cold_start": "false",
           "span.kind": "server",
+          "cold_start": "false",
           "function_arn":"XXXX_node20",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -1161,9 +1171,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-process-input-traced_node20",
-        "type": "serverless"
+        "links": []
       },
       {
         "trace_id":"XXXX",
@@ -1171,10 +1179,11 @@ START
         "parent_id":"XXXX",
         "name": "getRecordIds",
         "resource": "getRecordIds",
+        "service": "integration-tests-js-XXXX-process-input-traced_node20",
         "error": 0,
         "meta": {
-          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "runtime-id":"XXXX",
           "record_event_type": "SNS",
           "record_ids":"XXXX",
@@ -1188,8 +1197,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-process-input-traced_node20"
+        "links": []
       }
     ]
   ]
@@ -1229,8 +1237,11 @@ START
         "parent_id":"XXXX",
         "name": "aws.sqs",
         "resource": "my-queue",
+        "service": "remappedSqsServiceName",
+        "type": "web",
         "error": 0,
         "meta": {
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-process-input-traced_node20",
           "_dd.p.tid": "XXXX",
           "_dd.p.dm": "-0",
           "service": "remappedSqsServiceName",
@@ -1246,8 +1257,8 @@ START
           "receipt_handle": "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
           "sender_id": "AIDAIENQZJOLO23YVJ4VO",
           "_dd.integration": "opentracing",
+          "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-XXXX-process-input-traced_node20",
-          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-process-input-traced_node20",
           "language": "javascript"
         },
         "metrics": {
@@ -1260,9 +1271,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "remappedSqsServiceName",
-        "type": "web"
+        "links": []
       },
       {
         "trace_id":"XXXX",
@@ -1270,13 +1279,15 @@ START
         "parent_id":"XXXX",
         "name": "aws.lambda",
         "resource": "integration-tests-js-XXXX-process-input-traced_node20",
+        "service": "integration-tests-js-XXXX-process-input-traced_node20",
+        "type": "serverless",
         "error": 0,
         "meta": {
-          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "runtime-id":"XXXX",
-          "cold_start": "false",
           "span.kind": "server",
+          "cold_start": "false",
           "function_arn":"XXXX_node20",
           "function_version": "$LATEST",
           "request_id":"XXXX",
@@ -1297,9 +1308,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-process-input-traced_node20",
-        "type": "serverless"
+        "links": []
       },
       {
         "trace_id":"XXXX",
@@ -1307,10 +1316,11 @@ START
         "parent_id":"XXXX",
         "name": "getRecordIds",
         "resource": "getRecordIds",
+        "service": "integration-tests-js-XXXX-process-input-traced_node20",
         "error": 0,
         "meta": {
-          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-process-input-traced_node20",
           "runtime-id":"XXXX",
           "record_event_type": "SQS",
           "record_ids":"XXXX,2e1424d4-f796-459a-8184-9c92662be6da",
@@ -1324,8 +1334,7 @@ START
         },
         "start":XXXX,
         "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-process-input-traced_node20"
+        "links": []
       }
     ]
   ]
