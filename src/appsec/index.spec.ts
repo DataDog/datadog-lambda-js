@@ -62,6 +62,38 @@ describe("AppSec orchestrator", () => {
       expect(mockPublish).toHaveBeenCalled();
     });
 
+    it("should enable when DD_APPSEC_ENABLED is TRUE (uppercase)", () => {
+      process.env.DD_APPSEC_ENABLED = "TRUE";
+      initAppsec();
+
+      const span = { setTag: jest.fn() };
+      mockExtract.mockReturnValue({
+        headers: {},
+        method: "GET",
+        path: "/",
+        isBase64Encoded: false,
+      });
+
+      processAppsecRequest({}, span);
+      expect(mockPublish).toHaveBeenCalled();
+    });
+
+    it("should enable when DD_APPSEC_ENABLED is True (mixed case)", () => {
+      process.env.DD_APPSEC_ENABLED = "True";
+      initAppsec();
+
+      const span = { setTag: jest.fn() };
+      mockExtract.mockReturnValue({
+        headers: {},
+        method: "GET",
+        path: "/",
+        isBase64Encoded: false,
+      });
+
+      processAppsecRequest({}, span);
+      expect(mockPublish).toHaveBeenCalled();
+    });
+
     it("should not enable when DD_APPSEC_ENABLED is not set", () => {
       delete process.env.DD_APPSEC_ENABLED;
       initAppsec();
@@ -72,6 +104,14 @@ describe("AppSec orchestrator", () => {
 
     it("should not enable when DD_APPSEC_ENABLED is false", () => {
       process.env.DD_APPSEC_ENABLED = "false";
+      initAppsec();
+
+      processAppsecRequest({}, {});
+      expect(mockPublish).not.toHaveBeenCalled();
+    });
+
+    it("should not enable when DD_APPSEC_ENABLED is FALSE (uppercase)", () => {
+      process.env.DD_APPSEC_ENABLED = "FALSE";
       initAppsec();
 
       processAppsecRequest({}, {});
