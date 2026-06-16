@@ -572,11 +572,8 @@ describe("TraceListener", () => {
       await listener.onStartInvocation(durableEvent, context as any);
       listener.onEndingInvocation(durableEvent, {}, false);
 
-      expect(mockSetTag).toHaveBeenCalledWith("aws_lambda.durable_function.execution_name", "my-execution");
-      expect(mockSetTag).toHaveBeenCalledWith(
-        "aws_lambda.durable_function.execution_id",
-        "550e8400-e29b-41d4-a716-446655440004",
-      );
+      expect(mockSetTag).toHaveBeenCalledWith("aws.durable.execution_name", "my-execution");
+      expect(mockSetTag).toHaveBeenCalledWith("aws.durable.execution_id", "550e8400-e29b-41d4-a716-446655440004");
     } finally {
       currentSpanSpy.mockRestore();
     }
@@ -596,7 +593,7 @@ describe("TraceListener", () => {
       await listener.onStartInvocation(durableEvent, context as any);
       listener.onEndingInvocation(durableEvent, { Status: "SUCCEEDED" }, false);
 
-      expect(mockSetTag).toHaveBeenCalledWith("aws_lambda.durable_function.execution_status", "SUCCEEDED");
+      expect(mockSetTag).toHaveBeenCalledWith("aws.durable.execution_status", "SUCCEEDED");
     } finally {
       currentSpanSpy.mockRestore();
     }
@@ -616,7 +613,7 @@ describe("TraceListener", () => {
       await listener.onStartInvocation(durableEvent, context as any);
       listener.onEndingInvocation(durableEvent, { Status: "UNKNOWN" }, false);
 
-      expect(mockSetTag).not.toHaveBeenCalledWith("aws_lambda.durable_function.execution_status", expect.anything());
+      expect(mockSetTag).not.toHaveBeenCalledWith("aws.durable.execution_status", expect.anything());
     } finally {
       currentSpanSpy.mockRestore();
     }

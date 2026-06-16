@@ -120,13 +120,32 @@ export class StepFunctionContextService {
         } as LambdaRootStepFunctionContext;
       }
     } else {
-      this.context = {
-        execution_id,
-        redrive_count,
-        retry_count,
-        state_entered_time,
-        state_name,
-      } as LegacyStepFunctionContext;
+      const datadogContext = event.Execution?.Input?._datadog;
+      if (
+        typeof datadogContext === "object" &&
+        datadogContext !== null &&
+        typeof datadogContext["x-datadog-trace-id"] === "string" &&
+        typeof datadogContext["x-datadog-tags"] === "string"
+      ) {
+        this.context = {
+          execution_id,
+          redrive_count,
+          retry_count,
+          state_entered_time,
+          state_name,
+          trace_id: datadogContext["x-datadog-trace-id"],
+          dd_p_tid: this.parsePTid(datadogContext["x-datadog-tags"]),
+          serverless_version: "legacy-lambda-root", // dummy value
+        } as LambdaRootStepFunctionContext;
+      } else {
+        this.context = {
+          execution_id,
+          redrive_count,
+          retry_count,
+          state_entered_time,
+          state_name,
+        } as LegacyStepFunctionContext;
+      }
     }
   }
 

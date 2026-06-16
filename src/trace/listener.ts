@@ -251,7 +251,7 @@ export class TraceListener {
     }
     const executionStatus = extractDurableExecutionStatus(event, result);
     if (executionStatus !== undefined) {
-      this.tracerWrapper.currentSpan.setTag("aws_lambda.durable_function.execution_status", executionStatus);
+      this.tracerWrapper.currentSpan.setTag("aws.durable.execution_status", executionStatus);
     }
 
     let rootSpan = this.inferredSpan;

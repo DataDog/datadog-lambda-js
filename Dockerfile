@@ -14,6 +14,22 @@ RUN yarn install
 RUN yarn build
 RUN cp -r dist /nodejs/node_modules/datadog-lambda-js
 RUN cp ./src/runtime/module_importer.js /nodejs/node_modules/datadog-lambda-js/runtime
+RUN node <<'EOF'
+const fs = require("fs");
+const { name, version } = require("./package.json");
+
+const layerPackage = {
+  name,
+  version,
+  main: "index.js",
+  types: "index.d.ts",
+};
+
+fs.writeFileSync(
+  "/nodejs/node_modules/datadog-lambda-js/package.json",
+  `${JSON.stringify(layerPackage, null, 2)}\n`,
+);
+EOF
 
 RUN cp ./src/handler.mjs /nodejs/node_modules/datadog-lambda-js
 
