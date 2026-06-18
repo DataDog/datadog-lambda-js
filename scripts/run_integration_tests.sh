@@ -80,6 +80,11 @@ fi
 # tests install the version under test (not the published one) via npm.
 echo "Packing local datadog-lambda-js for container tests"
 cd $repo_dir
+# Ensure root-level devDeps (TypeScript, @types/*) are installed before tsc.
+# In CI the script is typically invoked without BUILD_LAYERS=true, so the
+# Docker-internal yarn install that path would do isn't reached, and the host
+# repo would otherwise tsc against an empty node_modules.
+yarn install --frozen-lockfile
 yarn build
 npm pack
 mv datadog-lambda-js-*.tgz $integration_tests_dir/container/cjs/datadog-lambda-js-local.tgz
