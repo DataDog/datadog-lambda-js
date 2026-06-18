@@ -8,6 +8,12 @@
 
 set -e
 
+# AWS Lambda only accepts Docker v2 image manifests, not the OCI manifests that
+# buildx produces by default (with provenance attestations). Disabling default
+# attestations makes buildx emit Docker v2 manifests, which Lambda will accept
+# as the source image for the container-* test functions.
+export BUILDX_NO_DEFAULT_ATTESTATIONS=1
+
 # These values need to be in sync with serverless.yml, where there needs to be a function
 # defined for every handler_runtime combination
 LAMBDA_HANDLERS=("async-metrics" "esm" "sync-metrics" "http-requests" "process-input-traced" "throw-error-traced" "status-code-500s" "container-cjs" "container-esm")

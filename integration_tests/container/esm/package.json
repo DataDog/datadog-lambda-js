@@ -2,5 +2,8 @@
   "name": "container-esm-test",
   "version": "1.0.0",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "dd-trace": "5.105.0"
+  }
 }
