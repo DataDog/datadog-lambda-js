@@ -81,7 +81,11 @@ unit test ({{ $runtime.name }}):
 
 integration test ({{ $runtime.name }}):
   stage: test
-  tags: ["arch:amd64"]
+  # `docker-in-docker:<arch>` routes the job to a runner with a live Docker
+  # daemon (vs. plain `arch:amd64` which only has the docker CLI). Required by
+  # the container-image integration tests, which build & push ECR images for
+  # the `container-{cjs,esm}_node*` functions.
+  tags: ["docker-in-docker:amd64"]
   image: ${CI_DOCKER_TARGET_IMAGE}:${CI_DOCKER_TARGET_VERSION}
   needs: 
     - build layer ({{ $runtime.name }})
