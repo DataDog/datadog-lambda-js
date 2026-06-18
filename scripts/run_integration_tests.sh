@@ -10,7 +10,7 @@ set -e
 
 # These values need to be in sync with serverless.yml, where there needs to be a function
 # defined for every handler_runtime combination
-LAMBDA_HANDLERS=("async-metrics" "esm" "sync-metrics" "http-requests" "process-input-traced" "throw-error-traced" "status-code-500s")
+LAMBDA_HANDLERS=("async-metrics" "esm" "sync-metrics" "http-requests" "process-input-traced" "throw-error-traced" "status-code-500s" "container-cjs" "container-esm")
 
 LOGS_WAIT_SECONDS=20
 
@@ -70,6 +70,16 @@ else
     echo "Not building layers, ensure they've already been built or re-run with 'BUILD_LAYERS=true DD_API_KEY=XXXX ./scripts/run_integration_tests.sh'"
 fi
 
+# Build and pack the locally-modified datadog-lambda-js so the container-image
+# tests install the version under test (not the published one) via npm.
+echo "Packing local datadog-lambda-js for container tests"
+cd $repo_dir
+yarn build
+npm pack
+mv datadog-lambda-js-*.tgz $integration_tests_dir/container/cjs/datadog-lambda-js-local.tgz
+cp $integration_tests_dir/container/cjs/datadog-lambda-js-local.tgz \
+   $integration_tests_dir/container/esm/datadog-lambda-js-local.tgz
+
 cd $integration_tests_dir
 yarn
 
@@ -86,7 +96,7 @@ function remove_stack() {
         nodejs_version=$parameters_set[1]
         run_id=$parameters_set[2]
         echo "Removing stack for stage : ${!run_id}"
-        NODE_VERSION=${!nodejs_version} RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
+        NODE_VERSION=${!nodejs_version} NODE_MAJOR=${parameters_set#node} RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
         serverless remove --stage ${!run_id}
     done
 }
@@ -102,7 +112,7 @@ for parameters_set in "${PARAMETERS_SETS[@]}"; do
     echo "Deploying functions for runtime : $parameters_set, serverless runtime : ${!serverless_runtime}, \
 nodejs version : ${!nodejs_version} and run id : ${!run_id}"
 
-    NODE_VERSION=${!nodejs_version} RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
+    NODE_VERSION=${!nodejs_version} NODE_MAJOR=${parameters_set#node} RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
     serverless deploy --stage ${!run_id}
 
     echo "Invoking functions for runtime $parameters_set"
@@ -119,7 +129,7 @@ nodejs version : ${!nodejs_version} and run id : ${!run_id}"
             snapshot_path="./snapshots/return_values/${handler_name}_${parameters_set}_${input_event_name}.json"
             function_failed=FALSE
 
-            return_value=$(NODE_VERSION=${!nodejs_version} RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
+            return_value=$(NODE_VERSION=${!nodejs_version} NODE_MAJOR=${parameters_set#node} RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
             serverless invoke --stage ${!run_id} -f "$function_name" --path "./input_events/$input_event_file")
             invoke_success=$?
             if [ $invoke_success -ne 0 ]; then
@@ -166,7 +176,7 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
         # Fetch logs with serverless cli, retrying to avoid AWS account-wide rate limit error
         retry_counter=0
         while [ $retry_counter -lt 10 ]; do
-            raw_logs=$(NODE_VERSION=${!nodejs_version} RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
+            raw_logs=$(NODE_VERSION=${!nodejs_version} NODE_MAJOR=${parameters_set#node} RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
             serverless logs --stage ${!run_id} -f $function_name --startTime $script_utc_start_time)
             fetch_logs_exit_code=$?
             if [ $fetch_logs_exit_code -eq 1 ]; then
