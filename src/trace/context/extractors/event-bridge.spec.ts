@@ -3,6 +3,15 @@ import { EventBridgeEventTraceExtractor } from "./event-bridge";
 import { StepFunctionContextService } from "../../step-function-service";
 
 let mockSpanContext: any = null;
+let mockDataStreamsCheckpointer: any = {
+  setConsumeCheckpoint: jest.fn(),
+};
+
+jest.mock("dd-trace/packages/dd-trace/src/datastreams/checkpointer", () => {
+  return {
+    DataStreamsCheckpointer: jest.fn().mockImplementation(() => mockDataStreamsCheckpointer),
+  };
+});
 
 // Mocking extract is needed, due to dd-trace being a No-op
 // if the detected environment is testing. This is expected, since
@@ -12,14 +21,32 @@ jest.mock("dd-trace", () => {
     ...jest.requireActual("dd-trace"),
     _tracer: { _service: {} },
     extract: (_carrier: any, _headers: any) => mockSpanContext,
+    dataStreamsCheckpointer: mockDataStreamsCheckpointer,
   };
 });
 const spyTracerWrapper = jest.spyOn(TracerWrapper.prototype, "extract");
 
 describe("EventBridgeEventTraceExtractor", () => {
+  const mockConfig = {
+    autoPatchHTTP: true,
+    captureLambdaPayload: false,
+    captureLambdaPayloadMaxDepth: 10,
+    createInferredSpan: true,
+    encodeAuthorizerContext: true,
+    decodeAuthorizerContext: true,
+    mergeDatadogXrayTraces: false,
+    injectLogContext: false,
+    minColdStartTraceDuration: 3,
+    coldStartTraceSkipLib: "",
+    addSpanPointers: true,
+    dataStreamsEnabled: true,
+  };
+
   describe("extract", () => {
     beforeEach(() => {
       mockSpanContext = null;
+      spyTracerWrapper.mockClear();
+      mockDataStreamsCheckpointer.setConsumeCheckpoint.mockClear();
     });
 
     afterEach(() => {
@@ -55,7 +82,7 @@ describe("EventBridgeEventTraceExtractor", () => {
         },
       };
 
-      const extractor = new EventBridgeEventTraceExtractor(tracerWrapper);
+      const extractor = new EventBridgeEventTraceExtractor(tracerWrapper, mockConfig);
 
       const traceContext = extractor.extract(payload);
       expect(traceContext).not.toBeNull();
@@ -70,6 +97,18 @@ describe("EventBridgeEventTraceExtractor", () => {
       expect(traceContext?.toSpanId()).toBe("4726693487091824375");
       expect(traceContext?.sampleMode()).toBe("1");
       expect(traceContext?.source).toBe("event");
+
+      // EventBridge DSM uses the event's detail-type as the topic
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledWith(
+        "eventbridge",
+        "UserSignUp",
+        {
+          "x-datadog-trace-id": "5827606813695714842",
+          "x-datadog-parent-id": "4726693487091824375",
+          "x-datadog-sampling-priority": "1",
+        },
+        false,
+      );
     });
 
     it.each([
@@ -77,10 +116,74 @@ describe("EventBridgeEventTraceExtractor", () => {
       ["_datadog in detail", { hello: "there" }],
     ])("returns null and skips extracting when payload is missing '%s'", (_, payload) => {
       const tracerWrapper = new TracerWrapper();
-      const extractor = new EventBridgeEventTraceExtractor(tracerWrapper);
+      const extractor = new EventBridgeEventTraceExtractor(tracerWrapper, mockConfig);
 
       const traceContext = extractor.extract(payload as any);
       expect(traceContext).toBeNull();
+    });
+
+    it("sets a DSM checkpoint with detail-type as topic when DSM is enabled", () => {
+      mockSpanContext = {
+        toTraceId: () => "5827606813695714842",
+        toSpanId: () => "4726693487091824375",
+        _sampling: { priority: "1" },
+      };
+      const tracerWrapper = new TracerWrapper();
+
+      const payload = {
+        version: "0",
+        id: "bd3c8258-8d30-007c-2562-64715b2d0ea8",
+        "detail-type": "UserSignUp",
+        source: "my.event",
+        detail: {
+          hello: "there",
+          _datadog: {
+            "x-datadog-trace-id": "5827606813695714842",
+            "x-datadog-parent-id": "4726693487091824375",
+            "x-datadog-sampling-priority": "1",
+            "dd-pathway-ctx-base64": "some-base64-encoded-context",
+          },
+        },
+      };
+
+      const extractor = new EventBridgeEventTraceExtractor(tracerWrapper, mockConfig);
+      extractor.extract(payload as any);
+
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledTimes(1);
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledWith(
+        "eventbridge",
+        "UserSignUp",
+        expect.objectContaining({ "dd-pathway-ctx-base64": "some-base64-encoded-context" }),
+        false,
+      );
+    });
+
+    it("does not set a DSM checkpoint when DSM is disabled", () => {
+      mockSpanContext = {
+        toTraceId: () => "5827606813695714842",
+        toSpanId: () => "4726693487091824375",
+        _sampling: { priority: "1" },
+      };
+      const tracerWrapper = new TracerWrapper();
+
+      const payload = {
+        "detail-type": "UserSignUp",
+        source: "my.event",
+        detail: {
+          _datadog: {
+            "x-datadog-trace-id": "5827606813695714842",
+            "x-datadog-parent-id": "4726693487091824375",
+            "x-datadog-sampling-priority": "1",
+          },
+        },
+      };
+
+      const disabledConfig = { ...mockConfig, dataStreamsEnabled: false };
+      const extractor = new EventBridgeEventTraceExtractor(tracerWrapper, disabledConfig);
+
+      const traceContext = extractor.extract(payload as any);
+      expect(traceContext).not.toBeNull();
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledTimes(0);
     });
 
     it("returns null when extracted span context by tracer is null", () => {
@@ -101,7 +204,7 @@ describe("EventBridgeEventTraceExtractor", () => {
         },
       };
 
-      const extractor = new EventBridgeEventTraceExtractor(tracerWrapper);
+      const extractor = new EventBridgeEventTraceExtractor(tracerWrapper, mockConfig);
 
       const traceContext = extractor.extract(payload);
       expect(traceContext).toBeNull();
@@ -157,7 +260,7 @@ describe("EventBridgeEventTraceExtractor", () => {
         },
       };
 
-      const extractor = new EventBridgeEventTraceExtractor(tracerWrapper);
+      const extractor = new EventBridgeEventTraceExtractor(tracerWrapper, mockConfig);
 
       const traceContext = extractor.extract(payload);
       expect(traceContext).not.toBeNull();

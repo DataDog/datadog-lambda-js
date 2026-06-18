@@ -92,12 +92,14 @@ export class TraceContextExtractor {
 
     if (EventValidator.isSNSEvent(event)) return new SNSEventTraceExtractor(this.tracerWrapper, this.config);
     if (EventValidator.isSNSSQSEvent(event)) return new SNSSQSEventTraceExtractor(this.tracerWrapper, this.config);
-    if (EventValidator.isEventBridgeSQSEvent(event)) return new EventBridgeSQSEventTraceExtractor(this.tracerWrapper);
+    if (EventValidator.isEventBridgeSQSEvent(event))
+      return new EventBridgeSQSEventTraceExtractor(this.tracerWrapper, this.config);
     if (EventValidator.isAppSyncResolverEvent(event)) return new AppSyncEventTraceExtractor(this.tracerWrapper);
     if (EventValidator.isSQSEvent(event)) return new SQSEventTraceExtractor(this.tracerWrapper, this.config);
     if (EventValidator.isKinesisStreamEvent(event))
       return new KinesisEventTraceExtractor(this.tracerWrapper, this.config);
-    if (EventValidator.isEventBridgeEvent(event)) return new EventBridgeEventTraceExtractor(this.tracerWrapper);
+    if (EventValidator.isEventBridgeEvent(event))
+      return new EventBridgeEventTraceExtractor(this.tracerWrapper, this.config);
 
     return;
   }
