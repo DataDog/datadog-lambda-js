@@ -1187,17 +1187,17 @@
   resolved "https://registry.npmjs.org/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@datadog/flagging-core@^1.2.1":
+"@datadog/flagging-core@1.2.1":
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/@datadog/flagging-core/-/flagging-core-1.2.1.tgz#1bb2d1ecfd749033ed2570eccc8fb0697b8adfac"
   integrity sha512-qeDkki9fFlqyoZBrn7tneT6pZ04EKKvf3xxisYw1a74zbJihvQui/ARUsjXCurRpzpFqGGTJw/oz+HnXaKhcdw==
   dependencies:
     spark-md5 "^3.0.2"
 
-"@datadog/libdatadog@0.9.3":
-  version "0.9.3"
-  resolved "https://registry.yarnpkg.com/@datadog/libdatadog/-/libdatadog-0.9.3.tgz#c9a26946e1f4a750889594790b3434070997b8fa"
-  integrity sha512-L+scIlcRRRF0qjeSU3VQLQlqezfQHkDdnOdbmx/gLjPqewKSyqVGp7XRdKXYo2vZTzmG8dH6rPKXwgI68UQufw==
+"@datadog/libdatadog@0.9.4":
+  version "0.9.4"
+  resolved "https://registry.yarnpkg.com/@datadog/libdatadog/-/libdatadog-0.9.4.tgz#3d39c3561fa11a702c0e5e7819c83f4e03c07b78"
+  integrity sha512-55wHHAuhHOOrBGoWV+fRuEDypN6PMJZq4LTOwExnhoDMvVcZKtqYT05xea/toRs0o75+A1IeNAQHsRLbJMf5oA==
 
 "@datadog/native-appsec@11.0.1":
   version "11.0.1"
@@ -1221,17 +1221,26 @@
     node-addon-api "^6.1.0"
     node-gyp-build "^3.9.0"
 
-"@datadog/openfeature-node-server@1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@datadog/openfeature-node-server/-/openfeature-node-server-1.2.1.tgz#762b39e486f9d04e0219058b1b9b4202004cf091"
-  integrity sha512-iY32juuL2w07vOlrTG1Y1U0y3ehyvRxuwzJvaLqjmQE8jj2L3o2SRm2UwgmLnzh6JWzMfNxbfs66KvOmPja7dQ==
+"@datadog/openfeature-node-server@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@datadog/openfeature-node-server/-/openfeature-node-server-2.0.0.tgz#94e787f0bb0b1b0c87e728ad760950c0ea5f3328"
+  integrity sha512-Ummu/Bd7ZJpCCNdFnZUt/JI+L1+8OMK53+MyIXbS7dCt4JXWWwelbpzSGqmC2jWbWQ/mTo4hEfnFw3kYOINbXA==
   dependencies:
-    "@datadog/flagging-core" "^1.2.1"
+    "@datadog/flagging-core" "1.2.1"
 
 "@datadog/pprof@5.14.4":
   version "5.14.4"
   resolved "https://registry.yarnpkg.com/@datadog/pprof/-/pprof-5.14.4.tgz#4a242b6e9c78f66aff836e926b28733749cfa83b"
   integrity sha512-egEZDD9v98RBI8ijbHyaWQeY8rW0WEu004As5D7SUkdqSMORhrnh7ZdsM46PUzQgAc85IaEZoukWS9UhMvWn9w==
+  dependencies:
+    node-gyp-build "^4.8.4"
+    pprof-format "^2.2.1"
+    source-map "^0.7.4"
+
+"@datadog/pprof@5.15.0":
+  version "5.15.0"
+  resolved "https://registry.yarnpkg.com/@datadog/pprof/-/pprof-5.15.0.tgz#ac8c6a240a18a9b1db25dc1c492c3c5ff44eebcc"
+  integrity sha512-ODGC3pE+NHo+rz74bWyOyFeC5GgvqA6Xzk0wIBGs8W3v+A14I5Q+Pmc7EC8etk5gE8t0hGYYwA5ymSGCljov+Q==
   dependencies:
     node-gyp-build "^4.8.4"
     pprof-format "^2.2.1"
@@ -2927,21 +2936,21 @@ dc-polyfill@^0.1.3:
   resolved "https://registry.npmjs.org/dc-polyfill/-/dc-polyfill-0.1.9.tgz"
   integrity sha512-D5mJThEEk9hf+CJPwTf9JFsrWdlWp8Pccjxkhf7uUT/E/cU9Mx3ebWe2Bz2OawRmJ6WS9eaDPBkeBE4uOKq9uw==
 
-dd-trace@^5.105.0:
-  version "5.105.0"
-  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-5.105.0.tgz#2146d0628408f4977496d9145602d5f40d78ed3d"
-  integrity sha512-nu0GNq09iwf4X+nOz+32fo6f7oajj7hFAMewW2JO5L423gp2csIye4CJs0mqGxNI/1sltaKmyVAuuUhOMrJbLw==
+dd-trace@^5.109.0:
+  version "5.109.0"
+  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-5.109.0.tgz#6809c263bdabb4d943df0aca343e485f69687773"
+  integrity sha512-yjhNcegw4xX29YNqBJX3s/90oBmvRiHidifjypwEKktj+n2o1Fg3zqEh1Nl9r/gmgcpxmU1td9kW9zSTYCTfdg==
   dependencies:
     dc-polyfill "^0.1.11"
     import-in-the-middle "^3.0.1"
     opentracing ">=0.14.7"
   optionalDependencies:
-    "@datadog/libdatadog" "0.9.3"
+    "@datadog/libdatadog" "0.9.4"
     "@datadog/native-appsec" "11.0.1"
     "@datadog/native-iast-taint-tracking" "4.2.0"
     "@datadog/native-metrics" "3.1.2"
-    "@datadog/openfeature-node-server" "1.2.1"
-    "@datadog/pprof" "5.14.4"
+    "@datadog/openfeature-node-server" "2.0.0"
+    "@datadog/pprof" "5.15.0"
     "@datadog/wasm-js-rewriter" "5.0.1"
     "@opentelemetry/api" ">=1.0.0 <1.10.0"
     "@opentelemetry/api-logs" "<1.0.0"
