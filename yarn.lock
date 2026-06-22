@@ -2914,7 +2914,7 @@ dc-polyfill@^0.1.3:
   resolved "https://registry.npmjs.org/dc-polyfill/-/dc-polyfill-0.1.9.tgz"
   integrity sha512-D5mJThEEk9hf+CJPwTf9JFsrWdlWp8Pccjxkhf7uUT/E/cU9Mx3ebWe2Bz2OawRmJ6WS9eaDPBkeBE4uOKq9uw==
 
-dd-trace@^5.105.0:
+dd-trace@^5.109.0:
   version "5.109.0"
   resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-5.109.0.tgz#6809c263bdabb4d943df0aca343e485f69687773"
   integrity sha512-yjhNcegw4xX29YNqBJX3s/90oBmvRiHidifjypwEKktj+n2o1Fg3zqEh1Nl9r/gmgcpxmU1td9kW9zSTYCTfdg==
