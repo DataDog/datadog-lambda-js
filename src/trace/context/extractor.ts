@@ -5,6 +5,7 @@ import { XrayService } from "../xray-service";
 import {
   AppSyncEventTraceExtractor,
   CustomTraceExtractor,
+  DurableExecutionEventTraceExtractor,
   EventBridgeEventTraceExtractor,
   EventBridgeSQSEventTraceExtractor,
   HTTPEventTraceExtractor,
@@ -80,6 +81,9 @@ export class TraceContextExtractor {
 
   private getTraceEventExtractor(event: any): EventTraceExtractor | undefined {
     if (!event || typeof event !== "object") return;
+
+    if (EventValidator.isDurableExecutionEvent(event))
+      return new DurableExecutionEventTraceExtractor(this.tracerWrapper);
 
     const headers = event.headers ?? event.multiValueHeaders;
     if (headers !== null && typeof headers === "object") {
