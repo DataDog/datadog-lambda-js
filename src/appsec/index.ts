@@ -18,6 +18,7 @@ export function processAppsecRequest(event: any, span: any): void {
 
   const httpData = extractHTTPDataFromEvent(event);
   if (!httpData) {
+    span.setTag("_dd.appsec.unsupported_event_type", 1);
     return;
   }
 
