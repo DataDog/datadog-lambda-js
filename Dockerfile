@@ -8,7 +8,7 @@ RUN mkdir -p /nodejs/node_modules/
 # Install dev dependencies
 COPY . datadog-lambda-js
 WORKDIR /datadog-lambda-js
-RUN yarn install
+RUN yarn install --ignore-engines
 
 # Build the lambda layer
 RUN yarn build
@@ -39,7 +39,7 @@ RUN rm -rf node_modules
 RUN node ./scripts/move_ddtrace_dependency.js "$(cat package.json)" > package-new.json
 RUN mv package-new.json package.json
 # Install dependencies
-RUN yarn install --production=true --ignore-optional
+RUN yarn install --production=true --ignore-optional --ignore-engines
 # Copy the dependencies to the modules folder
 RUN cp -rf node_modules/* /nodejs/node_modules
 
