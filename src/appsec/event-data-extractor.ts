@@ -40,7 +40,7 @@ function extractFromApiGatewayV1(event: any): ExtractedHTTPData {
   const result: ExtractedHTTPData = {
     headers: headersNoCookies,
     method: event.httpMethod || "",
-    path: event.requestContext?.path || event.path || "/",
+    path: event.path || event.requestContext?.path || "/",
     query: mergeQueryParams(event.queryStringParameters, event.multiValueQueryStringParameters),
     body: decodeBody(event.body, event.isBase64Encoded),
     isBase64Encoded: !!event.isBase64Encoded,
