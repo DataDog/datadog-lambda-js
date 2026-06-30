@@ -132,9 +132,12 @@ describe("AppSec orchestrator", () => {
 
     it("should not publish when event is not an HTTP trigger", () => {
       mockExtract.mockReturnValue(undefined as any);
+      const span = { setTag: jest.fn() };
 
-      processAppsecRequest({}, {});
+      processAppsecRequest({}, span);
+
       expect(mockPublish).not.toHaveBeenCalled();
+      expect(span.setTag).toHaveBeenCalledWith("_dd.appsec.unsupported_event_type", 1);
     });
 
     it("should publish extracted HTTP data to the start-invocation channel", () => {
