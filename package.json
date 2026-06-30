@@ -71,5 +71,10 @@
     "collectCoverageFrom": [
       "src/**/*.ts"
     ]
+  },
+  "resolutions": {
+    "fast-xml-parser": "^4.5.6",
+    "uuid": "^8.3.2",
+    "js-yaml": "^3.14.2"
   }
 }
