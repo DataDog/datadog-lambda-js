@@ -627,7 +627,25 @@ describe("TraceListener", () => {
       expect(mockInitAppsec).toHaveBeenCalledTimes(1);
     });
 
-    it("calls processAppsecRequest with event and span during onEndingInvocation", async () => {
+    it("calls processAppsecRequest with event and span during onRequestStart", async () => {
+      const mockSetTag = jest.fn();
+      const mockSpan = { setTag: mockSetTag };
+      const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
+
+      try {
+        const listener = new TraceListener(defaultConfig);
+        const event = { httpMethod: "GET", path: "/test" };
+        await listener.onStartInvocation(event, context as any);
+        listener.onRequestStart(event);
+
+        expect(mockProcessAppsecRequest).toHaveBeenCalledTimes(1);
+        expect(mockProcessAppsecRequest).toHaveBeenCalledWith(event, mockSpan);
+      } finally {
+        currentSpanSpy.mockRestore();
+      }
+    });
+
+    it("does not call processAppsecRequest during onEndingInvocation", async () => {
       const mockSetTag = jest.fn();
       const mockSpan = { setTag: mockSetTag };
       const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
@@ -638,8 +656,7 @@ describe("TraceListener", () => {
         await listener.onStartInvocation(event, context as any);
         listener.onEndingInvocation(event, {}, false);
 
-        expect(mockProcessAppsecRequest).toHaveBeenCalledTimes(1);
-        expect(mockProcessAppsecRequest).toHaveBeenCalledWith(event, mockSpan);
+        expect(mockProcessAppsecRequest).not.toHaveBeenCalled();
       } finally {
         currentSpanSpy.mockRestore();
       }
@@ -681,7 +698,7 @@ describe("TraceListener", () => {
       }
     });
 
-    it("calls processAppsecRequest before processAppsecResponse", async () => {
+    it("calls processAppsecRequest (via onRequestStart) before processAppsecResponse (via onEndingInvocation)", async () => {
       const callOrder: string[] = [];
       mockProcessAppsecRequest.mockImplementation(() => callOrder.push("request"));
       mockProcessAppsecResponse.mockImplementation(() => callOrder.push("response"));
@@ -693,6 +710,7 @@ describe("TraceListener", () => {
       try {
         const listener = new TraceListener(defaultConfig);
         await listener.onStartInvocation({}, context as any);
+        listener.onRequestStart({});
         listener.onEndingInvocation({}, {}, false);
 
         expect(callOrder).toEqual(["request", "response"]);

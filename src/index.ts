@@ -199,6 +199,8 @@ export function datadog<TEvent, TResult>(
           });
         }
 
+        traceListener.onRequestStart(localEvent);
+
         try {
           localResult = isResponseStreamFunction
             ? await promHandler(localEvent, localResponseStream, localContext)

@@ -169,6 +169,16 @@ export class TraceListener {
   }
 
   /**
+   * onRequestStart runs once the aws.lambda span is active, before the user
+   * function is invoked.
+   *
+   * @param event
+   */
+  public onRequestStart(event: any): void {
+    processAppsecRequest(event, this.tracerWrapper.currentSpan);
+  }
+
+  /**
    * onEndingInvocation runs after the user function has returned
    * but before the wrapped function has returned
    * this is needed to apply tags to the lambda span
@@ -183,8 +193,6 @@ export class TraceListener {
     // so we won't crash user code.
     if (!this.tracerWrapper.currentSpan) return false;
     this.wrappedCurrentSpan = new SpanWrapper(this.tracerWrapper.currentSpan, {});
-
-    processAppsecRequest(event, this.tracerWrapper.currentSpan);
 
     if (this.config.captureLambdaPayload) {
       tagObject(this.tracerWrapper.currentSpan, "function.request", event, 0, this.config.captureLambdaPayloadMaxDepth);

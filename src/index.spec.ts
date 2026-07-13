@@ -27,6 +27,12 @@ import { SpanOptions, TracerWrapper } from "./trace/tracer-wrapper";
 
 jest.mock("./metrics/enhanced-metrics");
 
+const mockProcessAppsecRequest = jest.fn();
+jest.mock("./appsec", () => ({
+  ...jest.requireActual("./appsec"),
+  processAppsecRequest: (...args: any[]) => mockProcessAppsecRequest(...args),
+}));
+
 const mockedIncrementErrors = incrementErrorsMetric as jest.Mock<typeof incrementErrorsMetric>;
 const mockedIncrementInvocations = incrementInvocationsMetric as jest.Mock<typeof incrementInvocationsMetric>;
 const mockedIncrementBatchItemFailures = incrementBatchItemFailureMetric as jest.Mock<
@@ -535,6 +541,22 @@ describe("datadog", () => {
     await wrapped({}, mockContext);
 
     expect(wrapped[HANDLER_STREAMING]).toBe(undefined);
+  });
+
+  it("processes the AppSec request before the user handler runs, not after", async () => {
+    mockProcessAppsecRequest.mockClear();
+    const callOrder: string[] = [];
+    mockProcessAppsecRequest.mockImplementation(() => callOrder.push("appsec-request"));
+
+    const handlerUnderTest = async () => {
+      callOrder.push("user-handler");
+      return { statusCode: 200 };
+    };
+
+    const wrapped = datadog(handlerUnderTest, { forceWrap: true });
+    await wrapped({}, mockContext, () => {});
+
+    expect(callOrder).toEqual(["appsec-request", "user-handler"]);
   });
 });
 
