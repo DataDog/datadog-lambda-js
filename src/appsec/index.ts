@@ -8,9 +8,8 @@ const endInvocationChannel = dc.channel("datadog:lambda:end-invocation");
 
 let enabled = false;
 
-export function initAppsec(): void {
-  const envValue = process.env.DD_APPSEC_ENABLED?.toLowerCase();
-  enabled = envValue === "true" || envValue === "1";
+export function initAppsec(appsecEnabled: boolean): void {
+  enabled = appsecEnabled;
 }
 
 export function processAppsecRequest(event: any, span: any): void {

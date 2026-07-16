@@ -18,21 +18,13 @@ import { extractHTTPDataFromEvent } from "./event-data-extractor";
 const mockExtract = extractHTTPDataFromEvent as jest.MockedFunction<typeof extractHTTPDataFromEvent>;
 
 describe("AppSec orchestrator", () => {
-  const originalEnv = process.env;
-
   beforeEach(() => {
     jest.clearAllMocks();
-    process.env = { ...originalEnv };
-  });
-
-  afterAll(() => {
-    process.env = originalEnv;
   });
 
   describe("initAppsec", () => {
-    it("should enable when DD_APPSEC_ENABLED is true", () => {
-      process.env.DD_APPSEC_ENABLED = "true";
-      initAppsec();
+    it("should enable when called with true", () => {
+      initAppsec(true);
 
       const span = { setTag: jest.fn() };
       mockExtract.mockReturnValue({
@@ -46,73 +38,8 @@ describe("AppSec orchestrator", () => {
       expect(mockPublish).toHaveBeenCalled();
     });
 
-    it("should enable when DD_APPSEC_ENABLED is 1", () => {
-      process.env.DD_APPSEC_ENABLED = "1";
-      initAppsec();
-
-      const span = { setTag: jest.fn() };
-      mockExtract.mockReturnValue({
-        headers: {},
-        method: "GET",
-        path: "/",
-        isBase64Encoded: false,
-      });
-
-      processAppsecRequest({}, span);
-      expect(mockPublish).toHaveBeenCalled();
-    });
-
-    it("should enable when DD_APPSEC_ENABLED is TRUE (uppercase)", () => {
-      process.env.DD_APPSEC_ENABLED = "TRUE";
-      initAppsec();
-
-      const span = { setTag: jest.fn() };
-      mockExtract.mockReturnValue({
-        headers: {},
-        method: "GET",
-        path: "/",
-        isBase64Encoded: false,
-      });
-
-      processAppsecRequest({}, span);
-      expect(mockPublish).toHaveBeenCalled();
-    });
-
-    it("should enable when DD_APPSEC_ENABLED is True (mixed case)", () => {
-      process.env.DD_APPSEC_ENABLED = "True";
-      initAppsec();
-
-      const span = { setTag: jest.fn() };
-      mockExtract.mockReturnValue({
-        headers: {},
-        method: "GET",
-        path: "/",
-        isBase64Encoded: false,
-      });
-
-      processAppsecRequest({}, span);
-      expect(mockPublish).toHaveBeenCalled();
-    });
-
-    it("should not enable when DD_APPSEC_ENABLED is not set", () => {
-      delete process.env.DD_APPSEC_ENABLED;
-      initAppsec();
-
-      processAppsecRequest({}, {});
-      expect(mockPublish).not.toHaveBeenCalled();
-    });
-
-    it("should not enable when DD_APPSEC_ENABLED is false", () => {
-      process.env.DD_APPSEC_ENABLED = "false";
-      initAppsec();
-
-      processAppsecRequest({}, {});
-      expect(mockPublish).not.toHaveBeenCalled();
-    });
-
-    it("should not enable when DD_APPSEC_ENABLED is FALSE (uppercase)", () => {
-      process.env.DD_APPSEC_ENABLED = "FALSE";
-      initAppsec();
+    it("should not enable when called with false", () => {
+      initAppsec(false);
 
       processAppsecRequest({}, {});
       expect(mockPublish).not.toHaveBeenCalled();
@@ -121,8 +48,7 @@ describe("AppSec orchestrator", () => {
 
   describe("processAppSecRequest", () => {
     beforeEach(() => {
-      process.env.DD_APPSEC_ENABLED = "true";
-      initAppsec();
+      initAppsec(true);
     });
 
     it("should not publish when span is falsy", () => {
@@ -176,8 +102,7 @@ describe("AppSec orchestrator", () => {
 
   describe("processAppSecResponse", () => {
     beforeEach(() => {
-      process.env.DD_APPSEC_ENABLED = "true";
-      initAppsec();
+      initAppsec(true);
     });
 
     it("should not publish when span is falsy", () => {

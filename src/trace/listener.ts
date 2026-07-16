@@ -91,6 +91,11 @@ export interface TraceConfig {
    * @default false
    */
   dataStreamsEnabled: boolean;
+  /**
+   * Whether to enable AppSec (In-App WAF) request/response analysis.
+   * @default false
+   */
+  appsecEnabled: boolean;
 }
 
 export class TraceListener {
@@ -117,7 +122,7 @@ export class TraceListener {
   }
 
   public async onStartInvocation(event: any, context: Context) {
-    initAppsec();
+    initAppsec(this.config.appsecEnabled);
 
     const tracerInitialized = this.tracerWrapper.isTracerAvailable;
     if (this.config.injectLogContext) {

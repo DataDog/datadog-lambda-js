@@ -81,6 +81,7 @@ describe("TraceListener", () => {
     coldStartTraceSkipLib: "",
     addSpanPointers: true,
     dataStreamsEnabled: true,
+    appsecEnabled: true,
   };
   const context = {
     invokedFunctionArn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
@@ -620,11 +621,19 @@ describe("TraceListener", () => {
   });
 
   describe("AppSec integration", () => {
-    it("calls initAppsec on start invocation", async () => {
+    it("calls initAppsec with the resolved appsecEnabled config value on start invocation", async () => {
       const listener = new TraceListener(defaultConfig);
       await listener.onStartInvocation({}, context as any);
 
       expect(mockInitAppsec).toHaveBeenCalledTimes(1);
+      expect(mockInitAppsec).toHaveBeenCalledWith(defaultConfig.appsecEnabled);
+    });
+
+    it("calls initAppsec with false when appsecEnabled is disabled in config", async () => {
+      const listener = new TraceListener({ ...defaultConfig, appsecEnabled: false });
+      await listener.onStartInvocation({}, context as any);
+
+      expect(mockInitAppsec).toHaveBeenCalledWith(false);
     });
 
     it("calls processAppsecRequest with event and span during onRequestStart", async () => {
