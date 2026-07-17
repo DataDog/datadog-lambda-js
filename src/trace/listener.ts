@@ -197,7 +197,6 @@ export class TraceListener {
     // so we won't crash user code.
     if (!this.tracerWrapper.currentSpan) return false;
     this.wrappedCurrentSpan = new SpanWrapper(this.tracerWrapper.currentSpan, {});
-
     if (this.config.captureLambdaPayload) {
       tagObject(this.tracerWrapper.currentSpan, "function.request", event, 0, this.config.captureLambdaPayloadMaxDepth);
       tagObject(
@@ -235,7 +234,6 @@ export class TraceListener {
     if (this.config.appsecEnabled) {
       processAppsecResponse(this.tracerWrapper.currentSpan, result);
     }
-
     if (this.triggerTags) {
       const statusCode = extractHTTPStatusCodeTag(this.triggerTags, result, isResponseStreamFunction);
 
