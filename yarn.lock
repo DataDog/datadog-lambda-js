@@ -1211,7 +1211,7 @@
   resolved "https://registry.yarnpkg.com/@datadog/libdatadog/-/libdatadog-0.9.4.tgz#3d39c3561fa11a702c0e5e7819c83f4e03c07b78"
   integrity sha512-55wHHAuhHOOrBGoWV+fRuEDypN6PMJZq4LTOwExnhoDMvVcZKtqYT05xea/toRs0o75+A1IeNAQHsRLbJMf5oA==
 
-"@datadog/native-appsec@11.0.1":
+"@datadog/native-appsec@*", "@datadog/native-appsec@11.0.1":
   version "11.0.1"
   resolved "https://registry.yarnpkg.com/@datadog/native-appsec/-/native-appsec-11.0.1.tgz#8b545a9d968131d9cd7b43fd9594228dfcc18f3c"
   integrity sha512-Y/XfknUmmJcw4hhQVhqzgdQvfjy+EGmXuUBgtVkI1r+/qS00egYu+wD/x7pOvjdbZNqN96znVszAnXvDQAzMDQ==
@@ -2967,15 +2967,10 @@ dc-polyfill@^0.1.11:
   resolved "https://registry.yarnpkg.com/dc-polyfill/-/dc-polyfill-0.1.11.tgz#3efa792147f3b5224b8a9274905b1e98fe82a856"
   integrity sha512-TyyeGcjx0YeThAI9fTFtgsvj5qd4R+aGfVmXiUhevbgzWFDr7IK4tv4YjE6jaGzLHQTchk4h7DHdr5q4WGgaZw==
 
-dc-polyfill@^0.1.3:
-  version "0.1.9"
-  resolved "https://registry.npmjs.org/dc-polyfill/-/dc-polyfill-0.1.9.tgz"
-  integrity sha512-D5mJThEEk9hf+CJPwTf9JFsrWdlWp8Pccjxkhf7uUT/E/cU9Mx3ebWe2Bz2OawRmJ6WS9eaDPBkeBE4uOKq9uw==
-
-dd-trace@^5.109.0:
-  version "5.114.0"
-  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-5.114.0.tgz#b7ab0b7d5c6e22b7bf1830b6504b4d386e9a432f"
-  integrity sha512-RBQGHdD5eCGqquuBTqWpNakA5WgMjecNNG+rniWYpdSXuqR/i9gBDzflHPGT/mb46xdPo8hQngkRTbKmJp1V0g==
+dd-trace@^5.113.0:
+  version "5.115.0"
+  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-5.115.0.tgz#9163c107cbb73b5d3584c733ebec7d71b212b8b9"
+  integrity sha512-bZpHDDUmhSo4nQRr1j8VFdLOYK+r7XquK3wS6TqYFvkdH0hhDgmOUmypQG7i1/lEcRFQBY+Z76Tyio8/LAl0sw==
   dependencies:
     dc-polyfill "^0.1.11"
     import-in-the-middle "^3.3.1"

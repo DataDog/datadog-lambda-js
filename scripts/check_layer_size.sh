@@ -7,9 +7,9 @@
 
 # Compares layer size to threshold, and fails if below that threshold
 
-# 7 mb size limit
-MAX_LAYER_COMPRESSED_SIZE_KB=$(expr 7 \* 1024)
-MAX_LAYER_UNCOMPRESSED_SIZE_KB=$(expr 19 \* 1024)
+# 9 mb size limit
+MAX_LAYER_COMPRESSED_SIZE_KB=$(expr 9 \* 1024)
+MAX_LAYER_UNCOMPRESSED_SIZE_KB=$(expr 24 \* 1024)
 
 
 LAYER_FILES_PREFIX="datadog_lambda_node"

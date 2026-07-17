@@ -22,6 +22,7 @@
   "devDependencies": {
     "@aws-sdk/client-kms": "^3.366.0",
     "@aws-sdk/client-secrets-manager": "^3.721.0",
+    "@datadog/native-appsec": "*",
     "@datadog/pprof": "5.14.4",
     "@opentelemetry/api": ">=1.0.0 <1.10.0",
     "@opentelemetry/api-logs": "<1.0.0",
@@ -32,7 +33,7 @@
     "@types/node": "^20.12.10",
     "@types/promise-retry": "^1.1.3",
     "@types/shimmer": "^1.0.1",
-    "dd-trace": "^5.109.0",
+    "dd-trace": "^5.113.0",
     "jest": "^27.0.1",
     "mock-fs": "4.14.0",
     "nock": "13.5.4",
@@ -43,7 +44,7 @@
   },
   "dependencies": {
     "@aws-crypto/sha256-js": "5.2.0",
-    "dc-polyfill": "^0.1.3",
+    "dc-polyfill": "^0.1.11",
     "promise-retry": "^2.0.1",
     "serialize-error": "^8.1.0",
     "shimmer": "1.2.1"
