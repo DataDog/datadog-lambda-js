@@ -74,14 +74,14 @@ describe("AppSec orchestrator", () => {
 
   describe("processAppSecResponse", () => {
     it("should not publish when span is falsy", () => {
-      processAppsecResponse(null, "200");
+      processAppsecResponse(null, { statusCode: 200 });
       expect(mockPublish).not.toHaveBeenCalled();
     });
 
-    it("should publish response data to the end-invocation channel", () => {
+    it("should extract status code and headers from the result and publish them", () => {
       const span = { setTag: jest.fn() };
 
-      processAppsecResponse(span, "200", { "content-type": "application/json" });
+      processAppsecResponse(span, { statusCode: 200, headers: { "content-type": "application/json" } });
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -90,10 +90,10 @@ describe("AppSec orchestrator", () => {
       });
     });
 
-    it("should publish with undefined statusCode and headers", () => {
+    it("should publish with undefined statusCode and headers when result has none", () => {
       const span = { setTag: jest.fn() };
 
-      processAppsecResponse(span);
+      processAppsecResponse(span, {});
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,

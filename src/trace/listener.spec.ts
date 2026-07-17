@@ -685,7 +685,7 @@ describe("TraceListener", () => {
       }
     });
 
-    it("calls processAppsecResponse with span, statusCode, and headers during onEndingInvocation", async () => {
+    it("calls processAppsecResponse with the span and the raw result during onEndingInvocation", async () => {
       const mockSetTag = jest.fn();
       const mockSpan = { setTag: mockSetTag };
       const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
@@ -698,24 +698,7 @@ describe("TraceListener", () => {
         listener.onEndingInvocation(event, result, false);
 
         expect(mockProcessAppsecResponse).toHaveBeenCalledTimes(1);
-        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, "200", { "content-type": "application/json" });
-      } finally {
-        currentSpanSpy.mockRestore();
-      }
-    });
-
-    it("calls processAppsecResponse with undefined statusCode and headers when result has none", async () => {
-      const mockSetTag = jest.fn();
-      const mockSpan = { setTag: mockSetTag };
-      const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
-
-      try {
-        const listener = new TraceListener(defaultConfig);
-        await listener.onStartInvocation({}, context as any);
-        listener.onEndingInvocation({}, {}, false);
-
-        expect(mockProcessAppsecResponse).toHaveBeenCalledTimes(1);
-        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, undefined, undefined);
+        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, result);
       } finally {
         currentSpanSpy.mockRestore();
       }

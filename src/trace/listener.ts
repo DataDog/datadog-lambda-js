@@ -233,9 +233,7 @@ export class TraceListener {
       clearTraceTree();
     }
     if (this.config.appsecEnabled) {
-      const responseStatusCode = result?.statusCode?.toString();
-      const responseHeaders = result?.headers as Record<string, string> | undefined;
-      processAppsecResponse(this.tracerWrapper.currentSpan, responseStatusCode, responseHeaders);
+      processAppsecResponse(this.tracerWrapper.currentSpan, result);
     }
 
     if (this.triggerTags) {

@@ -30,12 +30,12 @@ export function processAppsecRequest(event: any, span: any): void {
   });
 }
 
-export function processAppsecResponse(span: any, statusCode?: string, responseHeaders?: Record<string, string>): void {
+export function processAppsecResponse(span: any, result: any): void {
   if (!span || !endInvocationChannel.hasSubscribers) return;
 
   endInvocationChannel.publish({
     span,
-    statusCode,
-    responseHeaders,
+    statusCode: result?.statusCode?.toString(),
+    responseHeaders: result?.headers as Record<string, string> | undefined,
   });
 }
