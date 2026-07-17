@@ -7,7 +7,7 @@ jest.mock("dc-polyfill", () => ({
   })),
 }));
 
-import { initAppsec, processAppsecRequest, processAppsecResponse } from "./index";
+import { processAppsecRequest, processAppsecResponse } from "./index";
 
 jest.mock("./event-data-extractor", () => ({
   extractHTTPDataFromEvent: jest.fn(),
@@ -22,35 +22,7 @@ describe("AppSec orchestrator", () => {
     jest.clearAllMocks();
   });
 
-  describe("initAppsec", () => {
-    it("should enable when called with true", () => {
-      initAppsec(true);
-
-      const span = { setTag: jest.fn() };
-      mockExtract.mockReturnValue({
-        headers: { host: "example.com" },
-        method: "GET",
-        path: "/",
-        isBase64Encoded: false,
-      });
-
-      processAppsecRequest({}, span);
-      expect(mockPublish).toHaveBeenCalled();
-    });
-
-    it("should not enable when called with false", () => {
-      initAppsec(false);
-
-      processAppsecRequest({}, {});
-      expect(mockPublish).not.toHaveBeenCalled();
-    });
-  });
-
   describe("processAppSecRequest", () => {
-    beforeEach(() => {
-      initAppsec(true);
-    });
-
     it("should not publish when span is falsy", () => {
       processAppsecRequest({}, null);
       expect(mockPublish).not.toHaveBeenCalled();
@@ -101,10 +73,6 @@ describe("AppSec orchestrator", () => {
   });
 
   describe("processAppSecResponse", () => {
-    beforeEach(() => {
-      initAppsec(true);
-    });
-
     it("should not publish when span is falsy", () => {
       processAppsecResponse(null, "200");
       expect(mockPublish).not.toHaveBeenCalled();

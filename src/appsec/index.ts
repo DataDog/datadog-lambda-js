@@ -6,14 +6,8 @@ import { extractHTTPDataFromEvent } from "./event-data-extractor";
 const startInvocationChannel = dc.channel("datadog:lambda:start-invocation");
 const endInvocationChannel = dc.channel("datadog:lambda:end-invocation");
 
-let enabled = false;
-
-export function initAppsec(appsecEnabled: boolean): void {
-  enabled = appsecEnabled;
-}
-
 export function processAppsecRequest(event: any, span: any): void {
-  if (!enabled || !span || !startInvocationChannel.hasSubscribers) return;
+  if (!span || !startInvocationChannel.hasSubscribers) return;
 
   const httpData = extractHTTPDataFromEvent(event);
   if (!httpData) {
@@ -37,7 +31,7 @@ export function processAppsecRequest(event: any, span: any): void {
 }
 
 export function processAppsecResponse(span: any, statusCode?: string, responseHeaders?: Record<string, string>): void {
-  if (!enabled || !span || !endInvocationChannel.hasSubscribers) return;
+  if (!span || !endInvocationChannel.hasSubscribers) return;
 
   endInvocationChannel.publish({
     span,

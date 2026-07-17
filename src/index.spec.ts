@@ -553,7 +553,7 @@ describe("datadog", () => {
       return { statusCode: 200 };
     };
 
-    const wrapped = datadog(handlerUnderTest, { forceWrap: true });
+    const wrapped = datadog(handlerUnderTest, { forceWrap: true, appsecEnabled: true });
     await wrapped({}, mockContext, () => {});
 
     expect(callOrder).toEqual(["appsec-request", "user-handler"]);

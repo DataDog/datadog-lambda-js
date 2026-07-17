@@ -12,12 +12,10 @@ import {
 } from "./context/extractor";
 import { TracerWrapper } from "./tracer-wrapper";
 
-const mockInitAppsec = jest.fn();
 const mockProcessAppsecRequest = jest.fn();
 const mockProcessAppsecResponse = jest.fn();
 
 jest.mock("../appsec", () => ({
-  initAppsec: (...args: any[]) => mockInitAppsec(...args),
   processAppsecRequest: (...args: any[]) => mockProcessAppsecRequest(...args),
   processAppsecResponse: (...args: any[]) => mockProcessAppsecResponse(...args),
 }));
@@ -98,7 +96,6 @@ describe("TraceListener", () => {
   };
   beforeEach(() => {
     wrapSpy.mockClear();
-    mockInitAppsec.mockClear();
     mockProcessAppsecRequest.mockClear();
     mockProcessAppsecResponse.mockClear();
     mockController.mockSpanContext = undefined;
@@ -621,19 +618,36 @@ describe("TraceListener", () => {
   });
 
   describe("AppSec integration", () => {
-    it("calls initAppsec with the resolved appsecEnabled config value on start invocation", async () => {
-      const listener = new TraceListener(defaultConfig);
-      await listener.onStartInvocation({}, context as any);
+    it("does not call processAppsecRequest during onRequestStart when appsecEnabled is false", async () => {
+      const mockSpan = { setTag: jest.fn() };
+      const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
 
-      expect(mockInitAppsec).toHaveBeenCalledTimes(1);
-      expect(mockInitAppsec).toHaveBeenCalledWith(defaultConfig.appsecEnabled);
+      try {
+        const listener = new TraceListener({ ...defaultConfig, appsecEnabled: false });
+        const event = { httpMethod: "GET", path: "/test" };
+        await listener.onStartInvocation(event, context as any);
+        listener.onRequestStart(event);
+
+        expect(mockProcessAppsecRequest).not.toHaveBeenCalled();
+      } finally {
+        currentSpanSpy.mockRestore();
+      }
     });
 
-    it("calls initAppsec with false when appsecEnabled is disabled in config", async () => {
-      const listener = new TraceListener({ ...defaultConfig, appsecEnabled: false });
-      await listener.onStartInvocation({}, context as any);
+    it("does not call processAppsecResponse during onEndingInvocation when appsecEnabled is false", async () => {
+      const mockSpan = { setTag: jest.fn() };
+      const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
 
-      expect(mockInitAppsec).toHaveBeenCalledWith(false);
+      try {
+        const listener = new TraceListener({ ...defaultConfig, appsecEnabled: false });
+        const result = { statusCode: 200, headers: { "content-type": "application/json" } };
+        await listener.onStartInvocation({}, context as any);
+        listener.onEndingInvocation({}, result, false);
+
+        expect(mockProcessAppsecResponse).not.toHaveBeenCalled();
+      } finally {
+        currentSpanSpy.mockRestore();
+      }
     });
 
     it("calls processAppsecRequest with event and span during onRequestStart", async () => {
