@@ -72,6 +72,11 @@ RUN rm -rf /nodejs/node_modules/@datadog/native-appsec/prebuilds/win32-x64
 RUN rm -rf /nodejs/node_modules/@datadog/native-appsec/prebuilds/linuxmusl-arm64
 RUN rm -rf /nodejs/node_modules/@datadog/native-appsec/prebuilds/linuxmusl-x64
 
+# Remove the Test Optimization validation runbook from dd-trace. It is agent-guided
+# debugging tooling for CI environments and is never loaded in a lambda environment.
+RUN rm -rf /nodejs/node_modules/dd-trace/ci
+RUN rm -rf /nodejs/node_modules/dd-trace/packages/dd-trace/src/ci-visibility/exporters/ci-validation
+
 # Remove heavy files from @opentelemetry/api which aren't used in a lambda environment.
 # TODO: Create a completely separate Datadog scoped package for OpenTelemetry instead.
 RUN rm -rf /nodejs/node_modules/@opentelemetry/api/build/esm
