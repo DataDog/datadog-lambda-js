@@ -19,12 +19,15 @@ if (process.env.DD_TRACE_DISABLED_PLUGINS === undefined) {
 }
 
 // True when dd-trace's ESM loader hook is already active via NODE_OPTIONS or
-// execArgv (e.g. the standard ESM setup: NODE_OPTIONS=--import dd-trace/initialize.mjs).
+// execArgv. Covers every preload entry point that registers the hook:
+//   --import dd-trace/initialize.mjs  (documented ESM setup)
+//   --loader dd-trace/initialize.mjs  (legacy)
+//   --require dd-trace/register.js    (documented CJS setup; also registers the hook)
 // module.register() does not dedupe — a second registration chains another hooks
 // worker and every module would be rewritten twice.
 function esmLoaderAlreadyRegistered() {
   const sources = [process.env.NODE_OPTIONS || "", ...process.execArgv];
-  return sources.some((source) => /dd-trace[\\/][^\s]*\.mjs/.test(source));
+  return sources.some((source) => /dd-trace[\\/](?:[^\s]*\.mjs|register\.js)/.test(source));
 }
 
 if (getEnvValue("DD_TRACE_ENABLED", "true").toLowerCase() === "true") {
