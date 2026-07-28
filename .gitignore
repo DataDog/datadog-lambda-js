@@ -14,3 +14,6 @@ package-lock.json
 /.idea/
 
 .gitlab/build-*.yaml
+
+# Local datadog-lambda-js tarballs produced for container integration tests
+integration_tests/container/*/datadog-lambda-js-local.tgz

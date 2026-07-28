@@ -67,8 +67,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -108,8 +107,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -132,8 +130,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -158,8 +155,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -235,8 +231,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -271,8 +266,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -295,8 +289,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -319,8 +312,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -396,8 +388,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -432,8 +423,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -456,8 +446,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -480,8 +469,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -557,8 +545,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -593,8 +580,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -617,8 +603,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -641,8 +626,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -717,8 +701,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -754,8 +737,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -780,8 +762,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -856,8 +837,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -893,8 +873,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -919,8 +898,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -995,8 +973,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1032,8 +1009,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1058,8 +1034,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -1133,8 +1108,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1170,8 +1144,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1196,8 +1169,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -1270,8 +1242,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1307,8 +1278,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1333,8 +1303,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]

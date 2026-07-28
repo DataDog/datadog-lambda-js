@@ -41,6 +41,7 @@ describe("SNSEventTraceExtractor", () => {
     coldStartTraceSkipLib: "",
     addSpanPointers: true,
     dataStreamsEnabled: true,
+    appsecEnabled: false,
   };
 
   describe("extract", () => {

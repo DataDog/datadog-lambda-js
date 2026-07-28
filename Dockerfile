@@ -8,7 +8,7 @@ RUN mkdir -p /nodejs/node_modules/
 # Install dev dependencies
 COPY . datadog-lambda-js
 WORKDIR /datadog-lambda-js
-RUN yarn install
+RUN yarn install --ignore-engines
 
 # Build the lambda layer
 RUN yarn build
@@ -32,14 +32,15 @@ fs.writeFileSync(
 EOF
 
 RUN cp ./src/handler.mjs /nodejs/node_modules/datadog-lambda-js
-RUN rm -rf node_modules
 
 # Move dd-trace from devDependencies to production dependencies
 # That way it is included in our layer, while keeping it an optional dependency for npm
 RUN node ./scripts/move_ddtrace_dependency.js "$(cat package.json)" > package-new.json
 RUN mv package-new.json package.json
+RUN rm -rf node_modules
+
 # Install dependencies
-RUN yarn install --production=true --ignore-optional
+RUN yarn install --production=true --ignore-optional --ignore-engines
 # Copy the dependencies to the modules folder
 RUN cp -rf node_modules/* /nodejs/node_modules
 
@@ -61,6 +62,20 @@ RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/node-111.node
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/node-120.node
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/node-131.node
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/node-141.node
+
+# Remove unused @datadog/native-appsec prebuilds for non-Lambda platforms.
+# Lambda runs on Amazon Linux 2 (glibc), on x64 or arm64.
+RUN rm -rf /nodejs/node_modules/@datadog/native-appsec/prebuilds/darwin-arm64
+RUN rm -rf /nodejs/node_modules/@datadog/native-appsec/prebuilds/darwin-x64
+RUN rm -rf /nodejs/node_modules/@datadog/native-appsec/prebuilds/win32-ia32
+RUN rm -rf /nodejs/node_modules/@datadog/native-appsec/prebuilds/win32-x64
+RUN rm -rf /nodejs/node_modules/@datadog/native-appsec/prebuilds/linuxmusl-arm64
+RUN rm -rf /nodejs/node_modules/@datadog/native-appsec/prebuilds/linuxmusl-x64
+
+# Remove the Test Optimization validation runbook from dd-trace. It is agent-guided
+# debugging tooling for CI environments and is never loaded in a lambda environment.
+RUN rm -rf /nodejs/node_modules/dd-trace/ci
+RUN rm -rf /nodejs/node_modules/dd-trace/packages/dd-trace/src/ci-visibility/exporters/ci-validation
 
 # Remove heavy files from @opentelemetry/api which aren't used in a lambda environment.
 # TODO: Create a completely separate Datadog scoped package for OpenTelemetry instead.

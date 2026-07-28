@@ -6,6 +6,7 @@
 const file = JSON.parse(process.argv[2]);
 
 moveDependency('dd-trace')
+moveDependency('@datadog/native-appsec')
 moveDependency('@datadog/pprof')
 moveDependency('@opentelemetry/api')
 moveDependency('@opentelemetry/api-logs')

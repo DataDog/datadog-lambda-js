@@ -28,6 +28,8 @@ import {
 import { XrayService } from "./xray-service";
 import { AUTHORIZING_REQUEST_ID_HEADER } from "./context/extractors/http";
 import { getSpanPointerAttributes, SpanPointerAttributes } from "../utils/span-pointers";
+import { processAppsecRequest, processAppsecResponse } from "../appsec";
+
 export type TraceExtractor = (event: any, context: Context) => Promise<TraceContext> | TraceContext;
 
 export interface TraceConfig {
@@ -89,6 +91,11 @@ export interface TraceConfig {
    * @default false
    */
   dataStreamsEnabled: boolean;
+  /**
+   * Whether to enable AppSec (In-App WAF) request/response analysis.
+   * @default false
+   */
+  appsecEnabled: boolean;
 }
 
 export class TraceListener {
@@ -165,6 +172,17 @@ export class TraceListener {
   }
 
   /**
+   * onRequestStart runs once the aws.lambda span is active, before the user
+   * function is invoked.
+   *
+   * @param event
+   */
+  public onRequestStart(event: any): void {
+    if (!this.config.appsecEnabled) return;
+    processAppsecRequest(event, this.tracerWrapper.currentSpan);
+  }
+
+  /**
    * onEndingInvocation runs after the user function has returned
    * but before the wrapped function has returned
    * this is needed to apply tags to the lambda span
@@ -212,6 +230,9 @@ export class TraceListener {
       }
       // Always clear the tree to prevent memory leaks, even if we skip span creation
       clearTraceTree();
+    }
+    if (this.config.appsecEnabled) {
+      processAppsecResponse(this.tracerWrapper.currentSpan, result);
     }
     if (this.triggerTags) {
       const statusCode = extractHTTPStatusCodeTag(this.triggerTags, result, isResponseStreamFunction);
