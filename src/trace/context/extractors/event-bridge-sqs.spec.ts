@@ -40,6 +40,7 @@ describe("EventBridgeSQSEventTraceExtractor", () => {
     coldStartTraceSkipLib: "",
     addSpanPointers: true,
     dataStreamsEnabled: true,
+    appsecEnabled: false,
   };
 
   describe("extract", () => {
