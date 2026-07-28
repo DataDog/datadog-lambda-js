@@ -55,8 +55,15 @@ Reference: https://datadoghq.atlassian.net/wiki/spaces/SLS/pages/3375925277
 12. **Guardrail: confirm before triggering**, then run the `sign-layer
     (nodeXX)` manual job for every supported runtime. This deploys the
     layer to every commercial region.
+    - Claude does not have GitLab UI/API access by default, so this is
+      normally an instruction the user runs themselves — walk them through
+      clicking the job in the GitLab pipeline and wait for them to confirm
+      it finished before moving on. Only trigger it directly if the user
+      has explicitly set up GitLab API credentials for Claude to use, and
+      still confirm before every single trigger, per the guardrail above.
 13. **Guardrail: confirm before triggering**, then run the
-    `publish-npm-package` manual job. Afterward, verify publicly:
+    `publish-npm-package` manual job (same access caveat as step 12).
+    Afterward, verify publicly:
     ```
     mkdir new-dir && cd new-dir && npm init -y
     npm install datadog-lambda-js@<new version>
@@ -64,6 +71,9 @@ Reference: https://datadoghq.atlassian.net/wiki/spaces/SLS/pages/3375925277
 14. **Guardrail: confirm before creating**, then draft a GitHub release on
     the [releases page](https://github.com/DataDog/datadog-lambda-js/releases):
     - Select the new tag and the previous tag, generate release notes.
+    - Call out which `dd-trace` version is packaged in this release (from
+      step 2 of Phase 1) — this is important for users debugging tracer
+      behavior against a specific layer version.
     - Paste in layer ARNs for every runtime and region pattern, e.g.:
       ```
       arn:aws:lambda:<AWS_REGION>:464622532012:layer:Datadog-Node18-x:117
@@ -85,8 +95,11 @@ to stay manual.
 
 1. Confirm AWS SSO is set up for both Commercial and GovCloud (see
    [cloud-inventory setup](https://github.com/DataDog/cloud-inventory/tree/master/organizations/aws#aws-cli-config-setup--update)).
-2. From the Phase 1 pipeline's Sign layer jobs, download each job's
-   artifacts and place the layer bundle zips in the local `.layers` folder.
+2. Check the Phase 1 pipeline for a single job that bundles all runtimes'
+   signed layers together (e.g. a "signed layer bundle" artifact) — if one
+   exists, download that instead of going job-by-job. Otherwise, fall back
+   to downloading each individual `sign-layer (nodeXX)` job's artifacts.
+   Place the resulting layer bundle zips in the local `.layers` folder.
 3. **Guardrail: confirm before running**, then for each GovCloud
    environment:
    ```
