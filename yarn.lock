@@ -1193,7 +1193,7 @@
 
 "@datadog/flagging-core@1.2.1":
   version "1.2.1"
-  resolved "https://registry.npmjs.org/@datadog/flagging-core/-/flagging-core-1.2.1.tgz"
+  resolved "https://registry.yarnpkg.com/@datadog/flagging-core/-/flagging-core-1.2.1.tgz#1bb2d1ecfd749033ed2570eccc8fb0697b8adfac"
   integrity sha512-qeDkki9fFlqyoZBrn7tneT6pZ04EKKvf3xxisYw1a74zbJihvQui/ARUsjXCurRpzpFqGGTJw/oz+HnXaKhcdw==
   dependencies:
     spark-md5 "^3.0.2"
@@ -1212,14 +1212,14 @@
 
 "@datadog/native-iast-taint-tracking@4.2.0":
   version "4.2.0"
-  resolved "https://registry.npmjs.org/@datadog/native-iast-taint-tracking/-/native-iast-taint-tracking-4.2.0.tgz"
+  resolved "https://registry.yarnpkg.com/@datadog/native-iast-taint-tracking/-/native-iast-taint-tracking-4.2.0.tgz#ca05a1510af130e14fad7721b539dcf151ee235f"
   integrity sha512-NpZABJQoNMzF6cU521RT4GQ8/FbfFRoDepOLTcLYKyw0DY2WmSpg3iG+PoQNK4O3jPSXC++K3rg59GiQgA3Mog==
   dependencies:
     node-gyp-build "^3.9.0"
 
 "@datadog/native-metrics@3.1.2":
   version "3.1.2"
-  resolved "https://registry.npmjs.org/@datadog/native-metrics/-/native-metrics-3.1.2.tgz"
+  resolved "https://registry.yarnpkg.com/@datadog/native-metrics/-/native-metrics-3.1.2.tgz#9dc269bdbc6f5b5c9a30dc6d99bab44d17dd5a37"
   integrity sha512-7AEWt0ZLr/ogR/9if1DmFBDTg3y67xM+gdhXUXKs+UQMxK0lnjrOHgN7fkpEmUG1uL+EkX2BDE3ENDlQ23J7OQ==
   dependencies:
     node-addon-api "^6.1.0"
@@ -1241,18 +1241,18 @@
     pprof-format "^2.2.1"
     source-map "^0.7.4"
 
-"@datadog/pprof@5.15.1":
-  version "5.15.1"
-  resolved "https://registry.yarnpkg.com/@datadog/pprof/-/pprof-5.15.1.tgz#934180721351571ad75b1bce7bde406e6b519aaf"
-  integrity sha512-4mI750tX6okNROS4YKvGQjyAQ+VqfzDqzysCytOJhL2E2ktK/q4M0PtC7j70tiirGb/fO9fjma3IMNSRLYX+xQ==
+"@datadog/pprof@5.17.0":
+  version "5.17.0"
+  resolved "https://registry.yarnpkg.com/@datadog/pprof/-/pprof-5.17.0.tgz#1a40cb77243cbfccd1684c70992512f533addb67"
+  integrity sha512-BuedZ4vHzmQkitMMdIhVLQ+nPpHl7WRwcuumJeXt0ylhwGGwt7Kf+4CoS1tDB0FljJXi4izweFfFFTirrijP5w==
   dependencies:
     node-gyp-build "^4.8.4"
     pprof-format "^2.2.1"
-    source-map "^0.7.4"
+    source-map "^0.8.0"
 
 "@datadog/wasm-js-rewriter@5.0.1":
   version "5.0.1"
-  resolved "https://registry.npmjs.org/@datadog/wasm-js-rewriter/-/wasm-js-rewriter-5.0.1.tgz"
+  resolved "https://registry.yarnpkg.com/@datadog/wasm-js-rewriter/-/wasm-js-rewriter-5.0.1.tgz#f227d2e3eb0f83b8a37f190a9ff8fdbde5955782"
   integrity sha512-EzbV3Lrdt3udQEsbDOVC5gB1y7yxfpBbrSIk4jaEsGjyj0Dbv2HGj7tZjs+qXzIzNonHc8h5El2bYZOGfC2wwg==
   dependencies:
     js-yaml "^4.1.0"
@@ -1529,9 +1529,9 @@
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
 "@napi-rs/wasm-runtime@^1.1.4":
-  version "1.1.6"
-  resolved "https://registry.yarnpkg.com/@napi-rs/wasm-runtime/-/wasm-runtime-1.1.6.tgz#ed33806d0f9be98dc76d0c3d4fd872fda701b5d5"
-  integrity sha512-ZLv/JdUfkvOy9eCnnBaGfiO+XimbjebAeO+MRQqD/B+FR1tnRN0tpKSJHRbE8sFfS6aqsXZ67TQjfwfsxULVbg==
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@napi-rs/wasm-runtime/-/wasm-runtime-1.2.0.tgz#d7aa398845e3ab1c9c8f81ea50f527ed37d16715"
+  integrity sha512-kDoONqMa+VnZ4vvvu/ZUurpJ4gkZU57e7g69qpNgWhYcZFPUHZM2CEMKm+cG6ufDVALbjMvfmMjFVqaK7uEMnA==
   dependencies:
     "@tybys/wasm-util" "^0.10.3"
 
@@ -1559,7 +1559,7 @@
 
 "@oxc-parser/binding-darwin-arm64@0.132.0":
   version "0.132.0"
-  resolved "https://registry.npmjs.org/@oxc-parser/binding-darwin-arm64/-/binding-darwin-arm64-0.132.0.tgz"
+  resolved "https://registry.yarnpkg.com/@oxc-parser/binding-darwin-arm64/-/binding-darwin-arm64-0.132.0.tgz#033a8f2789c3d09509ddd1a219dcbf2fd516125f"
   integrity sha512-Lc0f/TYoKBghE5/2Gsv7bLXk+TJZunx2Tf61X8hG4ARXdc8UYI26dCGccFSd1AyFbK3jfaNXtMnupggDbjPXdQ==
 
 "@oxc-parser/binding-darwin-x64@0.132.0":
@@ -1653,7 +1653,7 @@
 
 "@oxc-project/types@^0.132.0":
   version "0.132.0"
-  resolved "https://registry.npmjs.org/@oxc-project/types/-/types-0.132.0.tgz"
+  resolved "https://registry.yarnpkg.com/@oxc-project/types/-/types-0.132.0.tgz#d77243df4fe1a0a1e60e12ac6240fa898d2363ff"
   integrity sha512-FESMOxil5Se014ui/Eq8fT5uHJo6nIRwH0PfJrZJXs6Gek3ZVFOrpUv3YIZT20m+extU98Hg1Ym72U58rlsxUQ==
 
 "@sinonjs/commons@^1.7.0":
@@ -2547,7 +2547,7 @@ cjs-module-lexer@^1.0.0:
 
 cjs-module-lexer@^2.2.0:
   version "2.2.0"
-  resolved "https://registry.npmjs.org/cjs-module-lexer/-/cjs-module-lexer-2.2.0.tgz"
+  resolved "https://registry.yarnpkg.com/cjs-module-lexer/-/cjs-module-lexer-2.2.0.tgz#b3ca5101843389259ade7d88c77bd06ce55849ca"
   integrity sha512-4bHTS2YuzUvtoLjdy+98ykbNB5jS0+07EvFNXerqZQJ89F7DI6ET7OQo/HJuW6K0aVsKA9hj9/RVb2kQVOrPDQ==
 
 cliui@^7.0.2:
@@ -2661,12 +2661,12 @@ dc-polyfill@^0.1.11:
   integrity sha512-TyyeGcjx0YeThAI9fTFtgsvj5qd4R+aGfVmXiUhevbgzWFDr7IK4tv4YjE6jaGzLHQTchk4h7DHdr5q4WGgaZw==
 
 dd-trace@^5.113.0:
-  version "5.115.0"
-  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-5.115.0.tgz#9163c107cbb73b5d3584c733ebec7d71b212b8b9"
-  integrity sha512-bZpHDDUmhSo4nQRr1j8VFdLOYK+r7XquK3wS6TqYFvkdH0hhDgmOUmypQG7i1/lEcRFQBY+Z76Tyio8/LAl0sw==
+  version "5.118.0"
+  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-5.118.0.tgz#a3fbbcc21e9739d96a386dc5e4fbbca0647f7392"
+  integrity sha512-1VNK9st2x9He3na50/L9TrSFDhGavbAy1DEHdRhc8FBipAdVZTZPTSkQdar1z0vi0ZpmW3fMWfzAeGj328d77w==
   dependencies:
     dc-polyfill "^0.1.11"
-    import-in-the-middle "^3.3.1"
+    import-in-the-middle "^3.3.2"
     opentracing ">=0.14.7"
   optionalDependencies:
     "@datadog/libdatadog" "0.9.4"
@@ -2674,7 +2674,7 @@ dd-trace@^5.113.0:
     "@datadog/native-iast-taint-tracking" "4.2.0"
     "@datadog/native-metrics" "3.1.2"
     "@datadog/openfeature-node-server" "2.0.0"
-    "@datadog/pprof" "5.15.1"
+    "@datadog/pprof" "5.17.0"
     "@datadog/wasm-js-rewriter" "5.0.1"
     "@opentelemetry/api" ">=1.0.0 <1.10.0"
     "@opentelemetry/api-logs" "<1.0.0"
@@ -3114,10 +3114,10 @@ ieee754@^1.1.4:
   resolved "https://registry.npmjs.org/ieee754/-/ieee754-1.2.1.tgz"
   integrity sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==
 
-import-in-the-middle@^3.3.1:
-  version "3.3.1"
-  resolved "https://registry.yarnpkg.com/import-in-the-middle/-/import-in-the-middle-3.3.1.tgz#4fe3b46cc1b4573b00bc69343e5f9bbf25679743"
-  integrity sha512-0rymlHSFLwZ0ixx8DaQkoIyZojJPY2a0K2nEYslhKJ6jIYO/m0IcCb7iQsFPmS7WmKwISZiIrv5Icstrw/CmqA==
+import-in-the-middle@^3.3.2:
+  version "3.3.2"
+  resolved "https://registry.yarnpkg.com/import-in-the-middle/-/import-in-the-middle-3.3.2.tgz#af7dacd4f3c25826abfc8314ebc71b6dcf47e238"
+  integrity sha512-jTd2FfOgOWOdgjkHuk/1Ms8VKFXkPs15ymYBETw1sAOrO/dY3XeGVRWir9qBbw7pXr0T2eTFwfCZ+N02HmiNGA==
   dependencies:
     cjs-module-lexer "^2.2.0"
     es-module-lexer "^2.2.0"
@@ -3904,7 +3904,7 @@ node-gyp-build@^3.9.0:
 
 node-gyp-build@^4.5.0, node-gyp-build@^4.8.4:
   version "4.8.4"
-  resolved "https://registry.npmjs.org/node-gyp-build/-/node-gyp-build-4.8.4.tgz"
+  resolved "https://registry.yarnpkg.com/node-gyp-build/-/node-gyp-build-4.8.4.tgz#8a70ee85464ae52327772a90d66c6077a900cfc8"
   integrity sha512-LA4ZjwlnUblHVgq0oBF3Jl/6h/Nvs5fzBLwdEF4nuxnFdsfajde4WfxtJr3CaiH+F6ewcIB/q4jQ4UzPyid+CQ==
 
 node-int64@^0.4.0:
@@ -3950,12 +3950,12 @@ onetime@^5.1.2:
 
 opentracing@>=0.14.7:
   version "0.14.7"
-  resolved "https://registry.npmjs.org/opentracing/-/opentracing-0.14.7.tgz"
+  resolved "https://registry.yarnpkg.com/opentracing/-/opentracing-0.14.7.tgz#25d472bd0296dc0b64d7b94cbc995219031428f5"
   integrity sha512-vz9iS7MJ5+Bp1URw8Khvdyw1H/hGvzHWlKQ7eRrQojSCDL1/SrWfrY9QebLw97n2deyRtzHRC3MkQfVNUCo91Q==
 
 oxc-parser@^0.132.0:
   version "0.132.0"
-  resolved "https://registry.npmjs.org/oxc-parser/-/oxc-parser-0.132.0.tgz"
+  resolved "https://registry.yarnpkg.com/oxc-parser/-/oxc-parser-0.132.0.tgz#4f0ffad5ccfd0235a8ba79f7e6fc988be6f45476"
   integrity sha512-+0LAPHaqtfQlvWdpaAa09SmOaZZgP8C552xosEkGJ4+ruEwP1Vgx+sqBgcBCNfR6KDCmagGOZTde8wmAvcI/Hg==
   dependencies:
     "@oxc-project/types" "^0.132.0"
@@ -4063,9 +4063,9 @@ possible-typed-array-names@^1.0.0:
   integrity sha512-d7Uw+eZoloe0EHDIYoe+bQ5WXnGMOpmiZFTuMWCwpjzzkL2nTjcKiAk4hh8TjnGye2TwWOk3UXucZ+3rbmBa8Q==
 
 pprof-format@^2.2.1:
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/pprof-format/-/pprof-format-2.2.2.tgz#cdee9a4c596f859876a7f8b122746f6817652c97"
-  integrity sha512-hd90rHVDhNOhgHTmazVzDSVwTLOBjpZQ26AO/0j46sAFZ9uSWY0DcK2zJcwnuo2R6EzufBbOoWlPazA5nSyHcg==
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/pprof-format/-/pprof-format-2.3.0.tgz#d2e6843e522c6eae6231224064fdb5567db5c2f1"
+  integrity sha512-ovChRLoV4H3k0zKWq0AXewtnuPGskzBLjBPmF2N0DZu+H65PYuo51+6e/1GTb8Olm7oC0xvhhLdqPL4/XhCl4A==
 
 prettier@^2.3.0:
   version "2.8.8"
@@ -4286,9 +4286,14 @@ source-map@^0.7.4:
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.7.6.tgz#a3658ab87e5b6429c8a1f3ba0083d4c61ca3ef02"
   integrity sha512-i5uvt8C3ikiWeNZSVZNWcfZPItFQOsYTUAOkcUPGd8DqDy1uOUikjt5dG+uRlwyvR108Fb9DOd4GvXfT0N2/uQ==
 
+source-map@^0.8.0:
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.8.0.tgz#72b9006383bd9fc70d52e435c91c2d73249c60a4"
+  integrity sha512-d8EqvL+k/SOXCreS/SUzg2ciyHqBBLcN/yuRjFsbvVhHTE2pgei7oAhmPM7kWFbkX6OSMQfUq4KbkF3au9lhYQ==
+
 spark-md5@^3.0.2:
   version "3.0.2"
-  resolved "https://registry.npmjs.org/spark-md5/-/spark-md5-3.0.2.tgz"
+  resolved "https://registry.yarnpkg.com/spark-md5/-/spark-md5-3.0.2.tgz#7952c4a30784347abcee73268e473b9c0167e3fc"
   integrity sha512-wcFzz9cDfbuqe0FZzfi2or1sgyIrsDwmPwfZC4hiNidPdPINjeUwNfv5kldczoEAcjl9Y1L3SM7Uz2PUEQzxQw==
 
 sprintf-js@~1.0.2:
