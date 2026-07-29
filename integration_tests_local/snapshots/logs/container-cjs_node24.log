@@ -15,7 +15,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)^
     "functionname:integration-tests-js-local-container-cjs_node24",^
     "resource:integration-tests-js-local-container-cjs_node24",^
     "memorysize:3008",^
-    "cold_start:XXXX",^
+    "cold_start:true",^
     "datadog_lambda:vX.X.X",^
     "runtime:nodejs24.x"^
   ],^
@@ -125,7 +125,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)^
     "functionname:integration-tests-js-local-container-cjs_node24",^
     "resource:integration-tests-js-local-container-cjs_node24",^
     "memorysize:3008",^
-    "cold_start:XXXX",^
+    "cold_start:false",^
     "datadog_lambda:vX.X.X",^
     "runtime:nodejs24.x"^
   ],^
@@ -234,7 +234,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)^
     "functionname:integration-tests-js-local-container-cjs_node24",^
     "resource:integration-tests-js-local-container-cjs_node24",^
     "memorysize:3008",^
-    "cold_start:XXXX",^
+    "cold_start:false",^
     "datadog_lambda:vX.X.X",^
     "runtime:nodejs24.x"^
   ],^
@@ -329,9 +329,9 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)^
     ]^
   ]^
 }^
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)^
 END RequestId: XXXX^
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB	^
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)^
 START RequestId: XXXX Version: $LATEST^
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)^
 {^
@@ -343,7 +343,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)^
     "functionname:integration-tests-js-local-container-cjs_node24",^
     "resource:integration-tests-js-local-container-cjs_node24",^
     "memorysize:3008",^
-    "cold_start:XXXX",^
+    "cold_start:false",^
     "datadog_lambda:vX.X.X",^
     "runtime:nodejs24.x"^
   ],^
@@ -452,7 +452,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)^
     "functionname:integration-tests-js-local-container-cjs_node24",^
     "resource:integration-tests-js-local-container-cjs_node24",^
     "memorysize:3008",^
-    "cold_start:XXXX",^
+    "cold_start:false",^
     "datadog_lambda:vX.X.X",^
     "runtime:nodejs24.x"^
   ],^
@@ -546,9 +546,9 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)^
     ]^
   ]^
 }^
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)^
 END RequestId: XXXX^
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB	^
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)^
 START RequestId: XXXX Version: $LATEST^
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)^
 {^
@@ -560,7 +560,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)^
     "functionname:integration-tests-js-local-container-cjs_node24",^
     "resource:integration-tests-js-local-container-cjs_node24",^
     "memorysize:3008",^
-    "cold_start:XXXX",^
+    "cold_start:false",^
     "datadog_lambda:vX.X.X",^
     "runtime:nodejs24.x"^
   ],^
@@ -654,8 +654,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)^
     ]^
   ]^
 }^
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)^
 END RequestId: XXXX^
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)^
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB	^
 START RequestId: XXXX Version: $LATEST^
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)^
@@ -668,7 +668,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)^
     "functionname:integration-tests-js-local-container-cjs_node24",^
     "resource:integration-tests-js-local-container-cjs_node24",^
     "memorysize:3008",^
-    "cold_start:XXXX",^
+    "cold_start:false",^
     "datadog_lambda:vX.X.X",^
     "runtime:nodejs24.x"^
   ],^
@@ -762,9 +762,9 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)^
     ]^
   ]^
 }^
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)^
 END RequestId: XXXX^
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB	^
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)^
 START RequestId: XXXX Version: $LATEST^
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)^
 {^
@@ -776,7 +776,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)^
     "functionname:integration-tests-js-local-container-cjs_node24",^
     "resource:integration-tests-js-local-container-cjs_node24",^
     "memorysize:3008",^
-    "cold_start:XXXX",^
+    "cold_start:false",^
     "datadog_lambda:vX.X.X",^
     "runtime:nodejs24.x"^
   ],^
@@ -883,7 +883,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)^
     "functionname:integration-tests-js-local-container-cjs_node24",^
     "resource:integration-tests-js-local-container-cjs_node24",^
     "memorysize:3008",^
-    "cold_start:XXXX",^
+    "cold_start:false",^
     "datadog_lambda:vX.X.X",^
     "runtime:nodejs24.x"^
   ],^
@@ -975,6 +975,6 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)^
     ]^
   ]^
 }^
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)^
 END RequestId: XXXX^
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB	^
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)^

@@ -61,14 +61,15 @@ node "$repo_dir/integration_tests/parse-json.js" |
     perl -p -e "s/User-Agent:axios\/\d+\.\d+\.\d+/User-Agent:axios\/X\.X\.X/g" |
     # Remove init start line
     perl -p -e "s/INIT_START.*//g" |
-    # Drop proactive-initialization markers: whether AWS proactively
-    # initializes a sandbox (>10s before the first invoke, see
-    # src/utils/cold-start.ts) is platform scheduling and varies run
-    # to run, so snapshots must not assert on it. Same rules as
-    # scripts/run_integration_tests.sh.
+    # Drop proactive-initialization markers only: whether a sandbox was
+    # proactively initialized (>10s between init and first invoke, see
+    # src/utils/cold-start.ts) is platform scheduling, not code behavior.
+    # cold_start values are NOT normalized — the cold->warm transition
+    # (invoke #1 cold_start:true, #2..N false) is deliberate coverage,
+    # and is deterministic locally since proactive init cannot happen
+    # unless SIMULATE_PROACTIVE_INIT=true.
     sed '/proactive_initialization/d' |
     perl -p -e 's/ \(init: [^)]*\)//g' |
-    perl -p -e 's/"cold_start:(true|false)"/"cold_start:XXXX"/g' |
     # Normalize RIE platform log lines (local harness only; no-op on AWS logs):
     # "28 Jul 2026 19:42:34,536 [INFO] (rapid) ..." timestamps, request ids,
     # and init/invoke durations vary run to run
