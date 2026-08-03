@@ -192,7 +192,7 @@ for node_version in "${RUNTIMES[@]}"; do
             fi
             echo "  $input_event_name -> $return_value"
 
-            snapshot_path="$local_dir/snapshots/return_values/${handler_name}_node${node_version}_${input_event_name}.json"
+            snapshot_path="$local_dir/snapshots/return_values/${variant}_node${node_version}_${input_event_name}.json"
             if [ ! -f "$snapshot_path" ]; then
                 echo "$return_value" >"$snapshot_path"
             elif [ -n "$UPDATE_SNAPSHOTS" ]; then
@@ -210,7 +210,7 @@ for node_version in "${RUNTIMES[@]}"; do
         # Give the library a moment to flush traces/metrics to stdout
         sleep 3
 
-        function_snapshot_path="$local_dir/snapshots/logs/${handler_name}_node${node_version}.log"
+        function_snapshot_path="$local_dir/snapshots/logs/${variant}_node${node_version}.log"
         logs=$(docker logs "$cid" 2>&1 | "$local_dir/normalize.sh")
 
         docker rm -f "$cid" >/dev/null 2>&1
