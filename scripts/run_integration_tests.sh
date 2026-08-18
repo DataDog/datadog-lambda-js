@@ -39,8 +39,9 @@ node18=("nodejs18.x" "18.12" $(xxd -l 4 -c 4 -p < /dev/random))
 node20=("nodejs20.x" "20.19" $(xxd -l 4 -c 4 -p < /dev/random))
 node22=("nodejs22.x" "22.11" $(xxd -l 4 -c 4 -p < /dev/random))
 node24=("nodejs24.x" "24.11" $(xxd -l 4 -c 4 -p < /dev/random))
+node26=("nodejs26.x" "26.1" $(xxd -l 4 -c 4 -p < /dev/random))
 
-PARAMETERS_SETS=("node18" "node20" "node22" "node24")
+PARAMETERS_SETS=("node18" "node20" "node22" "node24" "node26")
 
 if [ -z "$RUNTIME_PARAM" ]; then
     echo "Node version not specified, running for all node versions."
@@ -98,7 +99,16 @@ input_event_files=$(ls ./input_events)
 # Sort event files by name so that snapshots stay consistent
 input_event_files=($(for file_name in ${input_event_files[@]}; do echo $file_name; done | sort))
 
-
+# ECR tag for public.ecr.aws/lambda/nodejs used by container-{cjs,esm} tests.
+# Node 26 is preview-only on ECR until GA; plain :26 does not exist yet.
+function lambda_node_image_tag() {
+    local node_major="${1#node}"
+    if [ "$node_major" = "26" ]; then
+        echo "26-preview-x86_64"
+    else
+        echo "$node_major"
+    fi
+}
 
 # Always remove the stacks before exiting, no matter what
 function remove_stack() {
@@ -107,7 +117,7 @@ function remove_stack() {
         nodejs_version=$parameters_set[1]
         run_id=$parameters_set[2]
         echo "Removing stack for stage : ${!run_id}"
-        NODE_VERSION=${!nodejs_version} NODE_MAJOR=${parameters_set#node} RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
+        NODE_VERSION=${!nodejs_version} NODE_MAJOR=$(lambda_node_image_tag $parameters_set) RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
         serverless remove --stage ${!run_id}
     done
 }
@@ -123,7 +133,7 @@ for parameters_set in "${PARAMETERS_SETS[@]}"; do
     echo "Deploying functions for runtime : $parameters_set, serverless runtime : ${!serverless_runtime}, \
 nodejs version : ${!nodejs_version} and run id : ${!run_id}"
 
-    NODE_VERSION=${!nodejs_version} NODE_MAJOR=${parameters_set#node} RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
+    NODE_VERSION=${!nodejs_version} NODE_MAJOR=$(lambda_node_image_tag $parameters_set) RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
     serverless deploy --stage ${!run_id}
 
     echo "Invoking functions for runtime $parameters_set"
@@ -140,7 +150,7 @@ nodejs version : ${!nodejs_version} and run id : ${!run_id}"
             snapshot_path="./snapshots/return_values/${handler_name}_${parameters_set}_${input_event_name}.json"
             function_failed=FALSE
 
-            return_value=$(NODE_VERSION=${!nodejs_version} NODE_MAJOR=${parameters_set#node} RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
+            return_value=$(NODE_VERSION=${!nodejs_version} NODE_MAJOR=$(lambda_node_image_tag $parameters_set) RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
             serverless invoke --stage ${!run_id} -f "$function_name" --path "./input_events/$input_event_file")
             invoke_success=$?
             if [ $invoke_success -ne 0 ]; then
@@ -187,7 +197,7 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
         # Fetch logs with serverless cli, retrying to avoid AWS account-wide rate limit error
         retry_counter=0
         while [ $retry_counter -lt 10 ]; do
-            raw_logs=$(NODE_VERSION=${!nodejs_version} NODE_MAJOR=${parameters_set#node} RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
+            raw_logs=$(NODE_VERSION=${!nodejs_version} NODE_MAJOR=$(lambda_node_image_tag $parameters_set) RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
             serverless logs --stage ${!run_id} -f $function_name --startTime $script_utc_start_time)
             fetch_logs_exit_code=$?
             if [ $fetch_logs_exit_code -eq 1 ]; then
