@@ -9,9 +9,9 @@ RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg -
 RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
 RUN apt-get update && apt-get install -y nodejs
 
-# Install Yarn and Typescript globally
-RUN npm install --global yarn typescript
-RUN yarn global add serverless@^3 --prefix /usr/local
+# Install Yarn, TypeScript, and Serverless globally.
+# Pin Serverless 3.39.0: newer 3.x releases require Node >= 20 via @aws-sdk/client-lambda.
+RUN npm install --global yarn typescript serverless@3.39.0
 
 # Install AWS CLI
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
