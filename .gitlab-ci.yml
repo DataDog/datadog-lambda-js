@@ -18,12 +18,16 @@ ci image:
     - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"'
       changes:
         - .gitlab/Dockerfile
+        - .gitlab-ci.yml
       when: on_success
+    # Rebuild and re-sign :latest when the registry image lost its signature.
+    - when: manual
+      allow_failure: true
   variables:
     DOCKER_TARGET: ${DOCKER_TARGET_IMAGE}:${DOCKER_TARGET_VERSION}
   script:
     - METADATA_FILE=$(mktemp)
-    - docker buildx build --platform linux/amd64,linux/arm64 --no-cache --pull ---tag ${DOCKER_TARGET} -f .gitlab/Dockerfile -push --metadata-file ${METADATA_FILE} .
+    - docker buildx build --platform linux/amd64,linux/arm64 --no-cache --pull --push --tag ${DOCKER_TARGET} --metadata-file ${METADATA_FILE} -f .gitlab/Dockerfile .
     - ddsign sign ${DOCKER_TARGET} --docker-metadata-file ${METADATA_FILE}
 
 .go-cache: &go-cache
