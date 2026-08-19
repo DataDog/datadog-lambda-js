@@ -114,7 +114,8 @@ cp $integration_tests_dir/container/cjs/datadog-lambda-js-local.tgz \
 cd $integration_tests_dir
 # integration_tests/yarn.lock is gitignored; do not use --frozen-lockfile here or
 # a stale local lockfile will skip installing serverless from package.json.
-yarn install
+# CI image ships Node 18; serverless's AWS SDK deps declare engines >=20 but run fine.
+yarn install --ignore-engines
 
 function run_serverless() {
     NODE_VERSION=${!nodejs_version} NODE_MAJOR=$(lambda_node_image_tag $parameters_set) RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \

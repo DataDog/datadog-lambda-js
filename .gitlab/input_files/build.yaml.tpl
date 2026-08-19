@@ -99,7 +99,7 @@ integration test ({{ $runtime.name }}):
   before_script:
     - cd "$CI_PROJECT_DIR"
     - EXTERNAL_ID_NAME=integration-test-externalid ROLE_TO_ASSUME=sandbox-integration-test-deployer AWS_ACCOUNT=425362996713 source "$CI_PROJECT_DIR/.gitlab/scripts/get_secrets.sh"
-    - (cd "$CI_PROJECT_DIR/integration_tests" && yarn install)
+    - (cd "$CI_PROJECT_DIR/integration_tests" && yarn install --ignore-engines)
   script:
     - cd "$CI_PROJECT_DIR"
     - echo "Running integration tests for Node.js ${RUNTIME_PARAM}.x"
