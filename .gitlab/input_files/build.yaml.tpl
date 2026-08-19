@@ -19,6 +19,7 @@ default:
       - runner_system_failure
 
 .node-before-script: &node-before-script
+  - command -v yarn >/dev/null 2>&1 || npm install -g yarn
   - yarn --version
   - echo 'yarn-offline-mirror ".yarn-cache/"' >> .yarnrc
   - echo 'yarn-offline-mirror-pruning true' >> .yarnrc

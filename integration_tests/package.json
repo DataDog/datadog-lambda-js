@@ -13,6 +13,7 @@
     "axios": ">=1.18.1"
   },
   "devDependencies": {
+    "serverless": "3.39.0",
     "serverless-plugin-datadog": "2.2.1"
   }
 }

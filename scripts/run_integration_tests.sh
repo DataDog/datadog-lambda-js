@@ -2,9 +2,16 @@
 
 # Usage - run commands from repo root:
 # To check if new changes to the layer cause changes to any snapshots:
-#   BUILD_LAYERS=true DD_API_KEY=XXXX aws-vault exec sso-serverless-sandbox-account-admin -- ./scripts/run_integration_tests
+#   BUILD_LAYERS=true DD_API_KEY=XXXX aws-vault exec sso-serverless-sandbox-account-admin -- ./scripts/run_integration_tests.sh
 # To regenerate snapshots:
-#   UPDATE_SNAPSHOTS=true DD_API_KEY=XXXX aws-vault exec sso-serverless-sandbox-account-admin -- ./scripts/run_integration_tests
+#   BUILD_LAYERS=true UPDATE_SNAPSHOTS=true DD_API_KEY=XXXX aws-vault exec sso-serverless-sandbox-account-admin -- ./scripts/run_integration_tests.sh
+# To update only zip/layer handler snapshots (skip ECR container-image deploys):
+#   BUILD_LAYERS=true UPDATE_SNAPSHOTS=true SKIP_CONTAINER_TESTS=true DD_API_KEY=XXXX aws-vault exec sso-serverless-sandbox-account-admin -- ./scripts/run_integration_tests.sh
+# To run a single runtime:
+#   RUNTIME_PARAM=26 BUILD_LAYERS=true UPDATE_SNAPSHOTS=true DD_API_KEY=XXXX aws-vault exec sso-serverless-sandbox-account-admin -- ./scripts/run_integration_tests.sh
+#
+# Requires Docker when container-image handlers are enabled. Uses the pinned
+# Serverless CLI from integration_tests/package.json (currently 3.39.0).
 
 set -e
 
@@ -15,10 +22,13 @@ set -e
 export BUILDX_NO_DEFAULT_ATTESTATIONS=1
 
 # These values need to be in sync with serverless.yml, where there needs to be a function
-# defined for every handler_runtime combination
-LAMBDA_HANDLERS=("async-metrics" "esm" "sync-metrics" "http-requests" "process-input-traced" "throw-error-traced" "status-code-500s" "container-cjs" "container-esm")
+# defined for every handler_runtime combination.
+ALL_LAMBDA_HANDLERS=("async-metrics" "esm" "sync-metrics" "http-requests" "process-input-traced" "throw-error-traced" "status-code-500s" "container-cjs" "container-esm")
+ZIP_LAMBDA_HANDLERS=("async-metrics" "esm" "sync-metrics" "http-requests" "process-input-traced" "throw-error-traced" "status-code-500s")
 
 LOGS_WAIT_SECONDS=20
+INTEGRATION_TEST_REGION="eu-west-1"
+INTEGRATION_TEST_ACCOUNT_ID="425362996713"
 
 script_path=${BASH_SOURCE[0]}
 scripts_dir=$(dirname $script_path)
@@ -66,6 +76,15 @@ if [ -n "$UPDATE_SNAPSHOTS" ]; then
     echo "Overwriting snapshots in this execution"
 fi
 
+if [ -n "$SKIP_CONTAINER_TESTS" ]; then
+    export INTEGRATION_TEST_FUNCTIONS=zip-only
+    LAMBDA_HANDLERS=("${ZIP_LAMBDA_HANDLERS[@]}")
+    echo "Skipping container-image handlers (INTEGRATION_TEST_FUNCTIONS=zip-only)"
+else
+    export INTEGRATION_TEST_FUNCTIONS=all
+    LAMBDA_HANDLERS=("${ALL_LAMBDA_HANDLERS[@]}")
+fi
+
 if [ -n "$BUILD_LAYERS" ]; then
     echo "Building layers that will be deployed with our test functions"
     if [ -n "$BUILD_LAYER_VERSION" ]; then
@@ -93,7 +112,14 @@ cp $integration_tests_dir/container/cjs/datadog-lambda-js-local.tgz \
    $integration_tests_dir/container/esm/datadog-lambda-js-local.tgz
 
 cd $integration_tests_dir
-yarn
+# integration_tests/yarn.lock is gitignored; do not use --frozen-lockfile here or
+# a stale local lockfile will skip installing serverless from package.json.
+yarn install
+
+function run_serverless() {
+    NODE_VERSION=${!nodejs_version} NODE_MAJOR=$(lambda_node_image_tag $parameters_set) RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
+        yarn run --silent serverless "$@"
+}
 
 input_event_files=$(ls ./input_events)
 # Sort event files by name so that snapshots stay consistent
@@ -110,6 +136,13 @@ function lambda_node_image_tag() {
     fi
 }
 
+function ecr_docker_login() {
+    echo "Logging Docker into ECR (${INTEGRATION_TEST_ACCOUNT_ID}, ${INTEGRATION_TEST_REGION})"
+    aws ecr get-login-password --region "$INTEGRATION_TEST_REGION" |
+        docker login --username AWS --password-stdin \
+            "${INTEGRATION_TEST_ACCOUNT_ID}.dkr.ecr.${INTEGRATION_TEST_REGION}.amazonaws.com"
+}
+
 # Always remove the stacks before exiting, no matter what
 function remove_stack() {
     for parameters_set in "${PARAMETERS_SETS[@]}"; do
@@ -117,12 +150,15 @@ function remove_stack() {
         nodejs_version=$parameters_set[1]
         run_id=$parameters_set[2]
         echo "Removing stack for stage : ${!run_id}"
-        NODE_VERSION=${!nodejs_version} NODE_MAJOR=$(lambda_node_image_tag $parameters_set) RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
-        serverless remove --stage ${!run_id}
+        run_serverless remove --stage ${!run_id}
     done
 }
 
  trap remove_stack EXIT
+
+if [ "$INTEGRATION_TEST_FUNCTIONS" = "all" ]; then
+    ecr_docker_login
+fi
 
 for parameters_set in "${PARAMETERS_SETS[@]}"; do
 
@@ -133,8 +169,7 @@ for parameters_set in "${PARAMETERS_SETS[@]}"; do
     echo "Deploying functions for runtime : $parameters_set, serverless runtime : ${!serverless_runtime}, \
 nodejs version : ${!nodejs_version} and run id : ${!run_id}"
 
-    NODE_VERSION=${!nodejs_version} NODE_MAJOR=$(lambda_node_image_tag $parameters_set) RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
-    serverless deploy --stage ${!run_id}
+    run_serverless deploy --stage ${!run_id}
 
     echo "Invoking functions for runtime $parameters_set"
     set +e # Don't exit this script if an invocation fails or there's a diff
@@ -150,8 +185,7 @@ nodejs version : ${!nodejs_version} and run id : ${!run_id}"
             snapshot_path="./snapshots/return_values/${handler_name}_${parameters_set}_${input_event_name}.json"
             function_failed=FALSE
 
-            return_value=$(NODE_VERSION=${!nodejs_version} NODE_MAJOR=$(lambda_node_image_tag $parameters_set) RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
-            serverless invoke --stage ${!run_id} -f "$function_name" --path "./input_events/$input_event_file")
+            return_value=$(run_serverless invoke --stage ${!run_id} -f "$function_name" --path "./input_events/$input_event_file")
             invoke_success=$?
             if [ $invoke_success -ne 0 ]; then
                 return_value="Invocation failed"
@@ -197,8 +231,7 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
         # Fetch logs with serverless cli, retrying to avoid AWS account-wide rate limit error
         retry_counter=0
         while [ $retry_counter -lt 10 ]; do
-            raw_logs=$(NODE_VERSION=${!nodejs_version} NODE_MAJOR=$(lambda_node_image_tag $parameters_set) RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
-            serverless logs --stage ${!run_id} -f $function_name --startTime $script_utc_start_time)
+            raw_logs=$(run_serverless logs --stage ${!run_id} -f $function_name --startTime $script_utc_start_time)
             fetch_logs_exit_code=$?
             if [ $fetch_logs_exit_code -eq 1 ]; then
                 echo "Retrying fetch logs for $function_name..."
@@ -285,7 +318,9 @@ set -e
 
 if [ "$mismatch_found" = true ]; then
     echo "FAILURE: A mismatch between new data and a snapshot was found and printed above."
-    echo "If the change is expected, generate new snapshots by running 'UPDATE_SNAPSHOTS=true DD_API_KEY=XXXX ./scripts/run_integration_tests.sh'"
+    echo "If the change is expected, generate new snapshots by running:"
+    echo "  BUILD_LAYERS=true UPDATE_SNAPSHOTS=true DD_API_KEY=XXXX aws-vault exec sso-serverless-sandbox-account-admin -- ./scripts/run_integration_tests.sh"
+    echo "If ECR push fails locally, update zip/layer snapshots only with SKIP_CONTAINER_TESTS=true."
     exit 1
 fi
 
