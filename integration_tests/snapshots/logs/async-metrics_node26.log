@@ -1,5 +1,4 @@
 
-XXXX-XX-XX XX:XX:XX.XXX	WARN	WARNING: This is a preview runtime version and should not be used for production workloads. For further information and to provide feedback, see https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html
 START
 {
   "e": XXXX,
@@ -37,7 +36,63 @@ START
   "v": 1
 }
 XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed APIGateway request
-END Duration: XXXX ms (init: XXXX ms) Memory Used: XXXX MB
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-async-metrics_node26",
+    "resource:integration-tests-js-XXXX-async-metrics_node26",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs26.x"
+  ],
+  "v": 1
+}
+XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed undefined request
+{
+  "e": XXXX,
+  "m": "serverless.integration_test.execution",
+  "t": [
+    "tagkey:tagvalue",
+    "eventsource:undefined",
+    "dd_lambda_layer:datadog-nodev26.XX.X"
+  ],
+  "v": 1
+}
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed undefined request
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-async-metrics_node26",
+    "resource:integration-tests-js-XXXX-async-metrics_node26",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs26.x"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "serverless.integration_test.execution",
+  "t": [
+    "tagkey:tagvalue",
+    "eventsource:undefined",
+    "dd_lambda_layer:datadog-nodev26.XX.X"
+  ],
+  "v": 1
+}
+END Duration: XXXX ms Memory Used: XXXX MB
 START
 XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed undefined request
 {
@@ -151,78 +206,22 @@ XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed undefi
 }
 END Duration: XXXX ms Memory Used: XXXX MB
 START
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.invocations",
-  "t": [
-    "region:eu-west-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-XXXX-async-metrics_node26",
-    "resource:integration-tests-js-XXXX-async-metrics_node26",
-    "memorysize:1024",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejs26.x"
-  ],
-  "v": 1
-}
-XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed undefined request
-{
-  "e": XXXX,
-  "m": "serverless.integration_test.execution",
-  "t": [
-    "tagkey:tagvalue",
-    "eventsource:undefined",
-    "dd_lambda_layer:datadog-nodev26.XX.X"
-  ],
-  "v": 1
-}
-END Duration: XXXX ms Memory Used: XXXX MB
-START
-XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed undefined request
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.invocations",
-  "t": [
-    "region:eu-west-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-XXXX-async-metrics_node26",
-    "resource:integration-tests-js-XXXX-async-metrics_node26",
-    "memorysize:1024",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejs26.x"
-  ],
-  "v": 1
-}
-{
-  "e": XXXX,
-  "m": "serverless.integration_test.execution",
-  "t": [
-    "tagkey:tagvalue",
-    "eventsource:undefined",
-    "dd_lambda_layer:datadog-nodev26.XX.X"
-  ],
-  "v": 1
-}
-END Duration: XXXX ms Memory Used: XXXX MB
-START
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.invocations",
-  "t": [
-    "region:eu-west-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-XXXX-async-metrics_node26",
-    "resource:integration-tests-js-XXXX-async-metrics_node26",
-    "memorysize:1024",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejs26.x"
-  ],
-  "v": 1
-}
 XXXX-XX-XX XX:XX:XX.XXX	INFO	[dd.trace_id=XXXX dd.span_id=XXXX] Processed SNS request
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-async-metrics_node26",
+    "resource:integration-tests-js-XXXX-async-metrics_node26",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs26.x"
+  ],
+  "v": 1
+}
 {
   "e": XXXX,
   "m": "serverless.integration_test.records_processed",

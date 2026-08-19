@@ -116,7 +116,7 @@ START
     ]
   ]
 }
-END Duration: XXXX ms (init: XXXX ms) Memory Used: XXXX MB
+END Duration: XXXX ms Memory Used: XXXX MB
 START
 {
   "e": XXXX,

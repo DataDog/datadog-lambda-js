@@ -1,8 +1,3 @@
-XXXX-XX-XX XX:XX:XX.XXX	WARN	WARNING: This is a preview runtime version and should not be used for production workloads. For further information and to provide feedback, see https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html
-INIT_REPORT Init Duration: XXXX ms	Phase: init	Status: timeout
-XXXX-XX-XX XX:XX:XX.XXX	WARN	WARNING: This is a preview runtime version and should not be used for production workloads. For further information and to provide feedback, see https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html
-XXXX-XX-XX XX:XX:XX.XXX	ERROR	(node:2) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
-(Use `node --trace-deprecation ...` to show where the warning was created)
 START
 {
   "e": XXXX,

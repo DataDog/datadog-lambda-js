@@ -1,5 +1,4 @@
 
-XXXX-XX-XX XX:XX:XX.XXX	WARN	WARNING: This is a preview runtime version and should not be used for production workloads. For further information and to provide feedback, see https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html
 START
 {
   "e": XXXX,
@@ -161,7 +160,7 @@ START
     ]
   ]
 }
-END Duration: XXXX ms (init: XXXX ms) Memory Used: XXXX MB
+END Duration: XXXX ms Memory Used: XXXX MB
 START
 {
   "e": XXXX,
@@ -658,6 +657,7 @@ START
   ],
   "v": 1
 }
+END Duration: XXXX ms Memory Used: XXXX MB
 {
   "traces": [
     [
@@ -768,7 +768,6 @@ START
     ]
   ]
 }
-END Duration: XXXX ms Memory Used: XXXX MB
 START
 {
   "e": XXXX,

@@ -31,7 +31,73 @@ START
   "v": 1
 }
 XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at BufferedInvokeProcessor.wrappedFunc [as handler] (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at async BufferedInvokeProcessor.processInvoke (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.processSingleConcurrent (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.start (file:///var/runtime/index.mjs:XXX:XXX)","    at async ignition (file:///var/runtime/index.mjs:XXX:XXX)"]}
-END Duration: XXXX ms (init: XXXX ms) Memory Used: XXXX MB
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at BufferedInvokeProcessor.wrappedFunc [as handler] (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at async BufferedInvokeProcessor.processInvoke (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.processSingleConcurrent (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.start (file:///var/runtime/index.mjs:XXX:XXX)","    at async ignition (file:///var/runtime/index.mjs:XXX:XXX)"]}
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node24",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node24",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs24.x"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.errors",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node24",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node24",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs24.x"
+  ],
+  "v": 1
+}
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node24",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node24",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs24.x"
+  ],
+  "v": 1
+}
+XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at BufferedInvokeProcessor.wrappedFunc [as handler] (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at async BufferedInvokeProcessor.processInvoke (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.processSingleConcurrent (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.start (file:///var/runtime/index.mjs:XXX:XXX)","    at async ignition (file:///var/runtime/index.mjs:XXX:XXX)"]}
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.errors",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node24",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node24",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs24.x"
+  ],
+  "v": 1
+}
+END Duration: XXXX ms Memory Used: XXXX MB
 START
 {
   "e": XXXX,
@@ -64,6 +130,72 @@ START
   "v": 1
 }
 XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at BufferedInvokeProcessor.wrappedFunc [as handler] (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at async BufferedInvokeProcessor.processInvoke (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.processSingleConcurrent (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.start (file:///var/runtime/index.mjs:XXX:XXX)","    at async ignition (file:///var/runtime/index.mjs:XXX:XXX)"]}
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node24",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node24",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs24.x"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.errors",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node24",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node24",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs24.x"
+  ],
+  "v": 1
+}
+XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at BufferedInvokeProcessor.wrappedFunc [as handler] (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at async BufferedInvokeProcessor.processInvoke (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.processSingleConcurrent (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.start (file:///var/runtime/index.mjs:XXX:XXX)","    at async ignition (file:///var/runtime/index.mjs:XXX:XXX)"]}
+END Duration: XXXX ms Memory Used: XXXX MB
+START
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node24",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node24",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs24.x"
+  ],
+  "v": 1
+}
+XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at BufferedInvokeProcessor.wrappedFunc [as handler] (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at async BufferedInvokeProcessor.processInvoke (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.processSingleConcurrent (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.start (file:///var/runtime/index.mjs:XXX:XXX)","    at async ignition (file:///var/runtime/index.mjs:XXX:XXX)"]}
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.errors",
+  "t": [
+    "region:eu-west-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-XXXX-throw-error-traced_node24",
+    "resource:integration-tests-js-XXXX-throw-error-traced_node24",
+    "memorysize:1024",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejs24.x"
+  ],
+  "v": 1
+}
 END Duration: XXXX ms Memory Used: XXXX MB
 START
 XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at BufferedInvokeProcessor.wrappedFunc [as handler] (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at async BufferedInvokeProcessor.processInvoke (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.processSingleConcurrent (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.start (file:///var/runtime/index.mjs:XXX:XXX)","    at async ignition (file:///var/runtime/index.mjs:XXX:XXX)"]}
@@ -163,136 +295,4 @@ START
   "v": 1
 }
 XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at BufferedInvokeProcessor.wrappedFunc [as handler] (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at async BufferedInvokeProcessor.processInvoke (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.processSingleConcurrent (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.start (file:///var/runtime/index.mjs:XXX:XXX)","    at async ignition (file:///var/runtime/index.mjs:XXX:XXX)"]}
-END Duration: XXXX ms Memory Used: XXXX MB
-START
-XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at BufferedInvokeProcessor.wrappedFunc [as handler] (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at async BufferedInvokeProcessor.processInvoke (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.processSingleConcurrent (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.start (file:///var/runtime/index.mjs:XXX:XXX)","    at async ignition (file:///var/runtime/index.mjs:XXX:XXX)"]}
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.invocations",
-  "t": [
-    "region:eu-west-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-XXXX-throw-error-traced_node24",
-    "resource:integration-tests-js-XXXX-throw-error-traced_node24",
-    "memorysize:1024",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejs24.x"
-  ],
-  "v": 1
-}
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.errors",
-  "t": [
-    "region:eu-west-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-XXXX-throw-error-traced_node24",
-    "resource:integration-tests-js-XXXX-throw-error-traced_node24",
-    "memorysize:1024",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejs24.x"
-  ],
-  "v": 1
-}
-END Duration: XXXX ms Memory Used: XXXX MB
-START
-XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at BufferedInvokeProcessor.wrappedFunc [as handler] (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at async BufferedInvokeProcessor.processInvoke (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.processSingleConcurrent (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.start (file:///var/runtime/index.mjs:XXX:XXX)","    at async ignition (file:///var/runtime/index.mjs:XXX:XXX)"]}
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.invocations",
-  "t": [
-    "region:eu-west-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-XXXX-throw-error-traced_node24",
-    "resource:integration-tests-js-XXXX-throw-error-traced_node24",
-    "memorysize:1024",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejs24.x"
-  ],
-  "v": 1
-}
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.errors",
-  "t": [
-    "region:eu-west-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-XXXX-throw-error-traced_node24",
-    "resource:integration-tests-js-XXXX-throw-error-traced_node24",
-    "memorysize:1024",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejs24.x"
-  ],
-  "v": 1
-}
-END Duration: XXXX ms Memory Used: XXXX MB
-START
-XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at BufferedInvokeProcessor.wrappedFunc [as handler] (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at async BufferedInvokeProcessor.processInvoke (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.processSingleConcurrent (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.start (file:///var/runtime/index.mjs:XXX:XXX)","    at async ignition (file:///var/runtime/index.mjs:XXX:XXX)"]}
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.invocations",
-  "t": [
-    "region:eu-west-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-XXXX-throw-error-traced_node24",
-    "resource:integration-tests-js-XXXX-throw-error-traced_node24",
-    "memorysize:1024",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejs24.x"
-  ],
-  "v": 1
-}
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.errors",
-  "t": [
-    "region:eu-west-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-XXXX-throw-error-traced_node24",
-    "resource:integration-tests-js-XXXX-throw-error-traced_node24",
-    "memorysize:1024",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejs24.x"
-  ],
-  "v": 1
-}
-END Duration: XXXX ms Memory Used: XXXX MB
-START
-XXXX-XX-XX XX:XX:XX.XXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error-traced.js:XXX:XXX)","    at /opt/nodejs/node_modules/datadog-lambda-js/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at BufferedInvokeProcessor.wrappedFunc [as handler] (/opt/nodejs/node_modules/datadog-lambda-js/index.js:XXX:XXX)","    at async BufferedInvokeProcessor.processInvoke (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.processSingleConcurrent (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.start (file:///var/runtime/index.mjs:XXX:XXX)","    at async ignition (file:///var/runtime/index.mjs:XXX:XXX)"]}
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.invocations",
-  "t": [
-    "region:eu-west-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-XXXX-throw-error-traced_node24",
-    "resource:integration-tests-js-XXXX-throw-error-traced_node24",
-    "memorysize:1024",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejs24.x"
-  ],
-  "v": 1
-}
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.errors",
-  "t": [
-    "region:eu-west-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-XXXX-throw-error-traced_node24",
-    "resource:integration-tests-js-XXXX-throw-error-traced_node24",
-    "memorysize:1024",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejs24.x"
-  ],
-  "v": 1
-}
 END Duration: XXXX ms Memory Used: XXXX MB

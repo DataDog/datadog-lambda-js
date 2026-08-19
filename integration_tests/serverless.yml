@@ -37,5 +37,6 @@ layers:
       artifact: ../.layers/datadog_lambda_node${env:NODE_VERSION}.zip
 
 # Use INTEGRATION_TEST_FUNCTIONS=zip-only (via SKIP_CONTAINER_TESTS) to deploy only
-# zip/layer-based handlers and avoid ECR image builds when updating snapshots locally.
+# zip/layer-based handlers. Otherwise run_integration_tests.sh composes all.yml from
+# zip-only.yml + container.yml before deploy.
 functions: ${file(./functions/${env:INTEGRATION_TEST_FUNCTIONS, 'all'}.yml)}

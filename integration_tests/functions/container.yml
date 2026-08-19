@@ -1,0 +1,20 @@
+# container-cjs — npm-installed datadog-lambda-js, CJS user handler,
+# invoked through AWS-stock RIC via `dist/handler.handler`.
+container-cjs_node:
+  name: integration-tests-js-${sls:stage}-container-cjs_${env:RUNTIME}
+  image:
+    name: datadog-lambda-js-cjs
+  environment:
+    DD_FLUSH_TO_LOG: true
+    DD_LAMBDA_HANDLER: handler.handle
+
+# container-esm — npm-installed datadog-lambda-js, ESM user handler,
+# invoked through AWS-stock RIC via `dist/handler.handler`. Guards against
+# ERR_REQUIRE_ESM if `dist/handler.js` ever returns to the published tarball.
+container-esm_node:
+  name: integration-tests-js-${sls:stage}-container-esm_${env:RUNTIME}
+  image:
+    name: datadog-lambda-js-esm
+  environment:
+    DD_FLUSH_TO_LOG: true
+    DD_LAMBDA_HANDLER: handler.handle

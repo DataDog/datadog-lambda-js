@@ -77,11 +77,9 @@ if [ -n "$UPDATE_SNAPSHOTS" ]; then
 fi
 
 if [ -n "$SKIP_CONTAINER_TESTS" ]; then
-    export INTEGRATION_TEST_FUNCTIONS=zip-only
     LAMBDA_HANDLERS=("${ZIP_LAMBDA_HANDLERS[@]}")
     echo "Skipping container-image handlers (INTEGRATION_TEST_FUNCTIONS=zip-only)"
 else
-    export INTEGRATION_TEST_FUNCTIONS=all
     LAMBDA_HANDLERS=("${ALL_LAMBDA_HANDLERS[@]}")
 fi
 
@@ -112,6 +110,15 @@ cp $integration_tests_dir/container/cjs/datadog-lambda-js-local.tgz \
    $integration_tests_dir/container/esm/datadog-lambda-js-local.tgz
 
 cd $integration_tests_dir
+
+if [ -n "$SKIP_CONTAINER_TESTS" ]; then
+    export INTEGRATION_TEST_FUNCTIONS=zip-only
+else
+    cat "$integration_tests_dir/functions/zip-only.yml" \
+        "$integration_tests_dir/functions/container.yml" >"$integration_tests_dir/functions/all.yml"
+    export INTEGRATION_TEST_FUNCTIONS=all
+fi
+
 # integration_tests/yarn.lock is gitignored; do not use --frozen-lockfile here or
 # a stale local lockfile will skip installing serverless from package.json.
 # CI image ships Node 18; serverless's AWS SDK deps declare engines >=20 but run fine.
@@ -260,6 +267,13 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
                 sed '/Serverless: Recoverable error occurred/d' |
                 # Normalize Lambda runtime report logs
                 perl -p -e 's/(RequestId|TraceId|init|SegmentId|Duration|Memory Used|"e"):( )?[a-z0-9\.\-]+/\1:\2XXXX/g' |
+                # Drop init duration from END lines; cold starts sometimes include it, warm starts do not.
+                perl -p -e 's/ \(init: XXXX ms\)//g' |
+                # Node.js 26 preview and container-image runtimes emit extra platform noise.
+                sed '/preview runtime version and should not be used for production workloads/d' |
+                sed '/^INIT_REPORT /d' |
+                sed '/DEP0205.*module\.register()/d' |
+                sed '/node --trace-deprecation.*where the warning was created/d' |
                 # Normalize DD APM headers and AWS account ID
                 perl -p -e "s/(x-datadog-parent-id:|x-datadog-trace-id:|account_id:)[0-9]+/\1XXXX/g" |
                 # Strip API key from logged requests
