@@ -56,9 +56,9 @@ PARAMETERS_SETS=("node18" "node20" "node22" "node24" "node26")
 if [ -z "$RUNTIME_PARAM" ]; then
     echo "Node version not specified, running for all node versions."
 else
-    echo "Node version is specified: $RUNTIME_PARAM"
-    PARAMETERS_SETS=(node${RUNTIME_PARAM})
-    BUILD_LAYER_VERSION=node$RUNTIME_PARAM[1]
+    echo "Node version is specified: ${RUNTIME_PARAM} (node${RUNTIME_PARAM})"
+    PARAMETERS_SETS=("node${RUNTIME_PARAM}")
+    BUILD_LAYER_VERSION="node${RUNTIME_PARAM}[1]"
 fi
 
 if [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
