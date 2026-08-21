@@ -94,16 +94,12 @@ integration test ({{ $runtime.name }}):
     - build layer ({{ $runtime.name }})
   cache: &{{ $runtime.name }}-cache
   variables:
-    RUNTIME_PARAM: "{{ $runtime.node_major_version }}"
     CI_ENABLE_CONTAINER_IMAGE_BUILDS: "true"
   before_script:
-    - cd "$CI_PROJECT_DIR"
-    - EXTERNAL_ID_NAME=integration-test-externalid ROLE_TO_ASSUME=sandbox-integration-test-deployer AWS_ACCOUNT=425362996713 source "$CI_PROJECT_DIR/.gitlab/scripts/get_secrets.sh"
-    - (cd "$CI_PROJECT_DIR/integration_tests" && yarn install --ignore-engines)
+    - EXTERNAL_ID_NAME=integration-test-externalid ROLE_TO_ASSUME=sandbox-integration-test-deployer AWS_ACCOUNT=425362996713 source .gitlab/scripts/get_secrets.sh
+    - (cd integration_tests && yarn install)
   script:
-    - cd "$CI_PROJECT_DIR"
-    - echo "Running integration tests for Node.js ${RUNTIME_PARAM}.x"
-    - bash "$CI_PROJECT_DIR/scripts/run_integration_tests.sh"
+    - RUNTIME_PARAM={{ $runtime.node_major_version }} ./scripts/run_integration_tests.sh
 
 {{ range $environment := (ds "environments").environments }}
 {{ $dotenv := print $runtime.name "_" $environment.name ".env" }}

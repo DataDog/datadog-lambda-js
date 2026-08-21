@@ -5,13 +5,14 @@
 #   BUILD_LAYERS=true DD_API_KEY=XXXX aws-vault exec sso-serverless-sandbox-account-admin -- ./scripts/run_integration_tests.sh
 # To regenerate snapshots:
 #   BUILD_LAYERS=true UPDATE_SNAPSHOTS=true DD_API_KEY=XXXX aws-vault exec sso-serverless-sandbox-account-admin -- ./scripts/run_integration_tests.sh
-# To update only zip/layer handler snapshots (skip ECR container-image deploys):
+# To skip invoking/snapshotting the container-image handlers (they are still
+# deployed, so Docker and ECR push access are still required):
 #   BUILD_LAYERS=true UPDATE_SNAPSHOTS=true SKIP_CONTAINER_TESTS=true DD_API_KEY=XXXX aws-vault exec sso-serverless-sandbox-account-admin -- ./scripts/run_integration_tests.sh
 # To run a single runtime:
 #   RUNTIME_PARAM=26 BUILD_LAYERS=true UPDATE_SNAPSHOTS=true DD_API_KEY=XXXX aws-vault exec sso-serverless-sandbox-account-admin -- ./scripts/run_integration_tests.sh
 #
-# Requires Docker when container-image handlers are enabled. Uses the pinned
-# Serverless CLI from integration_tests/package.json (currently 3.39.0).
+# Requires Docker for the container-image handlers. Uses the Serverless CLI
+# pinned globally in .gitlab/Dockerfile.
 
 set -e
 
@@ -27,8 +28,6 @@ ALL_LAMBDA_HANDLERS=("async-metrics" "esm" "sync-metrics" "http-requests" "proce
 ZIP_LAMBDA_HANDLERS=("async-metrics" "esm" "sync-metrics" "http-requests" "process-input-traced" "throw-error-traced" "status-code-500s")
 
 LOGS_WAIT_SECONDS=20
-INTEGRATION_TEST_REGION="eu-west-1"
-INTEGRATION_TEST_ACCOUNT_ID="425362996713"
 
 script_path=${BASH_SOURCE[0]}
 scripts_dir=$(dirname $script_path)
@@ -56,9 +55,9 @@ PARAMETERS_SETS=("node18" "node20" "node22" "node24" "node26")
 if [ -z "$RUNTIME_PARAM" ]; then
     echo "Node version not specified, running for all node versions."
 else
-    echo "Node version is specified: ${RUNTIME_PARAM} (node${RUNTIME_PARAM})"
-    PARAMETERS_SETS=("node${RUNTIME_PARAM}")
-    BUILD_LAYER_VERSION="node${RUNTIME_PARAM}[1]"
+    echo "Node version is specified: $RUNTIME_PARAM"
+    PARAMETERS_SETS=(node${RUNTIME_PARAM})
+    BUILD_LAYER_VERSION=node$RUNTIME_PARAM[1]
 fi
 
 if [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
@@ -78,7 +77,7 @@ fi
 
 if [ -n "$SKIP_CONTAINER_TESTS" ]; then
     LAMBDA_HANDLERS=("${ZIP_LAMBDA_HANDLERS[@]}")
-    echo "Skipping container-image handlers (INTEGRATION_TEST_FUNCTIONS=zip-only)"
+    echo "Skipping invocation and snapshotting of the container-image handlers"
 else
     LAMBDA_HANDLERS=("${ALL_LAMBDA_HANDLERS[@]}")
 fi
@@ -110,23 +109,11 @@ cp $integration_tests_dir/container/cjs/datadog-lambda-js-local.tgz \
    $integration_tests_dir/container/esm/datadog-lambda-js-local.tgz
 
 cd $integration_tests_dir
-
-if [ -n "$SKIP_CONTAINER_TESTS" ]; then
-    export INTEGRATION_TEST_FUNCTIONS=zip-only
-else
-    cat "$integration_tests_dir/functions/zip-only.yml" \
-        "$integration_tests_dir/functions/container.yml" >"$integration_tests_dir/functions/all.yml"
-    export INTEGRATION_TEST_FUNCTIONS=all
-fi
-
-# integration_tests/yarn.lock is gitignored; do not use --frozen-lockfile here or
-# a stale local lockfile will skip installing serverless from package.json.
-# CI image ships Node 18; serverless's AWS SDK deps declare engines >=20 but run fine.
-yarn install --ignore-engines
+yarn
 
 function run_serverless() {
     NODE_VERSION=${!nodejs_version} NODE_MAJOR=$(lambda_node_image_tag $parameters_set) RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
-        yarn run --silent serverless "$@"
+        serverless "$@"
 }
 
 input_event_files=$(ls ./input_events)
@@ -144,13 +131,6 @@ function lambda_node_image_tag() {
     fi
 }
 
-function ecr_docker_login() {
-    echo "Logging Docker into ECR (${INTEGRATION_TEST_ACCOUNT_ID}, ${INTEGRATION_TEST_REGION})"
-    aws ecr get-login-password --region "$INTEGRATION_TEST_REGION" |
-        docker login --username AWS --password-stdin \
-            "${INTEGRATION_TEST_ACCOUNT_ID}.dkr.ecr.${INTEGRATION_TEST_REGION}.amazonaws.com"
-}
-
 # Always remove the stacks before exiting, no matter what
 function remove_stack() {
     for parameters_set in "${PARAMETERS_SETS[@]}"; do
@@ -163,10 +143,6 @@ function remove_stack() {
 }
 
  trap remove_stack EXIT
-
-if [ "$INTEGRATION_TEST_FUNCTIONS" = "all" ]; then
-    ecr_docker_login
-fi
 
 for parameters_set in "${PARAMETERS_SETS[@]}"; do
 
@@ -335,7 +311,7 @@ if [ "$mismatch_found" = true ]; then
     echo "FAILURE: A mismatch between new data and a snapshot was found and printed above."
     echo "If the change is expected, generate new snapshots by running:"
     echo "  BUILD_LAYERS=true UPDATE_SNAPSHOTS=true DD_API_KEY=XXXX aws-vault exec sso-serverless-sandbox-account-admin -- ./scripts/run_integration_tests.sh"
-    echo "If ECR push fails locally, update zip/layer snapshots only with SKIP_CONTAINER_TESTS=true."
+    echo "To update only the zip/layer snapshots, add SKIP_CONTAINER_TESTS=true."
     exit 1
 fi
 
