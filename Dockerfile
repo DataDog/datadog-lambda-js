@@ -8,6 +8,8 @@ RUN mkdir -p /nodejs/node_modules/
 # Install dev dependencies
 COPY . datadog-lambda-js
 WORKDIR /datadog-lambda-js
+# Node.js 26+ official images no longer bundle Yarn v1.
+RUN command -v yarn >/dev/null 2>&1 || npm install -g yarn@1.22.22
 RUN yarn install --ignore-engines
 
 # Build the lambda layer

@@ -11,3 +11,6 @@ runtimes:
   - name: "node24"
     node_version: "24.11"
     node_major_version: "24"
+  - name: "node26"
+    node_version: "26.1"
+    node_major_version: "26"

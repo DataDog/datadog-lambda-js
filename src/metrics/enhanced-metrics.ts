@@ -16,6 +16,7 @@ enum RuntimeTagValues {
   Node20 = "nodejs20.x",
   Node22 = "nodejs22.x",
   Node24 = "nodejs24.x",
+  Node26 = "nodejs26.x",
 }
 
 export function getVersionTag(): string {
@@ -45,6 +46,10 @@ export function getRuntimeTag(): string | null {
 
   if (processVersion.startsWith("v24")) {
     processVersionTagString = RuntimeTagValues.Node24;
+  }
+
+  if (processVersion.startsWith("v26")) {
+    processVersionTagString = RuntimeTagValues.Node26;
   }
 
   if (!processVersionTagString) {

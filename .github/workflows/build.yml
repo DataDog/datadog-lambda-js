@@ -44,7 +44,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        node-version: [18.12, 20.19, 22.11, 24.11]
+        node-version: [18.12, 20.19, 22.11, 24.11, 26.1]
     steps:
       - name: Checkout
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
