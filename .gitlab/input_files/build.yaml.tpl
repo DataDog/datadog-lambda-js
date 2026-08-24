@@ -19,6 +19,7 @@ default:
       - runner_system_failure
 
 .node-before-script: &node-before-script
+  - command -v yarn >/dev/null 2>&1 || npm install -g yarn
   - yarn --version
   - echo 'yarn-offline-mirror ".yarn-cache/"' >> .yarnrc
   - echo 'yarn-offline-mirror-pruning true' >> .yarnrc
@@ -96,7 +97,7 @@ integration test ({{ $runtime.name }}):
     CI_ENABLE_CONTAINER_IMAGE_BUILDS: "true"
   before_script:
     - EXTERNAL_ID_NAME=integration-test-externalid ROLE_TO_ASSUME=sandbox-integration-test-deployer AWS_ACCOUNT=425362996713 source .gitlab/scripts/get_secrets.sh
-    - cd integration_tests && yarn install && cd ..
+    - (cd integration_tests && yarn install)
   script:
     - RUNTIME_PARAM={{ $runtime.node_major_version }} ./scripts/run_integration_tests.sh
 

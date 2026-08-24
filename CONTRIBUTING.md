@@ -38,10 +38,15 @@ We love pull requests. For new features, consider opening an issue to discuss th
    ```bash
    BUILD_LAYERS=true DD_API_KEY=<your Datadog api key> ./scripts/run_integration_tests.sh
    ```
-1. Update integration test snapshots if needed:
+1. Update integration test snapshots if needed (Datadog employees only; requires AWS credentials and Docker):
    ```bash
-   UPDATE_SNAPSHOTS=true DD_API_KEY=<your Datadog api key> ./scripts/run_integration_tests.sh
+   BUILD_LAYERS=true UPDATE_SNAPSHOTS=true DD_API_KEY=<your Datadog api key> aws-vault exec sso-serverless-sandbox-account-admin -- ./scripts/run_integration_tests.sh
    ```
+   If ECR image push fails locally, update zip/layer handler snapshots only:
+   ```bash
+   BUILD_LAYERS=true UPDATE_SNAPSHOTS=true SKIP_CONTAINER_TESTS=true DD_API_KEY=<your Datadog api key> aws-vault exec sso-serverless-sandbox-account-admin -- ./scripts/run_integration_tests.sh
+   ```
+   The script uses Serverless `3.39.0` from `integration_tests/package.json` (not a globally installed CLI).
 1. Push to your fork and [submit a pull request][pr].
 
 [pr]: https://github.com/your-username/datadog-lambda-js/compare/DataDog:main..main.
