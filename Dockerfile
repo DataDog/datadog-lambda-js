@@ -61,13 +61,11 @@ RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/win32-x64
 # Remove musl prebuilds (Lambda uses glibc, not musl)
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/dd_pprof.musl.node.*.node
 # Remove ABIs for non-LTS Node versions not supported on Lambda
-# Lambda supports Node 18 (abi108), Node 20 (abi115), Node 22 (abi127)
+# Lambda supports Node 18 (abi108), Node 20 (abi115), Node 22 (abi127), Node 24 (abi137), and Node 26 (abi147)
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/dd_pprof.node.abi111.node
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/dd_pprof.node.abi120.node
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/dd_pprof.node.abi131.node
-RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/dd_pprof.node.abi137.node
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/dd_pprof.node.abi141.node
-RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/dd_pprof.node.abi147.node
 
 # Remove unused @datadog/native-appsec prebuilds for non-Lambda platforms.
 # Lambda runs on Amazon Linux 2 (glibc), on x64 or arm64.
