@@ -53,7 +53,7 @@ RUN rm -rf /nodejs/node_modules/aws-xray-sdk-core/node_modules/aws-sdk
 # Remove heavy files from @datadog/pprof which aren't used in a lambda environment
 # TODO: Ship individual bindings per platform and depend on that instead.
 # TODO: Split x64 and ARM so that each image only has the binaries for its architecture.
-# Lambda runs on Amazon Linux 2 (glibc), on x64 or arm64.
+# Lambda's supported Node.js runtimes use glibc on x64 or arm64.
 # Remove non-Linux platform prebuilds
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/darwin-arm64
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/darwin-x64
