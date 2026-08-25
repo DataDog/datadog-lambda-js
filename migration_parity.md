@@ -16,7 +16,7 @@ no L3 suite is an **unprotected feature** — flag it, don't tolerate it.
 
 ## Runtimes and release lines
 
-Four runtimes ship. Two tracer majors ship. A row is not `verified` until it is verified on the
+Five runtimes ship. Two tracer majors ship. A row is not `verified` until it is verified on the
 oldest runtime it claims to support.
 
 | Runtime | Layer | Tracer line | `engines.node` | Released until |
@@ -25,6 +25,7 @@ oldest runtime it claims to support.
 | Node 20 | `Datadog-Node20-x` | `dd-trace` v5.x | `>=18` | March 3, 2027 (AWS block-update date) |
 | Node 22 | `Datadog-Node22-x` | `dd-trace` v6.x | `>=22` | current |
 | Node 24 | `Datadog-Node24-x` | `dd-trace` v6.x | `>=22` | current |
+| Node 26 | `Datadog-Node26-x` | `dd-trace` v6.x | `>=22` | current |
 
 `v6.x` is `>=22` and does nothing for Node 18/20 — `v5.x` is the only line that runs there.
 `v5.x` EOL is 2027-07-02, four months after the AWS date. If that date moves past July 2027,
@@ -56,8 +57,10 @@ Each row gates the release independently of the feature rows below.
 | npm range resolves to v5 on Node 18 | shim:`package.json` | L1 (datadog-lambda-js) | install test on Node 18 — new | pending | both |
 | npm range floor bumped to latest v5.x at shim release (check registry, not local tags) | shim:`package.json` | release | release checklist item — new | pending | both |
 | Shim declares `engines.node >=18` | shim:`package.json` | L1 (datadog-lambda-js) | package check — new | pending | datadog-lambda-js |
-| Node 18/20 layers built and published | shim:`scripts/build_layers.sh`, `scripts/move_ddtrace_dependency.js` | release | per-runtime dd-trace pin threaded from `NODE_VERSIONS` loop + test | pending | both |
+| Node 18/20 layers built and published (`v5.x` line) | shim:`scripts/build_layers.sh`, `scripts/move_ddtrace_dependency.js` | release | per-runtime dd-trace pin threaded from `NODE_VERSIONS` loop + test | pending | both |
 | Per-runtime dd-trace pin stamped into the release | shim:release scripts | release | release notes mapping check — new | pending | both |
+| Node 22/24/26 layers built and published (`v6.x` line) | shim:`scripts/build_layers.sh`, `scripts/move_ddtrace_dependency.js` | release | same per-runtime pin plumbing; node26 must be in the `NODE_VERSIONS` loop | pending | both |
+| `nodeMaxMajor` stays above the newest shipped runtime | dd:`package.json` (`nodeMaxMajor`) × 3 lines | release | — new: assert `max(NODE_VERSIONS major) < nodeMaxMajor` at layer build, so a new runtime cannot ship into a guardrail bail-out | pending | dd-trace |
 
 ## Entry points and shim
 
@@ -181,6 +184,7 @@ conditional on the extension being present.
 | Feature | Owner (code location) | Test type/location | Test implementation | Migration status | Effect in layer |
 |---|---|---|---|---|---|
 | enhanced metrics: invocations / errors / batch_item_failures (+ tag set) | dd:`…/src/enhanced-metrics.js` | L1 + L2 | `dl:src/metrics/enhanced-metrics.spec.ts` → port + golden (9 metric-log records per baseline log) | pending | dd-trace |
+| `runtime:nodejsNN.x` enhanced-metric tag — hardcoded per-major dispatch | dd:`…/src/enhanced-metrics.js` (from `dl:src/metrics/enhanced-metrics.ts:14-60`) | L1 + L2 | `dl:src/metrics/enhanced-metrics.spec.ts` → port; **one case per shipped runtime** plus a test that fails on an unmapped major | pending | dd-trace |
 | sink: extension DogStatsD UDP 8125 | dd-core:`packages/dd-trace/src/dogstatsd.js` (extend, no private client) | L1 + L3 | `dl:src/metrics/dogstatsd.spec.ts` → port + fake-socket unit | pending | dd-trace |
 | sink: `DD_FLUSH_TO_LOG` metric-log JSON | dd:metrics modules | L2 golden | `dl:src/metrics/metric-log.spec.ts` → port + golden | pending | dd-trace |
 | sink: direct API | dd:metrics modules | L1 | `dl:src/metrics/{api,processor,queue,batcher,model}.spec.ts` → port | pending | dd-trace |
@@ -218,9 +222,9 @@ conditional on the extension being present.
 | layer names, GovCloud, signing, docs automation unchanged | shim:`scripts/publish_*.sh`, `create_documentation_pr.sh` | release | pipeline dry-run | pending | both |
 | size gate 9 MB / 24 MB unchanged | shim:`scripts/check_layer_size.sh` | release | existing gate | pending | both |
 | prune list extended for v5/v6 native footprint; **each prune entry maps to a feature row** (profiling, AppSec natives — `--omit=optional` is not available) | shim:`Dockerfile` | release + L3 (Profiling/Appsec Usage rows) | — new mapping review | pending | dd-trace |
-| per-runtime dd-trace resolution (v5.x for 18/20, v6.x for 22/24) | shim:`scripts/move_ddtrace_dependency.js` + `build_layers.sh` | release | — new: takes a list, threaded from `NODE_VERSIONS`, plus test | pending | both |
+| per-runtime dd-trace resolution (v5.x for 18/20, v6.x for 22/24/26) | shim:`scripts/move_ddtrace_dependency.js` + `build_layers.sh` | release | — new: takes a list, threaded from `NODE_VERSIONS`, plus test | pending | both |
 | shim version ↔ layer version mapping (`13.N.0` ↔ layer N) | shim:`package.json` | release | release check | pending | datadog-lambda-js |
-| Node 18/20/22/24 layers all build and publish post-migration | shim:release pipeline | release | pipeline | pending | both |
+| Node 18/20/22/24/26 layers all build and publish post-migration | shim:release pipeline | release | pipeline | pending | both |
 | test-only layer assembler in dd-trace-js (never publishes/signs/prunes) | dd:`integration-tests/lambda/build-test-layer.sh` — new | L2 | per-PR CI; fails if run with release credentials | pending | — (process) |
 | e2e release gate triggered with candidate layer version (today: manual form) | `serverless-e2e-tests` `.gitlab-ci.yml` | release | — new pipeline trigger | pending | — (process) |
 | old business logic deleted from `datadog-lambda-js/src/` | shim:`src/` | — | last step; all rows `verified` first | pending | — (process) |
