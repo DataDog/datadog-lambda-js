@@ -30,6 +30,31 @@ function esmLoaderAlreadyRegistered() {
   return sources.some((source) => /dd-trace[\\/](?:[^\s]*\.mjs|register\.js)/.test(source));
 }
 
+function esmLoaderEnabled() {
+  return getEnvValue("DD_TRACE_ESM_LOADER_ENABLED", "true").toLowerCase() !== "false";
+}
+
+function registerDdTraceEsmLoaderHook() {
+  const require = Module.createRequire(import.meta.url);
+  const ddTraceResolvePaths = ["/var/task/node_modules", ...(require.resolve.paths("dd-trace") || [])];
+
+  try {
+    const ddTraceRegister = require.resolve("dd-trace/register.js", { paths: ddTraceResolvePaths });
+    require(ddTraceRegister);
+    logDebug("registered dd-trace ESM loader hook for ESM instrumentation");
+    return;
+  } catch (registerError) {
+    try {
+      const ddTraceEntry = require.resolve("dd-trace", { paths: ddTraceResolvePaths });
+      const ddTraceRoot = pathToFileURL(dirname(ddTraceEntry) + "/").href;
+      Module.register("./loader-hook.mjs", ddTraceRoot);
+      logDebug("registered dd-trace ESM loader hook for ESM instrumentation through direct fallback");
+    } catch (fallbackError) {
+      logDebug("failed to register dd-trace ESM loader hook", { registerError, fallbackError });
+    }
+  }
+}
+
 if (getEnvValue("DD_TRACE_ENABLED", "true").toLowerCase() === "true") {
   const tracer = initTracer();
 
@@ -40,18 +65,8 @@ if (getEnvValue("DD_TRACE_ENABLED", "true").toLowerCase() === "true") {
   // This mirrors what dd-trace/initialize.mjs does at lines 77-84, including
   // only registering when the tracer initialized — a bail-out leaves the hooks
   // worker with nothing to instrument and can keep the process from exiting.
-  if (tracer && typeof Module.register === "function" && !esmLoaderAlreadyRegistered()) {
-    try {
-      const require = Module.createRequire(import.meta.url);
-      const ddTraceEntry = require.resolve("dd-trace", {
-        paths: ["/var/task/node_modules", ...(require.resolve.paths("dd-trace") || [])],
-      });
-      const ddTraceRoot = pathToFileURL(dirname(ddTraceEntry) + "/").href;
-      Module.register("./loader-hook.mjs", ddTraceRoot);
-      logDebug("registered dd-trace ESM loader hook for ESM instrumentation");
-    } catch (error) {
-      logDebug("failed to register dd-trace ESM loader hook", { error });
-    }
+  if (tracer && esmLoaderEnabled() && typeof Module.register === "function" && !esmLoaderAlreadyRegistered()) {
+    registerDdTraceEsmLoaderHook();
   }
 }
 
