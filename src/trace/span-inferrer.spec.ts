@@ -325,6 +325,89 @@ describe("SpanInferrer", () => {
     });
   });
 
+  describe("when DD_TRACE_REMOVE_INTEGRATION_SERVICE_NAMES_ENABLED is set to 'true'", () => {
+    beforeEach(() => {
+      process.env.DD_TRACE_REMOVE_INTEGRATION_SERVICE_NAMES_ENABLED = "true";
+    });
+
+    it("uses DD_SERVICE for SNS events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(snsEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("mock-lambda-service");
+    });
+
+    it("uses DD_SERVICE for SQS events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(sqsEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("mock-lambda-service");
+    });
+
+    it("uses DD_SERVICE for DDB events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(ddbEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("mock-lambda-service");
+    });
+
+    it("uses DD_SERVICE for Kinesis events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(kinesisEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("mock-lambda-service");
+    });
+
+    it("uses DD_SERVICE for EventBridge events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(eventBridgeEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("mock-lambda-service");
+    });
+
+    it("uses DD_SERVICE for API Gateway events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(apiGatewayV1, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("mock-lambda-service");
+    });
+
+    it("uses DD_SERVICE for Lambda Function URL events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(functionUrlEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("mock-lambda-service");
+    });
+
+    it("uses DD_SERVICE for S3 events", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(s3Event, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("mock-lambda-service");
+    });
+
+    it("lets an explicit DD_SERVICE_MAPPING entry win over DD_SERVICE", () => {
+      process.env.DD_SERVICE_MAPPING = "lambda_sqs:remapped-queue-service";
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(sqsEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("remapped-queue-service");
+    });
+
+    it("falls back to the AWS resource name when DD_SERVICE is unset", () => {
+      delete process.env[DD_SERVICE_ENV_VAR];
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(sqsEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("MyQueue");
+    });
+
+    it("takes precedence over DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED=false", () => {
+      process.env.DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED = "false";
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(sqsEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("mock-lambda-service");
+    });
+  });
+
+  describe("when DD_TRACE_REMOVE_INTEGRATION_SERVICE_NAMES_ENABLED is not set", () => {
+    it("leaves the AWS resource name in place", () => {
+      const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);
+      inferrer.createInferredSpan(sqsEvent, {} as any, {} as SpanContext);
+      expect(getStartSpanServiceTag(1)).toBe("MyQueue");
+    });
+  });
+
   it("extracts service name from event when service mapping has incorrect delimiters", () => {
     process.env.DD_SERVICE_MAPPING = "key1-value1,key2=value2";
     const inferrer = new SpanInferrer(mockWrapper as unknown as TracerWrapper);

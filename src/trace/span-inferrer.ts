@@ -88,6 +88,14 @@ export class SpanInferrer {
       return mappedService;
     }
 
+    // When integration service names are removed, inferred (synthetic) spans use
+    // the base service name (DD_SERVICE) instead of the AWS resource/instance
+    // representation.
+    const ddService = process.env[DD_SERVICE_ENV_VAR]?.trim();
+    if (SpanInferrer.removeIntegrationServiceNamesEnabled() && ddService) {
+      return ddService;
+    }
+
     if (
       process.env.DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED === "false" ||
       process.env.DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED === "0"
@@ -96,6 +104,11 @@ export class SpanInferrer {
     }
 
     return extractedKey?.trim() ? extractedKey : fallback;
+  }
+
+  private static removeIntegrationServiceNamesEnabled(): boolean {
+    const value = process.env.DD_TRACE_REMOVE_INTEGRATION_SERVICE_NAMES_ENABLED;
+    return value === "true" || value === "1";
   }
 
   createInferredSpanForApiGateway(
