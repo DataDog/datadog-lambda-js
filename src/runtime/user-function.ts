@@ -19,6 +19,7 @@ import {
   ImportModuleError,
   UserCodeSyntaxError,
 } from "./errors";
+import { currentTime, recordModuleLoad } from "./require-tracer";
 
 const module_importer = require("./module_importer");
 const FUNCTION_EXPR = /^([^.]*)\.(.*)$/;
@@ -66,10 +67,22 @@ function _tryRequireFile(file: string, extension?: string): any {
 }
 
 async function _tryAwaitImport(file: string, extension: string): Promise<any> {
-  const path = file + (extension || "");
+  const modulePath = file + (extension || "");
 
-  if (fs.existsSync(path)) {
-    return await module_importer.import(path);
+  if (fs.existsSync(modulePath)) {
+    const startTime = currentTime();
+    try {
+      return await module_importer.import(modulePath);
+    } finally {
+      recordModuleLoad({
+        id: modulePath,
+        filename: modulePath,
+        startTime,
+        endTime: currentTime(),
+        kind: "import",
+        absorbChildren: true,
+      });
+    }
   }
 }
 
