@@ -228,9 +228,9 @@ export class TraceListener {
         const coldStartTracer = new ColdStartTracer(coldStartConfig);
         coldStartTracer.trace(coldStartNodes);
       }
-      // Always clear the tree to prevent memory leaks, even if we skip span creation
-      clearTraceTree();
     }
+    // Always clear the tree to prevent memory leaks, even when no balanced root was formed.
+    clearTraceTree();
     if (this.config.appsecEnabled) {
       processAppsecResponse(this.tracerWrapper.currentSpan, result);
     }
