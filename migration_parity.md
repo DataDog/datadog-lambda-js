@@ -234,7 +234,7 @@ conditional on the extension being present.
 | Row | Feature | Why unprotected | Plan |
 |---|---|---|---|
 | Handler lifecycle | `time_to_first_byte`, response streaming | RIE may not support streaming invocations | L3 `lambda-features`; re-check RIE support at lifecycle phase |
-| Span tags | `proactive_initialization` | RIE cannot produce a proactively-initialized sandbox; normalization drops its markers | L3 `lambda-features` |
+| Span tags | `proactive_initialization` | RIE *can* produce one via `SIMULATE_PROACTIVE_INIT` (verified: emits `"proactive_initialization":1`, `proactive_initialization:true`, `cold_start:false`), but normalization drops those markers and the goldens are captured from immediate-invoke runs, so nothing asserts them | L2 proactive fixture + `*_node18` override golden (now cheap via the override mechanism), else L3 `lambda-features` |
 | Span tags | `_dd.parent_source` | absent from current goldens | add fixture from old implementation, else L3 |
 | Config | `DD_TRACE_DISABLED_INSTRUMENTATIONS=lambda` alias | no fixture sets it | unit test |
 | Shim | ESM double-registration guard, init-error telemetry | no fixture | unit tests |
