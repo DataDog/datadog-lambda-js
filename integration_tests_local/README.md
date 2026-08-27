@@ -123,7 +123,15 @@ pre-migration ref rather than absorbing the difference into `normalize.sh` —
 the oracle is tied to the implementation under test, and a base-image change
 must be reviewed, not hidden by normalization.
 
-## Proactive-initialization simulation
+## Proactive-initialization simulation (manual diagnostic, not a gate)
+
+**Nothing uses this.** It is not set in CI, not set in the default run, and
+nothing gates on it. A run with it is **expected to differ** from the goldens
+rather than match them, so it is a tool for reproducing a sandbox state by
+hand and reading the diff — not a pass/fail check. It also cannot affect the
+baseline: in update mode the shared-golden guard rejects a proactive run
+instead of overwriting. Update this section if it ever becomes part of the
+gate.
 
 ```bash
 SIMULATE_PROACTIVE_INIT=true RUNTIME_PARAM=18 VARIANT_PARAM=esm ./integration_tests_local/run.sh
