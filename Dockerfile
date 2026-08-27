@@ -10,15 +10,8 @@ COPY . datadog-lambda-js
 WORKDIR /datadog-lambda-js
 # Node.js 26+ official images no longer bundle Yarn v1.
 RUN command -v yarn >/dev/null 2>&1 || npm install -g yarn@1.22.22
-# Node < 22 cannot run dd-trace v6. build_layers.sh passes a manual v5 pin as
-# DD_TRACE_VERSION; Node 22+ omits it so package.json is used as-is.
-ARG DD_TRACE_VERSION
-RUN if [ -n "$DD_TRACE_VERSION" ]; then \
-      echo "Installing dd-trace@${DD_TRACE_VERSION} for this Node runtime"; \
-      yarn add --dev --ignore-engines "dd-trace@${DD_TRACE_VERSION}"; \
-    else \
-      yarn install --ignore-engines; \
-    fi
+# Node < 22 cannot run dd-trace v6. install_deps.sh pins v5 from the image's Node version.
+RUN ./scripts/install_deps.sh
 
 # Build the lambda layer
 RUN yarn build

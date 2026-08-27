@@ -15,10 +15,6 @@ LAYER_FILES_PREFIX="datadog_lambda_node"
 # value at https://github.com/DataDog/serverless-tools/blob/0fabf9a1ab96df3907c2e50fd8df7e1fbd6a1fca/.gitlab/setup.sh#L128
 export NODE_VERSIONS=("18.12" "20.19" "22.11" "24.11" "26.1")
 
-# dd-trace v6 requires Node 22+. Node 18/20 layers use this v5 pin.
-# Bump this manually when shipping a new v5 into those layers.
-DDTRACE_V5_VERSION="~5.123.0"
-
 if [ -z "$NODE_VERSION" ]; then
     echo "Node version not specified, running for all node versions."
 else
@@ -43,19 +39,8 @@ function docker_build_zip {
     # Install datadog node in a docker container to avoid the mess from switching
     # between different node runtimes.
     temp_dir=$(mktemp -d)
-
-    extra_build_args=()
-    if [ "$node_image_version" -lt 22 ]; then
-        echo "Using dd-trace@${DDTRACE_V5_VERSION} for Node ${node_image_version}"
-        extra_build_args+=(--build-arg "DD_TRACE_VERSION=${DDTRACE_V5_VERSION}")
-    else
-        echo "Using package.json dd-trace version for Node ${node_image_version}"
-    fi
-
     docker buildx build -t datadog-lambda-layer-node:$1 . --no-cache \
-        --build-arg image=registry.ddbuild.io/images/mirror/node:${node_image_version}-bullseye \
-        "${extra_build_args[@]}" \
-        --progress=plain -o $temp_dir/nodejs
+        --build-arg image=registry.ddbuild.io/images/mirror/node:${node_image_version}-bullseye --progress=plain -o $temp_dir/nodejs
 
     # Zip to destination, and keep directory structure as based in $temp_dir
     (cd $temp_dir && zip -q -r $destination ./)

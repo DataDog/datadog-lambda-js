@@ -1,6 +1,8 @@
 ARG image
 FROM $image
 COPY . .
-RUN yarn install
+# Node.js 26+ official images no longer bundle Yarn v1.
+RUN command -v yarn >/dev/null 2>&1 || npm install -g yarn@1.22.22
+RUN ./scripts/install_deps.sh
 RUN yarn build
 RUN yarn lint

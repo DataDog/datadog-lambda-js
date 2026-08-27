@@ -31,7 +31,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
       - name: Install dependencies
-        run: yarn install
+        run: ./scripts/install_deps.sh
 
       - name: Check formatting
         run: yarn check-formatting
@@ -67,7 +67,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
       - name: Install dependencies
-        run: yarn install
+        run: ./scripts/install_deps.sh
 
       - name: Build
         run: yarn build

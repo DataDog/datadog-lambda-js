@@ -23,7 +23,7 @@ default:
   - yarn --version
   - echo 'yarn-offline-mirror ".yarn-cache/"' >> .yarnrc
   - echo 'yarn-offline-mirror-pruning true' >> .yarnrc
-  - yarn install --frozen-lockfile --no-progress
+  - ./scripts/install_deps.sh
 
 {{ range $runtime := (ds "runtimes").runtimes }}
 
@@ -186,7 +186,12 @@ publish npm package:
     - sign layer ({{ $runtime.name }})
   {{- end }}
   before_script:
-    - *node-before-script
+    - command -v yarn >/dev/null 2>&1 || npm install -g yarn
+    - yarn --version
+    - echo 'yarn-offline-mirror ".yarn-cache/"' >> .yarnrc
+    - echo 'yarn-offline-mirror-pruning true' >> .yarnrc
+    # Do not use install_deps.sh: it rewrites package.json to v5 on Node 18.
+    - yarn install --frozen-lockfile --ignore-engines --no-progress
   script:
     - .gitlab/scripts/publish_npm.sh
 
