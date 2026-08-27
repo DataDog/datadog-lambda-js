@@ -53,17 +53,19 @@ RUN rm -rf /nodejs/node_modules/aws-xray-sdk-core/node_modules/aws-sdk
 # Remove heavy files from @datadog/pprof which aren't used in a lambda environment
 # TODO: Ship individual bindings per platform and depend on that instead.
 # TODO: Split x64 and ARM so that each image only has the binaries for its architecture.
+# Lambda's supported Node.js runtimes use glibc on x64 or arm64.
+# Remove non-Linux platform prebuilds
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/darwin-arm64
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/darwin-x64
-RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/linux-arm
-RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/linuxmusl-arm64
-RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/linuxmusl-x64
-RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/win32-ia32
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/win32-x64
-RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/node-111.node
-RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/node-120.node
-RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/node-131.node
-RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/node-141.node
+# Remove musl prebuilds (Lambda uses glibc, not musl)
+RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/dd_pprof.musl.node.*.node
+# Remove ABIs for non-LTS Node versions not supported on Lambda
+# Lambda supports Node 18 (abi108), Node 20 (abi115), Node 22 (abi127), Node 24 (abi137), and Node 26 (abi147)
+RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/dd_pprof.node.abi111.node
+RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/dd_pprof.node.abi120.node
+RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/dd_pprof.node.abi131.node
+RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/dd_pprof.node.abi141.node
 
 # Remove unused @datadog/native-appsec prebuilds for non-Lambda platforms.
 # Lambda runs on Amazon Linux 2 (glibc), on x64 or arm64.
