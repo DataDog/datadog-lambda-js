@@ -6,9 +6,9 @@ datadog-lambda-js. It runs the container-image handler variants
 inside Docker against the
 [AWS Lambda Runtime Interface Emulator (RIE)](https://github.com/aws/aws-lambda-runtime-interface-emulator),
 invokes them with the same input events as the AWS-based suite, captures
-logs from `docker logs`, normalizes them with the **same** pipeline as
-`scripts/run_integration_tests.sh`, and diffs them against **local**
-snapshots in `./snapshots/`.
+logs from `docker logs`, normalizes them with `./normalize.sh` — the AWS
+suite's filter chain plus documented RIE-specific handling, not an identical
+copy — and diffs them against **local** snapshots in `./snapshots/`.
 
 Nothing here touches AWS, and nothing here touches
 `integration_tests/snapshots/` (the AWS suite's snapshots).
@@ -18,13 +18,16 @@ Nothing here touches AWS, and nothing here touches
 - Docker (tested with colima on macOS arm64)
 - `node`, `yarn`, `perl`, `sed`, `curl` (all already used by the AWS suite)
 - Network access for the first run (pulls `public.ecr.aws/lambda/nodejs:*`
-  base images, ~1 GB each, and downloads the RIE binary once into `./bin/`)
+  base images, ~1 GB each, and downloads the pinned RIE binary into `./bin/`)
 
 ## Running
 
 ```bash
-# Everything: nodejs 18/20/22/24 x {cjs, esm}, diff against local snapshots
+# All checked-in snapshots: nodejs 18/20/22/24 x {cjs, esm}
 ./integration_tests_local/run.sh
+
+# Generate the temporary Node 26 baseline used by PR 1
+UPDATE_SNAPSHOTS=true RUNTIME_PARAM=26 ./integration_tests_local/run.sh
 
 # One runtime / one variant
 RUNTIME_PARAM=18 VARIANT_PARAM=esm ./integration_tests_local/run.sh
@@ -44,6 +47,38 @@ Unless `SKIP_PACK=true` is set, each run repacks the library under test
 `integration_tests/container/{cjs,esm}/datadog-lambda-js-local.tgz`, exactly
 like `scripts/run_integration_tests.sh` does, so the containers always test
 the working tree.
+
+Without `UPDATE_SNAPSHOTS=true`, every expected return-value and log snapshot
+must already exist. A missing snapshot fails the run and is never created
+implicitly. Update mode is the only path that creates or overwrites snapshots.
+
+## Pinned runtime infrastructure
+
+The harness pins AWS Runtime Interface Emulator (RIE) `v1.36` and verifies the
+cached binary on every run before mounting it into a container:
+
+| Asset | SHA-256 |
+|---|---|
+| `aws-lambda-rie-x86_64` | `ba57f2683260127135ad5ba9bafea141f90492143cbaeb9312cde6dae8d1c08e` |
+| `aws-lambda-rie-arm64` | `7826415f278663274e279085ff96d7c9da210a30213fa72279e56e59f028ce76` |
+
+If `./bin/aws-lambda-rie` is absent or has a different checksum, `run.sh`
+downloads and verifies the platform-specific asset before replacing the cache.
+
+Node 26 is still preview-only in ECR Public: the bare
+`public.ecr.aws/lambda/nodejs:26` tag does not exist. The logical runtime stays
+`26` for image names, function names, and snapshot paths, while the Docker
+base-image build argument maps to the dated multi-arch tag
+`26-preview.2026.08.21.22`.
+
+PR 1 generates all 20 Node 26 artifacts in CI without committing them. PR 2
+reviews and adds those snapshots, completing the 100-snapshot baseline and
+turning all five runtime jobs into strict comparisons.
+
+When AWS publishes the bare Node 26 GA image, re-capture the Node 26 goldens
+from the pinned pre-migration ref before the old business logic is deleted.
+The oracle is tied to the implementation under test, and the GA base-image
+change must be reviewed rather than hidden by normalization.
 
 ## Proactive-initialization simulation
 
@@ -92,10 +127,9 @@ the real Lambda platform and does not appear under RIE in either mode.
 ## Files
 
 - `run.sh` — the runner (build images, run under RIE, invoke, diff snapshots)
-- `normalize.sh` — the log-normalization pipeline, factored out of
-  `scripts/run_integration_tests.sh` (lines 212-248) so both suites
-  normalize identically. Reads stdin, writes stdout; honors `RUN_ID` for
-  the AWS suite's per-run ID stripping.
+- `normalize.sh` — the local log-normalization pipeline, based on the AWS
+  suite's filters with documented RIE-specific handling. Reads stdin, writes
+  stdout; honors `RUN_ID` for optional per-run ID stripping.
 - `bin/` — downloaded RIE binary (gitignored)
 - `snapshots/logs/` — normalized log snapshots per variant+runtime
 - `snapshots/return_values/` — per-event handler return-value snapshots
@@ -130,6 +164,13 @@ against the other's snapshots.
   tag stable.
 - Enhanced metrics that depend on platform-provided values (e.g. real
   memory size / billed duration) may be absent or differ.
-- Layer-based handler variants are not exercised here (they need the built
-  layer zip and a zip-based deployment model; the container variants cover
-  the same npm-installed library code path).
+- Onboarding-mode coverage is partial, and it is two modes short, not three.
+  Both container fixtures end in
+  `CMD ["node_modules/datadog-lambda-js/dist/handler.handler"]`, so the
+  **npm-installed** handler path is already exercised on every runtime. What
+  this harness does not cover is the **layer** path
+  (`/opt/nodejs/node_modules/datadog-lambda-js/handler.handler`, which needs the
+  built layer zip and a zip-based deployment model) and **manual**
+  `datadog(handler)` wrapping in customer code. Adding those two means new
+  fixtures and a larger snapshot count, so they belong to a separately scoped
+  follow-up rather than to the harness-hardening PR.

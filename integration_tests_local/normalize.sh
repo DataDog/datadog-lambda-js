@@ -1,12 +1,11 @@
 #!/bin/bash
 
-# Shared log-normalization pipeline for integration test snapshots.
+# Local log-normalization pipeline for integration test snapshots.
 #
-# This is the exact filter chain used by scripts/run_integration_tests.sh
-# (lines 212-248) to replace invocation-specific data (timestamps, IDs,
-# durations, ...) with XXXX before diffing logs against snapshots.
-# It is factored out here so both the AWS-based suite and the local
-# RIE-based harness (integration_tests_local/run.sh) normalize identically.
+# This is based on the filter chain used by scripts/run_integration_tests.sh
+# to replace invocation-specific data (timestamps, IDs, durations, ...) with
+# XXXX before diffing logs against snapshots. Local-only RIE filters and
+# deterministic cold-start assertions are documented below.
 #
 # Usage:
 #   some-log-producer | ./normalize.sh
@@ -24,7 +23,8 @@ script_path=${BASH_SOURCE[0]}
 local_dir=$(dirname "$script_path")
 repo_dir=$(dirname "$local_dir")
 
-run_id_filter='s/$/^/' # no-op by default (matches nothing useful, harmless)
+# An empty Perl program is a pass-through when RUN_ID is unset.
+run_id_filter=''
 if [ -n "$RUN_ID" ]; then
     run_id_filter="s/${RUN_ID}/XXXX/g"
 fi
@@ -34,6 +34,11 @@ node "$repo_dir/integration_tests/parse-json.js" |
     sed '/Serverless: Recoverable error occurred/d' |
     # Normalize Lambda runtime report logs
     perl -p -e 's/(RequestId|TraceId|init|SegmentId|Duration|Memory Used|"e"):( )?[a-z0-9\.\-]+/\1:\2XXXX/g' |
+    # Node.js 26 preview and container-image runtimes emit extra platform noise.
+    sed '/preview runtime version and should not be used for production workloads/d' |
+    sed '/^INIT_REPORT /d' |
+    sed '/DEP0205.*module\.register()/d' |
+    sed '/node --trace-deprecation.*where the warning was created/d' |
     # Normalize DD APM headers and AWS account ID
     perl -p -e "s/(x-datadog-parent-id:|x-datadog-trace-id:|account_id:)[0-9]+/\1XXXX/g" |
     # Strip API key from logged requests
@@ -51,8 +56,7 @@ node "$repo_dir/integration_tests/parse-json.js" |
     perl -p -e "$run_id_filter" |
     # Normalize line numbers in stack traces
     perl -p -e 's/(.js:)[0-9]*:[0-9]*/\1XXX:XXX/g' |
-    # Remove metrics and metas in logged traces (their order is inconsistent)
-    perl -p -e 's/"(meta|metrics)":{(.*?)}/"\1":{"XXXX": "XXXX"}/g' |
+    # Preserve stable span meta and metrics; volatile values are normalized above.
     # Normalize enhanced metric datadog_lambda tag
     perl -p -e "s/(datadog_lambda:v)[0-9\.]+/\1X.X.X/g" |
     # Normalize lookup resource
@@ -61,13 +65,8 @@ node "$repo_dir/integration_tests/parse-json.js" |
     perl -p -e "s/User-Agent:axios\/\d+\.\d+\.\d+/User-Agent:axios\/X\.X\.X/g" |
     # Remove init start line
     perl -p -e "s/INIT_START.*//g" |
-    # Drop proactive-initialization markers only: whether a sandbox was
-    # proactively initialized (>10s between init and first invoke, see
-    # src/utils/cold-start.ts) is platform scheduling, not code behavior.
-    # cold_start values are NOT normalized — the cold->warm transition
-    # (invoke #1 cold_start:true, #2..N false) is deliberate coverage,
-    # and is deterministic locally since proactive init cannot happen
-    # unless SIMULATE_PROACTIVE_INIT=true.
+    # Proactive initialization is platform scheduling, not code behavior.
+    # Keep cold_start to cover the deterministic local cold-to-warm transition.
     sed '/proactive_initialization/d' |
     perl -p -e 's/ \(init: [^)]*\)//g' |
     # Normalize RIE platform log lines (local harness only; no-op on AWS logs):
@@ -78,4 +77,6 @@ node "$repo_dir/integration_tests/parse-json.js" |
     perl -p -e 's/(duration(Ms)?: )[0-9.]+/\1XXXX/g' |
     sed -E "s/(tracestate\:)([A-Za-z0-9\-\=\:\;].+)/\1XXX/g" |
     sed -E "s/(\"_dd.p.tid\"\: \")[a-z0-9\.\-]+/\1XXXX/g" |
-    sed -E "s/(_dd.p.tid=)[a-z0-9\.\-]+/\1XXXX/g"
+    sed -E "s/(_dd.p.tid=)[a-z0-9\.\-]+/\1XXXX/g" |
+    # Remove RIE's trailing REPORT tab without changing application output.
+    sed -E '/^REPORT RequestId:/s/[[:blank:]]+$//'
