@@ -376,7 +376,14 @@ for node_version in "${RUNTIMES[@]}"; do
         done
 
         # Wait for both completion markers; RIE may emit RTDONE after REPORT.
+        # The managed-instances path used by SIMULATE_PROACTIVE_INIT emits
+        # REPORT but never RTDONE, so requiring it there would always time out.
         expected_invocation_count=${#input_event_files[@]}
+        if [ -n "${SIMULATE_PROACTIVE_INIT:-}" ]; then
+            expected_rtdone_count=0
+        else
+            expected_rtdone_count=$expected_invocation_count
+        fi
         logs_ready=false
         raw_logs=""
         for i in $(seq 1 40); do
@@ -384,14 +391,14 @@ for node_version in "${RUNTIMES[@]}"; do
             report_count=$(printf '%s\n' "$raw_logs" | grep -c '^REPORT RequestId:' || true)
             rtdone_count=$(printf '%s\n' "$raw_logs" | grep -c 'INVOKE RTDONE' || true)
             if [ "$report_count" -ge "$expected_invocation_count" ] && \
-                [ "$rtdone_count" -ge "$expected_invocation_count" ]; then
+                [ "$rtdone_count" -ge "$expected_rtdone_count" ]; then
                 logs_ready=true
                 break
             fi
             sleep 0.25
         done
         if [ "$logs_ready" != true ]; then
-            echo "FAILURE: Timed out waiting for $expected_invocation_count REPORT/RTDONE pairs from $function_name; found $report_count/$rtdone_count" >&2
+            echo "FAILURE: Timed out waiting for $expected_invocation_count REPORT and $expected_rtdone_count RTDONE markers from $function_name; found $report_count/$rtdone_count" >&2
             echo "$raw_logs" | tail -30 >&2
             mismatch_found=true
             docker rm -f "$cid" >/dev/null 2>&1
