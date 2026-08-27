@@ -32,8 +32,10 @@ export class ColdStartTracer {
   }
 
   trace(rootNodes: RequireNode[]) {
-    const coldStartSpanStartTime = rootNodes[0]?.startTime;
-    const coldStartSpanEndTime = Math.min(rootNodes[rootNodes.length - 1]?.endTime, this.currentSpanStartTime);
+    if (rootNodes.length <= 0) return;
+
+    const coldStartSpanStartTime = Math.min(...rootNodes.map((node) => node.startTime));
+    const coldStartSpanEndTime = Math.min(Math.max(...rootNodes.map((node) => node.endTime)), this.currentSpanStartTime);
     let targetParentSpan: SpanWrapper | undefined;
     if (this.isColdStart) {
       const coldStartSpan = this.createColdStartSpan(coldStartSpanStartTime, coldStartSpanEndTime, this.parentSpan);
@@ -64,7 +66,12 @@ export class ColdStartTracer {
     return newSpan;
   }
 
-  private coldStartSpanOperationName(filename: string): string {
+  private coldStartSpanOperationName(reqNode: RequireNode): string {
+    const filename = reqNode.filename;
+    if (reqNode.kind === "import" || filename.startsWith("file://") || filename.endsWith(".mjs")) {
+      return "aws.lambda.import";
+    }
+
     if (filename.startsWith("/opt/")) {
       return "aws.lambda.require_layer";
     } else if (filename.startsWith("/var/runtime/")) {
@@ -88,7 +95,7 @@ export class ColdStartTracer {
     const options: SpanOptions = {
       tags: {
         service: "aws.lambda",
-        operation_name: this.coldStartSpanOperationName(reqNode.filename),
+        operation_name: this.coldStartSpanOperationName(reqNode),
         resource_names: reqNode.id,
         "resource.name": reqNode.id,
         filename: reqNode.filename,
@@ -99,7 +106,7 @@ export class ColdStartTracer {
       options.childOf = parentSpan.span;
     }
     const newSpan = new SpanWrapper(
-      this.tracerWrapper.startSpan(this.coldStartSpanOperationName(reqNode.filename), options),
+      this.tracerWrapper.startSpan(this.coldStartSpanOperationName(reqNode), options),
       {},
     );
     if (reqNode.endTime - reqNode.startTime > this.minDuration) {

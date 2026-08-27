@@ -260,4 +260,65 @@ describe("ColdStartTracer", () => {
       service: "aws.lambda",
     });
   });
+
+  it("traces measured ESM imports and extends the load span to handler ready", () => {
+    const requireNodes: RequireNode[] = [
+      {
+        id: "./hooks",
+        filename: "/opt/nodejs/node_modules/dd-trace/packages/dd-trace/src/hooks.js",
+        startTime: 20,
+        endTime: 30,
+        children: [],
+      } as any as RequireNode,
+      {
+        id: "/var/task/index.mjs",
+        filename: "/var/task/index.mjs",
+        startTime: 100,
+        endTime: 220,
+        kind: "import",
+        children: [
+          {
+            id: "@aws-sdk/core/client",
+            filename: "/var/task/node_modules/@aws-sdk/core/dist-cjs/client.js",
+            startTime: 150,
+            endTime: 200,
+            children: [],
+          },
+        ],
+      } as any as RequireNode,
+    ];
+    const coldStartConfig: ColdStartTracerConfig = {
+      tracerWrapper: new TracerWrapper(),
+      parentSpan: {
+        span: {},
+        name: "my-lambda-span",
+      } as any as SpanWrapper,
+      lambdaFunctionName: "my-function-name",
+      currentSpanStartTime: 500,
+      minDuration: 1,
+      ignoreLibs: "",
+      isColdStart: true,
+    };
+    const coldStartTracer = new ColdStartTracer(coldStartConfig);
+    coldStartTracer.trace(requireNodes);
+
+    expect(startSpanSpy).toHaveBeenCalledTimes(4);
+    expect(startSpanSpy.mock.calls[0][0]).toEqual("aws.lambda.load");
+    expect((startSpanSpy.mock.calls[0][1] as any).startTime).toEqual(20);
+    expect(mockFinishSpan.mock.calls[0][0]).toEqual(220);
+
+    const importSpan = startSpanSpy.mock.calls[2];
+    expect(importSpan[0]).toEqual("aws.lambda.import");
+    expect(importSpan[1].tags).toEqual({
+      operation_name: "aws.lambda.import",
+      "resource.name": "/var/task/index.mjs",
+      resource_names: "/var/task/index.mjs",
+      service: "aws.lambda",
+      filename: "/var/task/index.mjs",
+    });
+
+    const importChildSpan = startSpanSpy.mock.calls[3];
+    expect(importChildSpan[0]).toEqual("aws.lambda.require");
+    expect((importChildSpan[1] as any).childOf.spanName).toEqual("aws.lambda.import");
+  });
 });
