@@ -101,5 +101,41 @@ describe("AppSec orchestrator", () => {
         responseHeaders: undefined,
       });
     });
+
+    it("should prefer the normalized status code over the raw one from the result", () => {
+      const span = { setTag: jest.fn() };
+
+      processAppsecResponse(span, { statusCode: 200 }, "502");
+
+      expect(mockPublish).toHaveBeenCalledWith({
+        span,
+        statusCode: "502",
+        responseHeaders: undefined,
+      });
+    });
+
+    it("should publish the normalized status code when the result carries none", () => {
+      const span = { setTag: jest.fn() };
+
+      processAppsecResponse(span, { headers: { "content-type": "application/json" } }, "200");
+
+      expect(mockPublish).toHaveBeenCalledWith({
+        span,
+        statusCode: "200",
+        responseHeaders: { "content-type": "application/json" },
+      });
+    });
+
+    it("should fall back to the raw status code when no normalized one is given", () => {
+      const span = { setTag: jest.fn() };
+
+      processAppsecResponse(span, { statusCode: 204 }, undefined);
+
+      expect(mockPublish).toHaveBeenCalledWith({
+        span,
+        statusCode: "204",
+        responseHeaders: undefined,
+      });
+    });
   });
 });

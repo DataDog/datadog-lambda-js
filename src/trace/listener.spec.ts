@@ -1,3 +1,4 @@
+import { readFileSync } from "fs";
 import { TraceListener } from "./listener";
 import { ddtraceVersion, parentSpanFinishTimeHeader } from "./constants";
 import { datadogLambdaVersion } from "../constants";
@@ -698,7 +699,102 @@ describe("TraceListener", () => {
         listener.onEndingInvocation(event, result, false);
 
         expect(mockProcessAppsecResponse).toHaveBeenCalledTimes(1);
-        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, result);
+        // Non-HTTP trigger: there is no normalized status code to hand over.
+        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, result, undefined);
+      } finally {
+        currentSpanSpy.mockRestore();
+      }
+    });
+
+    it("passes the normalized status code instead of the raw one for API Gateway v2", async () => {
+      const mockSetTag = jest.fn();
+      const mockSpan = { setTag: mockSetTag };
+      const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
+
+      try {
+        const listener = new TraceListener(defaultConfig);
+        const event = JSON.parse(readFileSync("./event_samples/api-gateway-v2.json", "utf8"));
+        // API Gateway v2 defaults to 200 when the handler omits the status code, so the raw
+        // result value (undefined) is not what AppSec should see.
+        const result = { body: "ok" };
+        await listener.onStartInvocation(event, context as any);
+        listener.onEndingInvocation(event, result, false);
+
+        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, result, "200");
+      } finally {
+        currentSpanSpy.mockRestore();
+      }
+    });
+
+    it("passes the normalized 502 when a buffered function returned no result", async () => {
+      const mockSetTag = jest.fn();
+      const mockSpan = { setTag: mockSetTag };
+      const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
+
+      try {
+        const listener = new TraceListener(defaultConfig);
+        const event = JSON.parse(readFileSync("./event_samples/application-load-balancer.json", "utf8"));
+        await listener.onStartInvocation(event, context as any);
+        listener.onEndingInvocation(event, undefined, false);
+
+        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, undefined, "502");
+      } finally {
+        currentSpanSpy.mockRestore();
+      }
+    });
+
+    it("passes the normalized 200 when a streaming function returned no result", async () => {
+      const mockSetTag = jest.fn();
+      const mockSpan = { setTag: mockSetTag };
+      const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
+
+      try {
+        const listener = new TraceListener(defaultConfig);
+        const event = JSON.parse(readFileSync("./event_samples/api-gateway-v2.json", "utf8"));
+        await listener.onStartInvocation(event, context as any);
+        listener.onEndingInvocation(event, undefined, true);
+
+        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, undefined, "200");
+      } finally {
+        currentSpanSpy.mockRestore();
+      }
+    });
+
+    it("tags http.status_code on the span before calling processAppsecResponse", async () => {
+      const callOrder: string[] = [];
+      mockProcessAppsecResponse.mockImplementation(() => callOrder.push("appsec"));
+
+      const mockSetTag = jest.fn((key: string) => {
+        if (key === "http.status_code") callOrder.push("tag");
+      });
+      const mockSpan = { setTag: mockSetTag };
+      const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
+
+      try {
+        const listener = new TraceListener(defaultConfig);
+        const event = JSON.parse(readFileSync("./event_samples/api-gateway-v2.json", "utf8"));
+        await listener.onStartInvocation(event, context as any);
+        listener.onEndingInvocation(event, { statusCode: 201 }, false);
+
+        expect(callOrder).toEqual(["tag", "appsec"]);
+      } finally {
+        currentSpanSpy.mockRestore();
+      }
+    });
+
+    it("still calls processAppsecResponse on a 5xx response that short-circuits onEndingInvocation", async () => {
+      const mockSetTag = jest.fn();
+      const mockSpan = { setTag: mockSetTag };
+      const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
+
+      try {
+        const listener = new TraceListener(defaultConfig);
+        const event = JSON.parse(readFileSync("./event_samples/api-gateway-v2.json", "utf8"));
+        await listener.onStartInvocation(event, context as any);
+        const responseIs5xxError = listener.onEndingInvocation(event, { statusCode: 500 }, false);
+
+        expect(responseIs5xxError).toBe(true);
+        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, { statusCode: 500 }, "500");
       } finally {
         currentSpanSpy.mockRestore();
       }
