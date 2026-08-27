@@ -23,7 +23,8 @@ default:
   - yarn --version
   - echo 'yarn-offline-mirror ".yarn-cache/"' >> .yarnrc
   - echo 'yarn-offline-mirror-pruning true' >> .yarnrc
-  - yarn install --frozen-lockfile --no-progress
+  # Resolves dd-trace v5 or v6 from the Node major of the job's image.
+  - ./scripts/install_deps.sh --no-progress
 
 {{ range $runtime := (ds "runtimes").runtimes }}
 
@@ -179,6 +180,9 @@ publish npm package:
   tags: ["arch:amd64"]
   image: ${CI_DOCKER_TARGET_IMAGE}:${CI_DOCKER_TARGET_VERSION}
   cache: []
+  variables:
+    # The CI image runs Node 18, but the published package tracks the v6 line.
+    TARGET_NODE_MAJOR: "22"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v.*/'
   when: manual

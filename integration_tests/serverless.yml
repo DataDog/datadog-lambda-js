@@ -25,11 +25,13 @@ provider:
         platform: linux/amd64
         buildArgs:
           NODE_VERSION: ${env:NODE_MAJOR}
+          DD_TRACE_VERSION: ${env:DD_TRACE_VERSION}
       datadog-lambda-js-esm:
         path: ./container/esm
         platform: linux/amd64
         buildArgs:
           NODE_VERSION: ${env:NODE_MAJOR}
+          DD_TRACE_VERSION: ${env:DD_TRACE_VERSION}
 
 layers:
   node:

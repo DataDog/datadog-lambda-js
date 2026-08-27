@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "dd-trace": "5.105.0"
+    "dd-trace": "6.12.0"
   }
 }

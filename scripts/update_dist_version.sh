@@ -2,7 +2,10 @@
 set -e
 echo "Updating version constants"
 DATADOG_LAMBDA_VERSION=$(node -pe "require('./package.json').version")
-DD_TRACE_VERSION=$(sed -n -E "s/dd-trace@([0-9]*\.[0-9]*\.[0-9]*):/\1/p" yarn.lock)
+# Read the resolved version off the install rather than the lockfile: the layer
+# builds for Node 18/20 re-resolve dd-trace to the v5 line, and a lockfile range
+# such as ^6.12.0 is not a version to begin with.
+DD_TRACE_VERSION=$(node -pe "require('dd-trace/package.json').version" 2>/dev/null || echo "")
 echo "Datadog Lambda Library Version ${DATADOG_LAMBDA_VERSION}"
 echo "Datadog Trace Library Version ${DD_TRACE_VERSION}"
 

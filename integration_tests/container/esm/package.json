@@ -4,6 +4,6 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "dd-trace": "5.105.0"
+    "dd-trace": "6.12.0"
   }
 }
