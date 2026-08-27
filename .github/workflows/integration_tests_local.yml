@@ -36,25 +36,12 @@ jobs:
           node-version: 18.12
 
       - name: Run local container integration tests (nodejs${{ matrix.node_major }}.x)
-        # Generate an ephemeral Node 26 baseline until PR 2 adds its snapshots.
-        env:
-          UPDATE_SNAPSHOTS: ${{ matrix.node_major == '26' && 'true' || '' }}
         run: PLATFORM=linux/amd64 RUNTIME_PARAM=${{ matrix.node_major }} ./integration_tests_local/run.sh
 
-      # Expect 9 events x 2 variants, plus one log per variant.
-      - name: Assert Node 26 generated a complete baseline
-        if: matrix.node_major == '26'
-        run: |
-          returns=$(find integration_tests_local/snapshots/return_values -type f -name '*_node26_*.json' | wc -l)
-          logs=$(find integration_tests_local/snapshots/logs -type f -name '*_node26.log' | wc -l)
-          echo "Generated $returns return-value and $logs log artifacts for node26"
-          if [ "$returns" -ne 18 ] || [ "$logs" -ne 2 ]; then
-            echo "FAILURE: expected 18 return-value and 2 log artifacts, got $returns and $logs" >&2
-            exit 1
-          fi
-
-      # Only the Node 26 leg may create uncommitted snapshots.
-      - name: Assert no committed snapshot was mutated
+      # Every leg is a strict comparison, so a run must leave the snapshots
+      # untouched. Writing here would mean the harness recorded its own output
+      # as the expectation instead of checking against it.
+      - name: Assert no snapshot was written
         if: always()
         run: |
           if ! git diff --exit-code --stat integration_tests_local/snapshots; then
@@ -62,16 +49,7 @@ jobs:
             exit 1
           fi
           new_files=$(git ls-files --others --exclude-standard integration_tests_local/snapshots)
-          if [ "${{ matrix.node_major }}" = "26" ]; then
-            new_file_count=$(printf '%s\n' "$new_files" | sed '/^$/d' | wc -l)
-            if [ "$new_file_count" -ne 20 ]; then
-              echo "FAILURE: expected exactly 20 ephemeral node26 snapshots, got $new_file_count" >&2
-              echo "$new_files" >&2
-              exit 1
-            fi
-            echo "Ephemeral node26 baseline (not committed):"
-            echo "$new_files"
-          elif [ -n "$new_files" ]; then
+          if [ -n "$new_files" ]; then
             echo "FAILURE: strict leg created snapshots instead of comparing:" >&2
             echo "$new_files" >&2
             exit 1

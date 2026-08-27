@@ -23,11 +23,8 @@ Nothing here touches AWS, and nothing here touches
 ## Running
 
 ```bash
-# All checked-in snapshots: nodejs 18/20/22/24 x {cjs, esm}
+# Everything: nodejs 18/20/22/24/26 x {cjs, esm}
 ./integration_tests_local/run.sh
-
-# Generate the temporary Node 26 baseline used by PR 1
-UPDATE_SNAPSHOTS=true RUNTIME_PARAM=26 ./integration_tests_local/run.sh
 
 # One runtime / one variant
 RUNTIME_PARAM=18 VARIANT_PARAM=esm ./integration_tests_local/run.sh
@@ -48,9 +45,55 @@ Unless `SKIP_PACK=true` is set, each run repacks the library under test
 like `scripts/run_integration_tests.sh` does, so the containers always test
 the working tree.
 
+The harness takes no flags or positional arguments — configuration is
+environment-only, and an unexpected argument is rejected rather than ignored.
+
 Without `UPDATE_SNAPSHOTS=true`, every expected return-value and log snapshot
 must already exist. A missing snapshot fails the run and is never created
 implicitly. Update mode is the only path that creates or overwrites snapshots.
+
+## Snapshot layout: shared goldens with per-case overrides
+
+There are three committed snapshots, not one per case:
+
+```
+snapshots/return_values/default.json   # every event, every runtime, every variant
+snapshots/logs/cjs.log                 # nodejs 18/20/22/24/26, cjs
+snapshots/logs/esm.log                 # nodejs 18/20/22/24/26, esm
+```
+
+All 9 input events return the same fixture response, and the normalized logs
+are identical across all five runtimes, so a per-case file per leg would be 80
+copies of 3 distinct expectations — and 80 files to review when one of them
+legitimately changes.
+
+Two things make the sharing safe rather than lossy:
+
+- **The runtime is asserted before it is collapsed.** `runtime:nodejsNN.x` is
+  the only genuinely runtime-specific line in the log. `run.sh` checks that it
+  appears on every invocation with the major actually under test, and only then
+  rewrites it to `nodejsXX.x`. Sharing the golden therefore does not stop the
+  suite from checking that the library reports the runtime it is running on.
+- **`AWS_LAMBDA_FUNCTION_NAME` carries no runtime major.** It propagates into
+  `service`, `resource`, `resource_names`, `functionname`, `function_arn`,
+  `_dd.base_service` and `_dd.tags.process`, so embedding the runtime there
+  made every runtime's golden differ in ~100 lines of pure fixture naming,
+  burying the one line that was actually runtime-specific.
+
+Divergence is expressed by **adding a file**, never by loosening a comparison:
+
+```
+snapshots/logs/${variant}_node${major}.log                       # overrides the shared log
+snapshots/return_values/${variant}_node${major}_${event}.json    # overrides the shared return value
+```
+
+When an override is present it wins for that leg alone. This keeps a real
+behavioral difference visible in review, whereas widening a normalization
+filter to absorb it would be invisible.
+
+In update mode, a leg that disagrees with an existing shared golden **fails**
+instead of overwriting it — otherwise the last runtime to run would silently
+define the expectation for all of them.
 
 ## Pinned runtime infrastructure
 
@@ -71,14 +114,14 @@ Node 26 is still preview-only in ECR Public: the bare
 base-image build argument maps to the dated multi-arch tag
 `26-preview.2026.08.21.22`.
 
-PR 1 generates all 20 Node 26 artifacts in CI without committing them. PR 2
-reviews and adds those snapshots, completing the 100-snapshot baseline and
-turning all five runtime jobs into strict comparisons.
+Node 26 is a strict leg like every other: its normalized output matches the
+shared goldens exactly, so it needs no snapshots of its own.
 
-When AWS publishes the bare Node 26 GA image, re-capture the Node 26 goldens
-from the pinned pre-migration ref before the old business logic is deleted.
-The oracle is tied to the implementation under test, and the GA base-image
-change must be reviewed rather than hidden by normalization.
+When AWS publishes the bare Node 26 GA image, swap the pinned tag and re-run.
+If GA output diverges, add a `*_node26` override captured from the pinned
+pre-migration ref rather than absorbing the difference into `normalize.sh` —
+the oracle is tied to the implementation under test, and a base-image change
+must be reviewed, not hidden by normalization.
 
 ## Proactive-initialization simulation
 
@@ -131,8 +174,10 @@ the real Lambda platform and does not appear under RIE in either mode.
   suite's filters with documented RIE-specific handling. Reads stdin, writes
   stdout; honors `RUN_ID` for optional per-run ID stripping.
 - `bin/` — downloaded RIE binary (gitignored)
-- `snapshots/logs/` — normalized log snapshots per variant+runtime
-- `snapshots/return_values/` — per-event handler return-value snapshots
+- `snapshots/logs/` — normalized log snapshots, shared per variant across
+  runtimes, with optional `${variant}_node${major}.log` overrides
+- `snapshots/return_values/` — handler return-value snapshot, shared by every
+  case, with optional `${variant}_node${major}_${event}.json` overrides
 
 ## Comparison with the AWS-based suite
 
@@ -172,5 +217,5 @@ against the other's snapshots.
   (`/opt/nodejs/node_modules/datadog-lambda-js/handler.handler`, which needs the
   built layer zip and a zip-based deployment model) and **manual**
   `datadog(handler)` wrapping in customer code. Adding those two means new
-  fixtures and a larger snapshot count, so they belong to a separately scoped
-  follow-up rather than to the harness-hardening PR.
+  fixtures and new goldens, so they belong to a separately scoped follow-up
+  rather than to the harness-hardening PR.

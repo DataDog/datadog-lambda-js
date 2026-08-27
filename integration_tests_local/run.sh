@@ -9,14 +9,14 @@
 # integration_tests/snapshots/).
 #
 # Usage (from repo root or this directory):
-#   ./integration_tests_local/run.sh                 # runtimes with checked-in snapshots
+#   ./integration_tests_local/run.sh                 # all runtimes, both variants
 #   RUNTIME_PARAM=18 ./integration_tests_local/run.sh
 #   RUNTIME_PARAM=18 VARIANT_PARAM=esm ./integration_tests_local/run.sh
 #   UPDATE_SNAPSHOTS=true ./integration_tests_local/run.sh
 #   SIMULATE_PROACTIVE_INIT=true RUNTIME_PARAM=18 VARIANT_PARAM=esm ./integration_tests_local/run.sh
 #
 # Env knobs:
-#   RUNTIME_PARAM            - node major version: 18|20|22|24|26 (default: 18-24)
+#   RUNTIME_PARAM            - node major version: 18|20|22|24|26 (default: all)
 #   VARIANT_PARAM            - container variant: cjs|esm (default: both)
 #   PLATFORM                 - docker platform (default: linux/arm64)
 #   UPDATE_SNAPSHOTS=true    - overwrite local snapshots instead of diffing
@@ -65,7 +65,7 @@ function contains() {
 }
 
 SUPPORTED_RUNTIMES=("18" "20" "22" "24" "26")
-RUNTIMES=("18" "20" "22" "24")
+RUNTIMES=("${SUPPORTED_RUNTIMES[@]}")
 if [ -n "${RUNTIME_PARAM:-}" ]; then
     if ! contains "$RUNTIME_PARAM" "${SUPPORTED_RUNTIMES[@]}"; then
         echo "Unsupported RUNTIME_PARAM: $RUNTIME_PARAM (use 18, 20, 22, 24, or 26)"
@@ -74,7 +74,7 @@ if [ -n "${RUNTIME_PARAM:-}" ]; then
     echo "Node version is specified: $RUNTIME_PARAM"
     RUNTIMES=("$RUNTIME_PARAM")
 else
-    echo "Node version not specified, running for all runtimes with checked-in snapshots."
+    echo "Node version not specified, running for all node versions."
 fi
 
 SUPPORTED_VARIANTS=("cjs" "esm")
@@ -213,11 +213,60 @@ function compare_snapshot() {
     esac
 }
 
+# Write a golden in update mode.
+#
+# A shared golden is written by every leg, so each leg after the first must
+# agree with what is already there. If one diverges, the sharing assumption is
+# wrong for that case and we say so, rather than letting the last leg to run
+# silently overwrite the others.
+function write_snapshot() {
+    local actual=$1
+    local snapshot_path=$2
+    local description=$3
+    local shared=${4:-false}
+    local sort_lines=${5:-false}
+    local agree
+
+    if [ "$shared" = true ] && [ -f "$snapshot_path" ]; then
+        # Agreement must use the same semantics as compare_snapshot. Log lines
+        # are compared sorted because RIE's platform logging races with
+        # application output, so RTDONE can land on either side of a nearby
+        # line; that is ordering noise, not a divergence between runtimes.
+        if [ "$sort_lines" = true ]; then
+            printf '%s\n' "$actual" | LC_ALL=C sort | diff -q - <(LC_ALL=C sort "$snapshot_path") >/dev/null
+            agree=$?
+        else
+            [ "$(printf '%s\n' "$actual")" = "$(cat "$snapshot_path")" ]
+            agree=$?
+        fi
+        if [ "$agree" -ne 0 ]; then
+            echo "FAILURE: $description diverges from shared golden $snapshot_path" >&2
+            echo "  Shared goldens require every leg to agree. Express a real" >&2
+            echo "  divergence by adding a case-specific override file, not by" >&2
+            echo "  overwriting the shared one." >&2
+            printf '%s\n' "$actual" | diff - "$snapshot_path" >&2
+            mismatch_found=true
+            return
+        fi
+        echo "Ok: $description already matches shared golden $snapshot_path"
+        return
+    fi
+
+    echo "Writing $description to $snapshot_path"
+    printf '%s\n' "$actual" >"$snapshot_path"
+}
+
 for node_version in "${RUNTIMES[@]}"; do
     for variant in "${VARIANTS[@]}"; do
         handler_name="container-${variant}"
         image_tag="datadog-lambda-js-local-test:${handler_name}-node${node_version}"
-        function_name="integration-tests-js-local-${handler_name}_node${node_version}"
+        # AWS_LAMBDA_FUNCTION_NAME deliberately carries no runtime major. It
+        # propagates into service, resource, resource_names, functionname,
+        # function_arn, _dd.base_service and _dd.tags.process, so embedding the
+        # runtime here made every runtime's golden differ in ~100 lines of pure
+        # fixture naming, which buried the one line that is actually
+        # runtime-specific.
+        function_name="integration-tests-js-local-${handler_name}"
         node_image_tag=$(lambda_node_image_tag "$node_version")
 
         echo ""
@@ -299,20 +348,29 @@ for node_version in "${RUNTIMES[@]}"; do
             fi
             echo "  $input_event_name -> $return_value"
 
-            snapshot_path="$local_dir/snapshots/return_values/${variant}_node${node_version}_${input_event_name}.json"
-            if [ ! -f "$snapshot_path" ]; then
-                if [ "$update_snapshots" = true ]; then
-                    echo "Writing return value to $snapshot_path because update mode is enabled"
-                    echo "$return_value" >"$snapshot_path"
-                else
-                    echo "Failed: Missing return-value snapshot: $snapshot_path"
-                    mismatch_found=true
-                fi
-            elif [ "$update_snapshots" = true ]; then
-                echo "Overwriting return value snapshot for $snapshot_path"
-                echo "$return_value" >"$snapshot_path"
+            # Every runtime, variant and input event returns the same fixture
+            # response, so one shared golden carries the whole assertion. A
+            # case-specific file wins when present: that is how an event which
+            # legitimately returns something else gets expressed, and adding a
+            # file is visible in review where loosening a comparison is not.
+            case_return_snapshot="$local_dir/snapshots/return_values/${variant}_node${node_version}_${input_event_name}.json"
+            if [ -f "$case_return_snapshot" ]; then
+                return_snapshot=$case_return_snapshot
+                return_shared=false
             else
-                compare_snapshot "$return_value" "$snapshot_path" \
+                return_snapshot="$local_dir/snapshots/return_values/default.json"
+                return_shared=true
+            fi
+
+            if [ "$update_snapshots" = true ]; then
+                write_snapshot "$return_value" "$return_snapshot" \
+                    "Return value for $handler_name with $input_event_name" \
+                    "$return_shared"
+            elif [ ! -f "$return_snapshot" ]; then
+                echo "Failed: Missing return-value snapshot: $return_snapshot"
+                mismatch_found=true
+            else
+                compare_snapshot "$return_value" "$return_snapshot" \
                     "Return value for $handler_name with $input_event_name"
             fi
         done
@@ -341,25 +399,42 @@ for node_version in "${RUNTIMES[@]}"; do
             continue
         fi
 
-        function_snapshot_path="$local_dir/snapshots/logs/${variant}_node${node_version}.log"
         logs=$(printf '%s\n' "$raw_logs" | "$local_dir/normalize.sh")
+
+        # `runtime:nodejsNN.x` is the only genuinely runtime-specific line in the
+        # whole log — everything else is identical across 18/20/22/24/26. Assert
+        # it explicitly, then collapse it so one golden serves every runtime.
+        # Without this assertion, sharing the golden would silently stop checking
+        # that the library reports the runtime it is actually running on.
+        runtime_tag_count=$(printf '%s\n' "$logs" | grep -c "runtime:nodejs${node_version}\.x" || true)
+        if [ "$runtime_tag_count" -ne "$expected_invocation_count" ]; then
+            echo "Failed: expected $expected_invocation_count runtime:nodejs${node_version}.x tags for $function_name, found $runtime_tag_count"
+            mismatch_found=true
+        else
+            echo "Ok: $function_name tagged runtime:nodejs${node_version}.x on all $expected_invocation_count invocations"
+        fi
+        logs=$(printf '%s\n' "$logs" | sed -E 's/runtime:nodejs[0-9]+\.x/runtime:nodejsXX.x/g')
 
         docker rm -f "$cid" >/dev/null 2>&1
         container_ids=("${container_ids[@]/$cid}")
 
-        if [ ! -f "$function_snapshot_path" ]; then
-            if [ "$update_snapshots" = true ]; then
-                echo "Writing logs to $function_snapshot_path because update mode is enabled"
-                echo "$logs" >"$function_snapshot_path"
-            else
-                echo "Failed: Missing log snapshot: $function_snapshot_path"
-                mismatch_found=true
-            fi
-        elif [ "$update_snapshots" = true ]; then
-            echo "Overwriting log snapshot for $function_snapshot_path"
-            echo "$logs" >"$function_snapshot_path"
+        # Shared per variant, with a per-runtime override for real divergence.
+        runtime_log_snapshot="$local_dir/snapshots/logs/${variant}_node${node_version}.log"
+        if [ -f "$runtime_log_snapshot" ]; then
+            log_snapshot=$runtime_log_snapshot
+            log_shared=false
         else
-            compare_snapshot "$logs" "$function_snapshot_path" "Logs for $function_name" true
+            log_snapshot="$local_dir/snapshots/logs/${variant}.log"
+            log_shared=true
+        fi
+
+        if [ "$update_snapshots" = true ]; then
+            write_snapshot "$logs" "$log_snapshot" "Logs for $function_name" "$log_shared" true
+        elif [ ! -f "$log_snapshot" ]; then
+            echo "Failed: Missing log snapshot: $log_snapshot"
+            mismatch_found=true
+        else
+            compare_snapshot "$logs" "$log_snapshot" "Logs for $function_name" true
         fi
     done
 done
