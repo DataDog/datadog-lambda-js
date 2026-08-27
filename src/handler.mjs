@@ -18,6 +18,11 @@ if (process.env.DD_TRACE_DISABLED_PLUGINS === undefined) {
   logDebug("disabled the dd-trace plugin 'fs'");
 }
 
+if (process.env.DD_TRACE_STARTUP_LOGS === undefined) {
+  process.env.DD_TRACE_STARTUP_LOGS = "false";
+  logDebug("disabled dd-trace startup logs");
+}
+
 // True when dd-trace's ESM loader hook is already active via NODE_OPTIONS or
 // execArgv. Covers every preload entry point that registers the hook:
 //   --import dd-trace/initialize.mjs  (documented ESM setup)

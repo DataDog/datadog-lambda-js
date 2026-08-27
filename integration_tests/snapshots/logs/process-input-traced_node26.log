@@ -657,7 +657,6 @@ START
   ],
   "v": 1
 }
-END Duration: XXXX ms Memory Used: XXXX MB
 {
   "traces": [
     [
@@ -768,6 +767,7 @@ END Duration: XXXX ms Memory Used: XXXX MB
     ]
   ]
 }
+END Duration: XXXX ms Memory Used: XXXX MB
 START
 {
   "e": XXXX,
