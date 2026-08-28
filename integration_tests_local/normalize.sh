@@ -41,10 +41,28 @@ node "$repo_dir/integration_tests/parse-json.js" |
     sed '/node --trace-deprecation.*where the warning was created/d' |
     # Normalize DD APM headers and AWS account ID
     perl -p -e "s/(x-datadog-parent-id:|x-datadog-trace-id:|account_id:)[0-9]+/\1XXXX/g" |
+    # Same headers as echoed by the http-requests fixture's mock server —
+    # JSON.stringify output, i.e. quoted with no space after the colon —
+    # plus the W3C traceparent/tracestate pair it also echoes.
+    perl -p -e 's/"(x-datadog-trace-id|x-datadog-parent-id)":"[0-9]+"/"\1":"XXXX"/g' |
+    perl -p -e 's/"traceparent":"[0-9a-f-]+"/"traceparent":"XXXX"/g' |
+    perl -p -e 's/"tracestate":"[^"]*"/"tracestate":"XXXX"/g' |
     # Strip API key from logged requests
     perl -p -e "s/(api_key=|'api_key': ')[a-z0-9\.\-]+/\1XXXX/g" |
     # Normalize log timestamps
     perl -p -e "s/[0-9]{4}\-[0-9]{2}\-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]+( \(\-?\+?[0-9:]+\))?/XXXX-XX-XX XX:XX:XX.XXX/" |
+    # Same for the ISO8601-with-T format the RIC uses on ERROR lines under RIE
+    # (e.g. "2026-08-28T04:00:26.774Z\t<request-id>\tERROR\tInvoke Error ...")
+    perl -p -e "s/[0-9]{4}\-[0-9]{2}\-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]+Z/XXXX-XX-XXTXX:XX:XX.XXXZ/" |
+    # Managed-instances (proactive-init case) structured logs: per-invocation
+    # request ids, and the overflow value in Node's TimeoutOverflowWarning,
+    # which is derived from a wall-clock deadline and varies run to run.
+    perl -p -e 's/"requestId": "[0-9a-f-]+"/"requestId": "XXXX"/g' |
+    # Same id in the compact JSON the preview RIC uses on Invoke Error lines.
+    perl -p -e 's/"requestId":"[0-9a-f-]+"/"requestId":"XXXX"/g' |
+    perl -p -e 's/TimeoutOverflowWarning: [0-9]+/TimeoutOverflowWarning: XXXX/g' |
+    # Pid in Node's "(node:NN)" warning prefix varies with process layout.
+    perl -p -e 's/\(node:[0-9]+\)/(node:XX)/g' |
     # Normalize DD trace ID injection
     perl -p -e "s/(dd\.trace_id=)[0-9]+ (dd\.span_id=)[0-9]+/\1XXXX \2XXXX/" |
     # Normalize execution ID in logs prefix
@@ -73,6 +91,8 @@ node "$repo_dir/integration_tests/parse-json.js" |
     # "28 Jul 2026 19:42:34,536 [INFO] (rapid) ..." timestamps, request ids,
     # and init/invoke durations vary run to run
     perl -p -e 's/^[0-9]{2} \w{3} [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2},[0-9]{3} (\[INFO\] \(rapid\))/XXXX \1/' |
+    # Managed-instances supervisor line embeds a container pid: pid=NN.
+    perl -p -e 's/(LocalProcessSupervisor\.Exec pid=)[0-9]+/\1XX/g' |
     perl -p -e 's/(requestId: )[0-9a-f-]+/\1XXXX/g' |
     perl -p -e 's/(duration(Ms)?: )[0-9.]+/\1XXXX/g' |
     sed -E "s/(tracestate\:)([A-Za-z0-9\-\=\:\;].+)/\1XXX/g" |
