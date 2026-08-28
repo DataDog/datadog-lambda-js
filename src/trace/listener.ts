@@ -231,10 +231,10 @@ export class TraceListener {
       // Always clear the tree to prevent memory leaks, even if we skip span creation
       clearTraceTree();
     }
-    // The status code has to be resolved and tagged before AppSec runs: the WAF needs the
-    // normalized value (raw result.statusCode is wrong for ALB, API Gateway v2 and response
-    // streaming), and API Security samples off the span, so http.status_code must already be
-    // there when the sampling decision is taken.
+    // The status code has to be resolved and tagged before AppSec runs. The WAF needs the
+    // normalized value: a handler may leave statusCode out of its response, and only this call
+    // knows what to answer then (502 with no result at all, 200 otherwise). And API Security
+    // samples off the span, so http.status_code must already be there when the decision is taken.
     let statusCode: string | undefined;
     if (this.triggerTags) {
       statusCode = extractHTTPStatusCodeTag(this.triggerTags, result, isResponseStreamFunction);
