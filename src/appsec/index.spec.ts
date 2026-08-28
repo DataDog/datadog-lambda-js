@@ -78,10 +78,10 @@ describe("AppSec orchestrator", () => {
       expect(mockPublish).not.toHaveBeenCalled();
     });
 
-    it("should extract status code and headers from the result and publish them", () => {
+    it("should publish the normalized status code and the response headers", () => {
       const span = { setTag: jest.fn() };
 
-      processAppsecResponse(span, { statusCode: 200, headers: { "content-type": "application/json" } });
+      processAppsecResponse(span, { statusCode: 200, headers: { "content-type": "application/json" } }, "200");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -102,7 +102,7 @@ describe("AppSec orchestrator", () => {
       });
     });
 
-    it("should prefer the normalized status code over the raw one from the result", () => {
+    it("should ignore the status code carried by the result", () => {
       const span = { setTag: jest.fn() };
 
       processAppsecResponse(span, { statusCode: 200 }, "502");
@@ -129,7 +129,7 @@ describe("AppSec orchestrator", () => {
     it("should lowercase the response header names", () => {
       const span = { setTag: jest.fn() };
 
-      processAppsecResponse(span, { statusCode: 200, headers: { "X-Option": "test_value" } });
+      processAppsecResponse(span, { statusCode: 200, headers: { "X-Option": "test_value" } }, "200");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -141,11 +141,15 @@ describe("AppSec orchestrator", () => {
     it("should merge multi value response headers", () => {
       const span = { setTag: jest.fn() };
 
-      processAppsecResponse(span, {
-        statusCode: 200,
-        headers: { "Content-Type": "application/json" },
-        multiValueHeaders: { "X-Option": ["a", "b"] },
-      });
+      processAppsecResponse(
+        span,
+        {
+          statusCode: 200,
+          headers: { "Content-Type": "application/json" },
+          multiValueHeaders: { "X-Option": ["a", "b"] },
+        },
+        "200",
+      );
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -154,14 +158,14 @@ describe("AppSec orchestrator", () => {
       });
     });
 
-    it("should fall back to the raw status code when no normalized one is given", () => {
+    it("should publish no status code when none is normalized, even if the result carries one", () => {
       const span = { setTag: jest.fn() };
 
       processAppsecResponse(span, { statusCode: 204 }, undefined);
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
-        statusCode: "204",
+        statusCode: undefined,
         responseHeaders: undefined,
       });
     });

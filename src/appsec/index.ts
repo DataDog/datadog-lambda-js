@@ -34,15 +34,14 @@ export function processAppsecRequest(event: any, span: any): void {
 /**
  * @param span
  * @param result
- * @param statusCode Status code already normalized by the trigger layer. Falls back to the raw
- *   `result.statusCode` when the caller has none, which happens for non-HTTP triggers.
+ * @param statusCode Status code already normalized by the trigger layer.
  */
 export function processAppsecResponse(span: any, result: any, statusCode?: string): void {
   if (!span || !endInvocationChannel.hasSubscribers) return;
 
   endInvocationChannel.publish({
     span,
-    statusCode: statusCode ?? result?.statusCode?.toString(),
+    statusCode,
     responseHeaders: normalizeResponseHeaders(result),
   });
 }
