@@ -161,17 +161,22 @@ describe("LambdaDogStatsD", () => {
   });
 
   it("logs callback errors and completes the send", async () => {
+    jest.useFakeTimers();
     const error = new Error("callback failure");
-    mockSend.mockImplementation((_message, _port, _host, callback) => callback(error));
+    const callbacks = useControlledSocket();
     const client = new LambdaDogStatsD();
 
     client.distribution("metric", 1);
 
-    await expect(client.flush()).resolves.toBeUndefined();
+    const flush = client.flush();
+    callbacks[0](error);
+    expect(jest.getTimerCount()).toBe(0);
+    await expect(flush).resolves.toBeUndefined();
     expect(logDebug).toHaveBeenCalledWith("Unable to send metric packet: callback failure");
   });
 
   it("logs synchronous socket errors without throwing", async () => {
+    jest.useFakeTimers();
     mockSend.mockImplementation(() => {
       throw new Error("synchronous failure");
     });
@@ -179,11 +184,14 @@ describe("LambdaDogStatsD", () => {
 
     client.distribution("metric", 1);
 
-    await expect(client.flush()).resolves.toBeUndefined();
+    const flush = client.flush();
+    expect(jest.getTimerCount()).toBe(0);
+    await expect(flush).resolves.toBeUndefined();
     expect(logDebug).toHaveBeenCalledWith("Unable to send metric packet: synchronous failure");
   });
 
   it("normalizes non-Error values thrown synchronously by the socket", async () => {
+    jest.useFakeTimers();
     mockSend.mockImplementation(() => {
       throw "non-error failure";
     });
@@ -191,7 +199,9 @@ describe("LambdaDogStatsD", () => {
 
     client.distribution("metric", 1);
 
-    await expect(client.flush()).resolves.toBeUndefined();
+    const flush = client.flush();
+    expect(jest.getTimerCount()).toBe(0);
+    await expect(flush).resolves.toBeUndefined();
     expect(logDebug).toHaveBeenCalledWith("Unable to send metric packet: Unknown socket send failure");
   });
 
