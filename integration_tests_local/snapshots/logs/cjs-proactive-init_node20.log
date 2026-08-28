@@ -111,7 +111,6 @@ END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms
 XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] (node:XX) TimeoutOverflowWarning: XXXX does not fit into a 32-bit signed integer.
 Timeout duration was set to 1.
-(Use `node --trace-warnings ...` to show where the warning was created)
 START RequestId: XXXX	Version: $LATEST
 {
   "e": XXXX,
@@ -886,6 +885,8 @@ START RequestId: XXXX	Version: $LATEST
   ],
   "v": 1
 }
+END RequestId: XXXX
+REPORT RequestId: XXXX	Duration: XXXX ms
 {
   "traces": [
     [
@@ -972,7 +973,5 @@ START RequestId: XXXX	Version: $LATEST
     ]
   ]
 }
-END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms
 XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	ERROR	[dd.trace_id=XXXX dd.span_id=XXXX] (node:XX) TimeoutOverflowWarning: XXXX does not fit into a 32-bit signed integer.
 Timeout duration was set to 1.

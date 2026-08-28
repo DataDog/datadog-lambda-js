@@ -21,7 +21,7 @@ START RequestId: XXXX	Version: $LATEST
   "timestamp": "XXXX-XX-XXTXX:XX:XX.XXXZ",
   "level": "ERROR",
   "requestId": "XXXX",
-  "message": "[dd.trace_id=XXXX dd.span_id=XXXX] (node:XX) TimeoutOverflowWarning: XXXX does not fit into a 32-bit signed integer.\nTimeout duration was set to 1.\n(Use `node --trace-warnings ...` to show where the warning was created)"
+  "message": "[dd.trace_id=XXXX dd.span_id=XXXX] (node:XX) TimeoutOverflowWarning: XXXX does not fit into a 32-bit signed integer.\nTimeout duration was set to 1."
 }
 {
   "traces": [
@@ -137,8 +137,6 @@ START RequestId: XXXX	Version: $LATEST
   "requestId": "XXXX",
   "message": "[dd.trace_id=XXXX dd.span_id=XXXX] (node:XX) TimeoutOverflowWarning: XXXX does not fit into a 32-bit signed integer.\nTimeout duration was set to 1."
 }
-END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms
 {
   "traces": [
     [
@@ -228,6 +226,8 @@ REPORT RequestId: XXXX	Duration: XXXX ms
     ]
   ]
 }
+END RequestId: XXXX
+REPORT RequestId: XXXX	Duration: XXXX ms
 START RequestId: XXXX	Version: $LATEST
 {
   "e": XXXX,
@@ -470,11 +470,13 @@ START RequestId: XXXX	Version: $LATEST
   ],
   "v": 1
 }
+END RequestId: XXXX
+REPORT RequestId: XXXX	Duration: XXXX ms
 {
   "timestamp": "XXXX-XX-XXTXX:XX:XX.XXXZ",
   "level": "ERROR",
   "requestId": "XXXX",
-  "message": "[dd.trace_id=XXXX dd.span_id=XXXX] (node:XX) TimeoutOverflowWarning: XXXX does not fit into a 32-bit signed integer.\nTimeout duration was set to 1.\n(Use `node --trace-warnings ...` to show where the warning was created)"
+  "message": "[dd.trace_id=XXXX dd.span_id=XXXX] (node:XX) TimeoutOverflowWarning: XXXX does not fit into a 32-bit signed integer.\nTimeout duration was set to 1."
 }
 {
   "traces": [
@@ -564,8 +566,6 @@ START RequestId: XXXX	Version: $LATEST
     ]
   ]
 }
-END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms
 START RequestId: XXXX	Version: $LATEST
 {
   "e": XXXX,
@@ -582,14 +582,14 @@ START RequestId: XXXX	Version: $LATEST
   ],
   "v": 1
 }
-END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms
 {
   "timestamp": "XXXX-XX-XXTXX:XX:XX.XXXZ",
   "level": "ERROR",
   "requestId": "XXXX",
   "message": "[dd.trace_id=XXXX dd.span_id=XXXX] (node:XX) TimeoutOverflowWarning: XXXX does not fit into a 32-bit signed integer.\nTimeout duration was set to 1."
 }
+END RequestId: XXXX
+REPORT RequestId: XXXX	Duration: XXXX ms
 {
   "traces": [
     [
@@ -679,12 +679,6 @@ REPORT RequestId: XXXX	Duration: XXXX ms
   ]
 }
 START RequestId: XXXX	Version: $LATEST
-{
-  "timestamp": "XXXX-XX-XXTXX:XX:XX.XXXZ",
-  "level": "ERROR",
-  "requestId": "XXXX",
-  "message": "[dd.trace_id=XXXX dd.span_id=XXXX] (node:XX) TimeoutOverflowWarning: XXXX does not fit into a 32-bit signed integer.\nTimeout duration was set to 1."
-}
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms
 {
@@ -701,6 +695,12 @@ REPORT RequestId: XXXX	Duration: XXXX ms
     "runtime:nodejsXX.x"
   ],
   "v": 1
+}
+{
+  "timestamp": "XXXX-XX-XXTXX:XX:XX.XXXZ",
+  "level": "ERROR",
+  "requestId": "XXXX",
+  "message": "[dd.trace_id=XXXX dd.span_id=XXXX] (node:XX) TimeoutOverflowWarning: XXXX does not fit into a 32-bit signed integer.\nTimeout duration was set to 1."
 }
 {
   "traces": [
@@ -921,10 +921,8 @@ START RequestId: XXXX	Version: $LATEST
   "timestamp": "XXXX-XX-XXTXX:XX:XX.XXXZ",
   "level": "ERROR",
   "requestId": "XXXX",
-  "message": "[dd.trace_id=XXXX dd.span_id=XXXX] (node:XX) TimeoutOverflowWarning: XXXX does not fit into a 32-bit signed integer.\nTimeout duration was set to 1.\n(Use `node --trace-warnings ...` to show where the warning was created)"
+  "message": "[dd.trace_id=XXXX dd.span_id=XXXX] (node:XX) TimeoutOverflowWarning: XXXX does not fit into a 32-bit signed integer.\nTimeout duration was set to 1."
 }
-END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms
 {
   "traces": [
     [
@@ -1011,3 +1009,5 @@ REPORT RequestId: XXXX	Duration: XXXX ms
     ]
   ]
 }
+END RequestId: XXXX
+REPORT RequestId: XXXX	Duration: XXXX ms

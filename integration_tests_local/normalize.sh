@@ -61,6 +61,12 @@ node "$repo_dir/integration_tests/parse-json.js" |
     # Same id in the compact JSON the preview RIC uses on Invoke Error lines.
     perl -p -e 's/"requestId":"[0-9a-f-]+"/"requestId":"XXXX"/g' |
     perl -p -e 's/TimeoutOverflowWarning: [0-9]+/TimeoutOverflowWarning: XXXX/g' |
+    # Node appends its once-per-process "trace-warnings" hint to whichever
+    # warning happens to be emitted first — which one is racy (and differs
+    # between amd64 CI and arm64 local runs). Drop the hint in both its
+    # JSON-embedded (\n literal) and standalone-line forms.
+    perl -p -e 's/\\n\(Use `node --trace-warnings \.\.\.` to show where the warning was created\)//g' |
+    sed '/^(Use `node --trace-warnings \.\.\.` to show where the warning was created)$/d' |
     # Pid in Node's "(node:NN)" warning prefix varies with process layout.
     perl -p -e 's/\(node:[0-9]+\)/(node:XX)/g' |
     # Normalize DD trace ID injection
