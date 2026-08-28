@@ -126,6 +126,34 @@ describe("AppSec orchestrator", () => {
       });
     });
 
+    it("should lowercase the response header names", () => {
+      const span = { setTag: jest.fn() };
+
+      processAppsecResponse(span, { statusCode: 200, headers: { "X-Option": "test_value" } });
+
+      expect(mockPublish).toHaveBeenCalledWith({
+        span,
+        statusCode: "200",
+        responseHeaders: { "x-option": "test_value" },
+      });
+    });
+
+    it("should merge multi value response headers", () => {
+      const span = { setTag: jest.fn() };
+
+      processAppsecResponse(span, {
+        statusCode: 200,
+        headers: { "Content-Type": "application/json" },
+        multiValueHeaders: { "X-Option": ["a", "b"] },
+      });
+
+      expect(mockPublish).toHaveBeenCalledWith({
+        span,
+        statusCode: "200",
+        responseHeaders: { "content-type": "application/json", "x-option": "a, b" },
+      });
+    });
+
     it("should fall back to the raw status code when no normalized one is given", () => {
       const span = { setTag: jest.fn() };
 
