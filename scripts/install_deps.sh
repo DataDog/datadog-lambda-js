@@ -36,6 +36,21 @@ yarn_args=("--ignore-engines")
 
 if [ -n "$dd_trace_override" ]; then
     echo "Node ${TARGET_NODE_MAJOR} is not supported by dd-trace v6, pinning dd-trace to ${dd_trace_override}"
+    # Rewrite the manifest against temporary backups and restore both tracked
+    # files on exit, however the install ends. node_modules keeps the resolved
+    # v5 line (which is what update_dist_version.sh reads), but leaving
+    # package.json/yarn.lock modified would make the next v6 build on this
+    # tree silently install the wrong tracer line against a dirty lockfile.
+    package_backup=$(mktemp)
+    lock_backup=$(mktemp)
+    cp package.json "$package_backup"
+    cp yarn.lock "$lock_backup"
+    restore_manifests() {
+        cp "$package_backup" package.json
+        cp "$lock_backup" yarn.lock
+        rm -f "$package_backup" "$lock_backup"
+    }
+    trap restore_manifests EXIT
     node ./scripts/set_ddtrace_version.js "$(cat package.json)" "$dd_trace_override" > package-new.json
     mv package-new.json package.json
     # The lockfile pins the v6 line, so it has to be re-resolved for v5.

@@ -1,0 +1,36 @@
+name: dd-trace v5 pin freshness
+
+# Early warning for the hand-maintained DD_TRACE_V5_VERSION pin in
+# scripts/dd_trace_versions.sh (the dependency-update workflow only tracks
+# the v6 line). Runs when the pin file changes and weekly; the same check
+# gates the npm publish job in GitLab.
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "scripts/dd_trace_versions.sh"
+      - "scripts/check_dd_trace_v5_pin.sh"
+  pull_request:
+    paths:
+      - "scripts/dd_trace_versions.sh"
+      - "scripts/check_dd_trace_v5_pin.sh"
+  schedule:
+    - cron: "17 9 * * 1"
+  workflow_dispatch:
+
+jobs:
+  check-pin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+
+      - name: Set up Node 22
+        uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3.9.1
+        with:
+          node-version: "22.x"
+
+      - name: Check the v5 pin against the npm registry
+        run: ./scripts/check_dd_trace_v5_pin.sh
