@@ -331,7 +331,20 @@ fi
 if [ -z "$SKIP_PACK" ]; then
     echo "Packing local datadog-lambda-js for container tests"
     cd "$repo_dir"
-    yarn install --frozen-lockfile
+    if [ -f "$repo_dir/scripts/install_deps.sh" ]; then
+        # dd-trace v6 world: the repo pins a tracer whose engines may reject
+        # the host node (e.g. v6 requires node >=22 while CI hosts node 18).
+        # install_deps.sh installs the tracer line matching the target
+        # runtime, rewriting package.json/yarn.lock and restoring them via a
+        # trap on exit, so the worktree is left untouched.
+        # NOTE: in the v6 world a full local sweep packs once with
+        # TARGET_NODE_MAJOR=$RUNTIME_PARAM (default 22); run per-runtime like
+        # CI does (RUNTIME_PARAM=18 ./integration_tests_local/run.sh) so the
+        # layer fixture's pinned dd-trace matches each leg.
+        TARGET_NODE_MAJOR=${RUNTIME_PARAM:-22} "$repo_dir/scripts/install_deps.sh"
+    else
+        yarn install --frozen-lockfile
+    fi
     yarn build
     npm pack
     cp datadog-lambda-js-*.tgz "$integration_tests_dir/container/cjs/datadog-lambda-js-local.tgz"
@@ -488,6 +501,17 @@ function write_snapshot() {
 
 for node_version in "${RUNTIMES[@]}"; do
     node_image_tag=$(lambda_node_image_tag "$node_version")
+    # In the dd-trace v6 world the container fixtures take a DD_TRACE_VERSION
+    # build-arg (fixture package.json pins the newest line, which older
+    # runtimes cannot install). Pin the fixture to the tracer line that
+    # actually supports this runtime. On the v5 world there is no
+    # dd_trace_versions.sh and the fixture Dockerfiles declare no such ARG;
+    # docker only warns about the unused build-arg, so this stays harmless.
+    dd_trace_build_version=""
+    if [ -f "$repo_dir/scripts/dd_trace_versions.sh" ]; then
+        . "$repo_dir/scripts/dd_trace_versions.sh"
+        dd_trace_build_version=$(dd_trace_version_for_node_major "$node_version")
+    fi
     for case_name in "${CASES[@]}"; do
         configure_case "$case_name" || exit 1
         handler_name="$case_name"
@@ -510,6 +534,7 @@ for node_version in "${RUNTIMES[@]}"; do
         echo "=== Building $image_tag from Lambda Node image $node_image_tag (platform $PLATFORM) ==="
         docker build --platform "$PLATFORM" \
             --build-arg NODE_VERSION="$node_image_tag" \
+            --build-arg DD_TRACE_VERSION="$dd_trace_build_version" \
             -t "$image_tag" \
             "$integration_tests_dir/container/$case_image" || exit 1
 
