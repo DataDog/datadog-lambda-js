@@ -17,3 +17,6 @@ package-lock.json
 
 # Local datadog-lambda-js tarballs produced for container integration tests
 integration_tests/container/*/datadog-lambda-js-local.tgz
+
+# Local integration test harness binaries
+integration_tests_local/bin/

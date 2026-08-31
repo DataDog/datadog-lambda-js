@@ -1,0 +1,56 @@
+name: local integration tests
+
+# Runs the docker-only integration test harness in integration_tests_local/
+# against the real AWS Lambda base images + the Runtime Interface Emulator
+# (RIE). No AWS account or credentials required.
+#
+# One job per Node major version; each job builds and tests both container
+# variants (cjs, esm), which share the same ~1 GB base image, so each job
+# pulls it exactly once. If public.ecr.aws anonymous pull limits ever bite,
+# the fix is to mirror the base images to GHCR (same pattern dd-trace-js
+# uses in its mirror-image.yml workflow).
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "main"
+  workflow_dispatch:
+
+jobs:
+  container:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node_major: ["18", "20", "22", "24", "26"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+
+      - name: Set up Node 18.12
+        uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3.9.1
+        with:
+          node-version: 18.12
+
+      - name: Run local container integration tests (nodejs${{ matrix.node_major }}.x)
+        run: PLATFORM=linux/amd64 RUNTIME_PARAM=${{ matrix.node_major }} ./integration_tests_local/run.sh
+
+      # Every leg is a strict comparison, so a run must leave the snapshots
+      # untouched. Writing here would mean the harness recorded its own output
+      # as the expectation instead of checking against it.
+      - name: Assert no snapshot was written
+        if: always()
+        run: |
+          if ! git diff --exit-code --stat integration_tests_local/snapshots; then
+            echo "FAILURE: this run modified committed snapshots" >&2
+            exit 1
+          fi
+          new_files=$(git ls-files --others --exclude-standard integration_tests_local/snapshots)
+          if [ -n "$new_files" ]; then
+            echo "FAILURE: strict leg created snapshots instead of comparing:" >&2
+            echo "$new_files" >&2
+            exit 1
+          fi
