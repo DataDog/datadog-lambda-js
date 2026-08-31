@@ -50,8 +50,8 @@ export function processAppsecResponse(span: any, result: any, statusCode?: strin
  * Response headers reach the tracer in the same shape as the request ones
  */
 function normalizeResponseHeaders(result: any): Record<string, string> | undefined {
-  const headers = result?.headers as Record<string, string> | undefined;
-  const multiValueHeaders = result?.multiValueHeaders as Record<string, string[]> | undefined;
+  const headers = result?.headers as Record<string, unknown> | undefined;
+  const multiValueHeaders = result?.multiValueHeaders as Record<string, unknown[]> | undefined;
 
   if (!headers && !multiValueHeaders) return undefined;
 

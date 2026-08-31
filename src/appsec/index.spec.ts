@@ -158,6 +158,42 @@ describe("AppSec orchestrator", () => {
       });
     });
 
+    it("should ignore multi value response headers that are not arrays", () => {
+      const span = { setTag: jest.fn() };
+
+      processAppsecResponse(span, { statusCode: 200, multiValueHeaders: { "Set-Cookie": "a=b" } }, "200");
+
+      expect(mockPublish).toHaveBeenCalledWith({
+        span,
+        statusCode: "200",
+        responseHeaders: {},
+      });
+    });
+
+    it("should stringify non string response header values", () => {
+      const span = { setTag: jest.fn() };
+
+      processAppsecResponse(span, { statusCode: 200, headers: { "Content-Length": 42, "X-Flag": true } }, "200");
+
+      expect(mockPublish).toHaveBeenCalledWith({
+        span,
+        statusCode: "200",
+        responseHeaders: { "content-length": "42", "x-flag": "true" },
+      });
+    });
+
+    it("should skip response headers with a null value", () => {
+      const span = { setTag: jest.fn() };
+
+      processAppsecResponse(span, { statusCode: 200, headers: { "X-Option": null } }, "200");
+
+      expect(mockPublish).toHaveBeenCalledWith({
+        span,
+        statusCode: "200",
+        responseHeaders: {},
+      });
+    });
+
     it("should publish no status code when none is normalized, even if the result carries one", () => {
       const span = { setTag: jest.fn() };
 
