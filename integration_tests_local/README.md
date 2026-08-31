@@ -54,7 +54,8 @@ The case names are:
 | `manual-status-500` | manual wrap with userland `dd-trace` init returning a 500 API Gateway response (`DD_TRACE_ENABLED=true`); error span tag + enhanced error metrics |
 | `manual-send-metrics` | manual wrap calling `sendDistributionMetric` inside and outside the handler; per-event return values |
 | `manual-process-input` | manual wrap with userland `dd-trace` init reading the active span; per-event return values |
-| `cjs-http-requests` | downstream HTTP calls against a hermetic mock server; asserts injected `x-datadog-*`/`traceparent` headers and log injection |
+| `cjs-http-requests` | downstream HTTP calls against a hermetic mock server in redirect mode; asserts injected `x-datadog-*`/`traceparent` headers and log injection via dd-trace's http plugin |
+| `manual-http-requests` | same handler, manual wrap without userland dd-trace init; exercises the library's own `patchHttp` fallback (request wrapping + per-request logging + exact header set via mock echo) |
 | `cjs-custom-extractor` | `DD_TRACE_EXTRACTOR=extractor.extract`; asserts `_dd.parent_source: event` on the inferred span |
 | `cjs-proactive-init` | eager-init managed-instances RIE path with a 15 s init→invoke gap; asserts proactive-initialization markers on the raw logs |
 
@@ -68,8 +69,12 @@ Unless `SKIP_PACK=true` is set, each run repacks the library under test
 like `scripts/run_integration_tests.sh` does, so the containers always test
 the working tree. The layer fixture instead assembles
 `integration_tests/container/layer/layer_pkg/` from the repo build via
-`prepare-layer.js`, mirroring the release Dockerfile's layer layout, with
-dependency versions pinned from the lockfile-resolved `node_modules` set.
+`prepare-layer.js`, mirroring the release Dockerfile's layer layout. The
+dependency manifest mirrors the release build's full dependency closure —
+production dependencies plus every package `scripts/move_ddtrace_dependency.js`
+moves (dd-trace, @datadog/native-appsec, @datadog/pprof, @opentelemetry/api,
+@opentelemetry/api-logs) — with versions pinned from the lockfile-resolved
+`node_modules` set.
 
 The harness takes no flags or positional arguments — configuration is
 environment-only, and an unexpected argument is rejected rather than ignored.
@@ -126,6 +131,9 @@ filter to absorb it would be invisible. Current overrides:
   `index.mjs` frames) to error stack traces.
 - `cjs-http-requests_node18.log`: dd-trace's `dns`/`net` plugins fire on
   Node 18 only, adding `_dd.integration` span meta lines.
+- `manual-http-requests_node18.log`: Node 18's HTTP agent sends
+  `connection: close` where 20+ send `keep-alive`; the mock echo pins the
+  difference.
 - `cjs-proactive-init_node{18,20,24,26}.log`: Node's
   `TimeoutOverflowWarning` emission (count and JSON-record wrapping) varies
   by runtime major under the managed-instances path. The case's actual
@@ -137,15 +145,21 @@ instead of overwriting it — otherwise the last runtime to run would silently
 define the expectation for all of them. To capture a genuine per-runtime
 divergence, `touch` the override file first so the write targets it.
 
-## The mock HTTP server (cjs-http-requests)
+## The mock HTTP server (cjs-http-requests, manual-http-requests)
 
-`cjs-http-requests` exercises downstream header injection without touching
+Both HTTP cases exercise downstream header injection without touching
 the network: `run.sh` creates a per-run docker network, starts a mock server
 on it (reusing the Lambda base image with `--entrypoint node`), and passes
 `MOCK_HTTP_URLS` to the fixture. The mock echoes the request headers it
 received, so the golden pins exactly which trace-propagation headers the
 library injected. Container-to-container traffic stays on the throwaway
 network; only the readiness probe goes through the host.
+
+The two cases cover the two injection paths: `cjs-http-requests` runs through
+the redirect entry (dd-trace initialized → the tracer's http plugin injects),
+while `manual-http-requests` is manual-wrapped with no tracer (TraceListener
+falls back to the library's own `patchHttp`). See "Known emulation gaps" for
+what the manual case cannot pin locally.
 
 ## Proactive initialization (cjs-proactive-init)
 
@@ -247,6 +261,16 @@ endpoints). Do not diff one suite's output against the other's snapshots.
   tag stable.
 - Enhanced metrics that depend on platform-provided values (e.g. real
   memory size / billed duration) may be absent or differ.
+- `_X_AMZN_TRACE_ID` cannot be emulated: the RIC owns that variable and
+  clears it per invocation, so neither a container env var, an invoke-request
+  header, nor a module-load assignment survives to extraction time. On real
+  Lambda the platform's pass-through trace header is what gives the
+  manual-wrap `patchHttp` path a context to inject; locally the
+  `manual-http-requests` golden therefore pins `TraceHeaders: []` plus the
+  mock echo of the exact header set. The wiring (patch, wrap, per-request
+  log) is fully covered — a migration that breaks it fails the golden — but
+  the injected header *values* on that path are pinned only by the
+  `patch-http` unit tests and the AWS suite.
 - The layer fixture installs into a plain `/opt/nodejs/node_modules`
   directory rather than a real published layer zip, so layer-version
   metadata (e.g. an exact layer ARN in tags) cannot be reproduced locally.

@@ -46,9 +46,21 @@ fs.writeFileSync(
   JSON.stringify({ name: pkg.name, version: pkg.version, main: "index.js", types: "index.d.ts" }, null, 2) + "\n",
 );
 
-// 3. deps.package.json: datadog-lambda-js's production dependencies plus
-// dd-trace (which the release build moves from devDependencies), each pinned
-// to the version yarn actually installed.
+// 3. deps.package.json: datadog-lambda-js's production dependencies plus the
+// packages the release build moves from devDependencies, each pinned to the
+// version yarn actually installed. LAYER_MOVED_DEPENDENCIES must stay in sync
+// with scripts/move_ddtrace_dependency.js — the release layer's dependency
+// closure includes all of them, so the local layer image must too, otherwise
+// layer-only behavior that probes these modules (pprof, appsec, otel) is
+// tested on an absent-branch that real layer users never run.
+const LAYER_MOVED_DEPENDENCIES = [
+  "dd-trace",
+  "@datadog/native-appsec",
+  "@datadog/pprof",
+  "@opentelemetry/api",
+  "@opentelemetry/api-logs",
+];
+
 function installedVersion(name) {
   // Read the hoisted install location directly: require.resolve("<name>/package.json")
   // breaks on packages whose exports map doesn't expose ./package.json.
@@ -73,7 +85,9 @@ const dependencies = {};
 for (const name of Object.keys(pkg.dependencies || {})) {
   dependencies[name] = installedVersion(name);
 }
-dependencies["dd-trace"] = installedVersion("dd-trace");
+for (const name of LAYER_MOVED_DEPENDENCIES) {
+  dependencies[name] = installedVersion(name);
+}
 
 fs.writeFileSync(
   path.join(layerDir, "deps.package.json"),

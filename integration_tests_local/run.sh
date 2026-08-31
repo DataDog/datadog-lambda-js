@@ -22,7 +22,8 @@
 # manual-status-500        | cjs   | status-code-500s.handle                  | manual wrap; API GW 500 -> span error + enhanced error metric
 # manual-send-metrics      | cjs   | send-metrics.handle                      | manual wrap; sendDistributionMetric via DD_FLUSH_TO_LOG
 # manual-process-input     | cjs   | process-input.handle                     | manual wrap; dd-trace child spans via tracer.wrap
-# cjs-http-requests       | cjs   | node_modules/datadog-lambda-js/dist/handler.handler | npm redirect; downstream HTTP header injection (hermetic mock server)
+# cjs-http-requests       | cjs   | node_modules/datadog-lambda-js/dist/handler.handler | npm redirect; downstream HTTP header injection via dd-trace's http plugin (hermetic mock server)
+# manual-http-requests    | cjs   | http-requests-manual.handle              | manual wrap; patchHttp fallback wrapping + per-request logging (hermetic mock)
 # cjs-custom-extractor     | cjs   | node_modules/datadog-lambda-js/dist/handler.handler | DD_TRACE_EXTRACTOR custom extractor + _dd.parent_source
 # cjs-proactive-init       | cjs   | node_modules/datadog-lambda-js/dist/handler.handler | proactive-initialization markers (raw-log assertions)
 #
@@ -111,6 +112,7 @@ ALL_CASES=(
     "manual-send-metrics"
     "manual-process-input"
     "cjs-http-requests"
+    "manual-http-requests"
     "cjs-custom-extractor"
     "cjs-proactive-init"
 )
@@ -183,15 +185,39 @@ function configure_case() {
             case_return_mode=per-event
             ;;
         cjs-http-requests)
-            # Redirect mode, not manual wrap: the manual-wrap path never
-            # produces traces without a userland dd-trace init (true in the
-            # AWS suite as well — its http-requests snapshots have no trace
-            # JSON), and traces are what make the injected downstream headers
-            # observable in the golden.
+            # Redirect mode, not manual wrap: redirect mode initializes
+            # dd-trace before the user handler loads, so the tracer's http
+            # plugin does the injection and the golden pins full trace JSON.
+            # The manual-wrap fallback (patchHttp) is covered separately by
+            # manual-http-requests below.
             case_image=cjs
             case_entry_handler="node_modules/datadog-lambda-js/dist/handler.handler"
             case_needs_mock=true
             case_extra_env=(-e DD_LAMBDA_HANDLER=http-requests.handle -e "MOCK_HTTP_URLS=http://mock-http:8080/ip-ranges-us,http://mock-http:8080/ip-ranges-eu")
+            ;;
+        manual-http-requests)
+            # Manual wrap without a userland dd-trace init — the exact shape
+            # of the AWS suite's http-requests function. TraceListener falls
+            # back to the library's own patchHttp (src/trace/patch-http.ts),
+            # which injects the x-datadog-* headers and logs
+            # "GET <url> TraceHeaders: [...]" per request; the mock echo pins
+            # the same headers a second way. No trace JSON on this path (true
+            # in the AWS suite as well).
+            #
+            # patchHttp needs an extracted trace context to inject headers.
+            # On real Lambda that context is the platform's pass-through
+            # _X_AMZN_TRACE_ID; under RIE it cannot be emulated (the RIC owns
+            # the variable, and event-based extraction needs a tracer, which
+            # this path deliberately lacks). The golden therefore pins what
+            # is observable here: patchHttp wraps and logs every request
+            # ("HTTP GET ... TraceHeaders: []"), the mock echo pins the exact
+            # header set sent, and any change to either fails the case. The
+            # context-dependent header values are pinned by the patch-http
+            # unit tests and the AWS suite; see README "Known emulation gaps".
+            case_image=cjs
+            case_entry_handler="http-requests-manual.handle"
+            case_needs_mock=true
+            case_extra_env=(-e "MOCK_HTTP_URLS=http://mock-http:8080/ip-ranges-us,http://mock-http:8080/ip-ranges-eu")
             ;;
         cjs-custom-extractor)
             case_image=cjs

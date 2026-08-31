@@ -1,17 +1,19 @@
-// Ported from integration_tests/http-requests.js with two seam adaptations:
-//   1. The AWS suite hits the real ip-ranges.datadoghq.com/.eu endpoints; the
-//      local harness is hermetic, so URLs come from MOCK_HTTP_URLS (set by
-//      run.sh to the mock-http container on the case's docker network). The
-//      default keeps this file runnable outside the harness.
-//   2. The handler is left UNWRAPPED and runs through the npm redirect entry
-//      (dist/handler.handler), because the manual-wrap path never produces
-//      traces without a userland dd-trace init — true in the AWS suite too
-//      (its http-requests snapshots contain no trace JSON). Redirect mode
-//      initializes the tracer first, so the http plugin patches axios and the
-//      mock echo below shows the injected x-datadog-* headers in the golden.
+// Ported from integration_tests/http-requests.js with one seam adaptation:
+// the AWS suite hits the real ip-ranges.datadoghq.com/.eu endpoints; the
+// local harness is hermetic, so URLs come from MOCK_HTTP_URLS (set by run.sh
+// to the mock-http container on the case's docker network). The default keeps
+// this file runnable outside the harness.
+//
+// This entry point is UNWRAPPED and runs through the npm redirect entry
+// (dist/handler.handler) in the cjs-http-requests case. Redirect mode
+// initializes dd-trace first, so the tracer's http plugin patches axios and
+// the mock echo below shows the injected x-datadog-* headers in the golden.
+// The manual-wrap variant of the AWS suite's function — which exercises the
+// library's own patchHttp fallback instead — lives in http-requests-manual.js
+// and runs as the manual-http-requests case.
 //
 // The mock echoes the request headers it received, and this handler logs them,
-// so the golden shows the injected downstream trace context
+// so both goldens show the injected downstream trace context
 // (x-datadog-trace-id / x-datadog-parent-id, normalized to XXXX).
 const { sendDistributionMetric } = require("datadog-lambda-js");
 const axios = require("axios");
@@ -36,4 +38,3 @@ async function handle(event, context) {
 }
 
 module.exports.handle = handle;
-
