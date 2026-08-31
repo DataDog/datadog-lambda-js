@@ -1,4 +1,5 @@
 import * as eventType from "../utils/event-type-guards";
+import { normalizeHeaders } from "./headers";
 
 export interface ExtractedHTTPData {
   headers: Record<string, string>;
@@ -123,34 +124,6 @@ function extractFromLambdaUrl(event: any): ExtractedHTTPData {
   };
 
   if (cookies) result.cookies = cookies;
-
-  return result;
-}
-
-function normalizeHeaders(
-  headers?: Record<string, string>,
-  multiValueHeaders?: Record<string, string[]>,
-): Record<string, string> {
-  if (!headers && !multiValueHeaders) return {};
-
-  const result: Record<string, string> = {};
-
-  if (multiValueHeaders) {
-    for (const [key, values] of Object.entries(multiValueHeaders)) {
-      if (values && values.length > 0) {
-        result[key.toLowerCase()] = values.join(", ");
-      }
-    }
-  }
-
-  if (headers) {
-    for (const [key, value] of Object.entries(headers)) {
-      const lowerKey = key.toLowerCase();
-      if (!(lowerKey in result) && value !== undefined) {
-        result[lowerKey] = value;
-      }
-    }
-  }
 
   return result;
 }
