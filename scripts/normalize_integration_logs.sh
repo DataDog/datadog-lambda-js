@@ -12,9 +12,11 @@ case "$platform" in
     aws)
         cold_start_filter="s/(\"cold_start\":[[:space:]]*)\"(?:true|false)\"/\$1\"XXXX\"/g"
         cold_start_filter+="; s/cold_start:(?:true|false)/cold_start:XXXX/g"
+        leading_blank_filter='/./,$!d'
         ;;
     rie)
         cold_start_filter=''
+        leading_blank_filter=''
         ;;
     *)
         echo "Unsupported integration-test platform: $platform" >&2
@@ -77,6 +79,7 @@ fi |
     perl -p -e 's/("resource":"169.)[0-9\.]+/$1X.X.X/g' |
     perl -p -e 's/User-Agent:axios\/\d+\.\d+\.\d+/User-Agent:axios\/X.X.X/g' |
     sed '/INIT_START Runtime Version:/d' |
+    sed "$leading_blank_filter" |
     sed -E '/^[[:space:]]*"proactive_initialization(" *:|:true")/d' |
     perl -p -e "$cold_start_filter" |
     perl -p -e 's/ \(init: [^)]*\)//g' |
