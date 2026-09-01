@@ -76,6 +76,8 @@ node "$repo_dir/integration_tests/parse-json.js" |
     # Normalize minor package version tag so that these snapshots aren't broken on version bumps
     perl -p -e "s/(dd_lambda_layer:datadog-nodev[0-9]+\.)[0-9]+\.[0-9]+/\1XX\.X/g" |
     perl -p -e 's/"(span_id|apiid|runtime-id|record_ids|parent_id|trace_id|start|duration|tcp\.local\.address|tcp\.local\.port|dns\.address|request_id|function_arn|x-datadog-trace-id|x-datadog-parent-id|datadog_lambda|dd_trace|process_id)":\ ("?)[a-zA-Z0-9\.:\-]+("?)/"\1":\2XXXX\3/g' |
+    # Resolved IP of the mock-http container: varies with whichever /16 Docker's address pool hands the per-run network.
+    perl -p -e 's/"dns\.addresses": "[^"]*"/"dns.addresses": "XXXX"/g' |
     # Strip out run ID (from function name, resource, etc.)
     perl -p -e "$run_id_filter" |
     # Normalize line numbers in stack traces

@@ -204,7 +204,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "span.kind": "client",
           "dns.hostname": "mock-http",
           "dns.address":"XXXX",
-          "dns.addresses": "172.18.0.2",
+          "dns.addresses": "XXXX",
           "_dd.integration": "dns",
           "language": "javascript"
         },
