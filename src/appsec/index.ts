@@ -2,6 +2,7 @@
 const dc = require("dc-polyfill");
 
 import { extractHTTPDataFromEvent } from "./event-data-extractor";
+import { normalizeHeaders } from "./headers";
 
 const startInvocationChannel = dc.channel("datadog:lambda:start-invocation");
 const endInvocationChannel = dc.channel("datadog:lambda:end-invocation");
@@ -30,12 +31,29 @@ export function processAppsecRequest(event: any, span: any): void {
   });
 }
 
-export function processAppsecResponse(span: any, result: any): void {
+/**
+ * @param span
+ * @param result
+ * @param statusCode Status code already normalized by the trigger layer.
+ */
+export function processAppsecResponse(span: any, result: any, statusCode?: string): void {
   if (!span || !endInvocationChannel.hasSubscribers) return;
 
   endInvocationChannel.publish({
     span,
-    statusCode: result?.statusCode?.toString(),
-    responseHeaders: result?.headers as Record<string, string> | undefined,
+    statusCode,
+    responseHeaders: normalizeResponseHeaders(result),
   });
+}
+
+/**
+ * Response headers reach the tracer in the same shape as the request ones
+ */
+function normalizeResponseHeaders(result: any): Record<string, string> | undefined {
+  const headers = result?.headers as Record<string, unknown> | undefined;
+  const multiValueHeaders = result?.multiValueHeaders as Record<string, unknown[]> | undefined;
+
+  if (!headers && !multiValueHeaders) return undefined;
+
+  return normalizeHeaders(headers, multiValueHeaders);
 }

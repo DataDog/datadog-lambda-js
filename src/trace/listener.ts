@@ -231,25 +231,25 @@ export class TraceListener {
       // Always clear the tree to prevent memory leaks, even if we skip span creation
       clearTraceTree();
     }
-    if (this.config.appsecEnabled) {
-      processAppsecResponse(this.tracerWrapper.currentSpan, result);
-    }
+    let statusCode: string | undefined;
     if (this.triggerTags) {
-      const statusCode = extractHTTPStatusCodeTag(this.triggerTags, result, isResponseStreamFunction);
+      statusCode = extractHTTPStatusCodeTag(this.triggerTags, result, isResponseStreamFunction);
 
       // Store the status tag in the listener to send to Xray on invocation completion
       this.triggerTags["http.status_code"] = statusCode!;
       if (this.tracerWrapper.currentSpan) {
         this.tracerWrapper.currentSpan.setTag("http.status_code", statusCode);
       }
-      if (this.inferredSpan) {
-        this.inferredSpan.setTag("http.status_code", statusCode);
-
-        if (statusCode?.length === 3 && statusCode?.startsWith("5")) {
-          this.wrappedCurrentSpan.setTag("error", 1);
-          return true;
-        }
-      }
+      this.inferredSpan?.setTag("http.status_code", statusCode);
+    }
+    if (this.config.appsecEnabled) {
+      processAppsecResponse(this.tracerWrapper.currentSpan, result, statusCode);
+    }
+    // Kept behind AppSec so 5xx responses still reach the WAF, and still nested on inferredSpan
+    // so the early return only happens when there is an inferred span, as before.
+    if (this.inferredSpan && statusCode?.length === 3 && statusCode?.startsWith("5")) {
+      this.wrappedCurrentSpan.setTag("error", 1);
+      return true;
     }
     if (this.durableFunctionContext) {
       logDebug("Applying durable function context to the aws.lambda span");
