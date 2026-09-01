@@ -1,3 +1,4 @@
+import { readFileSync } from "fs";
 import { TraceListener } from "./listener";
 import { ddtraceVersion, parentSpanFinishTimeHeader } from "./constants";
 import { datadogLambdaVersion } from "../constants";
@@ -10,63 +11,33 @@ import {
   DATADOG_SAMPLING_PRIORITY_HEADER,
   DATADOG_TRACE_ID_HEADER,
 } from "./context/extractor";
+import { TracerWrapper } from "./tracer-wrapper";
 
-let mockWrap: jest.Mock<any, any>;
-let mockExtract: jest.Mock<any, any>;
-let mockSpanContextWrapper: any;
-let mockSpanContext: any;
-let mockTraceSource: TraceSource | undefined = undefined;
+const mockProcessAppsecRequest = jest.fn();
+const mockProcessAppsecResponse = jest.fn();
 
-jest.mock("./tracer-wrapper", () => {
-  mockWrap = jest.fn().mockImplementation((name, options, func) => func);
-  mockExtract = jest.fn().mockImplementation((val) => val);
-  class MockTraceWrapper {
-    public isTracerAvailable = true;
+jest.mock("../appsec", () => ({
+  processAppsecRequest: (...args: any[]) => mockProcessAppsecRequest(...args),
+  processAppsecResponse: (...args: any[]) => mockProcessAppsecResponse(...args),
+}));
 
-    constructor() {}
-
-    wrap(name: any, options: any, fn: any): any {
-      return mockWrap(name, options, fn);
-    }
-
-    extract(event: any): any {
-      return mockExtract(event);
-    }
-
-    startSpan(name: any, options: any): any {
-      return {
-        toSpanId: () => "mockSpanId",
-        toTraceId: () => "mockTraceId",
-        finish: jest.fn(),
-        setTag: jest.fn(),
-      };
-    }
-
-    injectSpan(span: any): any {
-      return {
-        [DATADOG_PARENT_ID_HEADER]: span.toSpanId(),
-        [DATADOG_TRACE_ID_HEADER]: span.toTraceId(),
-        [DATADOG_SAMPLING_PRIORITY_HEADER]: 1,
-        [parentSpanFinishTimeHeader]: 1661189936981,
-      };
-    }
-  }
-  return {
-    TracerWrapper: MockTraceWrapper,
-  };
-});
+const mockController: {
+  mockSpanContext?: any;
+  mockSpanContextWrapper?: any;
+  mockTraceSource?: TraceSource;
+} = {};
 
 jest.mock("./trace-context-service", () => {
   class MockTraceContextService {
     extract(event: any, context: Context): SpanContextWrapper {
-      return mockSpanContextWrapper;
+      return mockController.mockSpanContextWrapper;
     }
 
     get traceSource() {
-      return mockTraceSource;
+      return mockController.mockTraceSource;
     }
     get currentTraceContext() {
-      return mockSpanContextWrapper;
+      return mockController.mockSpanContextWrapper;
     }
     reset() {
       // mocking
@@ -79,6 +50,22 @@ jest.mock("./trace-context-service", () => {
 });
 
 describe("TraceListener", () => {
+  jest.spyOn(TracerWrapper.prototype, "isTracerAvailable", "get").mockReturnValue(true);
+  jest.spyOn(TracerWrapper.prototype, "extract").mockImplementation((val) => val);
+  jest.spyOn(TracerWrapper.prototype, "startSpan").mockReturnValue({
+    toSpanId: () => "mockSpanId",
+    toTraceId: () => "mockTraceId",
+    finish: jest.fn(),
+    setTag: jest.fn(),
+  });
+  jest.spyOn(TracerWrapper.prototype, "injectSpan").mockImplementation((span) => ({
+    [DATADOG_PARENT_ID_HEADER]: span.toSpanId(),
+    [DATADOG_TRACE_ID_HEADER]: span.toTraceId(),
+    [DATADOG_SAMPLING_PRIORITY_HEADER]: 1,
+    [parentSpanFinishTimeHeader]: 1661189936981,
+  }));
+  const wrapSpy = jest.spyOn(TracerWrapper.prototype, "wrap").mockImplementation((name, options, func) => func);
+
   let oldEnv: any;
   const defaultConfig = {
     autoPatchHTTP: true,
@@ -93,6 +80,7 @@ describe("TraceListener", () => {
     coldStartTraceSkipLib: "",
     addSpanPointers: true,
     dataStreamsEnabled: true,
+    appsecEnabled: true,
   };
   const context = {
     invokedFunctionArn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
@@ -108,11 +96,12 @@ describe("TraceListener", () => {
     invokedFunctionArn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda:1",
   };
   beforeEach(() => {
-    mockWrap.mockClear();
-    mockExtract.mockClear();
-    mockSpanContext = undefined;
-    mockSpanContextWrapper = undefined;
-    mockTraceSource = undefined;
+    wrapSpy.mockClear();
+    mockProcessAppsecRequest.mockClear();
+    mockProcessAppsecResponse.mockClear();
+    mockController.mockSpanContext = undefined;
+    mockController.mockSpanContextWrapper = undefined;
+    mockController.mockTraceSource = undefined;
     oldEnv = process.env;
     process.env = { ...oldEnv };
     delete process.env.DD_SERVICE;
@@ -130,12 +119,13 @@ describe("TraceListener", () => {
     wrappedFunc();
     await listener.onCompleteInvocation();
 
-    expect(mockWrap).toHaveBeenCalledWith(
+    expect(wrapSpy).toHaveBeenCalledWith(
       "aws.lambda",
       {
         resource: "my-Lambda",
         service: "my-Lambda",
         tags: {
+          "span.kind": "server",
           cold_start: "true",
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
           function_version: "$LATEST",
@@ -153,16 +143,16 @@ describe("TraceListener", () => {
 
   it("wraps dd-trace span around invocation, with trace context from event", async () => {
     const listener = new TraceListener(defaultConfig);
-    mockTraceSource = TraceSource.Event;
-    mockSpanContext = {
+    mockController.mockTraceSource = TraceSource.Event;
+    mockController.mockSpanContext = {
       toTraceId: () => "4110911582297405551",
       toSpanId: () => "797643193680388251",
       _sampling: {
         priority: "2",
       },
     };
-    mockSpanContextWrapper = {
-      spanContext: mockSpanContext,
+    mockController.mockSpanContextWrapper = {
+      spanContext: mockController.mockSpanContext,
     };
     await listener.onStartInvocation({}, context as any);
     const unwrappedFunc = () => {};
@@ -170,12 +160,13 @@ describe("TraceListener", () => {
     wrappedFunc();
     await listener.onCompleteInvocation();
 
-    expect(mockWrap).toHaveBeenCalledWith(
+    expect(wrapSpy).toHaveBeenCalledWith(
       "aws.lambda",
       {
         resource: "my-Lambda",
         service: "my-Lambda",
         tags: {
+          "span.kind": "server",
           cold_start: "true",
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
           function_version: "$LATEST",
@@ -187,7 +178,7 @@ describe("TraceListener", () => {
           dd_trace: ddtraceVersion,
         },
         type: "serverless",
-        childOf: mockSpanContext,
+        childOf: mockController.mockSpanContext,
       },
       unwrappedFunc,
     );
@@ -195,7 +186,7 @@ describe("TraceListener", () => {
 
   it("wraps dd-trace span around invocation, without trace context from xray", async () => {
     const listener = new TraceListener(defaultConfig);
-    mockTraceSource = TraceSource.Xray;
+    mockController.mockTraceSource = TraceSource.Xray;
 
     await listener.onStartInvocation({}, context as any);
     const unwrappedFunc = () => {};
@@ -203,12 +194,13 @@ describe("TraceListener", () => {
     wrappedFunc();
     await listener.onCompleteInvocation();
 
-    expect(mockWrap).toHaveBeenCalledWith(
+    expect(wrapSpy).toHaveBeenCalledWith(
       "aws.lambda",
       {
         resource: "my-Lambda",
         service: "my-Lambda",
         tags: {
+          "span.kind": "server",
           cold_start: "true",
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
           function_version: "$LATEST",
@@ -226,16 +218,16 @@ describe("TraceListener", () => {
 
   it("wraps dd-trace span around invocation, with trace context from xray when mergeDatadogXrayTraces is enabled", async () => {
     const listener = new TraceListener({ ...defaultConfig, mergeDatadogXrayTraces: true });
-    mockTraceSource = TraceSource.Xray;
-    mockSpanContext = {
+    mockController.mockTraceSource = TraceSource.Xray;
+    mockController.mockSpanContext = {
       toTraceId: () => "4110911582297405551",
       toSpanId: () => "797643193680388251",
       _sampling: {
         priority: "2",
       },
     };
-    mockSpanContextWrapper = {
-      spanContext: mockSpanContext,
+    mockController.mockSpanContextWrapper = {
+      spanContext: mockController.mockSpanContext,
     };
 
     await listener.onStartInvocation({}, context as any);
@@ -244,12 +236,13 @@ describe("TraceListener", () => {
     wrappedFunc();
     await listener.onCompleteInvocation();
 
-    expect(mockWrap).toHaveBeenCalledWith(
+    expect(wrapSpy).toHaveBeenCalledWith(
       "aws.lambda",
       {
         resource: "my-Lambda",
         service: "my-Lambda",
         tags: {
+          "span.kind": "server",
           cold_start: "true",
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
           function_version: "$LATEST",
@@ -261,7 +254,7 @@ describe("TraceListener", () => {
           dd_trace: ddtraceVersion,
         },
         type: "serverless",
-        childOf: mockSpanContext,
+        childOf: mockController.mockSpanContext,
       },
       unwrappedFunc,
     );
@@ -275,12 +268,13 @@ describe("TraceListener", () => {
     wrappedFunc();
     await listener.onCompleteInvocation();
 
-    expect(mockWrap).toHaveBeenCalledWith(
+    expect(wrapSpy).toHaveBeenCalledWith(
       "aws.lambda",
       {
         resource: "my-Lambda",
         service: "my-Lambda",
         tags: {
+          "span.kind": "server",
           cold_start: "true",
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
           function_version: "alias",
@@ -304,12 +298,13 @@ describe("TraceListener", () => {
     wrappedFunc();
     await listener.onCompleteInvocation();
 
-    expect(mockWrap).toHaveBeenCalledWith(
+    expect(wrapSpy).toHaveBeenCalledWith(
       "aws.lambda",
       {
         resource: "my-Lambda",
         service: "my-Lambda",
         tags: {
+          "span.kind": "server",
           cold_start: "true",
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
           function_version: "1",
@@ -327,18 +322,18 @@ describe("TraceListener", () => {
 
   it("wraps dd-trace span around invocation with Step Function context", async () => {
     const listener = new TraceListener(defaultConfig);
-    mockTraceSource = TraceSource.Event;
+    mockController.mockTraceSource = TraceSource.Event;
 
     // Mock Step Function context with deterministic trace IDs
-    mockSpanContext = {
+    mockController.mockSpanContext = {
       toTraceId: () => "512d06a10e5e34cb", // Hex converted to decimal would be different
       toSpanId: () => "7069a031ef9ad2cc",
       _sampling: {
         priority: "1",
       },
     };
-    mockSpanContextWrapper = {
-      spanContext: mockSpanContext,
+    mockController.mockSpanContextWrapper = {
+      spanContext: mockController.mockSpanContext,
     };
 
     const stepFunctionSQSEvent = {
@@ -378,12 +373,13 @@ describe("TraceListener", () => {
     wrappedFunc();
     await listener.onCompleteInvocation();
 
-    expect(mockWrap).toHaveBeenCalledWith(
+    expect(wrapSpy).toHaveBeenCalledWith(
       "aws.lambda",
       {
         resource: "my-Lambda",
         service: "my-Lambda",
         tags: {
+          "span.kind": "server",
           cold_start: "true",
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
           function_version: "$LATEST",
@@ -409,7 +405,7 @@ describe("TraceListener", () => {
 
   it("injects authorizer context if it exists", async () => {
     const listener = new TraceListener(defaultConfig);
-    mockTraceSource = TraceSource.Event;
+    mockController.mockTraceSource = TraceSource.Event;
     const inferredSpan = new SpanWrapper(
       {
         toSpanId: () => {
@@ -445,12 +441,13 @@ describe("TraceListener", () => {
     wrappedFunc();
     await listener.onCompleteInvocation();
 
-    expect(mockWrap).toHaveBeenCalledWith(
+    expect(wrapSpy).toHaveBeenCalledWith(
       "aws.lambda",
       {
         resource: "my-Lambda",
         service: "my-custom-service",
         tags: {
+          "span.kind": "server",
           cold_start: "true",
           function_arn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda",
           function_version: "$LATEST",
@@ -474,11 +471,10 @@ describe("TraceListener", () => {
     };
 
     beforeEach(() => {
-      mockWrap.mockClear();
-      mockExtract.mockClear();
-      mockSpanContext = undefined;
-      mockSpanContextWrapper = undefined;
-      mockTraceSource = undefined;
+      wrapSpy.mockClear();
+      mockController.mockSpanContext = undefined;
+      mockController.mockSpanContextWrapper = undefined;
+      mockController.mockTraceSource = undefined;
       process.env = { ...oldEnv }; // Restore original environment variables
       delete process.env.DD_SERVICE; // Ensure DD_SERVICE doesn't interfere
       delete process.env.DD_TRACE_AWS_SERVICE_REPRESENTATION_ENABLED;
@@ -497,7 +493,7 @@ describe("TraceListener", () => {
       wrappedFunc();
       await listener.onCompleteInvocation();
 
-      expect(mockWrap).toHaveBeenCalledWith(
+      expect(wrapSpy).toHaveBeenCalledWith(
         "aws.lambda",
         expect.objectContaining({
           service: "aws.lambda",
@@ -515,7 +511,7 @@ describe("TraceListener", () => {
       wrappedFunc();
       await listener.onCompleteInvocation();
 
-      expect(mockWrap).toHaveBeenCalledWith(
+      expect(wrapSpy).toHaveBeenCalledWith(
         "aws.lambda",
         expect.objectContaining({
           service: "aws.lambda",
@@ -533,7 +529,7 @@ describe("TraceListener", () => {
       wrappedFunc();
       await listener.onCompleteInvocation();
 
-      expect(mockWrap).toHaveBeenCalledWith(
+      expect(wrapSpy).toHaveBeenCalledWith(
         "aws.lambda",
         expect.objectContaining({
           service: lambdaContext.functionName,
@@ -551,13 +547,278 @@ describe("TraceListener", () => {
       wrappedFunc();
       await listener.onCompleteInvocation();
 
-      expect(mockWrap).toHaveBeenCalledWith(
+      expect(wrapSpy).toHaveBeenCalledWith(
         "aws.lambda",
         expect.objectContaining({
           service: lambdaContext.functionName,
         }),
         unwrappedFunc,
       );
+    });
+  });
+
+  it("sets durable function context tags directly on the aws.lambda span", async () => {
+    const mockSetTag = jest.fn();
+    const mockSpan = { setTag: mockSetTag };
+    const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
+
+    try {
+      const listener = new TraceListener(defaultConfig);
+      const durableEvent = {
+        DurableExecutionArn:
+          "arn:aws:lambda:us-east-1:123456789012:function:my-func:1/durable-execution/my-execution/550e8400-e29b-41d4-a716-446655440004",
+      };
+      await listener.onStartInvocation(durableEvent, context as any);
+      listener.onEndingInvocation(durableEvent, {}, false);
+
+      expect(mockSetTag).toHaveBeenCalledWith("aws.durable.execution_name", "my-execution");
+      expect(mockSetTag).toHaveBeenCalledWith("aws.durable.execution_id", "550e8400-e29b-41d4-a716-446655440004");
+    } finally {
+      currentSpanSpy.mockRestore();
+    }
+  });
+
+  it("sets execution_status tag on the aws.lambda span when result.Status is valid", async () => {
+    const mockSetTag = jest.fn();
+    const mockSpan = { setTag: mockSetTag };
+    const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
+
+    try {
+      const listener = new TraceListener(defaultConfig);
+      const durableEvent = {
+        DurableExecutionArn:
+          "arn:aws:lambda:us-east-1:123456789012:function:my-func:1/durable-execution/my-execution/550e8400-e29b-41d4-a716-446655440004",
+      };
+      await listener.onStartInvocation(durableEvent, context as any);
+      listener.onEndingInvocation(durableEvent, { Status: "SUCCEEDED" }, false);
+
+      expect(mockSetTag).toHaveBeenCalledWith("aws.durable.execution_status", "SUCCEEDED");
+    } finally {
+      currentSpanSpy.mockRestore();
+    }
+  });
+
+  it("does not set execution_status tag when result.Status is invalid", async () => {
+    const mockSetTag = jest.fn();
+    const mockSpan = { setTag: mockSetTag };
+    const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
+
+    try {
+      const listener = new TraceListener(defaultConfig);
+      const durableEvent = {
+        DurableExecutionArn:
+          "arn:aws:lambda:us-east-1:123456789012:function:my-func:1/durable-execution/my-execution/550e8400-e29b-41d4-a716-446655440004",
+      };
+      await listener.onStartInvocation(durableEvent, context as any);
+      listener.onEndingInvocation(durableEvent, { Status: "UNKNOWN" }, false);
+
+      expect(mockSetTag).not.toHaveBeenCalledWith("aws.durable.execution_status", expect.anything());
+    } finally {
+      currentSpanSpy.mockRestore();
+    }
+  });
+
+  describe("AppSec integration", () => {
+    it("does not call processAppsecRequest during onRequestStart when appsecEnabled is false", async () => {
+      const mockSpan = { setTag: jest.fn() };
+      const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
+
+      try {
+        const listener = new TraceListener({ ...defaultConfig, appsecEnabled: false });
+        const event = { httpMethod: "GET", path: "/test" };
+        await listener.onStartInvocation(event, context as any);
+        listener.onRequestStart(event);
+
+        expect(mockProcessAppsecRequest).not.toHaveBeenCalled();
+      } finally {
+        currentSpanSpy.mockRestore();
+      }
+    });
+
+    it("does not call processAppsecResponse during onEndingInvocation when appsecEnabled is false", async () => {
+      const mockSpan = { setTag: jest.fn() };
+      const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
+
+      try {
+        const listener = new TraceListener({ ...defaultConfig, appsecEnabled: false });
+        const result = { statusCode: 200, headers: { "content-type": "application/json" } };
+        await listener.onStartInvocation({}, context as any);
+        listener.onEndingInvocation({}, result, false);
+
+        expect(mockProcessAppsecResponse).not.toHaveBeenCalled();
+      } finally {
+        currentSpanSpy.mockRestore();
+      }
+    });
+
+    it("calls processAppsecRequest with event and span during onRequestStart", async () => {
+      const mockSetTag = jest.fn();
+      const mockSpan = { setTag: mockSetTag };
+      const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
+
+      try {
+        const listener = new TraceListener(defaultConfig);
+        const event = { httpMethod: "GET", path: "/test" };
+        await listener.onStartInvocation(event, context as any);
+        listener.onRequestStart(event);
+
+        expect(mockProcessAppsecRequest).toHaveBeenCalledTimes(1);
+        expect(mockProcessAppsecRequest).toHaveBeenCalledWith(event, mockSpan);
+      } finally {
+        currentSpanSpy.mockRestore();
+      }
+    });
+
+    it("does not call processAppsecRequest during onEndingInvocation", async () => {
+      const mockSetTag = jest.fn();
+      const mockSpan = { setTag: mockSetTag };
+      const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
+
+      try {
+        const listener = new TraceListener(defaultConfig);
+        const event = { httpMethod: "GET", path: "/test" };
+        await listener.onStartInvocation(event, context as any);
+        listener.onEndingInvocation(event, {}, false);
+
+        expect(mockProcessAppsecRequest).not.toHaveBeenCalled();
+      } finally {
+        currentSpanSpy.mockRestore();
+      }
+    });
+
+    it("calls processAppsecResponse with the span and the raw result during onEndingInvocation", async () => {
+      const mockSetTag = jest.fn();
+      const mockSpan = { setTag: mockSetTag };
+      const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
+
+      try {
+        const listener = new TraceListener(defaultConfig);
+        const event = {};
+        const result = { statusCode: 200, headers: { "content-type": "application/json" } };
+        await listener.onStartInvocation(event, context as any);
+        listener.onEndingInvocation(event, result, false);
+
+        expect(mockProcessAppsecResponse).toHaveBeenCalledTimes(1);
+        // Non-HTTP trigger: there is no normalized status code to hand over.
+        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, result, undefined);
+      } finally {
+        currentSpanSpy.mockRestore();
+      }
+    });
+
+    it("passes the normalized status code instead of the raw one for API Gateway v2", async () => {
+      const mockSetTag = jest.fn();
+      const mockSpan = { setTag: mockSetTag };
+      const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
+
+      try {
+        const listener = new TraceListener(defaultConfig);
+        const event = JSON.parse(readFileSync("./event_samples/api-gateway-v2.json", "utf8"));
+        // API Gateway v2 defaults to 200 when the handler omits the status code, so the raw
+        // result value (undefined) is not what AppSec should see.
+        const result = { body: "ok" };
+        await listener.onStartInvocation(event, context as any);
+        listener.onEndingInvocation(event, result, false);
+
+        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, result, "200");
+      } finally {
+        currentSpanSpy.mockRestore();
+      }
+    });
+
+    it("passes the normalized 502 when a buffered function returned no result", async () => {
+      const mockSetTag = jest.fn();
+      const mockSpan = { setTag: mockSetTag };
+      const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
+
+      try {
+        const listener = new TraceListener(defaultConfig);
+        const event = JSON.parse(readFileSync("./event_samples/application-load-balancer.json", "utf8"));
+        await listener.onStartInvocation(event, context as any);
+        listener.onEndingInvocation(event, undefined, false);
+
+        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, undefined, "502");
+      } finally {
+        currentSpanSpy.mockRestore();
+      }
+    });
+
+    it("passes the normalized 200 when a streaming function returned no result", async () => {
+      const mockSetTag = jest.fn();
+      const mockSpan = { setTag: mockSetTag };
+      const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
+
+      try {
+        const listener = new TraceListener(defaultConfig);
+        const event = JSON.parse(readFileSync("./event_samples/api-gateway-v2.json", "utf8"));
+        await listener.onStartInvocation(event, context as any);
+        listener.onEndingInvocation(event, undefined, true);
+
+        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, undefined, "200");
+      } finally {
+        currentSpanSpy.mockRestore();
+      }
+    });
+
+    it("tags http.status_code on the span before calling processAppsecResponse", async () => {
+      const callOrder: string[] = [];
+      mockProcessAppsecResponse.mockImplementation(() => callOrder.push("appsec"));
+
+      const mockSetTag = jest.fn((key: string) => {
+        if (key === "http.status_code") callOrder.push("tag");
+      });
+      const mockSpan = { setTag: mockSetTag };
+      const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
+
+      try {
+        const listener = new TraceListener(defaultConfig);
+        const event = JSON.parse(readFileSync("./event_samples/api-gateway-v2.json", "utf8"));
+        await listener.onStartInvocation(event, context as any);
+        listener.onEndingInvocation(event, { statusCode: 201 }, false);
+
+        expect(callOrder).toEqual(["tag", "appsec"]);
+      } finally {
+        currentSpanSpy.mockRestore();
+      }
+    });
+
+    it("still calls processAppsecResponse on a 5xx response that short-circuits onEndingInvocation", async () => {
+      const mockSetTag = jest.fn();
+      const mockSpan = { setTag: mockSetTag };
+      const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
+
+      try {
+        const listener = new TraceListener(defaultConfig);
+        const event = JSON.parse(readFileSync("./event_samples/api-gateway-v2.json", "utf8"));
+        await listener.onStartInvocation(event, context as any);
+        const responseIs5xxError = listener.onEndingInvocation(event, { statusCode: 500 }, false);
+
+        expect(responseIs5xxError).toBe(true);
+        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, { statusCode: 500 }, "500");
+      } finally {
+        currentSpanSpy.mockRestore();
+      }
+    });
+
+    it("calls processAppsecRequest (via onRequestStart) before processAppsecResponse (via onEndingInvocation)", async () => {
+      const callOrder: string[] = [];
+      mockProcessAppsecRequest.mockImplementation(() => callOrder.push("request"));
+      mockProcessAppsecResponse.mockImplementation(() => callOrder.push("response"));
+
+      const mockSetTag = jest.fn();
+      const mockSpan = { setTag: mockSetTag };
+      const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
+
+      try {
+        const listener = new TraceListener(defaultConfig);
+        await listener.onStartInvocation({}, context as any);
+        listener.onRequestStart({});
+        listener.onEndingInvocation({}, {}, false);
+
+        expect(callOrder).toEqual(["request", "response"]);
+      } finally {
+        currentSpanSpy.mockRestore();
+      }
     });
   });
 });

@@ -12,12 +12,18 @@ export class LambdaDogStatsD {
   private static readonly TAG_SUB = "_";
   // The maximum amount to wait while flushing pending sends, so we don't block forever.
   private static readonly MAX_FLUSH_TIMEOUT = 1000;
+  static readonly #resolvedFlush = Promise.resolve();
 
   private readonly socket: dgram.Socket;
-  private readonly pendingSends = new Set<Promise<void>>();
+  #pendingSends = 0;
+  #sendGeneration = 0;
+  #flushPromise: Promise<void> | undefined;
+  #resolveFlush: (() => void) | undefined;
+  #flushTimeout: NodeJS.Timeout | undefined;
 
   constructor() {
     this.socket = dgram.createSocket(LambdaDogStatsD.SOCKET_TYPE);
+    this.socket.unref?.();
   }
 
   /**
@@ -47,34 +53,78 @@ export class LambdaDogStatsD {
     this.send(payload);
   }
 
-  private send(packet: string) {
-    const msg = Buffer.from(packet, LambdaDogStatsD.ENCODING);
-    const promise = new Promise<void>((resolve) => {
-      this.socket.send(msg, LambdaDogStatsD.PORT, LambdaDogStatsD.HOST, (err) => {
-        if (err) {
-          logDebug(`Unable to send metric packet: ${err.message}`);
-        }
+  /**
+   * @param {string} packet
+   */
+  private send(packet: string): void {
+    const message = Buffer.from(packet, LambdaDogStatsD.ENCODING);
+    const generation = this.#sendGeneration;
+    this.#pendingSends++;
 
-        resolve();
+    try {
+      this.socket.send(message, LambdaDogStatsD.PORT, LambdaDogStatsD.HOST, (error) => {
+        this.#completeSend(generation, error);
       });
-    });
-
-    this.pendingSends.add(promise);
-    void promise.finally(() => this.pendingSends.delete(promise));
+    } catch (error) {
+      const sendError = error instanceof Error ? error : new Error("Unknown socket send failure");
+      this.#completeSend(generation, sendError);
+    }
   }
 
-  /** Block until all in-flight sends have settled */
-  public async flush(): Promise<void> {
-    const allSettled = Promise.allSettled(this.pendingSends);
-    const maxTimeout = new Promise<"timeout">((resolve) => {
-      setTimeout(() => resolve("timeout"), LambdaDogStatsD.MAX_FLUSH_TIMEOUT);
-    });
+  /**
+   * @param {number} generation
+   * @param {Error | null} [error]
+   */
+  #completeSend(generation: number, error?: Error | null): void {
+    if (error) {
+      logDebug(`Unable to send metric packet: ${error.message}`);
+    }
 
-    const winner = await Promise.race([allSettled, maxTimeout]);
-    if (winner === "timeout") {
+    if (generation !== this.#sendGeneration) {
+      return;
+    }
+
+    this.#pendingSends--;
+    if (this.#pendingSends === 0 && this.#resolveFlush !== undefined) {
+      this.#finishFlush(false);
+    }
+  }
+
+  /**
+   * @param {boolean} timedOut
+   */
+  #finishFlush(timedOut: boolean): void {
+    const resolve = this.#resolveFlush!;
+
+    if (this.#flushTimeout !== undefined) {
+      clearTimeout(this.#flushTimeout);
+    }
+    this.#flushPromise = undefined;
+    this.#resolveFlush = undefined;
+    this.#flushTimeout = undefined;
+
+    if (timedOut) {
+      this.#pendingSends = 0;
+      this.#sendGeneration++;
       logDebug("Timed out before sending all metric payloads");
     }
 
-    this.pendingSends.clear();
+    resolve();
+  }
+
+  /** Block until all in-flight sends have settled or the flush timeout expires. */
+  public flush(): Promise<void> {
+    if (this.#pendingSends === 0) {
+      return LambdaDogStatsD.#resolvedFlush;
+    }
+    if (this.#flushPromise !== undefined) {
+      return this.#flushPromise;
+    }
+
+    this.#flushPromise = new Promise<void>((resolve) => {
+      this.#resolveFlush = resolve;
+    });
+    this.#flushTimeout = setTimeout(() => this.#finishFlush(true), LambdaDogStatsD.MAX_FLUSH_TIMEOUT);
+    return this.#flushPromise;
   }
 }

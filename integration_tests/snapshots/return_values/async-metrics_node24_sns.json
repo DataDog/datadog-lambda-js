@@ -1,0 +1,7 @@
+{
+    "message": "hello, dog!",
+    "recordIds": [
+        "95df01b4-ee98-5cb9-9903-4c221d41eb5e"
+    ],
+    "eventType": "SNS"
+}

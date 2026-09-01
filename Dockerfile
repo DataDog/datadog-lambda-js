@@ -1,5 +1,5 @@
 ARG image
-FROM $image as builder
+FROM $image AS builder
 ARG image
 
 # Create the directory structure required for AWS Lambda Layer
@@ -8,22 +8,41 @@ RUN mkdir -p /nodejs/node_modules/
 # Install dev dependencies
 COPY . datadog-lambda-js
 WORKDIR /datadog-lambda-js
-RUN yarn install
+# Node.js 26+ official images no longer bundle Yarn v1.
+RUN command -v yarn >/dev/null 2>&1 || npm install -g yarn@1.22.22
+RUN yarn install --ignore-engines
 
 # Build the lambda layer
 RUN yarn build
 RUN cp -r dist /nodejs/node_modules/datadog-lambda-js
 RUN cp ./src/runtime/module_importer.js /nodejs/node_modules/datadog-lambda-js/runtime
+RUN node <<'EOF'
+const fs = require("fs");
+const { name, version } = require("./package.json");
+
+const layerPackage = {
+  name,
+  version,
+  main: "index.js",
+  types: "index.d.ts",
+};
+
+fs.writeFileSync(
+  "/nodejs/node_modules/datadog-lambda-js/package.json",
+  `${JSON.stringify(layerPackage, null, 2)}\n`,
+);
+EOF
 
 RUN cp ./src/handler.mjs /nodejs/node_modules/datadog-lambda-js
-RUN rm -rf node_modules
 
 # Move dd-trace from devDependencies to production dependencies
 # That way it is included in our layer, while keeping it an optional dependency for npm
 RUN node ./scripts/move_ddtrace_dependency.js "$(cat package.json)" > package-new.json
 RUN mv package-new.json package.json
+RUN rm -rf node_modules
+
 # Install dependencies
-RUN yarn install --production=true
+RUN yarn install --production=true --ignore-optional --ignore-engines
 # Copy the dependencies to the modules folder
 RUN cp -rf node_modules/* /nodejs/node_modules
 
@@ -31,35 +50,43 @@ RUN cp -rf node_modules/* /nodejs/node_modules
 RUN rm -rf /nodejs/node_modules/aws-sdk
 RUN rm -rf /nodejs/node_modules/aws-xray-sdk-core/node_modules/aws-sdk
 
-# Remove heavy files from dd-trace which aren't used in a lambda environment
-RUN rm -rf /nodejs/node_modules/dd-trace/prebuilds
-RUN rm -rf /nodejs/node_modules/dd-trace/dist
-RUN rm -rf /nodejs/node_modules/@datadog/libdatadog
-RUN rm -rf /nodejs/node_modules/@datadog/native-appsec
-RUN rm -rf /nodejs/node_modules/@datadog/native-metrics
-RUN rm -rf /nodejs/node_modules/hdr-histogram-js/build
-RUN rm -rf /nodejs/node_modules/protobufjs/dist
-RUN rm -rf /nodejs/node_modules/protobufjs/cli
-RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/linux-arm
+# Remove heavy files from @datadog/pprof which aren't used in a lambda environment
+# TODO: Ship individual bindings per platform and depend on that instead.
+# TODO: Split x64 and ARM so that each image only has the binaries for its architecture.
+# Lambda's supported Node.js runtimes use glibc on x64 or arm64.
+# Remove non-Linux platform prebuilds
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/darwin-arm64
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/darwin-x64
-RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/win32-ia32
 RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/win32-x64
-RUN rm -rf /nodejs/node_modules/@datadog/native-iast-taint-tracking
-RUN rm -rf /nodejs/node_modules/@datadog/native-iast-rewriter
-RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/linuxmusl-x64
-RUN rm -rf /nodejs/node_modules/jsonpath-plus/src/jsonpath.d.ts
-RUN rm -rf /nodejs/node_modules/jsonpath-plus/src/jsonpath-browser.js
-RUN rm -rf /nodejs/node_modules/jsonpath-plus/src/dist/index-browser-umd.min.cjs
-RUN rm -rf /nodejs/node_modules/jsonpath-plus/src/dist/index-browser-umd.cjs
-RUN rm -rf /nodejs/node_modules/jsonpath-plus/src/dist/index-browser-esm.min.js
-RUN rm -rf /nodejs/node_modules/jsonpath-plus/src/dist/index-browser-esm.js
-RUN find /nodejs/node_modules -name "*.d.ts" -delete
-RUN find /nodejs/node_modules -name "*.js.map" -delete
-RUN find /nodejs/node_modules -name "*.mjs.map" -delete
-RUN find /nodejs/node_modules -name "*.cjs.map" -delete
-RUN find /nodejs/node_modules -name "*.ts.map" -delete
-RUN find /nodejs/node_modules -name "*.md" -delete
+# Remove musl prebuilds (Lambda uses glibc, not musl)
+RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/dd_pprof.musl.node.*.node
+# Remove ABIs for non-LTS Node versions not supported on Lambda
+# Lambda supports Node 18 (abi108), Node 20 (abi115), Node 22 (abi127), Node 24 (abi137), and Node 26 (abi147)
+RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/dd_pprof.node.abi111.node
+RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/dd_pprof.node.abi120.node
+RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/dd_pprof.node.abi131.node
+RUN rm -rf /nodejs/node_modules/@datadog/pprof/prebuilds/*/dd_pprof.node.abi141.node
+
+# Remove unused @datadog/native-appsec prebuilds for non-Lambda platforms.
+# Lambda runs on Amazon Linux 2 (glibc), on x64 or arm64.
+RUN rm -rf /nodejs/node_modules/@datadog/native-appsec/prebuilds/darwin-arm64
+RUN rm -rf /nodejs/node_modules/@datadog/native-appsec/prebuilds/darwin-x64
+RUN rm -rf /nodejs/node_modules/@datadog/native-appsec/prebuilds/win32-ia32
+RUN rm -rf /nodejs/node_modules/@datadog/native-appsec/prebuilds/win32-x64
+RUN rm -rf /nodejs/node_modules/@datadog/native-appsec/prebuilds/linuxmusl-arm64
+RUN rm -rf /nodejs/node_modules/@datadog/native-appsec/prebuilds/linuxmusl-x64
+
+# Remove the Test Optimization validation runbook from dd-trace. It is agent-guided
+# debugging tooling for CI environments and is never loaded in a lambda environment.
+RUN rm -rf /nodejs/node_modules/dd-trace/ci
+RUN rm -rf /nodejs/node_modules/dd-trace/packages/dd-trace/src/ci-visibility/exporters/ci-validation
+
+# Remove heavy files from @opentelemetry/api which aren't used in a lambda environment.
+# TODO: Create a completely separate Datadog scoped package for OpenTelemetry instead.
+RUN rm -rf /nodejs/node_modules/@opentelemetry/api/build/esm
+RUN rm -rf /nodejs/node_modules/@opentelemetry/api/build/esnext
+RUN rm -rf /nodejs/node_modules/@opentelemetry/api-logs/build/esm
+RUN rm -rf /nodejs/node_modules/@opentelemetry/api-logs/build/esnext
 
 FROM scratch
 COPY --from=builder /nodejs /

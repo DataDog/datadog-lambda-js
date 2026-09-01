@@ -15,6 +15,21 @@ provider:
   iam:
     # IAM permissions require that all functions are deployed with this role
     role: "arn:aws:iam::425362996713:role/serverless-integration-test-lambda-role"
+  # Container image builds for the npm-redirect tests. Each Node major is built
+  # from public.ecr.aws/lambda/nodejs:${NODE_MAJOR} so the AWS-stock RIC for
+  # that runtime is exercised against `dist/handler.handler`.
+  ecr:
+    images:
+      datadog-lambda-js-cjs:
+        path: ./container/cjs
+        platform: linux/amd64
+        buildArgs:
+          NODE_VERSION: ${env:NODE_MAJOR}
+      datadog-lambda-js-esm:
+        path: ./container/esm
+        platform: linux/amd64
+        buildArgs:
+          NODE_VERSION: ${env:NODE_MAJOR}
 
 layers:
   node:
@@ -80,6 +95,27 @@ functions:
       - { Ref: NodeLambdaLayer }
     environment:
       DD_FLUSH_TO_LOG: true
+
+  # container-cjs — npm-installed datadog-lambda-js, CJS user handler,
+  # invoked through AWS-stock RIC via `dist/handler.handler`.
+  container-cjs_node:
+    name: integration-tests-js-${sls:stage}-container-cjs_${env:RUNTIME}
+    image:
+      name: datadog-lambda-js-cjs
+    environment:
+      DD_FLUSH_TO_LOG: true
+      DD_LAMBDA_HANDLER: handler.handle
+
+  # container-esm — npm-installed datadog-lambda-js, ESM user handler,
+  # invoked through AWS-stock RIC via `dist/handler.handler`. Guards against
+  # ERR_REQUIRE_ESM if `dist/handler.js` ever returns to the published tarball.
+  container-esm_node:
+    name: integration-tests-js-${sls:stage}-container-esm_${env:RUNTIME}
+    image:
+      name: datadog-lambda-js-esm
+    environment:
+      DD_FLUSH_TO_LOG: true
+      DD_LAMBDA_HANDLER: handler.handle
 
   # status-code-500s
   status-code-500s_node:

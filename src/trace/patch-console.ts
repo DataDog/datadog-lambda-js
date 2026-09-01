@@ -1,5 +1,4 @@
 import * as shimmer from "shimmer";
-import { inspect } from "util";
 
 type Console = typeof console;
 
@@ -9,6 +8,37 @@ import { getLogLevel, LogLevel, setLogLevel } from "../utils/log";
 import { TraceContextService } from "./trace-context-service";
 
 type LogMethod = "log" | "info" | "debug" | "error" | "warn" | "trace";
+
+/**
+ * Checks if a value is a JSON-style structured log (plain object).
+ * When true, trace context will be injected as a `dd` property to preserve JSON format.
+ * When false, trace context will be prepended as a string prefix.
+ */
+function isJsonStyleLog(value: unknown): value is Record<string, unknown> {
+  if (value === null || typeof value !== "object") {
+    return false;
+  }
+  if (Array.isArray(value)) {
+    return false;
+  }
+  const proto = Object.getPrototypeOf(value);
+  return proto === null || proto === Object.prototype;
+}
+
+/**
+ * Checks if a value is a plain object (not null, not an array).
+ */
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+/**
+ * Extracts the existing `dd` property from a log object if it's a plain object.
+ * Returns an empty object if `dd` is missing or not a plain object.
+ */
+function getExistingDdContext(logObject: Record<string, unknown>): Record<string, unknown> {
+  return isPlainObject(logObject.dd) ? logObject.dd : {};
+}
 
 /**
  * Patches console output to include DataDog's trace context.
@@ -51,27 +81,33 @@ function patchMethod(mod: wrappedConsole, method: LogMethod, contextService: Tra
       }
       isLogging = true;
 
-      let prefix = "";
       const oldLogLevel = getLogLevel();
       setLogLevel(LogLevel.NONE);
       try {
         const context = contextService.currentTraceContext;
         if (context !== null) {
           const traceId = context.toTraceId();
-          const parentId = context.toSpanId();
-          prefix = `[dd.trace_id=${traceId} dd.span_id=${parentId}]`;
+          const spanId = context.toSpanId();
+
           if (arguments.length === 0) {
+            // No arguments: emit just the trace context prefix
             arguments.length = 1;
-            arguments[0] = prefix;
+            arguments[0] = `[dd.trace_id=${traceId} dd.span_id=${spanId}]`;
+          } else if (arguments.length === 1 && isJsonStyleLog(arguments[0])) {
+            // Single plain object: inject dd property to preserve JSON format
+            arguments[0] = {
+              ...arguments[0],
+              dd: {
+                ...getExistingDdContext(arguments[0]),
+                // Overwrite trace_id and span_id to ensure we have the latest values
+                trace_id: traceId,
+                span_id: spanId,
+              },
+            };
           } else {
-            let logContent = arguments[0];
-
-            // If what's being logged is not a string, use util.inspect to get a str representation
-            if (typeof logContent !== "string") {
-              logContent = inspect(logContent);
-            }
-
-            arguments[0] = `${prefix} ${logContent}`;
+            // String or multiple arguments: use string prefix
+            const prefix = `[dd.trace_id=${traceId} dd.span_id=${spanId}]`;
+            arguments[0] = `${prefix} ${arguments[0]}`;
           }
         }
       } catch (error) {

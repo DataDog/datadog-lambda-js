@@ -24,14 +24,16 @@ START
         "parent_id":"XXXX",
         "name": "aws.apigateway",
         "resource": "GET /{proxy+}",
+        "service": "remappedApiGatewayServiceName",
+        "type": "web",
         "error": 0,
         "meta": {
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-esm_node18",
           "_dd.p.tid": "XXXX",
           "_dd.p.dm": "-0",
           "_dd.origin": "lambda",
           "service": "remappedApiGatewayServiceName",
           "runtime-id":"XXXX",
-          "operation_name": "aws.apigateway",
           "http.url": "https://undefined",
           "resource_names": "GET /{proxy+}",
           "request_id":"XXXX",
@@ -42,8 +44,10 @@ START
           "http.method": "GET",
           "stage": "test",
           "domain_name": "",
+          "dd_resource_key": "arn:aws:apigateway:eu-west-1::/restapis/wt6mne2s9k",
           "http.status_code": "200",
           "_dd.integration": "opentracing",
+          "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-XXXX-esm_node18",
           "language": "javascript"
         },
@@ -55,10 +59,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": [],
-        "service": "remappedApiGatewayServiceName",
-        "type": "http"
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -66,12 +67,15 @@ START
         "parent_id":"XXXX",
         "name": "aws.lambda",
         "resource": "integration-tests-js-XXXX-esm_node18",
+        "service": "integration-tests-js-XXXX-esm_node18",
+        "type": "serverless",
         "error": 0,
         "meta": {
           "_dd.origin": "lambda",
-          "service": "integration-tests-js-XXXX-esm_node18",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-esm_node18",
           "runtime-id":"XXXX",
+          "span.kind": "server",
           "cold_start": "true",
           "function_arn":"XXXX_node18",
           "function_version": "$LATEST",
@@ -94,15 +98,12 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-esm_node18",
-        "type": "serverless"
+        "duration":XXXX
       }
     ]
   ]
 }
-END Duration: XXXX ms (init: XXXX ms) Memory Used: XXXX MB
+END Duration: XXXX ms Memory Used: XXXX MB
 START
 {
   "e": XXXX,
@@ -128,9 +129,12 @@ START
         "parent_id":"XXXX",
         "name": "aws.dynamodb",
         "resource": "MODIFY someTableName",
+        "service": "remappedDynamoDbServiceName",
+        "type": "web",
         "error": 0,
         "meta": {
           "_dd.span_links": "[{\"trace_id\":\"00000000000000000000000000000000\",\"span_id\":\"0000000000000000\",\"attributes\":{\"ptr.kind\":\"aws.dynamodb.item\",\"ptr.dir\":\"u\",\"ptr.hash\":\"a23821b540813527937fbe833d70a005\",\"link.kind\":\"span-pointer\"}}]",
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-esm_node18",
           "_dd.p.tid": "XXXX",
           "_dd.p.dm": "-0",
           "_dd.origin": "lambda",
@@ -149,6 +153,7 @@ START
           "event_id": "0123456789abcdef09123456789abcdef",
           "stream_view_type": "KEYS_ONLY",
           "_dd.integration": "opentracing",
+          "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-XXXX-esm_node18",
           "language": "javascript"
         },
@@ -161,10 +166,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": [],
-        "service": "remappedDynamoDbServiceName",
-        "type": "web"
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -172,12 +174,15 @@ START
         "parent_id":"XXXX",
         "name": "aws.lambda",
         "resource": "integration-tests-js-XXXX-esm_node18",
+        "service": "integration-tests-js-XXXX-esm_node18",
+        "type": "serverless",
         "error": 0,
         "meta": {
           "_dd.origin": "lambda",
-          "service": "integration-tests-js-XXXX-esm_node18",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-esm_node18",
           "runtime-id":"XXXX",
+          "span.kind": "server",
           "cold_start": "false",
           "function_arn":"XXXX_node18",
           "function_version": "$LATEST",
@@ -197,10 +202,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-esm_node18",
-        "type": "serverless"
+        "duration":XXXX
       }
     ]
   ]
@@ -231,9 +233,12 @@ START
         "parent_id":"XXXX",
         "name": "aws.dynamodb",
         "resource": "REMOVE someTableName",
+        "service": "remappedDynamoDbServiceName",
+        "type": "web",
         "error": 0,
         "meta": {
           "_dd.span_links": "[{\"trace_id\":\"00000000000000000000000000000000\",\"span_id\":\"0000000000000000\",\"attributes\":{\"ptr.kind\":\"aws.dynamodb.item\",\"ptr.dir\":\"u\",\"ptr.hash\":\"a23821b540813527937fbe833d70a005\",\"link.kind\":\"span-pointer\"}}]",
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-esm_node18",
           "_dd.p.tid": "XXXX",
           "_dd.p.dm": "-0",
           "_dd.origin": "lambda",
@@ -252,6 +257,7 @@ START
           "event_id": "0123456789abcdef09123456789abcdef",
           "stream_view_type": "KEYS_ONLY",
           "_dd.integration": "opentracing",
+          "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-XXXX-esm_node18",
           "language": "javascript"
         },
@@ -264,10 +270,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": [],
-        "service": "remappedDynamoDbServiceName",
-        "type": "web"
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -275,12 +278,15 @@ START
         "parent_id":"XXXX",
         "name": "aws.lambda",
         "resource": "integration-tests-js-XXXX-esm_node18",
+        "service": "integration-tests-js-XXXX-esm_node18",
+        "type": "serverless",
         "error": 0,
         "meta": {
           "_dd.origin": "lambda",
-          "service": "integration-tests-js-XXXX-esm_node18",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-esm_node18",
           "runtime-id":"XXXX",
+          "span.kind": "server",
           "cold_start": "false",
           "function_arn":"XXXX_node18",
           "function_version": "$LATEST",
@@ -300,10 +306,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-esm_node18",
-        "type": "serverless"
+        "duration":XXXX
       }
     ]
   ]
@@ -334,9 +337,12 @@ START
         "parent_id":"XXXX",
         "name": "aws.dynamodb",
         "resource": "INSERT someTableName",
+        "service": "remappedDynamoDbServiceName",
+        "type": "web",
         "error": 0,
         "meta": {
           "_dd.span_links": "[{\"trace_id\":\"00000000000000000000000000000000\",\"span_id\":\"0000000000000000\",\"attributes\":{\"ptr.kind\":\"aws.dynamodb.item\",\"ptr.dir\":\"u\",\"ptr.hash\":\"843472b4a65c45fcc3f14939c6cae6d1\",\"link.kind\":\"span-pointer\"}}]",
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-esm_node18",
           "_dd.p.tid": "XXXX",
           "_dd.p.dm": "-0",
           "_dd.origin": "lambda",
@@ -355,6 +361,7 @@ START
           "event_id": "0123456789abcdef09123456789abcdef",
           "stream_view_type": "KEYS_ONLY",
           "_dd.integration": "opentracing",
+          "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-XXXX-esm_node18",
           "language": "javascript"
         },
@@ -367,10 +374,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": [],
-        "service": "remappedDynamoDbServiceName",
-        "type": "web"
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -378,12 +382,15 @@ START
         "parent_id":"XXXX",
         "name": "aws.lambda",
         "resource": "integration-tests-js-XXXX-esm_node18",
+        "service": "integration-tests-js-XXXX-esm_node18",
+        "type": "serverless",
         "error": 0,
         "meta": {
           "_dd.origin": "lambda",
-          "service": "integration-tests-js-XXXX-esm_node18",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-esm_node18",
           "runtime-id":"XXXX",
+          "span.kind": "server",
           "cold_start": "false",
           "function_arn":"XXXX_node18",
           "function_version": "$LATEST",
@@ -403,10 +410,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-esm_node18",
-        "type": "serverless"
+        "duration":XXXX
       }
     ]
   ]
@@ -437,9 +441,12 @@ START
         "parent_id":"XXXX",
         "name": "aws.s3",
         "resource": "my-bucket-name",
+        "service": "remappedS3ServiceName",
+        "type": "web",
         "error": 0,
         "meta": {
           "_dd.span_links": "[{\"trace_id\":\"00000000000000000000000000000000\",\"span_id\":\"0000000000000000\",\"attributes\":{\"ptr.kind\":\"aws.s3.object\",\"ptr.dir\":\"u\",\"ptr.hash\":\"5e945cd2009d743bdef019835b237969\",\"link.kind\":\"span-pointer\"}}]",
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-esm_node18",
           "_dd.p.tid": "XXXX",
           "_dd.p.dm": "-0",
           "_dd.origin": "lambda",
@@ -457,6 +464,7 @@ START
           "object_key": "multipart_object.txt",
           "object_etag": "09876543210987654321098765432109-2",
           "_dd.integration": "opentracing",
+          "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-XXXX-esm_node18",
           "language": "javascript"
         },
@@ -469,10 +477,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": [],
-        "service": "remappedS3ServiceName",
-        "type": "web"
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -480,12 +485,15 @@ START
         "parent_id":"XXXX",
         "name": "aws.lambda",
         "resource": "integration-tests-js-XXXX-esm_node18",
+        "service": "integration-tests-js-XXXX-esm_node18",
+        "type": "serverless",
         "error": 0,
         "meta": {
           "_dd.origin": "lambda",
-          "service": "integration-tests-js-XXXX-esm_node18",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-esm_node18",
           "runtime-id":"XXXX",
+          "span.kind": "server",
           "cold_start": "false",
           "function_arn":"XXXX_node18",
           "function_version": "$LATEST",
@@ -505,10 +513,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-esm_node18",
-        "type": "serverless"
+        "duration":XXXX
       }
     ]
   ]
@@ -539,9 +544,12 @@ START
         "parent_id":"XXXX",
         "name": "aws.s3",
         "resource": "my-bucket-name",
+        "service": "remappedS3ServiceName",
+        "type": "web",
         "error": 0,
         "meta": {
           "_dd.span_links": "[{\"trace_id\":\"00000000000000000000000000000000\",\"span_id\":\"0000000000000000\",\"attributes\":{\"ptr.kind\":\"aws.s3.object\",\"ptr.dir\":\"u\",\"ptr.hash\":\"9b03fa9d6a34c7b40a2a2907eb0db1f6\",\"link.kind\":\"span-pointer\"}}]",
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-esm_node18",
           "_dd.p.tid": "XXXX",
           "_dd.p.dm": "-0",
           "_dd.origin": "lambda",
@@ -559,6 +567,7 @@ START
           "object_key": "copied_object.txt",
           "object_etag": "01234567890123456789012345678901",
           "_dd.integration": "opentracing",
+          "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-XXXX-esm_node18",
           "language": "javascript"
         },
@@ -571,10 +580,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": [],
-        "service": "remappedS3ServiceName",
-        "type": "web"
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -582,12 +588,15 @@ START
         "parent_id":"XXXX",
         "name": "aws.lambda",
         "resource": "integration-tests-js-XXXX-esm_node18",
+        "service": "integration-tests-js-XXXX-esm_node18",
+        "type": "serverless",
         "error": 0,
         "meta": {
           "_dd.origin": "lambda",
-          "service": "integration-tests-js-XXXX-esm_node18",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-esm_node18",
           "runtime-id":"XXXX",
+          "span.kind": "server",
           "cold_start": "false",
           "function_arn":"XXXX_node18",
           "function_version": "$LATEST",
@@ -607,10 +616,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-esm_node18",
-        "type": "serverless"
+        "duration":XXXX
       }
     ]
   ]
@@ -641,9 +647,12 @@ START
         "parent_id":"XXXX",
         "name": "aws.s3",
         "resource": "my-bucket-name",
+        "service": "remappedS3ServiceName",
+        "type": "web",
         "error": 0,
         "meta": {
           "_dd.span_links": "[{\"trace_id\":\"00000000000000000000000000000000\",\"span_id\":\"0000000000000000\",\"attributes\":{\"ptr.kind\":\"aws.s3.object\",\"ptr.dir\":\"u\",\"ptr.hash\":\"b2229b8289f3e49de4f01af8d228ebd8\",\"link.kind\":\"span-pointer\"}}]",
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-esm_node18",
           "_dd.p.tid": "XXXX",
           "_dd.p.dm": "-0",
           "_dd.origin": "lambda",
@@ -661,6 +670,7 @@ START
           "object_key": "test_object.txt",
           "object_etag": "abcdef0123456789abcdef01234567890",
           "_dd.integration": "opentracing",
+          "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-XXXX-esm_node18",
           "language": "javascript"
         },
@@ -673,10 +683,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": [],
-        "service": "remappedS3ServiceName",
-        "type": "web"
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -684,12 +691,15 @@ START
         "parent_id":"XXXX",
         "name": "aws.lambda",
         "resource": "integration-tests-js-XXXX-esm_node18",
+        "service": "integration-tests-js-XXXX-esm_node18",
+        "type": "serverless",
         "error": 0,
         "meta": {
           "_dd.origin": "lambda",
-          "service": "integration-tests-js-XXXX-esm_node18",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-esm_node18",
           "runtime-id":"XXXX",
+          "span.kind": "server",
           "cold_start": "false",
           "function_arn":"XXXX_node18",
           "function_version": "$LATEST",
@@ -709,10 +719,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-esm_node18",
-        "type": "serverless"
+        "duration":XXXX
       }
     ]
   ]
@@ -743,8 +750,11 @@ START
         "parent_id":"XXXX",
         "name": "aws.sns",
         "resource": "sns-lambda",
+        "service": "remappedSnsServiceName",
+        "type": "sns",
         "error": 0,
         "meta": {
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-esm_node18",
           "_dd.p.tid": "XXXX",
           "_dd.p.dm": "-0",
           "_dd.origin": "lambda",
@@ -763,6 +773,7 @@ START
           "topic_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda",
           "event_subscription_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda:21be56ed-a058-49f5-8c98-aedd2564c486",
           "_dd.integration": "opentracing",
+          "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-XXXX-esm_node18",
           "language": "javascript"
         },
@@ -774,10 +785,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": [],
-        "service": "remappedSnsServiceName",
-        "type": "sns"
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -785,12 +793,15 @@ START
         "parent_id":"XXXX",
         "name": "aws.lambda",
         "resource": "integration-tests-js-XXXX-esm_node18",
+        "service": "integration-tests-js-XXXX-esm_node18",
+        "type": "serverless",
         "error": 0,
         "meta": {
           "_dd.origin": "lambda",
-          "service": "integration-tests-js-XXXX-esm_node18",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-esm_node18",
           "runtime-id":"XXXX",
+          "span.kind": "server",
           "cold_start": "false",
           "function_arn":"XXXX_node18",
           "function_version": "$LATEST",
@@ -810,10 +821,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-esm_node18",
-        "type": "serverless"
+        "duration":XXXX
       }
     ]
   ]
@@ -844,8 +852,11 @@ START
         "parent_id":"XXXX",
         "name": "aws.sqs",
         "resource": "my-queue",
+        "service": "remappedSqsServiceName",
+        "type": "web",
         "error": 0,
         "meta": {
+          "_dd.tags.process": "entrypoint.type:script,entrypoint.workdir:task,package.json.name:integration_tests,svc.auto:integration-tests-js-XXXX-esm_node18",
           "_dd.p.tid": "XXXX",
           "_dd.p.dm": "-0",
           "_dd.origin": "lambda",
@@ -862,6 +873,7 @@ START
           "receipt_handle": "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
           "sender_id": "AIDAIENQZJOLO23YVJ4VO",
           "_dd.integration": "opentracing",
+          "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-XXXX-esm_node18",
           "language": "javascript"
         },
@@ -874,10 +886,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": [],
-        "service": "remappedSqsServiceName",
-        "type": "web"
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -885,12 +894,15 @@ START
         "parent_id":"XXXX",
         "name": "aws.lambda",
         "resource": "integration-tests-js-XXXX-esm_node18",
+        "service": "integration-tests-js-XXXX-esm_node18",
+        "type": "serverless",
         "error": 0,
         "meta": {
           "_dd.origin": "lambda",
-          "service": "integration-tests-js-XXXX-esm_node18",
           "version": "1.0.0",
+          "service": "integration-tests-js-XXXX-esm_node18",
           "runtime-id":"XXXX",
+          "span.kind": "server",
           "cold_start": "false",
           "function_arn":"XXXX_node18",
           "function_version": "$LATEST",
@@ -910,10 +922,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": [],
-        "service": "integration-tests-js-XXXX-esm_node18",
-        "type": "serverless"
+        "duration":XXXX
       }
     ]
   ]

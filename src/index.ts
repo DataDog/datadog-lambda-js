@@ -21,6 +21,7 @@ import {
   setSandboxInit,
   setLogger,
   setLogLevel,
+  isManagedInstancesMode,
 } from "./utils";
 import { getEnhancedMetricTags } from "./metrics/enhanced-metrics";
 import { DatadogTraceHeaders } from "./trace/context/extractor";
@@ -53,6 +54,7 @@ export const coldStartTraceSkipLibEnvVar = "DD_COLD_START_TRACE_SKIP_LIB";
 export const localTestingEnvVar = "DD_LOCAL_TESTING";
 export const addSpanPointersEnvVar = "DD_TRACE_AWS_ADD_SPAN_POINTERS";
 export const dataStreamsEnabledEnvVar = "DD_DATA_STREAMS_ENABLED";
+export const appsecEnabledEnvVar = "DD_APPSEC_ENABLED";
 
 interface GlobalConfig {
   /**
@@ -99,6 +101,7 @@ export const defaultConfig: Config = {
   localTesting: false,
   addSpanPointers: true,
   dataStreamsEnabled: false,
+  appsecEnabled: false,
 } as const;
 
 export const _metricsQueue: MetricsQueue = new MetricsQueue();
@@ -106,7 +109,9 @@ export const _metricsQueue: MetricsQueue = new MetricsQueue();
 let currentMetricsListener: MetricsListener | undefined;
 let currentTraceListener: TraceListener | undefined;
 
-if (getEnvValue(coldStartTracingEnvVar, "true").toLowerCase() === "true") {
+// Skip cold start tracing subscription in managed instances mode
+// In managed instances, the tracer library handles cold start independently
+if (getEnvValue(coldStartTracingEnvVar, "true").toLowerCase() === "true" && !isManagedInstancesMode()) {
   subscribeToDC();
 }
 
@@ -195,6 +200,8 @@ export function datadog<TEvent, TResult>(
             );
           });
         }
+
+        traceListener.onRequestStart(localEvent);
 
         try {
           localResult = isResponseStreamFunction
@@ -425,6 +432,11 @@ function getConfig(userConfig?: Partial<Config>): Config {
     const result = getEnvValue(dataStreamsEnabledEnvVar, "false").toLowerCase();
     const validEnabledValues = new Set(["true", "1", "yes", "y", "on"]);
     config.dataStreamsEnabled = validEnabledValues.has(result);
+  }
+
+  if (userConfig === undefined || userConfig.appsecEnabled === undefined) {
+    const result = getEnvValue(appsecEnabledEnvVar, "false").toLowerCase();
+    config.appsecEnabled = result === "true" || result === "1";
   }
 
   return config;

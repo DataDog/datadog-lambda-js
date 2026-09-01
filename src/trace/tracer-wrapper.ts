@@ -1,4 +1,4 @@
-import { logDebug } from "../utils";
+import { logDebug, logWarning } from "../utils";
 import { SpanContextWrapper } from "./span-context-wrapper";
 import { TraceSource } from "./trace-context-service";
 
@@ -92,6 +92,25 @@ export class TracerWrapper {
     }
 
     return new SpanContextWrapper(span.context(), TraceSource.DdTrace);
+  }
+
+  public closeScope(): void {
+    try {
+      const activeSpan = this.currentSpan;
+      if (activeSpan && typeof activeSpan.finish === "function") {
+        const context = activeSpan.context();
+        const traceId = context?.toTraceId?.() ?? "unknown";
+        const spanId = context?.toSpanId?.() ?? "unknown";
+        logDebug(
+          `Detected stale span from previous invocation, finishing it to prevent trace context leakage. TraceId: ${traceId}, SpanId: ${spanId}`,
+        );
+        activeSpan.finish();
+      }
+    } catch (err) {
+      if (err instanceof Object || err instanceof Error) {
+        logDebug("Failed to close dd-trace scope", err);
+      }
+    }
   }
 
   public injectSpan(span: SpanContext): any {

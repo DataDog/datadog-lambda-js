@@ -2,15 +2,30 @@
 
 # Usage - run commands from repo root:
 # To check if new changes to the layer cause changes to any snapshots:
-#   BUILD_LAYERS=true DD_API_KEY=XXXX aws-vault exec sso-serverless-sandbox-account-admin -- ./scripts/run_integration_tests
+#   BUILD_LAYERS=true DD_API_KEY=XXXX aws-vault exec sso-serverless-sandbox-account-admin -- ./scripts/run_integration_tests.sh
 # To regenerate snapshots:
-#   UPDATE_SNAPSHOTS=true DD_API_KEY=XXXX aws-vault exec sso-serverless-sandbox-account-admin -- ./scripts/run_integration_tests
+#   BUILD_LAYERS=true UPDATE_SNAPSHOTS=true DD_API_KEY=XXXX aws-vault exec sso-serverless-sandbox-account-admin -- ./scripts/run_integration_tests.sh
+# To skip invoking/snapshotting the container-image handlers (they are still
+# deployed, so Docker and ECR push access are still required):
+#   BUILD_LAYERS=true UPDATE_SNAPSHOTS=true SKIP_CONTAINER_TESTS=true DD_API_KEY=XXXX aws-vault exec sso-serverless-sandbox-account-admin -- ./scripts/run_integration_tests.sh
+# To run a single runtime:
+#   RUNTIME_PARAM=26 BUILD_LAYERS=true UPDATE_SNAPSHOTS=true DD_API_KEY=XXXX aws-vault exec sso-serverless-sandbox-account-admin -- ./scripts/run_integration_tests.sh
+#
+# Requires Docker for the container-image handlers. Uses the Serverless CLI
+# pinned globally in .gitlab/Dockerfile.
 
 set -e
 
+# AWS Lambda only accepts Docker v2 image manifests, not the OCI manifests that
+# buildx produces by default (with provenance attestations). Disabling default
+# attestations makes buildx emit Docker v2 manifests, which Lambda will accept
+# as the source image for the container-* test functions.
+export BUILDX_NO_DEFAULT_ATTESTATIONS=1
+
 # These values need to be in sync with serverless.yml, where there needs to be a function
-# defined for every handler_runtime combination
-LAMBDA_HANDLERS=("async-metrics" "esm" "sync-metrics" "http-requests" "process-input-traced" "throw-error-traced" "status-code-500s")
+# defined for every handler_runtime combination.
+ALL_LAMBDA_HANDLERS=("async-metrics" "esm" "sync-metrics" "http-requests" "process-input-traced" "throw-error-traced" "status-code-500s" "container-cjs" "container-esm")
+ZIP_LAMBDA_HANDLERS=("async-metrics" "esm" "sync-metrics" "http-requests" "process-input-traced" "throw-error-traced" "status-code-500s")
 
 LOGS_WAIT_SECONDS=20
 
@@ -32,8 +47,10 @@ mismatch_found=false
 node18=("nodejs18.x" "18.12" $(xxd -l 4 -c 4 -p < /dev/random))
 node20=("nodejs20.x" "20.19" $(xxd -l 4 -c 4 -p < /dev/random))
 node22=("nodejs22.x" "22.11" $(xxd -l 4 -c 4 -p < /dev/random))
+node24=("nodejs24.x" "24.11" $(xxd -l 4 -c 4 -p < /dev/random))
+node26=("nodejs26.x" "26.1" $(xxd -l 4 -c 4 -p < /dev/random))
 
-PARAMETERS_SETS=("node18" "node20" "node22")
+PARAMETERS_SETS=("node18" "node20" "node22" "node24" "node26")
 
 if [ -z "$RUNTIME_PARAM" ]; then
     echo "Node version not specified, running for all node versions."
@@ -58,6 +75,13 @@ if [ -n "$UPDATE_SNAPSHOTS" ]; then
     echo "Overwriting snapshots in this execution"
 fi
 
+if [ -n "$SKIP_CONTAINER_TESTS" ]; then
+    LAMBDA_HANDLERS=("${ZIP_LAMBDA_HANDLERS[@]}")
+    echo "Skipping invocation and snapshotting of the container-image handlers"
+else
+    LAMBDA_HANDLERS=("${ALL_LAMBDA_HANDLERS[@]}")
+fi
+
 if [ -n "$BUILD_LAYERS" ]; then
     echo "Building layers that will be deployed with our test functions"
     if [ -n "$BUILD_LAYER_VERSION" ]; then
@@ -69,14 +93,43 @@ else
     echo "Not building layers, ensure they've already been built or re-run with 'BUILD_LAYERS=true DD_API_KEY=XXXX ./scripts/run_integration_tests.sh'"
 fi
 
+# Build and pack the locally-modified datadog-lambda-js so the container-image
+# tests install the version under test (not the published one) via npm.
+echo "Packing local datadog-lambda-js for container tests"
+cd $repo_dir
+# Ensure root-level devDeps (TypeScript, @types/*) are installed before tsc.
+# In CI the script is typically invoked without BUILD_LAYERS=true, so the
+# Docker-internal yarn install that path would do isn't reached, and the host
+# repo would otherwise tsc against an empty node_modules.
+yarn install --frozen-lockfile
+yarn build
+npm pack
+mv datadog-lambda-js-*.tgz $integration_tests_dir/container/cjs/datadog-lambda-js-local.tgz
+cp $integration_tests_dir/container/cjs/datadog-lambda-js-local.tgz \
+   $integration_tests_dir/container/esm/datadog-lambda-js-local.tgz
+
 cd $integration_tests_dir
 yarn
+
+function run_serverless() {
+    NODE_VERSION=${!nodejs_version} NODE_MAJOR=$(lambda_node_image_tag $parameters_set) RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
+        serverless "$@"
+}
 
 input_event_files=$(ls ./input_events)
 # Sort event files by name so that snapshots stay consistent
 input_event_files=($(for file_name in ${input_event_files[@]}; do echo $file_name; done | sort))
 
-
+# ECR tag for public.ecr.aws/lambda/nodejs used by container-{cjs,esm} tests.
+# Node 26 is preview-only on ECR until GA; plain :26 does not exist yet.
+function lambda_node_image_tag() {
+    local node_major="${1#node}"
+    if [ "$node_major" = "26" ]; then
+        echo "26-preview-x86_64"
+    else
+        echo "$node_major"
+    fi
+}
 
 # Always remove the stacks before exiting, no matter what
 function remove_stack() {
@@ -85,8 +138,7 @@ function remove_stack() {
         nodejs_version=$parameters_set[1]
         run_id=$parameters_set[2]
         echo "Removing stack for stage : ${!run_id}"
-        NODE_VERSION=${!nodejs_version} RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
-        serverless remove --stage ${!run_id}
+        run_serverless remove --stage ${!run_id}
     done
 }
 
@@ -101,8 +153,7 @@ for parameters_set in "${PARAMETERS_SETS[@]}"; do
     echo "Deploying functions for runtime : $parameters_set, serverless runtime : ${!serverless_runtime}, \
 nodejs version : ${!nodejs_version} and run id : ${!run_id}"
 
-    NODE_VERSION=${!nodejs_version} RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
-    serverless deploy --stage ${!run_id}
+    run_serverless deploy --stage ${!run_id}
 
     echo "Invoking functions for runtime $parameters_set"
     set +e # Don't exit this script if an invocation fails or there's a diff
@@ -118,8 +169,7 @@ nodejs version : ${!nodejs_version} and run id : ${!run_id}"
             snapshot_path="./snapshots/return_values/${handler_name}_${parameters_set}_${input_event_name}.json"
             function_failed=FALSE
 
-            return_value=$(NODE_VERSION=${!nodejs_version} RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
-            serverless invoke --stage ${!run_id} -f "$function_name" --path "./input_events/$input_event_file")
+            return_value=$(run_serverless invoke --stage ${!run_id} -f "$function_name" --path "./input_events/$input_event_file")
             invoke_success=$?
             if [ $invoke_success -ne 0 ]; then
                 return_value="Invocation failed"
@@ -165,8 +215,7 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
         # Fetch logs with serverless cli, retrying to avoid AWS account-wide rate limit error
         retry_counter=0
         while [ $retry_counter -lt 10 ]; do
-            raw_logs=$(NODE_VERSION=${!nodejs_version} RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
-            serverless logs --stage ${!run_id} -f $function_name --startTime $script_utc_start_time)
+            raw_logs=$(run_serverless logs --stage ${!run_id} -f $function_name --startTime $script_utc_start_time)
             fetch_logs_exit_code=$?
             if [ $fetch_logs_exit_code -eq 1 ]; then
                 echo "Retrying fetch logs for $function_name..."
@@ -194,6 +243,13 @@ for handler_name in "${LAMBDA_HANDLERS[@]}"; do
                 sed '/Serverless: Recoverable error occurred/d' |
                 # Normalize Lambda runtime report logs
                 perl -p -e 's/(RequestId|TraceId|init|SegmentId|Duration|Memory Used|"e"):( )?[a-z0-9\.\-]+/\1:\2XXXX/g' |
+                # Drop init duration from END lines; cold starts sometimes include it, warm starts do not.
+                perl -p -e 's/ \(init: XXXX ms\)//g' |
+                # Node.js 26 preview and container-image runtimes emit extra platform noise.
+                sed '/preview runtime version and should not be used for production workloads/d' |
+                sed '/^INIT_REPORT /d' |
+                sed '/DEP0205.*module\.register()/d' |
+                sed '/node --trace-deprecation.*where the warning was created/d' |
                 # Normalize DD APM headers and AWS account ID
                 perl -p -e "s/(x-datadog-parent-id:|x-datadog-trace-id:|account_id:)[0-9]+/\1XXXX/g" |
                 # Strip API key from logged requests
@@ -253,7 +309,9 @@ set -e
 
 if [ "$mismatch_found" = true ]; then
     echo "FAILURE: A mismatch between new data and a snapshot was found and printed above."
-    echo "If the change is expected, generate new snapshots by running 'UPDATE_SNAPSHOTS=true DD_API_KEY=XXXX ./scripts/run_integration_tests.sh'"
+    echo "If the change is expected, generate new snapshots by running:"
+    echo "  BUILD_LAYERS=true UPDATE_SNAPSHOTS=true DD_API_KEY=XXXX aws-vault exec sso-serverless-sandbox-account-admin -- ./scripts/run_integration_tests.sh"
+    echo "To update only the zip/layer snapshots, add SKIP_CONTAINER_TESTS=true."
     exit 1
 fi
 

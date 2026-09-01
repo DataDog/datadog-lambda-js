@@ -74,4 +74,8 @@ export class EventValidator {
   static isKinesisStreamEvent(event: any): event is KinesisStreamEvent {
     return Array.isArray(event.Records) && event.Records.length > 0 && event.Records[0].kinesis !== undefined;
   }
+
+  static isDurableExecutionEvent(event: any): boolean {
+    return typeof event.DurableExecutionArn === "string";
+  }
 }
