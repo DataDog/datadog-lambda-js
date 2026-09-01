@@ -1,25 +1,47 @@
 const Module = require("node:module");
 const { dirname, join } = require("node:path");
+const { pathToFileURL } = require("node:url");
 
 const { logDebug, updateDDTags } = require("../utils");
 
+const ddTraceLoaderPattern = /dd-trace[\\/](?:[^\s]*\.mjs|register\.js)/;
+
 function esmLoaderAlreadyRegistered() {
-    const sources = [process.env.NODE_OPTIONS || "", ...process.execArgv];
-    return sources.some((source) => /dd-trace[\\/](?:[^\s]*\.mjs|register\.js)/.test(source));
+    const nodeOptions = process.env.NODE_OPTIONS;
+    if (nodeOptions !== undefined && ddTraceLoaderPattern.test(nodeOptions)) {
+        return true;
+    }
+
+    for (const argument of process.execArgv) {
+        if (ddTraceLoaderPattern.test(argument)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 /**
- * @param {string[]} searchPaths
+ * @param {string} tracerPath
  */
-function registerESMLoaderHooks(searchPaths) {
+function registerESMLoaderHooks(tracerPath) {
     if (typeof Module.register !== "function" || esmLoaderAlreadyRegistered()) {
         return;
     }
 
+    const tracerDirectory = dirname(tracerPath);
+    const registerPath = join(tracerDirectory, "register.js");
     try {
-        const packagePath = require.resolve("dd-trace/package.json", { paths: searchPaths });
-        const registerPath = join(dirname(packagePath), "register.js");
-        require(registerPath);
+        try {
+            require(registerPath);
+        } catch (error) {
+            const registerMissing = error?.code === "MODULE_NOT_FOUND" &&
+                error.message?.startsWith(`Cannot find module '${registerPath}'`);
+            if (!registerMissing) {
+                throw error;
+            }
+            Module.register(pathToFileURL(join(tracerDirectory, "loader-hook.mjs")));
+        }
         logDebug("registered dd-trace ESM loader hooks for ESM instrumentation");
     } catch (error) {
         logDebug("failed to register dd-trace ESM loader hooks", { error });
@@ -47,8 +69,7 @@ exports.initTracer = function () {
     tracer.use("http", {
         blocklist: /:8124\/lambda/,
     });
-    // The durable runtime ignores NODE_OPTIONS, so install hooks from the same
-    // function-local package that initialized the tracer.
-    registerESMLoaderHooks(searchPaths);
+    // The durable runtime ignores NODE_OPTIONS, so install hooks explicitly.
+    registerESMLoaderHooks(tracerPath);
     return tracer;
 }
