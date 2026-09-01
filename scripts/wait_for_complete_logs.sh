@@ -37,7 +37,7 @@ function wait_for_complete_logs() {
 
     while [ "$attempt" -le "$max_attempts" ]; do
         completion_count=0
-        if raw_logs=$("$@" 2>&1); then
+        if raw_logs=$("$@"); then
             completion_count=$(printf '%s\n' "$raw_logs" | grep -c '^END Duration:' || true)
             if [ "$completion_count" -ge "$expected_completion_count" ]; then
                 printf '%s\n' "$raw_logs"

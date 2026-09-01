@@ -30,8 +30,7 @@ ZIP_LAMBDA_HANDLERS=("async-metrics" "esm" "sync-metrics" "http-requests" "proce
 LOG_FETCH_ATTEMPTS=10
 LOG_FETCH_INTERVAL_SECONDS=10
 
-script_path=${BASH_SOURCE[0]}
-scripts_dir=$(dirname "$script_path")
+scripts_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_dir=$(dirname "$scripts_dir")
 cwd=$(pwd)
 
