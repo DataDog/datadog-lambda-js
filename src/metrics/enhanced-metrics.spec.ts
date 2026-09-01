@@ -1,5 +1,5 @@
 import { Context } from "aws-lambda";
-import { _resetColdStart } from "../utils/cold-start";
+import { _resetColdStart, setSandboxInit } from "../utils/cold-start";
 import { getProcessVersion } from "../utils/process-version";
 import { getEnhancedMetricTags, getRuntimeTag } from "./enhanced-metrics";
 
@@ -78,6 +78,22 @@ describe("getEnhancedMetricTags", () => {
       "functionname:my-test-lambda",
       "memorysize:128",
       "cold_start:true",
+      "datadog_lambda:vX.X.X",
+      "runtime:nodejs20.x",
+    ]);
+  });
+
+  it("generates tag list for proactive initialization", () => {
+    setSandboxInit(0, 10_001);
+    mockedGetProcessVersion.mockReturnValue("v20.19.0");
+    expect(getEnhancedMetricTags(mockContext)).toStrictEqual([
+      "region:us-east-1",
+      "account_id:123497598159",
+      "functionname:my-test-lambda",
+      "resource:my-test-lambda",
+      "memorysize:128",
+      "cold_start:false",
+      "proactive_initialization:true",
       "datadog_lambda:vX.X.X",
       "runtime:nodejs20.x",
     ]);

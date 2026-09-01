@@ -739,7 +739,7 @@ for node_version in "${RUNTIMES[@]}"; do
             done
         fi
 
-        logs=$(printf '%s\n' "$raw_logs" | "$local_dir/normalize.sh")
+        logs=$(printf '%s\n' "$raw_logs" | "$repo_dir/scripts/normalize_integration_logs.sh" rie)
 
         # `runtime:nodejsNN.x` is the only genuinely runtime-specific line in
         # the whole log — everything else is identical across 18/20/22/24/26.
