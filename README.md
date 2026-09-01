@@ -18,6 +18,33 @@ Follow the [configuration instructions](https://docs.datadoghq.com/serverless/co
 
 For additional tracing configuration options, check out the [official documentation for Datadog trace client](https://datadoghq.dev/dd-trace-js/).
 
+### Custom async context
+
+Create application request context when the handler starts. `AsyncLocalStorage` preserves the invocation context that
+`dd-trace` activates before it calls the handler.
+
+```js
+const { AsyncLocalStorage } = require("node:async_hooks");
+const winston = require("winston");
+
+const requestContext = new AsyncLocalStorage();
+const logger = winston.createLogger({
+  format: winston.format.json(),
+  transports: [new winston.transports.Console()],
+});
+
+exports.handle = (event, context) => {
+  return requestContext.run({ requestId: context.awsRequestId }, async () => {
+    logger.info("handling invocation", requestContext.getStore());
+    return { statusCode: 200 };
+  });
+};
+```
+
+Do not create one `AsyncResource` during module initialization and reuse it for invocations. `AsyncResource` captures
+the current async context when it is constructed. An initialization-time resource restores the cold-start context,
+so log injection cannot read the active invocation span.
+
 Besides the environment variables supported by dd-trace-js, the datadog-lambda-js library added following environment variables.
 
 

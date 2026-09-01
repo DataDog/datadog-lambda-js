@@ -61,6 +61,7 @@ The case names are:
 | `manual-status-500` | manual wrap with userland `dd-trace` init returning a 500 API Gateway response (`DD_TRACE_ENABLED=true`); error span tag + enhanced error metrics |
 | `manual-send-metrics` | manual wrap calling `sendDistributionMetric` inside and outside the handler; per-event return values |
 | `manual-process-input` | manual wrap with userland `dd-trace` init reading the active span; per-event return values |
+| `cjs-async-context` | `AsyncLocalStorage` request state and Winston log correlation across warm redirect-mode invocations |
 | `cjs-http-requests` | downstream HTTP calls against a hermetic mock server in redirect mode; asserts injected `x-datadog-*`/`traceparent` headers and log injection via dd-trace's http plugin |
 | `manual-http-requests` | same handler, manual wrap without userland dd-trace init; exercises the library's own `patchHttp` fallback (request wrapping + per-request logging + exact header set via mock echo) |
 | `cjs-custom-extractor` | `DD_TRACE_EXTRACTOR=extractor.extract`; asserts `_dd.parent_source: event` on the inferred span |

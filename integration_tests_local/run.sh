@@ -22,6 +22,7 @@
 # manual-status-500        | cjs   | status-code-500s.handle                  | manual wrap; API GW 500 -> span error + enhanced error metric
 # manual-send-metrics      | cjs   | send-metrics.handle                      | manual wrap; sendDistributionMetric via DD_FLUSH_TO_LOG
 # manual-process-input     | cjs   | process-input.handle                     | manual wrap; dd-trace child spans via tracer.wrap
+# cjs-async-context       | cjs   | node_modules/datadog-lambda-js/dist/handler.handler | npm redirect; AsyncLocalStorage request context with Winston log correlation
 # cjs-http-requests       | cjs   | node_modules/datadog-lambda-js/dist/handler.handler | npm redirect; downstream HTTP header injection via dd-trace's http plugin (hermetic mock server)
 # manual-http-requests    | cjs   | http-requests-manual.handle              | manual wrap; patchHttp fallback wrapping + per-request logging (hermetic mock)
 # cjs-custom-extractor     | cjs   | node_modules/datadog-lambda-js/dist/handler.handler | DD_TRACE_EXTRACTOR custom extractor + _dd.parent_source
@@ -111,6 +112,7 @@ ALL_CASES=(
     "manual-status-500"
     "manual-send-metrics"
     "manual-process-input"
+    "cjs-async-context"
     "cjs-http-requests"
     "manual-http-requests"
     "cjs-custom-extractor"
@@ -183,6 +185,11 @@ function configure_case() {
             case_image=cjs
             case_entry_handler="process-input.handle"
             case_return_mode=per-event
+            ;;
+        cjs-async-context)
+            case_image=cjs
+            case_entry_handler="node_modules/datadog-lambda-js/dist/handler.handler"
+            case_extra_env=(-e DD_LAMBDA_HANDLER=async-context.handle -e DD_LOGS_INJECTION=true)
             ;;
         cjs-http-requests)
             # Redirect mode, not manual wrap: redirect mode initializes
