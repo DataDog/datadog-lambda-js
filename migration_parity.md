@@ -89,7 +89,7 @@ no promises/`async` in npm production code). Everything else migrates.
 | Feature | Owner (code location) | Test type/location | Test implementation | Migration status | Effect in layer |
 |---|---|---|---|---|---|
 | promise handler | dd:`lambda.js` `wrap` → instrumentation channel | L1 + L2 | `dl:src/utils/handler.spec.ts` → port + golden | pending | dd-trace |
-| callback handler (no early completion) | dd:`packages/datadog-plugin-lambda/src/handler-utils.js` (`promisifiedHandler`) | L1 + L2 | `dl:src/utils/handler.spec.ts` → port + golden; first test pins the `tracePromise` non-thenable behavior empirically | pending | dd-trace |
+| callback handler (no early completion) | dd:`packages/datadog-plugin-lambda/src/handler-utils.js` (`promisifiedHandler`) | L1 + L2 | `dl:src/utils/handler.spec.ts` → port + golden `manual-callback`; first test pins the `tracePromise` non-thenable behavior empirically | pending | dd-trace |
 | sync handler | dd:`lambda.js` `wrap` path | L1 + L2 | same spec + golden | pending | dd-trace |
 | callback/promise race (first wins) | dd:`handler-utils.js` | L1 | `dl:src/utils/handler.spec.ts` race cases → port | pending | dd-trace |
 | `context.done/succeed/fail` | dd:`handler-utils.js` | L1 | same spec → port | pending | dd-trace |
@@ -163,7 +163,7 @@ fallback (unconditional; sampling-priority gated on `mergeXrayTraces` — docume
 | `_dd.parent_source` | dd:`…/src/index.js` | L2 or L3 | — new fixture, else e2e-assigned | pending | dd-trace |
 | `proactive_initialization` | dd:`…/src/cold-start.js` | L3 only (RIE cannot produce it; normalization drops markers) | e2e — assigned to `lambda-features` | pending | dd-trace |
 | HTTP 5xx → span error + enhanced error metric | dd:`…/src/index.js` + `enhanced-metrics.js` | L1 + L2 | golden 500 fixture + unit | pending | dd-trace |
-| payload capture + depth cap | dd:`…/src/handler-utils.js` (`tagObject`) | L1 + L2 | `dl:src/utils/tag-object.spec.ts` → port + golden toggle fixture | pending | dd-trace |
+| payload capture + depth cap | dd:`…/src/handler-utils.js` (`tagObject`) | L1 + L2 | `dl:src/utils/tag-object.spec.ts` → port + golden `cjs-capture-payload` (toggle on; default-off path pinned by every other golden) | pending | dd-trace |
 | log injection (trace ids in console output) | dd:`…/src/console-patcher.js` | L1 + L2 | `dl:src/trace/patch-console.spec.ts` → port + golden | pending | dd-trace |
 
 ## Span pointers
@@ -212,6 +212,8 @@ conditional on the extension being present.
 | Feature | Owner (code location) | Test type/location | Test implementation | Migration status | Effect in layer |
 |---|---|---|---|---|---|
 | HTTP header injection (`patch-http.ts`) | dd-core: dd-trace http/https plugins | L2 | golden (downstream headers visible in fixtures) | dd-core | dd-trace |
+| fetch/undici header injection | dd-core: dd-trace undici plugin | L2 | golden `cjs-fetch-requests` (mock echo of injected headers) | dd-core | dd-trace |
+| Lambda profiling (`DD_PROFILING_ENABLED`, layer ≥87) | dd-core: dd-trace profiler (`@datadog/pprof`) — never lived in this repo's business logic | L1 (dd-trace-js profiler suites) + L3 `lambda-features` Profiling row | existing dd-trace profiler tests; prune-list mapping review covers the native footprint | dd-core | dd-trace |
 | tracer wrapper / span wrapper plumbing | dd-core: dd-trace tracer API | — | covered transitively by plugin tests | dd-core | dd-trace |
 
 ## Release and packaging
@@ -234,7 +236,7 @@ conditional on the extension being present.
 | Row | Feature | Why unprotected | Plan |
 |---|---|---|---|
 | Handler lifecycle | `time_to_first_byte`, response streaming | RIE may not support streaming invocations | L3 `lambda-features`; re-check RIE support at lifecycle phase |
-| Span tags | `proactive_initialization` | RIE cannot produce a proactively-initialized sandbox; normalization drops its markers | L3 `lambda-features` |
+| Span tags | `proactive_initialization` | RIE *can* produce one via `SIMULATE_PROACTIVE_INIT` (verified: emits `"proactive_initialization":1`, `proactive_initialization:true`, `cold_start:false`), but normalization drops those markers and the goldens are captured from immediate-invoke runs, so nothing asserts them | L2 proactive fixture + `*_node18` override golden (now cheap via the override mechanism), else L3 `lambda-features` |
 | Span tags | `_dd.parent_source` | absent from current goldens | add fixture from old implementation, else L3 |
 | Config | `DD_TRACE_DISABLED_INSTRUMENTATIONS=lambda` alias | no fixture sets it | unit test |
 | Shim | ESM double-registration guard, init-error telemetry | no fixture | unit tests |
