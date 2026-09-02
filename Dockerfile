@@ -10,7 +10,8 @@ COPY . datadog-lambda-js
 WORKDIR /datadog-lambda-js
 # Node.js 26+ official images no longer bundle Yarn v1.
 RUN command -v yarn >/dev/null 2>&1 || npm install -g yarn@1.22.22
-RUN yarn install --ignore-engines
+# Node < 22 cannot run dd-trace v6. install_deps.sh pins v5 from the image's Node version.
+RUN ./scripts/install_deps.sh
 
 # Build the lambda layer
 RUN yarn build
