@@ -22,10 +22,14 @@
 # manual-status-500        | cjs   | status-code-500s.handle                  | manual wrap; API GW 500 -> span error + enhanced error metric
 # manual-send-metrics      | cjs   | send-metrics.handle                      | manual wrap; sendDistributionMetric via DD_FLUSH_TO_LOG
 # manual-process-input     | cjs   | process-input.handle                     | manual wrap; dd-trace child spans via tracer.wrap
+# manual-callback          | cjs   | callback.handle                          | manual wrap; callback-style (event, context, callback) handler — the spike's proven break seam
 # cjs-http-requests       | cjs   | node_modules/datadog-lambda-js/dist/handler.handler | npm redirect; downstream HTTP header injection via dd-trace's http plugin (hermetic mock server)
 # manual-http-requests    | cjs   | http-requests-manual.handle              | manual wrap; patchHttp fallback wrapping + per-request logging (hermetic mock)
+# cjs-fetch-requests      | cjs   | node_modules/datadog-lambda-js/dist/handler.handler | npm redirect; header injection on global fetch via dd-trace's undici plugin (hermetic mock)
 # cjs-custom-extractor     | cjs   | node_modules/datadog-lambda-js/dist/handler.handler | DD_TRACE_EXTRACTOR custom extractor + _dd.parent_source
 # cjs-proactive-init       | cjs   | node_modules/datadog-lambda-js/dist/handler.handler | proactive-initialization markers (raw-log assertions)
+# manual-metrics-only      | cjs   | send-metrics.handle                      | DD_TRACE_ENABLED=false: metrics flush, no spans, no log correlation
+# cjs-capture-payload      | cjs   | node_modules/datadog-lambda-js/dist/handler.handler | DD_CAPTURE_LAMBDA_PAYLOAD=true: function.request/response span tags
 #
 # Usage (from repo root or this directory):
 #   ./integration_tests_local/run.sh                 # all runtimes, all cases
@@ -111,10 +115,14 @@ ALL_CASES=(
     "manual-status-500"
     "manual-send-metrics"
     "manual-process-input"
+    "manual-callback"
     "cjs-http-requests"
     "manual-http-requests"
+    "cjs-fetch-requests"
     "cjs-custom-extractor"
     "cjs-proactive-init"
+    "manual-metrics-only"
+    "cjs-capture-payload"
 )
 
 function configure_case() {
@@ -184,6 +192,37 @@ function configure_case() {
             case_entry_handler="process-input.handle"
             case_return_mode=per-event
             ;;
+        manual-callback)
+            # Callback-style (event, context, callback) handler under manual
+            # wrap — the seam the migration spike broke (the tracePromise
+            # wrapper replaced promisifiedHandler's call site, so callback
+            # handlers returned null to API Gateway). handler.spec.ts pins
+            # the unit behavior; this case pins the same path end to end
+            # through the RIE invoke.
+            case_image=cjs
+            case_entry_handler="callback.handle"
+            ;;
+        manual-metrics-only)
+            # DD_TRACE_ENABLED=false — metrics-only customers. The golden pins
+            # that enhanced + custom metrics still flush (via DD_FLUSH_TO_LOG)
+            # while no aws.lambda span, no trace JSON and no dd.trace_id log
+            # correlation appear. Same handler and per-event payloads as
+            # manual-send-metrics; the diff between the two goldens is exactly
+            # the tracing surface.
+            case_image=cjs
+            case_entry_handler="send-metrics.handle"
+            case_extra_env=(-e DD_TRACE_ENABLED=false)
+            case_return_mode=per-event
+            ;;
+        cjs-capture-payload)
+            # DD_CAPTURE_LAMBDA_PAYLOAD=true — the aws.lambda span meta gains
+            # function.request / function.response holding the captured
+            # payloads (event JSON is static, so the captured tags are
+            # deterministic).
+            case_image=cjs
+            case_entry_handler="node_modules/datadog-lambda-js/dist/handler.handler"
+            case_extra_env=(-e DD_LAMBDA_HANDLER=handler.handle -e DD_CAPTURE_LAMBDA_PAYLOAD=true)
+            ;;
         cjs-http-requests)
             # Redirect mode, not manual wrap: redirect mode initializes
             # dd-trace before the user handler loads, so the tracer's http
@@ -218,6 +257,18 @@ function configure_case() {
             case_entry_handler="http-requests-manual.handle"
             case_needs_mock=true
             case_extra_env=(-e "MOCK_HTTP_URLS=http://mock-http:8080/ip-ranges-us,http://mock-http:8080/ip-ranges-eu")
+            ;;
+        cjs-fetch-requests)
+            # fetch/undici variant of cjs-http-requests: on Node 18+ the
+            # global fetch is undici, instrumented by dd-trace's undici
+            # plugin — a different injection path than the http/https plugin
+            # that patches axios. Redirect mode, so dd-trace initializes
+            # before the user handler loads and the plugin does the
+            # injection; the mock echo pins the injected headers.
+            case_image=cjs
+            case_entry_handler="node_modules/datadog-lambda-js/dist/handler.handler"
+            case_needs_mock=true
+            case_extra_env=(-e DD_LAMBDA_HANDLER=fetch-requests.handle -e "MOCK_HTTP_URLS=http://mock-http:8080/ip-ranges-us,http://mock-http:8080/ip-ranges-eu")
             ;;
         cjs-custom-extractor)
             case_image=cjs
