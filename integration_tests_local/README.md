@@ -6,9 +6,9 @@ manual-wrap handlers, plus targeted feature cases (HTTP header injection,
 custom trace extractors, proactive initialization) — inside Docker against the
 [AWS Lambda Runtime Interface Emulator (RIE)](https://github.com/aws/aws-lambda-runtime-interface-emulator),
 invokes them with the same input events as the AWS-based suite, captures
-logs from `docker logs`, normalizes them with `./normalize.sh` — the AWS
-suite's filter chain plus documented RIE-specific handling, not an identical
-copy — and diffs them against **local** snapshots in `./snapshots/`.
+logs from `docker logs`, normalizes them with the `rie` mode of
+`../scripts/normalize_integration_logs.sh`, and diffs them against **local**
+snapshots in `./snapshots/`.
 
 The case set is deliberately at least as wide as the AWS-based suite
 (`integration_tests/serverless.yml`): every behavior the old suite pinned
@@ -224,16 +224,15 @@ genuinely diverges (error stack frames, warning emission) it carries
 
 When AWS publishes the bare Node 26 GA image, swap the pinned tag and re-run.
 If GA output diverges further, add `*_node26` overrides captured from the
-pinned pre-migration ref rather than absorbing the difference into
-`normalize.sh` — the oracle is tied to the implementation under test, and a
-base-image change must be reviewed, not hidden by normalization.
+pinned pre-migration ref. Do not absorb the difference into the shared
+integration-log normalizer because the oracle is tied to the implementation
+under test. A base-image change must be reviewed, not hidden by normalization.
 
 ## Files
 
 - `run.sh` — the runner (build images, run under RIE, invoke, diff snapshots)
-- `normalize.sh` — the local log-normalization pipeline, based on the AWS
-  suite's filters with documented RIE-specific handling. Reads stdin, writes
-  stdout; honors `RUN_ID` for optional per-run ID stripping.
+- `../scripts/normalize_integration_logs.sh` — the shared AWS/RIE log normalizer.
+  Reads stdin, writes stdout; honors `RUN_ID` for optional per-run ID stripping.
 - `prepare-layer.js` — assembles the layer fixture's build context from the
   repo build, mirroring the release Dockerfile's `/opt` layout
 - `bin/` — downloaded RIE binary (gitignored)
