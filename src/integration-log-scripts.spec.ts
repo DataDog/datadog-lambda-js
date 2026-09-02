@@ -42,7 +42,7 @@ const proactiveLogs = [
 
 const rieVolatileLogs = [
   'mock-http saw headers: {"x-datadog-trace-id":"123","x-datadog-parent-id":"456","traceparent":"00-abc-def-01","tracestate":"dd=s:1"}',
-  '2026-09-02T01:30:00.000Z\trequest-id\tERROR\t(node:123) TimeoutOverflowWarning: 2147483648',
+  "2026-09-02T01:30:00.000Z\trequest-id\tERROR\t(node:123) TimeoutOverflowWarning: 2147483648",
   JSON.stringify({ requestId: "12345678-1234-1234-1234-123456789abc", "dns.addresses": "172.18.0.4" }),
   "LocalProcessSupervisor.Exec pid=123",
   "(Use `node --trace-warnings ...` to show where the warning was created)",

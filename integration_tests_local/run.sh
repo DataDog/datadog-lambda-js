@@ -4,7 +4,7 @@
 #
 # Runs the test cases below against the AWS Runtime Interface Emulator (RIE)
 # — no AWS account needed. Logs are captured from `docker logs`, normalized
-# with ./normalize.sh, and diffed against LOCAL snapshots in ./snapshots/
+# with the `rie` mode of scripts/normalize_integration_logs.sh, and diffed against LOCAL snapshots in ./snapshots/
 # (not integration_tests/snapshots/).
 #
 # The case set is deliberately at least as wide as the AWS-based suite in
@@ -432,7 +432,7 @@ function compare_snapshot() {
     local diff_status
 
     if [ "$sort_lines" = true ]; then
-        # Preserve normalized whitespace; normalize.sh removes RIE's REPORT tab.
+        # Preserve normalized whitespace; the shared normalizer removes RIE's REPORT tab.
         diff_output=$(printf '%s\n' "$actual" | LC_ALL=C sort | diff - <(LC_ALL=C sort "$snapshot_path"))
     else
         diff_output=$(printf '%s\n' "$actual" | diff - "$snapshot_path")
@@ -724,7 +724,7 @@ for node_version in "${RUNTIMES[@]}"; do
             continue
         fi
 
-        # Proactive initialization is platform scheduling, so normalize.sh
+        # Proactive initialization is platform scheduling, so the shared normalizer
         # drops the markers. For the dedicated case we assert them against the
         # raw log before normalization, which keeps the coverage without
         # weakening the shared pipeline.
@@ -762,7 +762,7 @@ for node_version in "${RUNTIMES[@]}"; do
 
         # Same assert-then-collapse for the dd_lambda_layer tag (emitted by the
         # manual-wrap cases): the node major in the tag must match the runtime
-        # under test. normalize.sh already collapses minor/patch to XX.X;
+        # under test. The shared normalizer already collapses minor/patch to XX.X;
         # after this guard passes, the major collapses to XX as well, so the
         # shared golden reads datadog-nodevXX.XX.X.
         layer_majors=$(printf '%s\n' "$logs" | grep -o 'dd_lambda_layer:datadog-nodev[0-9]*' | sed 's/.*datadog-nodev//' | sort -u || true)
