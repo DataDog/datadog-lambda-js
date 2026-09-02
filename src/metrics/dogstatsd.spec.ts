@@ -1,13 +1,35 @@
 import * as dgram from "node:dgram";
+
+import { logDebug } from "../utils";
 import { LambdaDogStatsD } from "./dogstatsd";
 
 jest.mock("node:dgram", () => ({
   createSocket: jest.fn(),
 }));
+jest.mock("../utils", () => ({
+  logDebug: jest.fn(),
+}));
 
 describe("LambdaDogStatsD", () => {
-  let mockSend: jest.Mock;
-  let mockUnref: jest.Mock;
+  let mockSend: jest.Mock<void, [Buffer, number, string, (error?: Error) => void]>;
+  let mockUnref: jest.Mock<void, []>;
+
+  function useControlledSocket(): Array<(error?: Error) => void> {
+    const callbacks: Array<(error?: Error) => void> = [];
+    mockSend.mockImplementation((_message, _port, _host, callback) => {
+      callbacks.push(callback);
+    });
+    return callbacks;
+  }
+
+  /**
+   * @param {Promise<void>} promise
+   */
+  function observeCompletion(promise: Promise<void>): jest.Mock<void, []> {
+    const completed = jest.fn();
+    void promise.then(completed);
+    return completed;
+  }
 
   beforeEach(() => {
     // A send() that immediately calls its callback
@@ -23,6 +45,7 @@ describe("LambdaDogStatsD", () => {
   });
 
   afterEach(() => {
+    jest.useRealTimers();
     jest.clearAllMocks();
   });
 
@@ -62,8 +85,10 @@ describe("LambdaDogStatsD", () => {
   });
 
   it("flush() resolves immediately when there are no sends", async () => {
+    jest.useFakeTimers();
     const client = new LambdaDogStatsD();
     await expect(client.flush()).resolves.toBeUndefined();
+    expect(jest.getTimerCount()).toBe(0);
   });
 
   it("unrefs socket on client creation", () => {
@@ -72,26 +97,145 @@ describe("LambdaDogStatsD", () => {
     expect(mockUnref).toHaveBeenCalledTimes(1);
   });
 
-  it("flush() times out if a send never invokes its callback", async () => {
-    // replace socket.send with a never‐calling callback
-    (dgram.createSocket as jest.Mock).mockReturnValue({
-      send: jest.fn(), // never calls callback
-      unref: jest.fn(),
-      getSendBufferSize: jest.fn(),
-      setSendBufferSize: jest.fn(),
-      bind: jest.fn(),
+  it("flush() waits for one pending send and clears its timeout", async () => {
+    jest.useFakeTimers();
+    const callbacks = useControlledSocket();
+    const client = new LambdaDogStatsD();
+    client.distribution("pending", 1);
+
+    const flush = client.flush();
+    const completed = observeCompletion(flush);
+    await Promise.resolve();
+    expect(completed).not.toHaveBeenCalled();
+
+    callbacks[0]();
+    await expect(flush).resolves.toBeUndefined();
+    expect(jest.getTimerCount()).toBe(0);
+  });
+
+  it("flush() waits for every pending send", async () => {
+    const callbacks = useControlledSocket();
+    const client = new LambdaDogStatsD();
+    client.distribution("first", 1);
+    client.distribution("second", 2);
+    client.distribution("third", 3);
+
+    const flush = client.flush();
+    const completed = observeCompletion(flush);
+    callbacks[0]();
+    callbacks[1]();
+    await Promise.resolve();
+    expect(completed).not.toHaveBeenCalled();
+
+    callbacks[2]();
+    await expect(flush).resolves.toBeUndefined();
+  });
+
+  it("flush() waits for sends started while it is pending", async () => {
+    const callbacks = useControlledSocket();
+    const client = new LambdaDogStatsD();
+    client.distribution("first", 1);
+
+    const flush = client.flush();
+    const completed = observeCompletion(flush);
+    client.distribution("second", 2);
+    callbacks[0]();
+    await Promise.resolve();
+    expect(completed).not.toHaveBeenCalled();
+
+    callbacks[1]();
+    await expect(flush).resolves.toBeUndefined();
+  });
+
+  it("flush() settles concurrent callers after the pending send", async () => {
+    const callbacks = useControlledSocket();
+    const client = new LambdaDogStatsD();
+    client.distribution("pending", 1);
+
+    const firstFlush = client.flush();
+    const secondFlush = client.flush();
+    expect(secondFlush).toBe(firstFlush);
+    callbacks[0]();
+
+    await Promise.all([firstFlush, secondFlush]);
+  });
+
+  it("logs callback errors and completes the send", async () => {
+    jest.useFakeTimers();
+    const error = new Error("callback failure");
+    const callbacks = useControlledSocket();
+    const client = new LambdaDogStatsD();
+
+    client.distribution("metric", 1);
+
+    const flush = client.flush();
+    callbacks[0](error);
+    expect(jest.getTimerCount()).toBe(0);
+    await expect(flush).resolves.toBeUndefined();
+    expect(logDebug).toHaveBeenCalledWith("Unable to send metric packet: callback failure");
+  });
+
+  it("logs synchronous socket errors without throwing", async () => {
+    jest.useFakeTimers();
+    mockSend.mockImplementation(() => {
+      throw new Error("synchronous failure");
     });
+    const client = new LambdaDogStatsD();
+
+    client.distribution("metric", 1);
+
+    const flush = client.flush();
+    expect(jest.getTimerCount()).toBe(0);
+    await expect(flush).resolves.toBeUndefined();
+    expect(logDebug).toHaveBeenCalledWith("Unable to send metric packet: synchronous failure");
+  });
+
+  it("normalizes non-Error values thrown synchronously by the socket", async () => {
+    jest.useFakeTimers();
+    mockSend.mockImplementation(() => {
+      throw "non-error failure";
+    });
+    const client = new LambdaDogStatsD();
+
+    client.distribution("metric", 1);
+
+    const flush = client.flush();
+    expect(jest.getTimerCount()).toBe(0);
+    await expect(flush).resolves.toBeUndefined();
+    expect(logDebug).toHaveBeenCalledWith("Unable to send metric packet: Unknown socket send failure");
+  });
+
+  it("flush() times out if a send never invokes its callback", async () => {
+    jest.useFakeTimers();
+    useControlledSocket();
 
     const client = new LambdaDogStatsD();
     client.distribution("will", 9);
 
-    jest.useFakeTimers();
-    const p = client.flush();
-    // advance past the 1000ms MAX_FLUSH_TIMEOUT
-    jest.advanceTimersByTime(1100);
+    const flush = client.flush();
+    jest.advanceTimersByTime(1000);
 
-    // expect the Promise returned by flush() to resolve successfully
-    await expect(p).resolves.toBeUndefined();
-    jest.useRealTimers();
+    await expect(flush).resolves.toBeUndefined();
+    expect(logDebug).toHaveBeenCalledWith("Timed out before sending all metric payloads");
+  });
+
+  it("ignores late callbacks from a timed-out flush when the client is reused", async () => {
+    jest.useFakeTimers();
+    const callbacks = useControlledSocket();
+    const client = new LambdaDogStatsD();
+    client.distribution("old", 1);
+    const oldFlush = client.flush();
+    jest.advanceTimersByTime(1000);
+    await oldFlush;
+
+    client.distribution("new", 2);
+    const newFlush = client.flush();
+    const completed = observeCompletion(newFlush);
+    callbacks[0]();
+    await Promise.resolve();
+    expect(completed).not.toHaveBeenCalled();
+
+    callbacks[1]();
+    await expect(newFlush).resolves.toBeUndefined();
   });
 });

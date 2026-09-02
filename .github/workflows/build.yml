@@ -69,9 +69,6 @@ jobs:
       - name: Install dependencies
         run: ./scripts/install_deps.sh
 
-      - name: Build
-        run: yarn build
-
       - name: Run tests
         run: yarn test
 

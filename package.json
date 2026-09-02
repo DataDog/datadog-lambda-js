@@ -12,8 +12,8 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc",
-    "test": "jest",
-    "test:watch": "jest --watch",
+    "test": "node scripts/prepare_tests.js && jest",
+    "test:watch": "node scripts/prepare_tests.js && jest --watch",
     "lint": "tslint --project tsconfig.json",
     "check-formatting": "prettier --check src/**",
     "format": "prettier --write src/**",
