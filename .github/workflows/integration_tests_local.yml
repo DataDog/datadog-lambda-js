@@ -4,11 +4,12 @@ name: local integration tests
 # against the real AWS Lambda base images + the Runtime Interface Emulator
 # (RIE). No AWS account or credentials required.
 #
-# One job per Node major version; each job builds and tests both container
-# variants (cjs, esm), which share the same ~1 GB base image, so each job
-# pulls it exactly once. If public.ecr.aws anonymous pull limits ever bite,
-# the fix is to mirror the base images to GHCR (same pattern dd-trace-js
-# uses in its mirror-image.yml workflow).
+# One job per Node major version; each job builds the container/layer fixture
+# images and runs every case (default: all of them) against that runtime.
+# The fixtures share the same ~1 GB base image, so each job pulls it exactly
+# once. If public.ecr.aws anonymous pull limits ever bite, the fix is to
+# mirror the base images to GHCR (same pattern dd-trace-js uses in its
+# mirror-image.yml workflow).
 
 on:
   pull_request:

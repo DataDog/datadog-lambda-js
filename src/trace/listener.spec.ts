@@ -12,6 +12,7 @@ import {
   DATADOG_TRACE_ID_HEADER,
 } from "./context/extractor";
 import { TracerWrapper } from "./tracer-wrapper";
+import { _resetColdStart, setSandboxInit } from "../utils/cold-start";
 
 const mockProcessAppsecRequest = jest.fn();
 const mockProcessAppsecResponse = jest.fn();
@@ -96,6 +97,7 @@ describe("TraceListener", () => {
     invokedFunctionArn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda:1",
   };
   beforeEach(() => {
+    _resetColdStart();
     wrapSpy.mockClear();
     mockProcessAppsecRequest.mockClear();
     mockProcessAppsecResponse.mockClear();
@@ -108,6 +110,7 @@ describe("TraceListener", () => {
   });
 
   afterEach(() => {
+    _resetColdStart();
     process.env = oldEnv;
   });
 
@@ -139,6 +142,20 @@ describe("TraceListener", () => {
       },
       unwrappedFunc,
     );
+  });
+
+  it("tags proactive initialization on the wrapped span", async () => {
+    setSandboxInit(0, 10_001);
+    const listener = new TraceListener(defaultConfig);
+    await listener.onStartInvocation({}, context as any);
+    const unwrappedFunc = () => {};
+    const wrappedFunc = listener.onWrap(unwrappedFunc);
+    wrappedFunc();
+    await listener.onCompleteInvocation();
+
+    const options = wrapSpy.mock.calls[0][1];
+    expect(options.tags?.cold_start).toBe("false");
+    expect(options.tags?.proactive_initialization).toBe(true);
   });
 
   it("wraps dd-trace span around invocation, with trace context from event", async () => {
