@@ -61,8 +61,12 @@ The case names are:
 | `manual-status-500` | manual wrap with userland `dd-trace` init returning a 500 API Gateway response (`DD_TRACE_ENABLED=true`); error span tag + enhanced error metrics |
 | `manual-send-metrics` | manual wrap calling `sendDistributionMetric` inside and outside the handler; per-event return values |
 | `manual-process-input` | manual wrap with userland `dd-trace` init reading the active span; per-event return values |
+| `manual-callback` | manual wrap of a callback-style `(event, context, callback)` handler; pins the `promisifiedHandler` seam end to end (the migration spike broke exactly this) |
+| `manual-metrics-only` | `DD_TRACE_ENABLED=false` (metrics-only customers): enhanced + custom metrics still flush, no `aws.lambda` span, no trace JSON, no `dd.trace_id` log correlation |
+| `cjs-capture-payload` | `DD_CAPTURE_LAMBDA_PAYLOAD=true` in redirect mode; span meta gains `function.request` / `function.response` with the captured payloads |
 | `cjs-http-requests` | downstream HTTP calls against a hermetic mock server in redirect mode; asserts injected `x-datadog-*`/`traceparent` headers and log injection via dd-trace's http plugin |
 | `manual-http-requests` | same handler, manual wrap without userland dd-trace init; exercises the library's own `patchHttp` fallback (request wrapping + per-request logging + exact header set via mock echo) |
+| `cjs-fetch-requests` | fetch variant of `cjs-http-requests`: the global fetch (undici) is instrumented by a different dd-trace plugin than http/https; mock echo pins the injected headers on that path |
 | `cjs-custom-extractor` | `DD_TRACE_EXTRACTOR=extractor.extract`; asserts `_dd.parent_source: event` on the inferred span |
 | `cjs-proactive-init` | eager-init managed-instances RIE path with a 15 s init→invoke gap; asserts proactive-initialization markers on the raw logs |
 
@@ -280,3 +284,16 @@ endpoints). Do not diff one suite's output against the other's snapshots.
 - The layer fixture installs into a plain `/opt/nodejs/node_modules`
   directory rather than a real published layer zip, so layer-version
   metadata (e.g. an exact layer ARN in tags) cannot be reproduced locally.
+
+Deliberately not covered locally (each has an assigned owner — do not re-add
+here without closing that owner first):
+
+- response streaming and `time_to_first_byte` — RIE cannot stream
+  invocations; owned by the `serverless-e2e-tests` lambda-features suite.
+- direct-API and KMS/Secrets Manager metric key paths — need real AWS;
+  unit specs plus an L3 spot-check.
+- aws-sdk v2/v3 client spans in the lambda context (parenting under
+  `aws.lambda`, flush before invocation end) — need real AWS services;
+  owned by L3.
+- durable-execution checkpoint extraction — owned by
+  `serverless-e2e-tests/durable-functions`.
