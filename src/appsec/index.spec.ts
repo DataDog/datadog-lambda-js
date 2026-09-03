@@ -87,6 +87,8 @@ describe("AppSec orchestrator", () => {
         span,
         statusCode: "200",
         responseHeaders: { "content-type": "application/json" },
+        responseBody: undefined,
+        isBase64Encoded: false,
       });
     });
 
@@ -99,6 +101,8 @@ describe("AppSec orchestrator", () => {
         span,
         statusCode: undefined,
         responseHeaders: undefined,
+        responseBody: {},
+        isBase64Encoded: false,
       });
     });
 
@@ -111,6 +115,8 @@ describe("AppSec orchestrator", () => {
         span,
         statusCode: "502",
         responseHeaders: undefined,
+        responseBody: undefined,
+        isBase64Encoded: false,
       });
     });
 
@@ -123,6 +129,8 @@ describe("AppSec orchestrator", () => {
         span,
         statusCode: "200",
         responseHeaders: { "content-type": "application/json" },
+        responseBody: undefined,
+        isBase64Encoded: false,
       });
     });
 
@@ -135,6 +143,8 @@ describe("AppSec orchestrator", () => {
         span,
         statusCode: "200",
         responseHeaders: { "x-option": "test_value" },
+        responseBody: undefined,
+        isBase64Encoded: false,
       });
     });
 
@@ -155,6 +165,8 @@ describe("AppSec orchestrator", () => {
         span,
         statusCode: "200",
         responseHeaders: { "content-type": "application/json", "x-option": "a, b" },
+        responseBody: undefined,
+        isBase64Encoded: false,
       });
     });
 
@@ -167,6 +179,8 @@ describe("AppSec orchestrator", () => {
         span,
         statusCode: "200",
         responseHeaders: {},
+        responseBody: undefined,
+        isBase64Encoded: false,
       });
     });
 
@@ -179,6 +193,8 @@ describe("AppSec orchestrator", () => {
         span,
         statusCode: "200",
         responseHeaders: { "content-length": "42", "x-flag": "true" },
+        responseBody: undefined,
+        isBase64Encoded: false,
       });
     });
 
@@ -191,6 +207,8 @@ describe("AppSec orchestrator", () => {
         span,
         statusCode: "200",
         responseHeaders: {},
+        responseBody: undefined,
+        isBase64Encoded: false,
       });
     });
 
@@ -203,6 +221,94 @@ describe("AppSec orchestrator", () => {
         span,
         statusCode: undefined,
         responseHeaders: undefined,
+        responseBody: undefined,
+        isBase64Encoded: false,
+      });
+    });
+
+    it("should publish the body of a proxy integration response", () => {
+      const span = { setTag: jest.fn() };
+      const body = JSON.stringify({ payload: { key: "value" } });
+
+      processAppsecResponse(span, { statusCode: 200, headers: { "Content-Type": "application/json" }, body }, "200");
+
+      expect(mockPublish).toHaveBeenCalledWith({
+        span,
+        statusCode: "200",
+        responseHeaders: { "content-type": "application/json" },
+        responseBody: body,
+        isBase64Encoded: false,
+      });
+    });
+
+    it("should publish the body raw, without parsing or decoding it", () => {
+      const span = { setTag: jest.fn() };
+
+      processAppsecResponse(span, { statusCode: 200, body: "eyJhIjoiYiJ9", isBase64Encoded: true }, "200");
+
+      expect(mockPublish).toHaveBeenCalledWith({
+        span,
+        statusCode: "200",
+        responseHeaders: undefined,
+        responseBody: "eyJhIjoiYiJ9",
+        isBase64Encoded: true,
+      });
+    });
+
+    it("should publish the whole result as the body when it is not a proxy integration response", () => {
+      const span = { setTag: jest.fn() };
+      const result = { message: "ok", items: [1, 2] };
+
+      processAppsecResponse(span, result, "200");
+
+      expect(mockPublish).toHaveBeenCalledWith({
+        span,
+        statusCode: "200",
+        responseHeaders: undefined,
+        responseBody: result,
+        isBase64Encoded: false,
+      });
+    });
+
+    it("should publish a non object result as the body", () => {
+      const span = { setTag: jest.fn() };
+
+      processAppsecResponse(span, "plain text", "200");
+
+      expect(mockPublish).toHaveBeenCalledWith({
+        span,
+        statusCode: "200",
+        responseHeaders: undefined,
+        responseBody: "plain text",
+        isBase64Encoded: false,
+      });
+    });
+
+    it("should publish no body when the handler returned nothing", () => {
+      const span = { setTag: jest.fn() };
+
+      processAppsecResponse(span, undefined, "502");
+
+      expect(mockPublish).toHaveBeenCalledWith({
+        span,
+        statusCode: "502",
+        responseHeaders: undefined,
+        responseBody: undefined,
+        isBase64Encoded: false,
+      });
+    });
+
+    it("should publish no body when a proxy integration response carries none", () => {
+      const span = { setTag: jest.fn() };
+
+      processAppsecResponse(span, { statusCode: 204, body: null }, "204");
+
+      expect(mockPublish).toHaveBeenCalledWith({
+        span,
+        statusCode: "204",
+        responseHeaders: undefined,
+        responseBody: undefined,
+        isBase64Encoded: false,
       });
     });
   });
