@@ -35,79 +35,11 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	mock-http saw headers for
 HTTP GET http://mock-http/ip-ranges-eu TraceHeaders: []
 XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	mock-http saw headers for http://mock-http:8080/ip-ranges-eu: {"accept":"application/json, text/plain, */*","user-agent":"axios/1.18.1","accept-encoding":"gzip, compress, deflate, br","host":"mock-http:8080","connection":"close"}
 XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	Snapshot test http requests successfully made to URLs: http://mock-http:8080/ip-ranges-us,http://mock-http:8080/ip-ranges-eu
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Init Duration: XXXX ms	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-START RequestId: XXXX Version: $LATEST
-XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.invocations",
-  "t": [
-    "region:us-east-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-local-manual-http-requests",
-    "resource:integration-tests-js-local-manual-http-requests",
-    "memorysize:3008",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejsXX.x"
-  ],
-  "v": 1
-}
-{
-  "e": XXXX,
-  "m": "serverless.integration_test.execution",
-  "t": [
-    "function:http-request",
-    "dd_lambda_layer:datadog-nodevXX.XX.X"
-  ],
-  "v": 1
-}
-HTTP GET http://mock-http/ip-ranges-us TraceHeaders: []
-XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	mock-http saw headers for http://mock-http:8080/ip-ranges-us: {"accept":"application/json, text/plain, */*","user-agent":"axios/1.18.1","accept-encoding":"gzip, compress, deflate, br","host":"mock-http:8080","connection":"close"}
-HTTP GET http://mock-http/ip-ranges-eu TraceHeaders: []
-XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	mock-http saw headers for http://mock-http:8080/ip-ranges-eu: {"accept":"application/json, text/plain, */*","user-agent":"axios/1.18.1","accept-encoding":"gzip, compress, deflate, br","host":"mock-http:8080","connection":"close"}
-XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	Snapshot test http requests successfully made to URLs: http://mock-http:8080/ip-ranges-us,http://mock-http:8080/ip-ranges-eu
 XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
-END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.invocations",
-  "t": [
-    "region:us-east-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-local-manual-http-requests",
-    "resource:integration-tests-js-local-manual-http-requests",
-    "memorysize:3008",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejsXX.x"
-  ],
-  "v": 1
-}
-{
-  "e": XXXX,
-  "m": "serverless.integration_test.execution",
-  "t": [
-    "function:http-request",
-    "dd_lambda_layer:datadog-nodevXX.XX.X"
-  ],
-  "v": 1
-}
-HTTP GET http://mock-http/ip-ranges-us TraceHeaders: []
-XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	mock-http saw headers for http://mock-http:8080/ip-ranges-us: {"accept":"application/json, text/plain, */*","user-agent":"axios/1.18.1","accept-encoding":"gzip, compress, deflate, br","host":"mock-http:8080","connection":"close"}
-HTTP GET http://mock-http/ip-ranges-eu TraceHeaders: []
-XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	mock-http saw headers for http://mock-http:8080/ip-ranges-eu: {"accept":"application/json, text/plain, */*","user-agent":"axios/1.18.1","accept-encoding":"gzip, compress, deflate, br","host":"mock-http:8080","connection":"close"}
-XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	Snapshot test http requests successfully made to URLs: http://mock-http:8080/ip-ranges-us,http://mock-http:8080/ip-ranges-eu
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
-END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
 START RequestId: XXXX Version: $LATEST
-XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -310,3 +242,71 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	Snapshot test http reques
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
 XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
+START RequestId: XXXX Version: $LATEST
+XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:us-east-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-local-manual-http-requests",
+    "resource:integration-tests-js-local-manual-http-requests",
+    "memorysize:3008",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejsXX.x"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "serverless.integration_test.execution",
+  "t": [
+    "function:http-request",
+    "dd_lambda_layer:datadog-nodevXX.XX.X"
+  ],
+  "v": 1
+}
+HTTP GET http://mock-http/ip-ranges-us TraceHeaders: []
+XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	mock-http saw headers for http://mock-http:8080/ip-ranges-us: {"accept":"application/json, text/plain, */*","user-agent":"axios/1.18.1","accept-encoding":"gzip, compress, deflate, br","host":"mock-http:8080","connection":"close"}
+HTTP GET http://mock-http/ip-ranges-eu TraceHeaders: []
+XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	mock-http saw headers for http://mock-http:8080/ip-ranges-eu: {"accept":"application/json, text/plain, */*","user-agent":"axios/1.18.1","accept-encoding":"gzip, compress, deflate, br","host":"mock-http:8080","connection":"close"}
+XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	Snapshot test http requests successfully made to URLs: http://mock-http:8080/ip-ranges-us,http://mock-http:8080/ip-ranges-eu
+END RequestId: XXXX
+REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
+START RequestId: XXXX Version: $LATEST
+XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:us-east-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-local-manual-http-requests",
+    "resource:integration-tests-js-local-manual-http-requests",
+    "memorysize:3008",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejsXX.x"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "serverless.integration_test.execution",
+  "t": [
+    "function:http-request",
+    "dd_lambda_layer:datadog-nodevXX.XX.X"
+  ],
+  "v": 1
+}
+HTTP GET http://mock-http/ip-ranges-us TraceHeaders: []
+XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	mock-http saw headers for http://mock-http:8080/ip-ranges-us: {"accept":"application/json, text/plain, */*","user-agent":"axios/1.18.1","accept-encoding":"gzip, compress, deflate, br","host":"mock-http:8080","connection":"close"}
+HTTP GET http://mock-http/ip-ranges-eu TraceHeaders: []
+XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	mock-http saw headers for http://mock-http:8080/ip-ranges-eu: {"accept":"application/json, text/plain, */*","user-agent":"axios/1.18.1","accept-encoding":"gzip, compress, deflate, br","host":"mock-http:8080","connection":"close"}
+XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	Snapshot test http requests successfully made to URLs: http://mock-http:8080/ip-ranges-us,http://mock-http:8080/ip-ranges-eu
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
+END RequestId: XXXX
+REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
