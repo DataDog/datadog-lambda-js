@@ -75,7 +75,7 @@ no promises/`async` in npm production code). Everything else migrates.
 | Manual `datadog(handler, config?)` wrapping | shim:`src/index.ts` export → dd:`lambda.js` `wrap` | L2 manual fixture | golden manual variants | pending | both |
 | `DD_LAMBDA_HANDLER` resolution (nested dirs, extensions, `type:module`) | shim:`src/runtime/user-function.ts` | L1 + L2 | `dl:src/utils/handler.spec.ts` + `user-function` cases → port | pending | datadog-lambda-js |
 | CJS handler loading | shim:`src/runtime/user-function.ts` | L2 | golden cjs variants | pending | datadog-lambda-js |
-| ESM handler loading (`.mjs`, TLA) | shim:`src/runtime/user-function.ts` | L2 + L3 | golden esm variants; `ERR_REQUIRE_ESM` guard from `integration_tests/serverless.yml:111` → port | pending | datadog-lambda-js |
+| ESM handler loading (`.mjs`, TLA) | shim:`src/runtime/user-function.ts` | L2 + L3 | golden esm variants; `ERR_REQUIRE_ESM` guard (formerly `integration_tests/serverless.yml`, now the `integration-tests-residual` suite in `serverless-e2e-tests`) → port | pending | datadog-lambda-js |
 | ESM loader registration + double-registration guard | shim:`src/handler.mjs` (`Module.register`) | L1 + L2 | — new (guard unit test) + golden esm | pending | datadog-lambda-js |
 | `DD_TRACE_EXTRACTOR` module loading | shim:`src/handler.mjs` | L1 + L2 | — new + golden custom-extractor fixture | pending | datadog-lambda-js |
 | Public shim exports (`datadog`, `sendDistributionMetric{,WithDate}`, `getTraceHeaders`, `TraceHeaders`, env-var constants, `setLogger`/`setLogLevel`) | shim:`src/index.ts` → delegates to dd:`lambda.js` | L1 (datadog-lambda-js) | API-surface test against packed tarball — new | pending | both |
