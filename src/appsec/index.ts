@@ -43,6 +43,8 @@ export function processAppsecResponse(span: any, result: any, statusCode?: strin
     span,
     statusCode,
     responseHeaders: normalizeResponseHeaders(result),
+    responseBody: extractResponseBody(result),
+    isBase64Encoded: !!result?.isBase64Encoded,
   });
 }
 
@@ -56,4 +58,25 @@ function normalizeResponseHeaders(result: any): Record<string, string> | undefin
   if (!headers && !multiValueHeaders) return undefined;
 
   return normalizeHeaders(headers, multiValueHeaders);
+}
+
+/**
+ * Keys that mark a result as a proxy integration response rather than a payload. This is the same
+ * rule API Gateway itself applies to decide whether the handler answered with an envelope or with
+ * the body directly.
+ */
+const PROXY_RESPONSE_KEYS = ["statusCode", "body", "headers", "multiValueHeaders"];
+
+/**
+ * The body is published raw, exactly as the handler wrote it. Base64 decoding, content type gating
+ * and size limits belong to the tracer, which is the side that knows what the WAF accepts.
+ */
+function extractResponseBody(result: any): unknown {
+  if (result === undefined || result === null) return undefined;
+
+  if (typeof result !== "object") return result;
+
+  if (PROXY_RESPONSE_KEYS.some((key) => key in result)) return result.body ?? undefined;
+
+  return result;
 }
