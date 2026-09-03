@@ -77,7 +77,9 @@ Two legacy aliases remain for muscle memory: `VARIANT_PARAM=cjs|esm` maps to
 Unless `SKIP_PACK=true` is set, each run repacks the library under test
 (`yarn install --frozen-lockfile && yarn build && npm pack`) into
 `integration_tests/container/{cjs,esm}/datadog-lambda-js-local.tgz`, exactly
-like `scripts/run_integration_tests.sh` does, so the containers always test
+like the retired AWS suite (`scripts/run_integration_tests.sh`, now the
+`integration-tests-residual` suite in serverless-e2e-tests) did, so the
+containers always test
 the working tree. The layer fixture instead assembles
 `integration_tests/container/layer/layer_pkg/` from the repo build via
 `prepare-layer.js`, mirroring the release Dockerfile's layer layout. The
@@ -244,7 +246,11 @@ under test. A base-image change must be reviewed, not hidden by normalization.
 
 ## Comparison with the AWS-based suite
 
-| | AWS suite (`scripts/run_integration_tests.sh`) | this harness |
+> The in-repo AWS suite was retired; the real-platform remainder lives on as
+> the `integration-tests-residual` suite in serverless-e2e-tests. This table
+> is kept for historical context.
+
+| | AWS suite (retired `scripts/run_integration_tests.sh`) | this harness |
 |---|---|---|
 | handlers | layer, container, and manual-wrap variants | container + layer + manual-wrap cases |
 | infra | real Lambda via serverless, CloudWatch logs | docker + RIE, `docker logs` |
