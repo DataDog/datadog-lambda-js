@@ -7,6 +7,7 @@ const repoPath = join(__dirname, "..");
 const normalizerPath = join(repoPath, "scripts", "normalize_integration_logs.sh");
 const readinessPath = join(repoPath, "scripts", "wait_for_complete_logs.sh");
 const runnerPath = join(repoPath, "scripts", "run_integration_tests.sh");
+const ddTraceVersionsPath = join(repoPath, "scripts", "dd_trace_versions.sh");
 const waitInvocation = 'source "$1"; shift; wait_for_complete_logs "$@"';
 
 const standardLogs = [
@@ -295,12 +296,20 @@ describe("integration test runner", () => {
     ];
 
     mkdirSync(temporaryScripts, { recursive: true });
+    mkdirSync(join(temporaryRepo, "node_modules", "dd-trace"), { recursive: true });
+    writeFileSync(
+      join(temporaryRepo, "node_modules", "dd-trace", "package.json"),
+      JSON.stringify({ version: "6.12.0" }),
+    );
     mkdirSync(join(temporaryIntegrationTests, "input_events"), { recursive: true });
     mkdirSync(join(temporaryIntegrationTests, "snapshots", "logs"), { recursive: true });
     mkdirSync(join(temporaryIntegrationTests, "snapshots", "return_values"), { recursive: true });
     mkdirSync(temporaryBin);
     cpSync(runnerPath, join(temporaryScripts, "run_integration_tests.sh"));
     cpSync(readinessPath, join(temporaryScripts, "wait_for_complete_logs.sh"));
+    cpSync(ddTraceVersionsPath, join(temporaryScripts, "dd_trace_versions.sh"));
+    writeFileSync(join(temporaryScripts, "install_deps.sh"), ["#!/bin/bash", "exit 0", ""].join("\n"));
+    chmodSync(join(temporaryScripts, "install_deps.sh"), 0o755);
     cpSync(
       join(repoPath, "integration_tests", "input_events", "api-gateway-get.json"),
       join(temporaryIntegrationTests, "input_events", "api-gateway-get.json"),
