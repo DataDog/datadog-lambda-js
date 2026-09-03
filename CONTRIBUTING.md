@@ -34,19 +34,15 @@ We love pull requests. For new features, consider opening an issue to discuss th
     ```bash
     yarn test
     ```
-1. Run the integration tests against your own AWS account and Datadog org (or ask a Datadog member to run):
+1. Run the local docker-based integration tests (no AWS account needed — this is the
+   behavioral gate that runs per PR):
    ```bash
-   BUILD_LAYERS=true DD_API_KEY=<your Datadog api key> ./scripts/run_integration_tests.sh
+   ./integration_tests_local/run.sh
    ```
-1. Update integration test snapshots if needed (Datadog employees only; requires AWS credentials and Docker):
-   ```bash
-   BUILD_LAYERS=true UPDATE_SNAPSHOTS=true DD_API_KEY=<your Datadog api key> aws-vault exec sso-serverless-sandbox-account-admin -- ./scripts/run_integration_tests.sh
-   ```
-   If ECR image push fails locally, update zip/layer handler snapshots only:
-   ```bash
-   BUILD_LAYERS=true UPDATE_SNAPSHOTS=true SKIP_CONTAINER_TESTS=true DD_API_KEY=<your Datadog api key> aws-vault exec sso-serverless-sandbox-account-admin -- ./scripts/run_integration_tests.sh
-   ```
-   The script uses Serverless `3.39.0` from `integration_tests/package.json` (not a globally installed CLI).
+1. The real-AWS residual coverage (real layer artifact on the real platform, direct-API
+   metric intake, X-Ray pass-through, a real API Gateway trigger) lives in the
+   `integration-tests-residual` suite of the `serverless-e2e-tests` repo and runs from
+   that repo's pipeline. See `integration_tests/README.md`.
 1. Push to your fork and [submit a pull request][pr].
 
 [pr]: https://github.com/your-username/datadog-lambda-js/compare/DataDog:main..main.

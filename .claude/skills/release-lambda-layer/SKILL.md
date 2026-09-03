@@ -34,8 +34,12 @@ Reference: https://datadoghq.atlassian.net/wiki/spaces/SLS/pages/3375925277
 1. Create a branch for the version bump.
 2. Run `yarn upgrade dd-trace` (or `yarn upgrade dd-trace@^a.b.c` for a
    specific version) to pick up the latest tracer.
-3. If dd-trace changed, refresh integration test snapshots:
-   `BUILD_LAYERS=true UPDATE_SNAPSHOTS=true DD_API_KEY=<key from 1Password> aws-vault exec sso-serverless-sandbox-account-admin -- ./scripts/run_integration_tests.sh`
+3. If dd-trace changed, refresh the integration test snapshots. The local
+   docker suite is the behavioral gate:
+   `UPDATE_SNAPSHOTS=true ./integration_tests_local/run.sh`
+   The real-AWS residual snapshots live in the `integration-tests-residual`
+   suite of the `serverless-e2e-tests` repo — refresh them from there if the
+   tracer bump changes platform-visible output.
 4. Bump `package.json` version to `X.Y.0`:
    - Minor version bumps on every release, and **must match the layer
      version**.
