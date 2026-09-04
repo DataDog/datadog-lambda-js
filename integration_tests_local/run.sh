@@ -378,7 +378,9 @@ if [ "$rie_actual_sha256" != "$RIE_SHA256" ]; then
 fi
 
 # Build and pack the locally-modified datadog-lambda-js so the container-image
-# tests install the version under test (same as scripts/run_integration_tests.sh).
+# tests install the version under test (same as the retired AWS suite did in
+# scripts/run_integration_tests.sh, now the integration-tests-residual suite
+# in serverless-e2e-tests).
 if [ -z "$SKIP_PACK" ]; then
     echo "Packing local datadog-lambda-js for container tests"
     cd "$repo_dir"
