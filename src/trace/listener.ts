@@ -12,7 +12,7 @@ import {
   isProvisionedConcurrency,
 } from "../utils/cold-start";
 import { datadogLambdaVersion } from "../constants";
-import { ddtraceVersion, parentSpanFinishTimeHeader, DD_SERVICE_ENV_VAR } from "./constants";
+import { parentSpanFinishTimeHeader, DD_SERVICE_ENV_VAR } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 import { SpanInferrer } from "./span-inferrer";
@@ -352,7 +352,7 @@ export class TraceListener {
         resource_names: this.context.functionName,
         functionname: this.context?.functionName?.toLowerCase(),
         datadog_lambda: datadogLambdaVersion,
-        dd_trace: ddtraceVersion,
+        dd_trace: this.tracerWrapper.tracerVersion,
       };
       if (isProactiveInitialization()) {
         options.tags.proactive_initialization = true;

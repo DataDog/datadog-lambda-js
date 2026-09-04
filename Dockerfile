@@ -37,8 +37,9 @@ EOF
 RUN cp ./src/handler.mjs /nodejs/node_modules/datadog-lambda-js
 
 # Move dd-trace from devDependencies to production dependencies
-# That way it is included in our layer, while keeping it an optional dependency for npm
-RUN node ./scripts/move_ddtrace_dependency.js "$(cat package.json)" > package-new.json
+# That way it is included in our layer, while keeping it an optional dependency for npm.
+RUN DD_TRACE_VERSION=$(node -p "require('dd-trace/package.json').version") \
+    && node ./scripts/move_ddtrace_dependency.js "$(cat package.json)" "$DD_TRACE_VERSION" > package-new.json
 RUN mv package-new.json package.json
 RUN rm -rf node_modules
 

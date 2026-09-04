@@ -10,6 +10,17 @@
   },
   "author": "Datadog",
   "license": "Apache-2.0",
+  "engines": {
+    "node": ">=18"
+  },
+  "peerDependencies": {
+    "dd-trace": "^5.124.0 || ^6.12.0"
+  },
+  "peerDependenciesMeta": {
+    "dd-trace": {
+      "optional": true
+    }
+  },
   "scripts": {
     "build": "tsc",
     "test": "node scripts/prepare_tests.js && jest",

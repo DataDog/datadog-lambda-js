@@ -5,19 +5,31 @@
 # This product includes software developed at Datadog (https://www.datadoghq.com/).
 # Copyright 2019 Datadog, Inc.
 
-# Release gate: fails when the hand-maintained dd-trace v5 pin in
-# dd_trace_versions.sh has fallen behind the latest published v5. The pin is
-# not covered by the dependency-update workflow (which tracks the v6 line in
-# package.json/yarn.lock), so without this check it silently goes stale and
-# the Node 18/20 layers ship an old tracer.
-#
-# Requires network access to the npm registry.
+# Release gate for the v5 pin in dd_trace_versions.sh. Fails when:
+#   1. peerDependencies no longer lists both pins.
+#   2. The pin lags latest published v5. Dep-update only tracks the v6 lockfile,
+#      so 18/20 layers would ship a stale tracer.
 
 set -e
 
 scripts_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+repo_dir=$(dirname "$scripts_dir")
 
 source "$scripts_dir/dd_trace_versions.sh"
+
+dd_trace_range=$(node -p "require('$repo_dir/package.json').devDependencies['dd-trace']")
+peer_range=$(node -p "require('$repo_dir/package.json').peerDependencies['dd-trace'] || ''")
+expected_peer_range="^${DD_TRACE_V5_VERSION} || ${dd_trace_range}"
+
+if [ "$peer_range" != "$expected_peer_range" ]; then
+    echo "peerDependencies['dd-trace'] does not advertise the versions this repo builds against." >&2
+    echo "  expected: $expected_peer_range" >&2
+    echo "  found:    $peer_range" >&2
+    echo "Update peerDependencies in package.json to match both pins" >&2
+    exit 1
+fi
+
+echo "peerDependencies['dd-trace'] advertises both pins: $peer_range"
 
 # npm may return a single string or an array of matching versions; take the
 # last. Parsed with node rather than jq so the script only needs tools the

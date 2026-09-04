@@ -27,20 +27,28 @@ export interface TraceOptions {
 // This lets a customer bring their own version of the tracer.
 export class TracerWrapper {
   private tracer: any;
+  private loadedTracerVersion = "";
 
   constructor() {
     try {
       // Try and use the same version of the tracing library the user has installed.
       // This handles edge cases where two versions of dd-trace are installed, one in the layer
       // and one in the user's code.
-      const path = require.resolve("dd-trace", { paths: ["/var/task/node_modules", ...module.paths] });
+      const paths = ["/var/task/node_modules", ...module.paths];
+      const path = require.resolve("dd-trace", { paths });
       this.tracer = require(path);
+      this.loadedTracerVersion = resolveTracerVersion(paths);
       return;
     } catch (err) {
       if (err instanceof Object || err instanceof Error) {
         logDebug("Couldn't require dd-trace from main", err);
       }
     }
+  }
+
+  // tracer version loaded at runtime
+  public get tracerVersion(): string {
+    return this.loadedTracerVersion;
   }
 
   public get isTracerAvailable(): boolean {
@@ -132,5 +140,16 @@ export class TracerWrapper {
         logDebug(`DSM: Failed to set consume checkpoint for ${eventType} ${arn}:`, err);
       }
     }
+  }
+}
+
+function resolveTracerVersion(paths: string[]): string {
+  try {
+    return require(require.resolve("dd-trace/package.json", { paths })).version ?? "";
+  } catch (err) {
+    if (err instanceof Object || err instanceof Error) {
+      logDebug("Couldn't resolve the dd-trace version", err);
+    }
+    return "";
   }
 }
