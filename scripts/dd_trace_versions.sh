@@ -7,7 +7,7 @@
 
 # dd-trace v6 declares `engines.node: ">=22"`, so the Node 18 and Node 20 layers
 # ship the v5 line instead. The v5 pin below is bumped by hand.
-DD_TRACE_V5_VERSION="5.124.0"
+DD_TRACE_V5_VERSION="5.125.0"
 DD_TRACE_V6_MIN_NODE_MAJOR=22
 
 # Echoes the dd-trace version to force for a given Node major, or nothing when

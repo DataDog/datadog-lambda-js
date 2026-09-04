@@ -5,6 +5,9 @@
 
 "use strict";
 
+const fs = require("fs");
+const path = require("path");
+
 function consumerRequire(name) {
   return require(require.resolve(name, { paths: [process.cwd()] }));
 }
@@ -42,7 +45,9 @@ function assertNoTracer() {
 
 function assertWithTracer() {
   consumerRequire("dd-trace").init();
-  const expected = consumerRequire("dd-trace/package.json").version;
+  const expected = JSON.parse(
+    fs.readFileSync(path.join(process.cwd(), "node_modules", "dd-trace", "package.json"), "utf8"),
+  ).version;
   const { TracerWrapper } = consumerRequire("datadog-lambda-js/dist/trace/tracer-wrapper");
   const wrapper = new TracerWrapper();
   if (!wrapper.isTracerAvailable) {
