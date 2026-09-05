@@ -600,6 +600,7 @@ for node_version in "${RUNTIMES[@]}"; do
             -e DD_FLUSH_TO_LOG=true \
             -e DD_INTEGRATION_TEST=true \
             -e DD_COLD_START_TRACING=false \
+            -e DD_TRACE_STARTUP_LOGS=false \
             -e DD_SERVICE_MAPPING="lambda_api_gateway:remappedApiGatewayServiceName,lambda_sns:remappedSnsServiceName,lambda_sqs:remappedSqsServiceName,lambda_s3:remappedS3ServiceName,lambda_eventbridge:remappedEventBridgeServiceName,lambda_kinesis:remappedKinesisServiceName,lambda_dynamodb:remappedDynamoDbServiceName,lambda_url:remappedUrlServiceName" \
             -e AWS_LAMBDA_FUNCTION_NAME="$function_name" \
             -e AWS_REGION=eu-west-1 \
