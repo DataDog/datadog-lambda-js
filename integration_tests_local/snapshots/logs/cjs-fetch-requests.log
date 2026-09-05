@@ -77,8 +77,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -117,8 +116,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -150,8 +148,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -183,8 +180,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -267,8 +263,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -304,8 +299,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -337,8 +331,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -370,17 +363,16 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
 }
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
-START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
+START RequestId: XXXX Version: $LATEST
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -454,8 +446,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -491,8 +482,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -524,8 +514,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -557,17 +546,16 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
 }
 END RequestId: XXXX
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 START RequestId: XXXX Version: $LATEST
+XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -641,8 +629,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -678,8 +665,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -711,8 +697,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -744,17 +729,16 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
 }
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
-XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 START RequestId: XXXX Version: $LATEST
+XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -827,8 +811,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -864,8 +847,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -897,8 +879,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -930,8 +911,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -1013,8 +993,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1050,8 +1029,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1083,8 +1061,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1116,14 +1093,13 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
 }
-END RequestId: XXXX
 XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
+END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 START RequestId: XXXX Version: $LATEST
@@ -1199,8 +1175,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1236,8 +1211,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1269,8 +1243,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1302,8 +1275,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -1384,8 +1356,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1421,8 +1392,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1454,8 +1424,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1487,15 +1456,14 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
 }
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 {
@@ -1568,8 +1536,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1605,8 +1572,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1638,8 +1604,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1671,12 +1636,11 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
 }
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)

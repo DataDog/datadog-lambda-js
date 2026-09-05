@@ -181,9 +181,9 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
   "v": 1
 }
 XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	ERROR	Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error.js:XXX:XXX)","    at /var/task/node_modules/datadog-lambda-js/dist/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/var/task/node_modules/datadog-lambda-js/dist/index.js:XXX:XXX)","    at BufferedInvokeProcessor.wrappedFunc [as handler] (/var/task/node_modules/datadog-lambda-js/dist/index.js:XXX:XXX)","    at async BufferedInvokeProcessor.processInvoke (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.processSingleConcurrent (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.start (file:///var/runtime/index.mjs:XXX:XXX)","    at async ignition (file:///var/runtime/index.mjs:XXX:XXX)"]}
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 {
@@ -253,9 +253,9 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
   "v": 1
 }
 XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	ERROR	Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error.js:XXX:XXX)","    at /var/task/node_modules/datadog-lambda-js/dist/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/var/task/node_modules/datadog-lambda-js/dist/index.js:XXX:XXX)","    at BufferedInvokeProcessor.wrappedFunc [as handler] (/var/task/node_modules/datadog-lambda-js/dist/index.js:XXX:XXX)","    at async BufferedInvokeProcessor.processInvoke (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.processSingleConcurrent (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.start (file:///var/runtime/index.mjs:XXX:XXX)","    at async ignition (file:///var/runtime/index.mjs:XXX:XXX)"]}
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 {
@@ -289,9 +289,9 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
   "v": 1
 }
 XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	ERROR	Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error.js:XXX:XXX)","    at /var/task/node_modules/datadog-lambda-js/dist/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/var/task/node_modules/datadog-lambda-js/dist/index.js:XXX:XXX)","    at BufferedInvokeProcessor.wrappedFunc [as handler] (/var/task/node_modules/datadog-lambda-js/dist/index.js:XXX:XXX)","    at async BufferedInvokeProcessor.processInvoke (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.processSingleConcurrent (file:///var/runtime/index.mjs:XXX:XXX)","    at async _Runtime.start (file:///var/runtime/index.mjs:XXX:XXX)","    at async ignition (file:///var/runtime/index.mjs:XXX:XXX)"]}
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 {
