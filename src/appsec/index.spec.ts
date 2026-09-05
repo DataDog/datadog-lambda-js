@@ -100,7 +100,7 @@ describe("AppSec orchestrator", () => {
       expect(mockPublish).toHaveBeenCalledWith({
         span,
         statusCode: undefined,
-        responseHeaders: undefined,
+        responseHeaders: { "content-type": "application/json" },
         responseBody: {},
         isBase64Encoded: false,
       });
@@ -114,7 +114,7 @@ describe("AppSec orchestrator", () => {
       expect(mockPublish).toHaveBeenCalledWith({
         span,
         statusCode: "502",
-        responseHeaders: undefined,
+        responseHeaders: { "content-type": "application/json" },
         responseBody: undefined,
         isBase64Encoded: false,
       });
@@ -123,13 +123,15 @@ describe("AppSec orchestrator", () => {
     it("should publish the normalized status code when the result carries none", () => {
       const span = { setTag: jest.fn() };
 
-      processAppsecResponse(span, { headers: { "content-type": "application/json" } }, "200");
+      const result = { headers: { "content-type": "application/json" } };
+
+      processAppsecResponse(span, result, "200");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
         statusCode: "200",
         responseHeaders: { "content-type": "application/json" },
-        responseBody: undefined,
+        responseBody: result,
         isBase64Encoded: false,
       });
     });
@@ -220,7 +222,7 @@ describe("AppSec orchestrator", () => {
       expect(mockPublish).toHaveBeenCalledWith({
         span,
         statusCode: undefined,
-        responseHeaders: undefined,
+        responseHeaders: { "content-type": "application/json" },
         responseBody: undefined,
         isBase64Encoded: false,
       });
@@ -241,6 +243,21 @@ describe("AppSec orchestrator", () => {
       });
     });
 
+    it("should default the response content type to json when the result carries no headers", () => {
+      const span = { setTag: jest.fn() };
+      const body = JSON.stringify({ payload: 1 });
+
+      processAppsecResponse(span, { statusCode: 200, body }, "200");
+
+      expect(mockPublish).toHaveBeenCalledWith({
+        span,
+        statusCode: "200",
+        responseHeaders: { "content-type": "application/json" },
+        responseBody: body,
+        isBase64Encoded: false,
+      });
+    });
+
     it("should publish the body raw, without parsing or decoding it", () => {
       const span = { setTag: jest.fn() };
 
@@ -249,7 +266,7 @@ describe("AppSec orchestrator", () => {
       expect(mockPublish).toHaveBeenCalledWith({
         span,
         statusCode: "200",
-        responseHeaders: undefined,
+        responseHeaders: { "content-type": "application/json" },
         responseBody: "eyJhIjoiYiJ9",
         isBase64Encoded: true,
       });
@@ -264,7 +281,37 @@ describe("AppSec orchestrator", () => {
       expect(mockPublish).toHaveBeenCalledWith({
         span,
         statusCode: "200",
-        responseHeaders: undefined,
+        responseHeaders: { "content-type": "application/json" },
+        responseBody: result,
+        isBase64Encoded: false,
+      });
+    });
+
+    it("should preserve an inferred payload that carries a body key", () => {
+      const span = { setTag: jest.fn() };
+      const result = { body: { value: 1 } };
+
+      processAppsecResponse(span, result, "200");
+
+      expect(mockPublish).toHaveBeenCalledWith({
+        span,
+        statusCode: "200",
+        responseHeaders: { "content-type": "application/json" },
+        responseBody: result,
+        isBase64Encoded: false,
+      });
+    });
+
+    it("should preserve an inferred payload that carries a multiValueHeaders key", () => {
+      const span = { setTag: jest.fn() };
+      const result = { multiValueHeaders: { count: [2] } };
+
+      processAppsecResponse(span, result, "200");
+
+      expect(mockPublish).toHaveBeenCalledWith({
+        span,
+        statusCode: "200",
+        responseHeaders: { count: "2" },
         responseBody: result,
         isBase64Encoded: false,
       });
@@ -278,7 +325,7 @@ describe("AppSec orchestrator", () => {
       expect(mockPublish).toHaveBeenCalledWith({
         span,
         statusCode: "200",
-        responseHeaders: undefined,
+        responseHeaders: { "content-type": "application/json" },
         responseBody: "plain text",
         isBase64Encoded: false,
       });
@@ -292,7 +339,7 @@ describe("AppSec orchestrator", () => {
       expect(mockPublish).toHaveBeenCalledWith({
         span,
         statusCode: "502",
-        responseHeaders: undefined,
+        responseHeaders: { "content-type": "application/json" },
         responseBody: undefined,
         isBase64Encoded: false,
       });
@@ -306,7 +353,7 @@ describe("AppSec orchestrator", () => {
       expect(mockPublish).toHaveBeenCalledWith({
         span,
         statusCode: "204",
-        responseHeaders: undefined,
+        responseHeaders: { "content-type": "application/json" },
         responseBody: undefined,
         isBase64Encoded: false,
       });

@@ -49,34 +49,33 @@ export function processAppsecResponse(span: any, result: any, statusCode?: strin
 }
 
 /**
- * Response headers reach the tracer in the same shape as the request ones
+ * Response headers reach the tracer in the same shape as the request ones. A result that carries
+ * no headers at all is served by API Gateway and by Function URLs as `application/json`, so that
+ * is the default, which is also what makes a raw string body eligible for schema extraction.
  */
-function normalizeResponseHeaders(result: any): Record<string, string> | undefined {
+function normalizeResponseHeaders(result: any): Record<string, string> {
   const headers = result?.headers as Record<string, unknown> | undefined;
   const multiValueHeaders = result?.multiValueHeaders as Record<string, unknown[]> | undefined;
 
-  if (!headers && !multiValueHeaders) return undefined;
+  if (!headers && !multiValueHeaders) return { "content-type": "application/json" };
 
   return normalizeHeaders(headers, multiValueHeaders);
 }
 
 /**
- * Keys that mark a result as a proxy integration response rather than a payload. This is the same
- * rule API Gateway itself applies to decide whether the handler answered with an envelope or with
- * the body directly.
- */
-const PROXY_RESPONSE_KEYS = ["statusCode", "body", "headers", "multiValueHeaders"];
-
-/**
  * The body is published raw, exactly as the handler wrote it. Base64 decoding, content type gating
  * and size limits belong to the tracer, which is the side that knows what the WAF accepts.
+ *
+ * `statusCode` is the discriminator API Gateway itself uses: without it, payload format 2.0 and
+ * Function URLs treat the whole result as the body, so keys like `body` or `headers` are payload
+ * data rather than an envelope.
  */
 function extractResponseBody(result: any): unknown {
   if (result === undefined || result === null) return undefined;
 
   if (typeof result !== "object") return result;
 
-  if (PROXY_RESPONSE_KEYS.some((key) => key in result)) return result.body ?? undefined;
+  if ("statusCode" in result) return result.body ?? undefined;
 
   return result;
 }
