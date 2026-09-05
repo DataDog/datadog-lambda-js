@@ -12,8 +12,9 @@
 # USAGE: [TARGET_NODE_MAJOR=22] ./scripts/install_deps.sh [extra yarn args...]
 #
 # TARGET_NODE_MAJOR defaults to the Node major running this script. Set it
-# explicitly when the host Node version differs from the runtime being built
-# for, e.g. the GitLab CI image runs Node 18 but builds for every runtime.
+# when the host differs from the runtime being built for (e.g. Node 22
+# packing a Node 18 fixture, which pins v5). Installing v6 still requires
+# a host of Node 22+ so native prebuilds resolve.
 
 set -e
 
@@ -29,9 +30,19 @@ if [ -z "$TARGET_NODE_MAJOR" ]; then
 fi
 
 dd_trace_override=$(dd_trace_version_for_node_major "$TARGET_NODE_MAJOR")
+host_major=$(node -p "process.versions.node.split('.')[0]")
 
-# --ignore-engines is needed on both paths: dd-trace v6 refuses to install on
-# hosts older than Node 22 even when it is only being built for a newer runtime.
+# v6's optional native addons (pprof, appsec, oxc-parser) ship prebuilds for
+# Node 22+ only. --ignore-engines would let yarn extract the tarball on
+# Node 18, then node-gyp-build fails and the tree is unusable. Pin v5 instead.
+if [ -z "$dd_trace_override" ] && [ "$host_major" -lt "$DD_TRACE_V6_MIN_NODE_MAJOR" ]; then
+    echo "dd-trace v6 cannot be installed on Node ${host_major} (engines.node >= ${DD_TRACE_V6_MIN_NODE_MAJOR})." >&2
+    echo "Use Node ${DD_TRACE_V6_MIN_NODE_MAJOR}+, or set TARGET_NODE_MAJOR to 18 or 20 to pin v5." >&2
+    exit 1
+fi
+
+# Nested packages still declare engines that reject some hosts; yarn 1
+# otherwise fails the whole install on an engines mismatch.
 yarn_args=("--ignore-engines")
 
 if [ -n "$dd_trace_override" ]; then

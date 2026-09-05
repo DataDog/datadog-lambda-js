@@ -25,16 +25,30 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node_major: ["18", "20", "22", "24", "26"]
+        # Host Node must match the Lambda runtime so yarn installs the
+        # matching dd-trace line (v5 on 18/20, v6 on 22+) with working
+        # native prebuilds. Packing v6 on Node 18 (--ignore-engines) is
+        # what local Node 22+ never hits.
+        include:
+          - node_major: "18"
+            node_version: "18.12"
+          - node_major: "20"
+            node_version: "20.19"
+          - node_major: "22"
+            node_version: "22.11"
+          - node_major: "24"
+            node_version: "24.11"
+          - node_major: "26"
+            node_version: "26.1"
 
     steps:
       - name: Checkout
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
 
-      - name: Set up Node 18.12
+      - name: Set up Node ${{ matrix.node_version }}
         uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3.9.1
         with:
-          node-version: 18.12
+          node-version: ${{ matrix.node_version }}
 
       - name: Run local container integration tests (nodejs${{ matrix.node_major }}.x)
         run: PLATFORM=linux/amd64 RUNTIME_PARAM=${{ matrix.node_major }} ./integration_tests_local/run.sh

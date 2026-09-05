@@ -385,15 +385,11 @@ if [ -z "$SKIP_PACK" ]; then
     echo "Packing local datadog-lambda-js for container tests"
     cd "$repo_dir"
     if [ -f "$repo_dir/scripts/install_deps.sh" ]; then
-        # dd-trace v6 world: the repo pins a tracer whose engines may reject
-        # the host node (e.g. v6 requires node >=22 while CI hosts node 18).
         # install_deps.sh installs the tracer line matching the target
-        # runtime, rewriting package.json/yarn.lock and restoring them via a
-        # trap on exit, so the worktree is left untouched.
-        # NOTE: in the v6 world a full local sweep packs once with
-        # TARGET_NODE_MAJOR=$RUNTIME_PARAM (default 22); run per-runtime like
-        # CI does (RUNTIME_PARAM=18 ./integration_tests_local/run.sh) so the
-        # layer fixture's pinned dd-trace matches each leg.
+        # runtime (v5 on 18/20, v6 on 22+). v6 install requires host Node 22+.
+        # A full sweep packs once; run per-runtime like CI
+        # (RUNTIME_PARAM=18 ./integration_tests_local/run.sh) so the layer
+        # fixture's pinned dd-trace matches each leg.
         TARGET_NODE_MAJOR=${RUNTIME_PARAM:-22} "$repo_dir/scripts/install_deps.sh"
     else
         yarn install --frozen-lockfile
