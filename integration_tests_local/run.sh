@@ -330,8 +330,10 @@ container_ids=()
 rie_download=""
 mock_cid=""
 mock_network="dd-l2-mock-$$"
+written_shared_dir=$(mktemp -d)
 
 function cleanup() {
+    rm -rf "$written_shared_dir"
     if [ -n "$rie_download" ] && [ -f "$rie_download" ]; then
         rm -f "$rie_download"
     fi
@@ -383,15 +385,11 @@ if [ -z "$SKIP_PACK" ]; then
     echo "Packing local datadog-lambda-js for container tests"
     cd "$repo_dir"
     if [ -f "$repo_dir/scripts/install_deps.sh" ]; then
-        # dd-trace v6 world: the repo pins a tracer whose engines may reject
-        # the host node (e.g. v6 requires node >=22 while CI hosts node 18).
         # install_deps.sh installs the tracer line matching the target
-        # runtime, rewriting package.json/yarn.lock and restoring them via a
-        # trap on exit, so the worktree is left untouched.
-        # NOTE: in the v6 world a full local sweep packs once with
-        # TARGET_NODE_MAJOR=$RUNTIME_PARAM (default 22); run per-runtime like
-        # CI does (RUNTIME_PARAM=18 ./integration_tests_local/run.sh) so the
-        # layer fixture's pinned dd-trace matches each leg.
+        # runtime (v5 on 18/20, v6 on 22+). v6 install requires host Node 22+.
+        # A full sweep packs once; run per-runtime like CI
+        # (RUNTIME_PARAM=18 ./integration_tests_local/run.sh) so the layer
+        # fixture's pinned dd-trace matches each leg.
         TARGET_NODE_MAJOR=${RUNTIME_PARAM:-22} "$repo_dir/scripts/install_deps.sh"
     else
         yarn install --frozen-lockfile
@@ -508,11 +506,7 @@ function compare_snapshot() {
 }
 
 # Write a golden in update mode.
-#
-# A shared golden is written by every leg, so each leg after the first must
-# agree with what is already there. If one diverges, the sharing assumption is
-# wrong for that case and we say so, rather than letting the last leg to run
-# silently overwrite the others.
+# First leg writes each shared file; later legs in this run must match it.
 function write_snapshot() {
     local actual=$1
     local snapshot_path=$2
@@ -520,30 +514,31 @@ function write_snapshot() {
     local shared=${4:-false}
     local sort_lines=${5:-false}
     local agree
+    local marker
 
-    if [ "$shared" = true ] && [ -f "$snapshot_path" ]; then
-        # Agreement must use the same semantics as compare_snapshot. Log lines
-        # are compared sorted because RIE's platform logging races with
-        # application output, so RTDONE can land on either side of a nearby
-        # line; that is ordering noise, not a divergence between runtimes.
-        if [ "$sort_lines" = true ]; then
-            printf '%s\n' "$actual" | LC_ALL=C sort | diff -q - <(LC_ALL=C sort "$snapshot_path") >/dev/null
-            agree=$?
-        else
-            [ "$(printf '%s\n' "$actual")" = "$(cat "$snapshot_path")" ]
-            agree=$?
-        fi
-        if [ "$agree" -ne 0 ]; then
-            echo "FAILURE: $description diverges from shared golden $snapshot_path" >&2
-            echo "  Shared goldens require every leg to agree. Express a real" >&2
-            echo "  divergence by adding a case-specific override file, not by" >&2
-            echo "  overwriting the shared one." >&2
-            printf '%s\n' "$actual" | diff - "$snapshot_path" >&2
-            mismatch_found=true
+    if [ "$shared" = true ]; then
+        marker="$written_shared_dir/$(basename "$snapshot_path")"
+        if [ -f "$marker" ]; then
+            if [ "$sort_lines" = true ]; then
+                printf '%s\n' "$actual" | LC_ALL=C sort | diff -q - <(LC_ALL=C sort "$snapshot_path") >/dev/null
+                agree=$?
+            else
+                [ "$(printf '%s\n' "$actual")" = "$(cat "$snapshot_path")" ]
+                agree=$?
+            fi
+            if [ "$agree" -ne 0 ]; then
+                echo "FAILURE: $description diverges from shared golden $snapshot_path" >&2
+                echo "  Shared goldens require every leg to agree. Express a real" >&2
+                echo "  divergence by adding a case-specific override file, not by" >&2
+                echo "  overwriting the shared one." >&2
+                printf '%s\n' "$actual" | diff - "$snapshot_path" >&2
+                mismatch_found=true
+                return
+            fi
+            echo "Ok: $description already matches shared golden $snapshot_path"
             return
         fi
-        echo "Ok: $description already matches shared golden $snapshot_path"
-        return
+        : >"$marker"
     fi
 
     echo "Writing $description to $snapshot_path"
@@ -605,6 +600,7 @@ for node_version in "${RUNTIMES[@]}"; do
             -e DD_FLUSH_TO_LOG=true \
             -e DD_INTEGRATION_TEST=true \
             -e DD_COLD_START_TRACING=false \
+            -e DD_TRACE_STARTUP_LOGS=false \
             -e DD_SERVICE_MAPPING="lambda_api_gateway:remappedApiGatewayServiceName,lambda_sns:remappedSnsServiceName,lambda_sqs:remappedSqsServiceName,lambda_s3:remappedS3ServiceName,lambda_eventbridge:remappedEventBridgeServiceName,lambda_kinesis:remappedKinesisServiceName,lambda_dynamodb:remappedDynamoDbServiceName,lambda_url:remappedUrlServiceName" \
             -e AWS_LAMBDA_FUNCTION_NAME="$function_name" \
             -e AWS_REGION=eu-west-1 \

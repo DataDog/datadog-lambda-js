@@ -36,6 +36,8 @@ cwd=$(pwd)
 
 integration_tests_dir="$repo_dir/integration_tests"
 
+# shellcheck source=scripts/dd_trace_versions.sh
+source "$scripts_dir/dd_trace_versions.sh"
 # shellcheck source=scripts/wait_for_complete_logs.sh
 source "$scripts_dir/wait_for_complete_logs.sh"
 
@@ -104,24 +106,39 @@ cd $repo_dir
 # In CI the script is typically invoked without BUILD_LAYERS=true, so the
 # Docker-internal yarn install that path would do isn't reached, and the host
 # repo would otherwise tsc against an empty node_modules.
-yarn install --frozen-lockfile
+#
+# The build stamps the resolved dd-trace version into dist/, so resolve it for
+# the runtime under test. A run covering every runtime packs once, against v6.
+TARGET_NODE_MAJOR=${RUNTIME_PARAM:-$DD_TRACE_V6_MIN_NODE_MAJOR} ./scripts/install_deps.sh
 yarn build
 npm pack
 mv datadog-lambda-js-*.tgz $integration_tests_dir/container/cjs/datadog-lambda-js-local.tgz
 cp $integration_tests_dir/container/cjs/datadog-lambda-js-local.tgz \
    $integration_tests_dir/container/esm/datadog-lambda-js-local.tgz
 
+# dd-trace version the container-image handlers install, matching the layer's.
+DD_TRACE_DEFAULT_VERSION=$(node -p "require('dd-trace/package.json').version")
+
 cd $integration_tests_dir
 yarn
 
 function run_serverless() {
     NODE_VERSION=${!nodejs_version} NODE_MAJOR=$(lambda_node_image_tag $parameters_set) RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
+        DD_TRACE_VERSION=$(container_dd_trace_version $parameters_set) \
         serverless "$@"
 }
 
 input_event_files=$(ls ./input_events)
 # Sort event files by name so that snapshots stay consistent
 input_event_files=($(for file_name in ${input_event_files[@]}; do echo $file_name; done | sort))
+
+# dd-trace version to install in the container-{cjs,esm} images, so they track
+# the same tracer line as the layer built for that runtime.
+function container_dd_trace_version() {
+    local node_major="${1#node}"
+    local override=$(dd_trace_version_for_node_major "$node_major")
+    echo "${override:-$DD_TRACE_DEFAULT_VERSION}"
+}
 
 # ECR tag for public.ecr.aws/lambda/nodejs used by container-{cjs,esm} tests.
 # Node 26 is preview-only on ECR until GA; plain :26 does not exist yet.

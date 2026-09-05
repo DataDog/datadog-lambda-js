@@ -15,6 +15,11 @@ if (process.env.DD_TRACE_DISABLED_PLUGINS === undefined) {
   logDebug("disabled the dd-trace plugin 'fs'");
 }
 
+if (process.env.DD_TRACE_STARTUP_LOGS === undefined) {
+  process.env.DD_TRACE_STARTUP_LOGS = "false";
+  logDebug("disabled dd-trace startup logs");
+}
+
 if (getEnvValue("DD_TRACE_ENABLED", "true").toLowerCase() === "true") {
   initTracer();
 }

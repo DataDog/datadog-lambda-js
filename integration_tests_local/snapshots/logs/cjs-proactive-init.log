@@ -67,8 +67,7 @@ START RequestId: XXXX	Version: $LATEST
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -92,7 +91,7 @@ START RequestId: XXXX	Version: $LATEST
           "resource_names": "integration-tests-js-local-cjs-proactive-init",
           "functionname": "integration-tests-js-local-cjs-proactive-init",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "api-gateway",
           "function_trigger.event_source_arn": "arn:aws:apigateway:eu-west-1::/restapis/wt6mne2s9k/stages/test",
           "http.method": "GET",
@@ -107,8 +106,7 @@ START RequestId: XXXX	Version: $LATEST
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -183,8 +181,7 @@ START RequestId: XXXX	Version: $LATEST
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -208,7 +205,7 @@ START RequestId: XXXX	Version: $LATEST
           "resource_names": "integration-tests-js-local-cjs-proactive-init",
           "functionname": "integration-tests-js-local-cjs-proactive-init",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
           "_dd.integration": "opentracing",
@@ -220,8 +217,7 @@ START RequestId: XXXX	Version: $LATEST
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -296,8 +292,7 @@ START RequestId: XXXX	Version: $LATEST
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -321,7 +316,7 @@ START RequestId: XXXX	Version: $LATEST
           "resource_names": "integration-tests-js-local-cjs-proactive-init",
           "functionname": "integration-tests-js-local-cjs-proactive-init",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
           "_dd.integration": "opentracing",
@@ -333,8 +328,7 @@ START RequestId: XXXX	Version: $LATEST
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -409,8 +403,7 @@ START RequestId: XXXX	Version: $LATEST
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -434,7 +427,7 @@ START RequestId: XXXX	Version: $LATEST
           "resource_names": "integration-tests-js-local-cjs-proactive-init",
           "functionname": "integration-tests-js-local-cjs-proactive-init",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
           "_dd.integration": "opentracing",
@@ -446,8 +439,7 @@ START RequestId: XXXX	Version: $LATEST
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -470,8 +462,6 @@ START RequestId: XXXX	Version: $LATEST
   ],
   "v": 1
 }
-END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms
 {
   "timestamp": "XXXX-XX-XXTXX:XX:XX.XXXZ",
   "level": "ERROR",
@@ -523,8 +513,7 @@ REPORT RequestId: XXXX	Duration: XXXX ms
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -548,7 +537,7 @@ REPORT RequestId: XXXX	Duration: XXXX ms
           "resource_names": "integration-tests-js-local-cjs-proactive-init",
           "functionname": "integration-tests-js-local-cjs-proactive-init",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
           "_dd.integration": "opentracing",
@@ -560,12 +549,13 @@ REPORT RequestId: XXXX	Duration: XXXX ms
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
 }
+END RequestId: XXXX
+REPORT RequestId: XXXX	Duration: XXXX ms
 START RequestId: XXXX	Version: $LATEST
 {
   "e": XXXX,
@@ -588,8 +578,6 @@ START RequestId: XXXX	Version: $LATEST
   "requestId": "XXXX",
   "message": "[dd.trace_id=XXXX dd.span_id=XXXX] (node:XX) TimeoutOverflowWarning: XXXX does not fit into a 32-bit signed integer.\nTimeout duration was set to 1."
 }
-END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms
 {
   "traces": [
     [
@@ -635,8 +623,7 @@ REPORT RequestId: XXXX	Duration: XXXX ms
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -660,7 +647,7 @@ REPORT RequestId: XXXX	Duration: XXXX ms
           "resource_names": "integration-tests-js-local-cjs-proactive-init",
           "functionname": "integration-tests-js-local-cjs-proactive-init",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
           "_dd.integration": "opentracing",
@@ -672,15 +659,14 @@ REPORT RequestId: XXXX	Duration: XXXX ms
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
 }
-START RequestId: XXXX	Version: $LATEST
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms
+START RequestId: XXXX	Version: $LATEST
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -747,8 +733,7 @@ REPORT RequestId: XXXX	Duration: XXXX ms
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -772,7 +757,7 @@ REPORT RequestId: XXXX	Duration: XXXX ms
           "resource_names": "integration-tests-js-local-cjs-proactive-init",
           "functionname": "integration-tests-js-local-cjs-proactive-init",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
           "_dd.integration": "opentracing",
@@ -784,12 +769,13 @@ REPORT RequestId: XXXX	Duration: XXXX ms
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
 }
+END RequestId: XXXX
+REPORT RequestId: XXXX	Duration: XXXX ms
 START RequestId: XXXX	Version: $LATEST
 {
   "e": XXXX,
@@ -856,8 +842,7 @@ START RequestId: XXXX	Version: $LATEST
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -881,7 +866,7 @@ START RequestId: XXXX	Version: $LATEST
           "resource_names": "integration-tests-js-local-cjs-proactive-init",
           "functionname": "integration-tests-js-local-cjs-proactive-init",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "sns",
           "function_trigger.event_source_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda",
           "_dd.integration": "opentracing",
@@ -893,8 +878,7 @@ START RequestId: XXXX	Version: $LATEST
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -966,8 +950,7 @@ START RequestId: XXXX	Version: $LATEST
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -991,7 +974,7 @@ START RequestId: XXXX	Version: $LATEST
           "resource_names": "integration-tests-js-local-cjs-proactive-init",
           "functionname": "integration-tests-js-local-cjs-proactive-init",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "sqs",
           "function_trigger.event_source_arn": "arn:aws:sqs:us-east-2:123456789012:my-queue",
           "_dd.integration": "opentracing",
@@ -1003,8 +986,7 @@ START RequestId: XXXX	Version: $LATEST
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]

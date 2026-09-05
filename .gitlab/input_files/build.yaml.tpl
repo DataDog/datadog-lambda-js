@@ -23,7 +23,24 @@ default:
   - yarn --version
   - echo 'yarn-offline-mirror ".yarn-cache/"' >> .yarnrc
   - echo 'yarn-offline-mirror-pruning true' >> .yarnrc
-  - yarn install --frozen-lockfile --no-progress
+  # Resolves dd-trace v5 or v6 from the Node major of the job's image.
+  - ./scripts/install_deps.sh --no-progress
+
+# The layers bundle a tracer, so the npm package is the only artifact whose dd-trace resolution
+# is left to the customer. One tarball is packed here and installed on every runtime below.
+pack npm package:
+  stage: build
+  tags: ["arch:amd64"]
+  image: registry.ddbuild.io/images/mirror/node:22-bullseye
+  needs: []
+  artifacts:
+    expire_in: 1 hr
+    paths:
+      - datadog-lambda-js-*.tgz
+  before_script: *node-before-script
+  script:
+    - yarn build
+    - npm pack --pack-destination .
 
 {{ range $runtime := (ds "runtimes").runtimes }}
 
@@ -80,6 +97,17 @@ unit test ({{ $runtime.name }}):
     - yarn test --ci --forceExit --detectOpenHandles
     - bash <(curl -s https://codecov.io/bash)
 
+npm package test ({{ $runtime.name }}):
+  stage: test
+  tags: ["arch:amd64"]
+  image: registry.ddbuild.io/images/mirror/node:{{ $runtime.node_major_version }}-bullseye
+  needs:
+    - pack npm package
+  dependencies:
+    - pack npm package
+  script:
+    - ./scripts/test_npm_package.sh datadog-lambda-js-*.tgz
+
 integration test ({{ $runtime.name }}):
   stage: test
   # `docker-in-docker:<arch>` routes the job to a runner with a live Docker
@@ -117,6 +145,7 @@ sign layer ({{ $runtime.name }}):
     - check layer size ({{ $runtime.name }})
     - lint ({{ $runtime.name }})
     - unit test ({{ $runtime.name }})
+    - npm package test ({{ $runtime.name }})
     - integration test ({{ $runtime.name }})
   dependencies:
     - build layer ({{ $runtime.name }})
@@ -152,6 +181,7 @@ publish layer {{ $environment.name }} ({{ $runtime.name }}):
       - check layer size ({{ $runtime.name }})
       - lint ({{ $runtime.name }})
       - unit test ({{ $runtime.name }})
+      - npm package test ({{ $runtime.name }})
       - integration test ({{ $runtime.name }})
 {{ end }}
   dependencies:
@@ -179,6 +209,9 @@ publish npm package:
   tags: ["arch:amd64"]
   image: ${CI_DOCKER_TARGET_IMAGE}:${CI_DOCKER_TARGET_VERSION}
   cache: []
+  variables:
+    # The CI image runs Node 18, but the published package tracks the v6 line.
+    TARGET_NODE_MAJOR: "22"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v.*/'
   when: manual
@@ -188,6 +221,9 @@ publish npm package:
   before_script:
     - *node-before-script
   script:
+    # The v5 pin and the peer range it feeds are hand-maintained, so verify them against the
+    # registry before the package that advertises them goes out.
+    - ./scripts/check_dd_trace_v5_pin.sh
     - .gitlab/scripts/publish_npm.sh
 
 {{ range $environment := (ds "environments").environments }}

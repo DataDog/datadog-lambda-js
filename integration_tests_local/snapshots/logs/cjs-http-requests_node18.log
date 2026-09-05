@@ -1,8 +1,8 @@
 XXXX [INFO] (rapid) exec '/lambda-entrypoint.sh' (cwd=/var/task, handler=node_modules/datadog-lambda-js/dist/handler.handler)
+START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INIT START(type: on-demand, phase: init)
 XXXX [INFO] (rapid) The extension's directory "/opt/extensions" does not exist, assuming no extensions to be loaded.
 XXXX [INFO] (rapid) Starting runtime without AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN , Expected?: false
-START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INIT RTDONE(status: success)
 XXXX [INFO] (rapid) INIT REPORT(durationMs: XXXX)
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
@@ -77,8 +77,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -102,7 +101,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "resource_names": "integration-tests-js-local-cjs-http-requests",
           "functionname": "integration-tests-js-local-cjs-http-requests",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "api-gateway",
           "function_trigger.event_source_arn": "arn:aws:apigateway:us-east-1::/restapis/wt6mne2s9k/stages/test",
           "http.method": "GET",
@@ -117,8 +116,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -150,8 +148,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -184,8 +181,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -214,8 +210,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -247,8 +242,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -281,8 +275,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -311,17 +304,16 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
 }
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Init Duration: XXXX ms	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-START RequestId: XXXX Version: $LATEST
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
+START RequestId: XXXX Version: $LATEST
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -395,8 +387,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -420,7 +411,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "resource_names": "integration-tests-js-local-cjs-http-requests",
           "functionname": "integration-tests-js-local-cjs-http-requests",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
           "_dd.integration": "opentracing",
@@ -432,8 +423,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -465,8 +455,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -499,8 +488,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -529,8 +517,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -562,8 +549,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -596,8 +582,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -626,17 +611,16 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
 }
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 START RequestId: XXXX Version: $LATEST
+XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -710,8 +694,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -735,7 +718,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "resource_names": "integration-tests-js-local-cjs-http-requests",
           "functionname": "integration-tests-js-local-cjs-http-requests",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
           "_dd.integration": "opentracing",
@@ -747,8 +730,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -780,8 +762,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -814,8 +795,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -844,8 +824,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -877,8 +856,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -911,8 +889,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -941,8 +918,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -950,8 +926,8 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
 XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
+START RequestId: XXXX Version: $LATEST
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -1025,8 +1001,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1050,7 +1025,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "resource_names": "integration-tests-js-local-cjs-http-requests",
           "functionname": "integration-tests-js-local-cjs-http-requests",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
           "_dd.integration": "opentracing",
@@ -1062,8 +1037,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1095,8 +1069,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1129,8 +1102,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1159,8 +1131,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1192,8 +1163,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1226,8 +1196,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1256,8 +1225,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -1339,8 +1307,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1364,7 +1331,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "resource_names": "integration-tests-js-local-cjs-http-requests",
           "functionname": "integration-tests-js-local-cjs-http-requests",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
           "_dd.integration": "opentracing",
@@ -1376,8 +1343,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1409,8 +1375,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1443,8 +1408,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1473,8 +1437,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1506,8 +1469,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1540,8 +1502,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1570,15 +1531,14 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
 }
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 {
@@ -1653,8 +1613,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1678,7 +1637,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "resource_names": "integration-tests-js-local-cjs-http-requests",
           "functionname": "integration-tests-js-local-cjs-http-requests",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
           "_dd.integration": "opentracing",
@@ -1690,8 +1649,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1723,8 +1681,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1757,8 +1714,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1787,8 +1743,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1820,8 +1775,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1854,8 +1808,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1884,8 +1837,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -1967,8 +1919,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1992,7 +1943,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "resource_names": "integration-tests-js-local-cjs-http-requests",
           "functionname": "integration-tests-js-local-cjs-http-requests",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
           "_dd.integration": "opentracing",
@@ -2004,8 +1955,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -2037,8 +1987,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -2071,8 +2020,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -2101,8 +2049,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -2134,8 +2081,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -2168,8 +2114,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -2198,15 +2143,14 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
 }
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 {
@@ -2280,8 +2224,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -2305,7 +2248,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "resource_names": "integration-tests-js-local-cjs-http-requests",
           "functionname": "integration-tests-js-local-cjs-http-requests",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "sns",
           "function_trigger.event_source_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda",
           "_dd.integration": "opentracing",
@@ -2317,8 +2260,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -2350,8 +2292,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -2384,8 +2325,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -2414,8 +2354,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -2447,8 +2386,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -2481,8 +2419,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -2511,15 +2448,14 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
 }
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 START RequestId: XXXX Version: $LATEST
 {
@@ -2592,8 +2528,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -2617,7 +2552,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "resource_names": "integration-tests-js-local-cjs-http-requests",
           "functionname": "integration-tests-js-local-cjs-http-requests",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "sqs",
           "function_trigger.event_source_arn": "arn:aws:sqs:us-east-2:123456789012:my-queue",
           "_dd.integration": "opentracing",
@@ -2629,8 +2564,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -2662,8 +2596,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -2696,8 +2629,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -2726,8 +2658,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -2759,8 +2690,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -2793,8 +2723,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -2823,8 +2752,7 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	[dd.trace_id=XXXX dd.span
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]

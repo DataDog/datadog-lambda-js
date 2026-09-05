@@ -47,9 +47,10 @@ PLATFORM=linux/amd64 ./integration_tests_local/run.sh
 On a tree that pins dd-trace v6 (which older runtimes cannot install), the
 pack step installs through `scripts/install_deps.sh` with
 `TARGET_NODE_MAJOR=$RUNTIME_PARAM` and the container fixtures get a matching
-`DD_TRACE_VERSION` build-arg. Run per-runtime there, like CI does: a full
-sweep packs only once, so its layer fixture would carry the first leg's
-tracer line into every other leg.
+`DD_TRACE_VERSION` build-arg. Packing the v6 line needs host Node 22+ (CI
+sets `setup-node` to the matrix runtime for that reason). Run per-runtime
+there, like CI does: a full sweep packs only once, so its layer fixture
+would carry the first leg's tracer line into every other leg.
 
 The case names are:
 

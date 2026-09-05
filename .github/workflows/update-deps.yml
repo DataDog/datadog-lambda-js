@@ -24,12 +24,12 @@ jobs:
 
       - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3.9.1
         with:
-          node-version: "20.x"
+          node-version: "22.x"
 
       - name: Update Dependencies
         run: |
-          yarn install
-          yarn upgrade
+          yarn install --ignore-engines
+          yarn upgrade --ignore-engines
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@18f7dc018cc2cd597073088f7c7591b9d1c02672 # v3.14.0
