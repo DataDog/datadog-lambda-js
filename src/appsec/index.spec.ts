@@ -302,7 +302,22 @@ describe("AppSec orchestrator", () => {
       });
     });
 
-    it("should preserve an inferred payload that carries a multiValueHeaders key", () => {
+    it("should not read the headers of an inferred payload as response headers", () => {
+      const span = { setTag: jest.fn() };
+      const result = { headers: { "content-type": "text/plain" }, payload: 1 };
+
+      processAppsecResponse(span, result, "200");
+
+      expect(mockPublish).toHaveBeenCalledWith({
+        span,
+        statusCode: "200",
+        responseHeaders: { "content-type": "application/json" },
+        responseBody: result,
+        isBase64Encoded: false,
+      });
+    });
+
+    it("should not read the multi value headers of an inferred payload as response headers", () => {
       const span = { setTag: jest.fn() };
       const result = { multiValueHeaders: { count: [2] } };
 
@@ -311,7 +326,37 @@ describe("AppSec orchestrator", () => {
       expect(mockPublish).toHaveBeenCalledWith({
         span,
         statusCode: "200",
-        responseHeaders: { count: "2" },
+        responseHeaders: { "content-type": "application/json" },
+        responseBody: result,
+        isBase64Encoded: false,
+      });
+    });
+
+    it("should not read the base64 flag of an inferred payload", () => {
+      const span = { setTag: jest.fn() };
+      const result = { isBase64Encoded: true, payload: 1 };
+
+      processAppsecResponse(span, result, "200");
+
+      expect(mockPublish).toHaveBeenCalledWith({
+        span,
+        statusCode: "200",
+        responseHeaders: { "content-type": "application/json" },
+        responseBody: result,
+        isBase64Encoded: false,
+      });
+    });
+
+    it("should treat a result whose status code does not survive serialization as an inferred payload", () => {
+      const span = { setTag: jest.fn() };
+      const result = { statusCode: undefined, body: { value: 1 } };
+
+      processAppsecResponse(span, result, "200");
+
+      expect(mockPublish).toHaveBeenCalledWith({
+        span,
+        statusCode: "200",
+        responseHeaders: { "content-type": "application/json" },
         responseBody: result,
         isBase64Encoded: false,
       });

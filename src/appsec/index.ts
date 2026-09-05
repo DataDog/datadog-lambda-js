@@ -39,43 +39,30 @@ export function processAppsecRequest(event: any, span: any): void {
 export function processAppsecResponse(span: any, result: any, statusCode?: string): void {
   if (!span || !endInvocationChannel.hasSubscribers) return;
 
+  const structured = isStructuredResponse(result);
+
   endInvocationChannel.publish({
     span,
     statusCode,
-    responseHeaders: normalizeResponseHeaders(result),
-    responseBody: extractResponseBody(result),
-    isBase64Encoded: !!result?.isBase64Encoded,
+    responseHeaders: structured ? normalizeResponseHeaders(result) : inferredResponseHeaders(),
+    responseBody: structured ? result.body ?? undefined : result ?? undefined,
+    isBase64Encoded: structured && !!result.isBase64Encoded,
   });
 }
 
-/**
- * Response headers reach the tracer in the same shape as the request ones. A result that carries
- * no headers at all is served by API Gateway and by Function URLs as `application/json`, so that
- * is the default, which is also what makes a raw string body eligible for schema extraction.
- */
-function normalizeResponseHeaders(result: any): Record<string, string> {
-  const headers = result?.headers as Record<string, unknown> | undefined;
-  const multiValueHeaders = result?.multiValueHeaders as Record<string, unknown[]> | undefined;
-
-  if (!headers && !multiValueHeaders) return { "content-type": "application/json" };
-
-  return normalizeHeaders(headers, multiValueHeaders);
+function isStructuredResponse(result: any): boolean {
+  return typeof result === "object" && result !== null && result.statusCode !== undefined;
 }
 
-/**
- * The body is published raw, exactly as the handler wrote it. Base64 decoding, content type gating
- * and size limits belong to the tracer, which is the side that knows what the WAF accepts.
- *
- * `statusCode` is the discriminator API Gateway itself uses: without it, payload format 2.0 and
- * Function URLs treat the whole result as the body, so keys like `body` or `headers` are payload
- * data rather than an envelope.
- */
-function extractResponseBody(result: any): unknown {
-  if (result === undefined || result === null) return undefined;
+function inferredResponseHeaders(): Record<string, string> {
+  return { "content-type": "application/json" };
+}
 
-  if (typeof result !== "object") return result;
+function normalizeResponseHeaders(result: any): Record<string, string> {
+  const headers = result.headers as Record<string, unknown> | undefined;
+  const multiValueHeaders = result.multiValueHeaders as Record<string, unknown[]> | undefined;
 
-  if ("statusCode" in result) return result.body ?? undefined;
+  if (!headers && !multiValueHeaders) return inferredResponseHeaders();
 
-  return result;
+  return normalizeHeaders(headers, multiValueHeaders);
 }
