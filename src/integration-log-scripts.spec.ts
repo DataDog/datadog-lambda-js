@@ -48,6 +48,27 @@ const rieVolatileLogs = [
   "(Use `node --trace-warnings ...` to show where the warning was created)",
 ].join("\n");
 
+const structuredRuntimeNoise = [
+  JSON.stringify({
+    timestamp: "2026-09-02T01:30:00.000Z",
+    level: "WARN",
+    requestId: "11111111-1111-1111-1111-111111111111",
+    message: "This is a preview runtime version and should not be used for production workloads",
+  }),
+  JSON.stringify({
+    timestamp: "2026-09-02T01:30:00.001Z",
+    level: "ERROR",
+    requestId: "22222222-2222-2222-2222-222222222222",
+    message: "(node:123) [DEP0205] DeprecationWarning: module.register() is deprecated",
+  }),
+  JSON.stringify({
+    timestamp: "2026-09-02T01:30:00.002Z",
+    level: "ERROR",
+    requestId: "33333333-3333-3333-3333-333333333333",
+    message: "Run node --trace-deprecation to show where the warning was created",
+  }),
+].join("\n");
+
 /**
  * @param input raw Lambda logs
  * @param platform integration-test platform
@@ -148,6 +169,17 @@ describe("integration log normalization", () => {
     expect(normalizedLogs).toContain('"dns.addresses": "XXXX"');
     expect(normalizedLogs).toContain("LocalProcessSupervisor.Exec pid=XX");
     expect(normalizedLogs).not.toContain("trace-warnings");
+  });
+
+  it("removes entire structured records for runtime-owned noise", () => {
+    const stableLog = JSON.stringify({
+      timestamp: "2026-09-02T01:30:00.003Z",
+      level: "INFO",
+      requestId: "44444444-4444-4444-4444-444444444444",
+      message: "handler completed",
+    });
+
+    expect(normalize(`${structuredRuntimeNoise}\n${stableLog}`, "rie")).toBe(normalize(stableLog, "rie"));
   });
 
   it("strips a literal run ID", () => {
