@@ -592,6 +592,7 @@ for node_version in "${RUNTIMES[@]}"; do
 
         echo "=== Starting $function_name under RIE ==="
         cid=$(docker run -d --rm --platform "$PLATFORM" \
+            --cpus 4 \
             -p 127.0.0.1::8080 \
             -v "$local_dir/bin:/aws-lambda-rie" \
             --entrypoint /aws-lambda-rie/aws-lambda-rie \
