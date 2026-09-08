@@ -5,7 +5,7 @@
 // manifest: install_deps.sh restores package.json to the v6 line after installing, so on Node
 // 18/20 the range here still says v6 while node_modules holds v5.
 
-// USAGE: ./move_ddtrace_dependency.js "$(cat package.json)" <resolved dd-trace version> > package.json
+// USAGE: ./move_ddtrace_dependency.js "$(cat package.json)" <dd-trace version> > package.json
 
 const file = JSON.parse(process.argv[2]);
 const ddTraceVersion = process.argv[3];

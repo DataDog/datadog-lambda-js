@@ -31,9 +31,7 @@ fi
 
 echo "peerDependencies['dd-trace'] advertises both pins: $peer_range"
 
-# npm may return a single string or an array of matching versions; take the
-# last. Parsed with node rather than jq so the script only needs tools the
-# build images are guaranteed to have.
+# npm may return a single string or an array of matching versions; take the last
 latest_v5=$(npm view 'dd-trace@5' version --json | node -e "
 let d = '';
 process.stdin
