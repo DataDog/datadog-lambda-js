@@ -44,6 +44,11 @@ SKIP_PACK=true RUNTIME_PARAM=18 CASE_PARAM=container-esm ./integration_tests_loc
 PLATFORM=linux/amd64 ./integration_tests_local/run.sh
 ```
 
+CI runs the complete runtime/case matrix on native `linux/amd64` and
+`linux/arm64` GitHub-hosted runners. Both architectures share the same
+snapshots: the normalizer removes platform-owned preview/deprecation records
+as complete structured records before formatting them.
+
 On a tree that pins dd-trace v6 (which older runtimes cannot install), the
 pack step installs through `scripts/install_deps.sh` with
 `TARGET_NODE_MAJOR=$RUNTIME_PARAM` and the container fixtures get a matching
@@ -222,6 +227,11 @@ base-image build argument maps to the dated multi-arch tag
 Node 26 is a strict leg like every other; where its preview runtime
 genuinely diverges (error stack frames, warning emission) it carries
 `*_node26` override goldens rather than widened normalization.
+
+Architecture-only preview/deprecation noise is not a Node 26 behavioral
+difference. Those records are removed before JSON formatting so their
+timestamp/level/request-id envelopes cannot make the shared snapshots depend
+on whether the test ran on amd64 or arm64.
 
 When AWS publishes the bare Node 26 GA image, swap the pinned tag and re-run.
 If GA output diverges further, add `*_node26` overrides captured from the
