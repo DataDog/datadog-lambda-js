@@ -209,9 +209,6 @@ publish npm package:
   tags: ["arch:amd64"]
   image: ${CI_DOCKER_TARGET_IMAGE}:${CI_DOCKER_TARGET_VERSION}
   cache: []
-  variables:
-    # The CI image runs Node 18, but the published package tracks the v6 line.
-    TARGET_NODE_MAJOR: "22"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v.*/'
   when: manual
