@@ -331,7 +331,7 @@ describe("integration test runner", () => {
     mkdirSync(join(temporaryRepo, "node_modules", "dd-trace"), { recursive: true });
     writeFileSync(
       join(temporaryRepo, "node_modules", "dd-trace", "package.json"),
-      JSON.stringify({ version: "6.12.0" }),
+      JSON.stringify({ version: "0.0.0-test" }),
     );
     mkdirSync(join(temporaryIntegrationTests, "input_events"), { recursive: true });
     mkdirSync(join(temporaryIntegrationTests, "snapshots", "logs"), { recursive: true });
