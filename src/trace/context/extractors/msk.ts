@@ -1,4 +1,5 @@
 import { MSKEvent, MSKRecord } from "aws-lambda";
+import { logDebug } from "../../../utils";
 import { EventTraceExtractor } from "../extractor";
 import { handleExtractionError } from "../extractor-utils";
 import { TracerWrapper } from "../../tracer-wrapper";
@@ -17,12 +18,16 @@ export class MSKEventTraceExtractor implements EventTraceExtractor {
           const headers = this.getParsedRecordHeaders(record);
           if (Object.keys(headers).length === 0) continue;
           const traceContext = this.tracerWrapper.extract(headers);
-          if (traceContext) return traceContext;
+          if (traceContext) {
+            logDebug("Extracted trace context from MSK event");
+            return traceContext;
+          }
         } catch (error) {
           handleExtractionError(error, "MSK");
         }
       }
     }
+    logDebug("Failed to extract trace context from MSK event");
     return null;
   }
 
