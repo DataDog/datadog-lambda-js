@@ -19,8 +19,10 @@ do
         -f scripts/Dockerfile_test . \
         --quiet \
         --build-arg image=registry.ddbuild.io/images/mirror/node:${node_major_version}-bullseye
-    docker run --rm -v `pwd`:/datadog-lambda-layer-node \
-        -w /datadog-lambda-layer-node \
+    # Run against the image's own install rather than a bind mount of the repo:
+    # the host node_modules holds dd-trace v6, which would shadow the v5 install
+    # the image resolved for Node majors below 22.
+    docker run --rm \
         datadog-lambda-layer-node-test:$node_version \
         yarn test
 done

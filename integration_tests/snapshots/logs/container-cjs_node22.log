@@ -58,8 +58,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -83,7 +82,7 @@ START
           "resource_names": "integration-tests-js-XXXX-container-cjs_node22",
           "functionname": "integration-tests-js-XXXX-container-cjs_node22",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "api-gateway",
           "function_trigger.event_source_arn": "arn:aws:apigateway:eu-west-1::/restapis/wt6mne2s9k/stages/test",
           "http.method": "GET",
@@ -98,8 +97,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -167,8 +165,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -192,7 +189,7 @@ START
           "resource_names": "integration-tests-js-XXXX-container-cjs_node22",
           "functionname": "integration-tests-js-XXXX-container-cjs_node22",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
           "_dd.integration": "opentracing",
@@ -204,8 +201,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -273,8 +269,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -298,7 +293,7 @@ START
           "resource_names": "integration-tests-js-XXXX-container-cjs_node22",
           "functionname": "integration-tests-js-XXXX-container-cjs_node22",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
           "_dd.integration": "opentracing",
@@ -310,8 +305,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -379,8 +373,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -404,7 +397,7 @@ START
           "resource_names": "integration-tests-js-XXXX-container-cjs_node22",
           "functionname": "integration-tests-js-XXXX-container-cjs_node22",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
           "_dd.integration": "opentracing",
@@ -416,8 +409,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -484,8 +476,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -509,7 +500,7 @@ START
           "resource_names": "integration-tests-js-XXXX-container-cjs_node22",
           "functionname": "integration-tests-js-XXXX-container-cjs_node22",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
           "_dd.integration": "opentracing",
@@ -521,8 +512,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -589,8 +579,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -614,7 +603,7 @@ START
           "resource_names": "integration-tests-js-XXXX-container-cjs_node22",
           "functionname": "integration-tests-js-XXXX-container-cjs_node22",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
           "_dd.integration": "opentracing",
@@ -626,8 +615,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -694,8 +682,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -719,7 +706,7 @@ START
           "resource_names": "integration-tests-js-XXXX-container-cjs_node22",
           "functionname": "integration-tests-js-XXXX-container-cjs_node22",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
           "_dd.integration": "opentracing",
@@ -731,8 +718,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -798,8 +784,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -823,7 +808,7 @@ START
           "resource_names": "integration-tests-js-XXXX-container-cjs_node22",
           "functionname": "integration-tests-js-XXXX-container-cjs_node22",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "sns",
           "function_trigger.event_source_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda",
           "_dd.integration": "opentracing",
@@ -835,8 +820,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -901,8 +885,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -926,7 +909,7 @@ START
           "resource_names": "integration-tests-js-XXXX-container-cjs_node22",
           "functionname": "integration-tests-js-XXXX-container-cjs_node22",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "sqs",
           "function_trigger.event_source_arn": "arn:aws:sqs:us-east-2:123456789012:my-queue",
           "_dd.integration": "opentracing",
@@ -938,8 +921,7 @@ START
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]

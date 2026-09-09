@@ -148,8 +148,116 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	ERROR	Invoke Error 	{"errorTyp
 XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
+START RequestId: XXXX Version: $LATEST
+XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:us-east-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-local-manual-throw-error",
+    "resource:integration-tests-js-local-manual-throw-error",
+    "memorysize:3008",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejsXX.x"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.errors",
+  "t": [
+    "region:us-east-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-local-manual-throw-error",
+    "resource:integration-tests-js-local-manual-throw-error",
+    "memorysize:3008",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejsXX.x"
+  ],
+  "v": 1
+}
+XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	ERROR	Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error.js:XXX:XXX)","    at /var/task/node_modules/datadog-lambda-js/dist/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/var/task/node_modules/datadog-lambda-js/dist/index.js:XXX:XXX)","    at Runtime.wrappedFunc [as handler] (/var/task/node_modules/datadog-lambda-js/dist/index.js:XXX:XXX)"]}
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
+END RequestId: XXXX
+REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
+START RequestId: XXXX Version: $LATEST
+XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:us-east-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-local-manual-throw-error",
+    "resource:integration-tests-js-local-manual-throw-error",
+    "memorysize:3008",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejsXX.x"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.errors",
+  "t": [
+    "region:us-east-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-local-manual-throw-error",
+    "resource:integration-tests-js-local-manual-throw-error",
+    "memorysize:3008",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejsXX.x"
+  ],
+  "v": 1
+}
+XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	ERROR	Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error.js:XXX:XXX)","    at /var/task/node_modules/datadog-lambda-js/dist/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/var/task/node_modules/datadog-lambda-js/dist/index.js:XXX:XXX)","    at Runtime.wrappedFunc [as handler] (/var/task/node_modules/datadog-lambda-js/dist/index.js:XXX:XXX)"]}
+END RequestId: XXXX
+REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 START RequestId: XXXX Version: $LATEST
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:us-east-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-local-manual-throw-error",
+    "resource:integration-tests-js-local-manual-throw-error",
+    "memorysize:3008",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejsXX.x"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.errors",
+  "t": [
+    "region:us-east-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-local-manual-throw-error",
+    "resource:integration-tests-js-local-manual-throw-error",
+    "memorysize:3008",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejsXX.x"
+  ],
+  "v": 1
+}
+XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	ERROR	Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error.js:XXX:XXX)","    at /var/task/node_modules/datadog-lambda-js/dist/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/var/task/node_modules/datadog-lambda-js/dist/index.js:XXX:XXX)","    at Runtime.wrappedFunc [as handler] (/var/task/node_modules/datadog-lambda-js/dist/index.js:XXX:XXX)"]}
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
+END RequestId: XXXX
+REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
+START RequestId: XXXX Version: $LATEST
+XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -220,111 +328,3 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	ERROR	Invoke Error 	{"errorTyp
 XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
-START RequestId: XXXX Version: $LATEST
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.invocations",
-  "t": [
-    "region:us-east-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-local-manual-throw-error",
-    "resource:integration-tests-js-local-manual-throw-error",
-    "memorysize:3008",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejsXX.x"
-  ],
-  "v": 1
-}
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.errors",
-  "t": [
-    "region:us-east-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-local-manual-throw-error",
-    "resource:integration-tests-js-local-manual-throw-error",
-    "memorysize:3008",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejsXX.x"
-  ],
-  "v": 1
-}
-XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	ERROR	Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error.js:XXX:XXX)","    at /var/task/node_modules/datadog-lambda-js/dist/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/var/task/node_modules/datadog-lambda-js/dist/index.js:XXX:XXX)","    at Runtime.wrappedFunc [as handler] (/var/task/node_modules/datadog-lambda-js/dist/index.js:XXX:XXX)"]}
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
-END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-START RequestId: XXXX Version: $LATEST
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.invocations",
-  "t": [
-    "region:us-east-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-local-manual-throw-error",
-    "resource:integration-tests-js-local-manual-throw-error",
-    "memorysize:3008",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejsXX.x"
-  ],
-  "v": 1
-}
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.errors",
-  "t": [
-    "region:us-east-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-local-manual-throw-error",
-    "resource:integration-tests-js-local-manual-throw-error",
-    "memorysize:3008",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejsXX.x"
-  ],
-  "v": 1
-}
-XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
-XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	ERROR	Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error.js:XXX:XXX)","    at /var/task/node_modules/datadog-lambda-js/dist/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/var/task/node_modules/datadog-lambda-js/dist/index.js:XXX:XXX)","    at Runtime.wrappedFunc [as handler] (/var/task/node_modules/datadog-lambda-js/dist/index.js:XXX:XXX)"]}
-END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
-XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
-START RequestId: XXXX Version: $LATEST
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.invocations",
-  "t": [
-    "region:us-east-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-local-manual-throw-error",
-    "resource:integration-tests-js-local-manual-throw-error",
-    "memorysize:3008",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejsXX.x"
-  ],
-  "v": 1
-}
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.errors",
-  "t": [
-    "region:us-east-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-local-manual-throw-error",
-    "resource:integration-tests-js-local-manual-throw-error",
-    "memorysize:3008",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejsXX.x"
-  ],
-  "v": 1
-}
-XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	ERROR	Invoke Error 	{"errorType":"Error","errorMessage":"Hello","stack":["Error: Hello","    at handle (/var/task/throw-error.js:XXX:XXX)","    at /var/task/node_modules/datadog-lambda-js/dist/utils/handler.js:XXX:XXX","    at traceListenerOnWrap (/var/task/node_modules/datadog-lambda-js/dist/index.js:XXX:XXX)","    at Runtime.wrappedFunc [as handler] (/var/task/node_modules/datadog-lambda-js/dist/index.js:XXX:XXX)"]}
-END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
