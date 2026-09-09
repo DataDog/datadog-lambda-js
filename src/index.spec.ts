@@ -88,6 +88,7 @@ describe("datadog", () => {
 
   const handler = (ev: any, context: any, callback: any) => {
     // Mocks out the call
+    nock("http://www.example.com").get("/").reply(200, {});
     const req = http.get("http://www.example.com");
     traceId = req.getHeader("x-datadog-trace-id") as string;
     parentId = req.getHeader("x-datadog-parent-id") as string;
@@ -115,7 +116,6 @@ describe("datadog", () => {
   });
 
   it("patches http request when autoPatch enabled", async () => {
-    nock("http://www.example.com").get("/").reply(200, {});
     mockTraceHeaders = {
       "x-datadog-parent-id": "9101112",
       "x-datadog-sampling-priority": "2",
@@ -142,7 +142,6 @@ describe("datadog", () => {
     expect(sampled).toEqual("2");
   });
   it("doesn't patch http requests when autoPatch is disabled", async () => {
-    nock("http://www.example.com").get("/").reply(200, {});
     const wrapped = datadog(handler, { autoPatchHTTP: false, forceWrap: true });
     await wrapped(
       {
