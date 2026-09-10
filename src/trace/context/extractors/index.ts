@@ -10,3 +10,4 @@ export { StepFunctionEventTraceExtractor } from "./step-function";
 export { LambdaContextTraceExtractor } from "./lambda-context";
 export { CustomTraceExtractor } from "./custom";
 export { DurableExecutionEventTraceExtractor } from "./durable-execution";
+export { MSKEventTraceExtractor } from "./msk";
