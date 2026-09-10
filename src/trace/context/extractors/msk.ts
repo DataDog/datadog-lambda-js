@@ -9,38 +9,44 @@ export class MSKEventTraceExtractor implements EventTraceExtractor {
   constructor(private tracerWrapper: TracerWrapper) {}
 
   extract(event: MSKEvent): SpanContextWrapper | null {
-    // A Lambda span can have only one parent. Use the first record with valid
-    // trace context, without combining headers from different records.
-    for (const records of Object.values(event.records ?? {})) {
-      if (!Array.isArray(records)) continue;
-      for (const record of records) {
-        try {
+    if (!event?.records) {
+      logDebug("Failed to extract trace context from MSK event");
+      return null;
+    }
+
+    try {
+      // A Lambda span can have only one parent. Use the first record with valid
+      // trace context, without combining headers from different records.
+      for (const records of Object.values(event.records)) {
+        if (!Array.isArray(records)) continue;
+        for (const record of records) {
           const headers = this.getParsedRecordHeaders(record);
-          if (Object.keys(headers).length === 0) continue;
+          if (!headers) continue;
           const traceContext = this.tracerWrapper.extract(headers);
           if (traceContext) {
             logDebug("Extracted trace context from MSK event");
             return traceContext;
           }
-        } catch (error) {
-          handleExtractionError(error, "MSK");
         }
       }
+    } catch (error) {
+      handleExtractionError(error, "MSK");
     }
+
     logDebug("Failed to extract trace context from MSK event");
     return null;
   }
 
-  private getParsedRecordHeaders(record: MSKRecord): Record<string, string> {
-    const headers: Record<string, string> = Object.create(null);
-    if (!Array.isArray(record?.headers)) return headers;
+  private getParsedRecordHeaders(record: MSKRecord): Record<string, string> | null {
+    if (!Array.isArray(record?.headers)) return null;
 
+    let headers: Record<string, string> | null = null;
     for (const entry of record.headers) {
       if (!entry || typeof entry !== "object" || Array.isArray(entry)) continue;
       for (const [name, value] of Object.entries(entry)) {
         // MSK serializes Kafka header bytes as integer arrays, not base64.
-        // Validate before decoding because Buffer.from silently coerces invalid bytes.
-        if (Array.isArray(value) && value.every((byte) => Number.isInteger(byte) && byte >= 0 && byte <= 255)) {
+        if (Array.isArray(value)) {
+          headers ??= {};
           headers[name.toLowerCase()] = Buffer.from(value).toString("utf8");
         }
       }

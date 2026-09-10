@@ -79,20 +79,18 @@ describe("MSKEventTraceExtractor", () => {
     expect(extract).toHaveBeenNthCalledWith(2, { "x-datadog-parent-id": "456" });
   });
 
-  it.each([null, "123", [256], [-1], [1.5], ["49"], [null], [true], { "0": 49 }].map((value) => [value]))(
-    "ignores invalid byte values: %j",
-    (value) => {
-      extract.mockReturnValue(spanContext);
-      expect(
-        extractor.extract(event({ "topic-0": [{ headers: [{ invalid: value }, ...record(datadogHeaders).headers] }] })),
-      ).toBe(spanContext);
-      expect(extract).toHaveBeenCalledWith(datadogHeaders);
-    },
-  );
+  it.each([null, "123", { "0": 49 }].map((value) => [value]))("skips non-array header values: %j", (value) => {
+    extract.mockReturnValue(spanContext);
+    expect(
+      extractor.extract(event({ "topic-0": [{ headers: [{ invalid: value }, ...record(datadogHeaders).headers] }] })),
+    ).toBe(spanContext);
+    expect(extract).toHaveBeenCalledWith(datadogHeaders);
+  });
 
   it.each([
     undefined,
     null,
+    "invalid",
     {},
     { "topic-0": [] },
     { "topic-0": null },
@@ -103,13 +101,12 @@ describe("MSKEventTraceExtractor", () => {
     expect(extract).not.toHaveBeenCalled();
   });
 
-  it("continues after an extraction error", () => {
-    extract
-      .mockImplementationOnce(() => {
-        throw new Error("invalid carrier");
-      })
-      .mockReturnValueOnce(spanContext);
-    expect(extractor.extract(event({ "topic-0": [record(w3cHeaders), record(datadogHeaders)] }))).toBe(spanContext);
+  it("returns null after an extraction error", () => {
+    extract.mockImplementationOnce(() => {
+      throw new Error("invalid carrier");
+    });
+    expect(extractor.extract(event({ "topic-0": [record(w3cHeaders), record(datadogHeaders)] }))).toBeNull();
+    expect(extract).toHaveBeenCalledTimes(1);
   });
 
   it("returns null when the tracer cannot extract context", () => {
