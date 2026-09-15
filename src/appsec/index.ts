@@ -1,6 +1,7 @@
 // tslint:disable-next-line:no-var-requires
 const dc = require("dc-polyfill");
 
+import { logDebug } from "../utils";
 import { extractHTTPDataFromEvent } from "./event-data-extractor";
 import { normalizeHeaders } from "./headers";
 
@@ -50,11 +51,15 @@ export function processAppsecResponse(
 ): void {
   if (!span || !endInvocationChannel.hasSubscribers) return;
 
-  endInvocationChannel.publish({
-    span,
-    statusCode,
-    ...extractResponseData(result, mode),
-  });
+  let responseData;
+  try {
+    responseData = extractResponseData(result, mode);
+  } catch {
+    logDebug("appsec failed to read the response, publishing the status alone");
+    responseData = noResponseData();
+  }
+
+  endInvocationChannel.publish({ span, statusCode, ...responseData });
 }
 
 function extractResponseData(result: any, mode: ResponseMode) {

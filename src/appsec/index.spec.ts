@@ -490,6 +490,93 @@ describe("AppSec orchestrator", () => {
       });
     });
 
+    describe("when reading the result throws", () => {
+      const throwing = () => {
+        throw new Error("instrumentation read");
+      };
+      const degraded = (span: any, statusCode: string) => ({
+        span,
+        statusCode,
+        responseHeaders: undefined,
+        responseBody: undefined,
+        isBase64Encoded: false,
+      });
+      const buffered = { kind: "buffered" as const, supportsInference: true };
+
+      it("should survive a throwing status code getter", () => {
+        const span = { setTag: jest.fn() };
+        const result = {};
+        Object.defineProperty(result, "statusCode", { get: throwing, enumerable: true });
+
+        expect(() => processAppsecResponse(span, result, "200", buffered)).not.toThrow();
+        expect(mockPublish).toHaveBeenCalledWith(degraded(span, "200"));
+      });
+
+      it("should survive a throwing body getter", () => {
+        const span = { setTag: jest.fn() };
+        const result = { statusCode: 200 };
+        Object.defineProperty(result, "body", { get: throwing, enumerable: true });
+
+        expect(() => processAppsecResponse(span, result, "200", buffered)).not.toThrow();
+        expect(mockPublish).toHaveBeenCalledWith(degraded(span, "200"));
+      });
+
+      it("should survive a throwing base64 flag getter", () => {
+        const span = { setTag: jest.fn() };
+        const result = { statusCode: 200, body: "ok" };
+        Object.defineProperty(result, "isBase64Encoded", { get: throwing, enumerable: true });
+
+        expect(() => processAppsecResponse(span, result, "200", buffered)).not.toThrow();
+        expect(mockPublish).toHaveBeenCalledWith(degraded(span, "200"));
+      });
+
+      it("should survive a throwing headers getter", () => {
+        const span = { setTag: jest.fn() };
+        const result = { statusCode: 200, body: "ok" };
+        Object.defineProperty(result, "headers", { get: throwing, enumerable: true });
+
+        expect(() => processAppsecResponse(span, result, "200", buffered)).not.toThrow();
+        expect(mockPublish).toHaveBeenCalledWith(degraded(span, "200"));
+      });
+
+      it("should survive a throwing multi value headers getter", () => {
+        const span = { setTag: jest.fn() };
+        const result = { statusCode: 200, body: "ok" };
+        Object.defineProperty(result, "multiValueHeaders", { get: throwing, enumerable: true });
+
+        expect(() => processAppsecResponse(span, result, "200", buffered)).not.toThrow();
+        expect(mockPublish).toHaveBeenCalledWith(degraded(span, "200"));
+      });
+
+      it("should survive a throwing getter on a header name", () => {
+        const span = { setTag: jest.fn() };
+        const headers = {};
+        Object.defineProperty(headers, "X-Option", { get: throwing, enumerable: true });
+
+        expect(() => processAppsecResponse(span, { statusCode: 200, headers }, "200", buffered)).not.toThrow();
+        expect(mockPublish).toHaveBeenCalledWith(degraded(span, "200"));
+      });
+
+      it("should survive a throwing toString on a header value", () => {
+        const span = { setTag: jest.fn() };
+        const headers = { "X-Option": { toString: throwing } };
+
+        expect(() => processAppsecResponse(span, { statusCode: 200, headers }, "200", buffered)).not.toThrow();
+        expect(mockPublish).toHaveBeenCalledWith(degraded(span, "200"));
+      });
+
+      it("should survive a throwing join on a multi value header", () => {
+        const span = { setTag: jest.fn() };
+        const values = ["a", "b"];
+        values.join = throwing;
+
+        expect(() =>
+          processAppsecResponse(span, { statusCode: 200, multiValueHeaders: { "X-Option": values } }, "200", buffered),
+        ).not.toThrow();
+        expect(mockPublish).toHaveBeenCalledWith(degraded(span, "200"));
+      });
+    });
+
     it("should publish no body when a proxy integration response carries none", () => {
       const span = { setTag: jest.fn() };
 
