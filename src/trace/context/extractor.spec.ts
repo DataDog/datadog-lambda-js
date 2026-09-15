@@ -14,6 +14,7 @@ import {
   EventBridgeEventTraceExtractor,
   EventBridgeSQSEventTraceExtractor,
   HTTPEventTraceExtractor,
+  KafkaEventTraceExtractor,
   KinesisEventTraceExtractor,
   SNSEventTraceExtractor,
   SNSSQSEventTraceExtractor,
@@ -904,6 +905,24 @@ describe("getTraceEventExtractor", () => {
             kinesis: {},
           },
         ],
+      },
+    ],
+    [
+      "KafkaEventTraceExtractor",
+      "Kafka event",
+      KafkaEventTraceExtractor,
+      {
+        eventSource: "aws:kafka",
+        records: {},
+      },
+    ],
+    [
+      "KafkaEventTraceExtractor",
+      "self-managed Kafka event",
+      KafkaEventTraceExtractor,
+      {
+        eventSource: "aws:SelfManagedKafka",
+        records: {},
       },
     ],
     [

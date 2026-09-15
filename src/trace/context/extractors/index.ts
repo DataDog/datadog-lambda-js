@@ -1,6 +1,7 @@
 export { AppSyncEventTraceExtractor } from "./app-sync";
 export { EventBridgeEventTraceExtractor } from "./event-bridge";
 export { EventBridgeSQSEventTraceExtractor } from "./event-bridge-sqs";
+export { KafkaEventTraceExtractor } from "./kafka";
 export { KinesisEventTraceExtractor } from "./kinesis";
 export { HTTPEventTraceExtractor } from "./http";
 export { SQSEventTraceExtractor } from "./sqs";
