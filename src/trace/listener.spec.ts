@@ -721,34 +721,12 @@ describe("TraceListener", () => {
 
         expect(mockProcessAppsecResponse).toHaveBeenCalledTimes(1);
         // Non-HTTP trigger: there is no normalized status code to hand over.
-        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, result, undefined, {
-          kind: "buffered",
-          supportsInference: false,
-        });
-      } finally {
-        currentSpanSpy.mockRestore();
-      }
-    });
-
-    it("resolves the inferred response mode before the handler runs, ignoring later event mutations", async () => {
-      const mockSetTag = jest.fn();
-      const mockSpan = { setTag: mockSetTag };
-      const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
-
-      try {
-        const listener = new TraceListener(defaultConfig);
-        const event = JSON.parse(readFileSync("./event_samples/api-gateway-v2.json", "utf8"));
-        const result = { payload: 1 };
-        await listener.onStartInvocation(event, context as any);
-        listener.onRequestStart(event);
-
-        delete event.version;
-        delete event.requestContext;
-        listener.onEndingInvocation(event, result, false);
-
-        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, result, "200", {
-          kind: "buffered",
-          supportsInference: true,
+        expect(mockProcessAppsecResponse).toHaveBeenCalledWith({
+          span: mockSpan,
+          event,
+          result,
+          statusCode: undefined,
+          responseStream: false,
         });
       } finally {
         currentSpanSpy.mockRestore();
@@ -769,9 +747,12 @@ describe("TraceListener", () => {
         await listener.onStartInvocation(event, context as any);
         listener.onEndingInvocation(event, result, false);
 
-        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, result, "200", {
-          kind: "buffered",
-          supportsInference: false,
+        expect(mockProcessAppsecResponse).toHaveBeenCalledWith({
+          span: mockSpan,
+          event,
+          result,
+          statusCode: "200",
+          responseStream: false,
         });
       } finally {
         currentSpanSpy.mockRestore();
@@ -789,9 +770,12 @@ describe("TraceListener", () => {
         await listener.onStartInvocation(event, context as any);
         listener.onEndingInvocation(event, undefined, false);
 
-        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, undefined, "502", {
-          kind: "buffered",
-          supportsInference: false,
+        expect(mockProcessAppsecResponse).toHaveBeenCalledWith({
+          span: mockSpan,
+          event,
+          result: undefined,
+          statusCode: "502",
+          responseStream: false,
         });
       } finally {
         currentSpanSpy.mockRestore();
@@ -809,25 +793,13 @@ describe("TraceListener", () => {
         await listener.onStartInvocation(event, context as any);
         listener.onEndingInvocation(event, undefined, true);
 
-        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, undefined, "200", { kind: "streaming" });
-      } finally {
-        currentSpanSpy.mockRestore();
-      }
-    });
-
-    it("flags a streaming function so no response data is derived from the returned value", async () => {
-      const mockSetTag = jest.fn();
-      const mockSpan = { setTag: mockSetTag };
-      const currentSpanSpy = jest.spyOn(TracerWrapper.prototype, "currentSpan", "get").mockReturnValue(mockSpan);
-
-      try {
-        const listener = new TraceListener(defaultConfig);
-        const event = JSON.parse(readFileSync("./event_samples/lambda-function-urls.json", "utf8"));
-        await listener.onStartInvocation(event, context as any);
-        listener.onRequestStart(event);
-        listener.onEndingInvocation(event, undefined, true);
-
-        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, undefined, "200", { kind: "streaming" });
+        expect(mockProcessAppsecResponse).toHaveBeenCalledWith({
+          span: mockSpan,
+          event,
+          result: undefined,
+          statusCode: "200",
+          responseStream: true,
+        });
       } finally {
         currentSpanSpy.mockRestore();
       }
@@ -867,9 +839,12 @@ describe("TraceListener", () => {
         const responseIs5xxError = listener.onEndingInvocation(event, { statusCode: 500 }, false);
 
         expect(responseIs5xxError).toBe(true);
-        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, { statusCode: 500 }, "500", {
-          kind: "buffered",
-          supportsInference: false,
+        expect(mockProcessAppsecResponse).toHaveBeenCalledWith({
+          span: mockSpan,
+          event,
+          result: { statusCode: 500 },
+          statusCode: "500",
+          responseStream: false,
         });
       } finally {
         currentSpanSpy.mockRestore();

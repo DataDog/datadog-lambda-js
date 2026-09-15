@@ -2,6 +2,7 @@
 const dc = require("dc-polyfill");
 
 import { logDebug } from "../utils";
+import { isAPIGatewayEventV2, isLambdaUrlEvent } from "../utils/event-type-guards";
 import { extractHTTPDataFromEvent } from "./event-data-extractor";
 import { normalizeHeaders } from "./headers";
 
@@ -32,28 +33,25 @@ export function processAppsecRequest(event: any, span: any): void {
   });
 }
 
-export type ResponseMode = { kind: "streaming" } | { kind: "buffered"; supportsInference: boolean };
+interface ResponseContext {
+  span: any;
+  event: any;
+  result: any;
+  statusCode: string | undefined;
+  responseStream: boolean;
+}
 
 /**
- * @param span
- * @param result
  * @param statusCode Status code already normalized by the trigger layer.
- * @param mode `streaming` when the function writes its response to responseStream, in which case
- *             the returned value is not what the client received. `buffered` otherwise, with
- *             `supportsInference` telling whether the trigger serves a result without a status
- *             code as the body, resolved by the trigger layer before the handler ran.
+ * @param responseStream Whether the function writes its response to responseStream, in which case
+ *                       the returned value is not what the client received.
  */
-export function processAppsecResponse(
-  span: any,
-  result: any,
-  statusCode: string | undefined,
-  mode: ResponseMode,
-): void {
+export function processAppsecResponse({ span, event, result, statusCode, responseStream }: ResponseContext): void {
   if (!span || !endInvocationChannel.hasSubscribers) return;
 
   let responseData;
   try {
-    responseData = extractResponseData(result, mode);
+    responseData = extractResponseData(result, event, responseStream);
   } catch {
     logDebug("appsec failed to read the response, publishing the status alone");
     responseData = noResponseData();
@@ -62,10 +60,10 @@ export function processAppsecResponse(
   endInvocationChannel.publish({ span, statusCode, ...responseData });
 }
 
-function extractResponseData(result: any, mode: ResponseMode) {
+function extractResponseData(result: any, event: any, responseStream: boolean) {
   // Streaming functions write the real status, headers and body to responseStream, so nothing
   // about the response can be derived from the returned value.
-  if (mode.kind === "streaming") return noResponseData();
+  if (responseStream) return noResponseData();
 
   if (carriesStatusCode(result)) {
     // AWS may reject this envelope or infer a body from it; neither outcome is knowable here.
@@ -79,7 +77,7 @@ function extractResponseData(result: any, mode: ResponseMode) {
   }
 
   // The client is answered by the integration error AWS builds, which is not this result.
-  if (!mode.supportsInference) return noResponseData();
+  if (!supportsInferredResponse(event)) return noResponseData();
 
   // Nothing was returned, so there is no result for the trigger to serve as a JSON body.
   if (result === undefined || result === null) return noResponseData();
@@ -89,6 +87,12 @@ function extractResponseData(result: any, mode: ResponseMode) {
     responseBody: result,
     isBase64Encoded: false,
   };
+}
+
+function supportsInferredResponse(event: any): boolean {
+  if (!event || typeof event !== "object") return false;
+
+  return isLambdaUrlEvent(event) || isAPIGatewayEventV2(event);
 }
 
 function noResponseData() {

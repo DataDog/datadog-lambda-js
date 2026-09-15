@@ -374,20 +374,6 @@ export function extractTriggerTags(event: any, context: Context, eventSource: ev
 }
 
 /**
- * Only HTTP API payload format 2.0 and Function URLs serve a result without a status code as the
- * response body. REST API payload format 1.0 and ALB require the structured shape, and answer the
- * client with an integration error instead, so such a result never reaches it as a body.
- *
- * The event is the same mutable object handed to the user function, so this has to be resolved
- * before the handler runs.
- */
-export function supportsInferredResponse(event: any): boolean {
-  if (!event || typeof event !== "object") return false;
-
-  return eventType.isLambdaUrlEvent(event) || eventType.isAPIGatewayEventV2(event);
-}
-
-/**
  * extractHTTPStatusCode extracts a status code from the response if the Lambda was triggered
  * by API Gateway, ALB, or Lambda Function URL
  */

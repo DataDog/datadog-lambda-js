@@ -17,6 +17,29 @@ import { extractHTTPDataFromEvent } from "./event-data-extractor";
 
 const mockExtract = extractHTTPDataFromEvent as jest.MockedFunction<typeof extractHTTPDataFromEvent>;
 
+const inferringEvent = {
+  version: "2.0",
+  rawQueryString: "",
+  requestContext: { domainName: "abc.execute-api.eu-west-1.amazonaws.com" },
+};
+const nonInferringEvent = { requestContext: { stage: "dev" }, httpMethod: "GET", resource: "/" };
+
+// The trigger and the streaming flag are what processAppsecResponse derives the mode from, so each
+// test declares them instead of building the payload.
+const publishResponse = (
+  span: any,
+  result: any,
+  statusCode: string | undefined,
+  mode: "infer" | "noinfer" | "stream",
+) =>
+  processAppsecResponse({
+    span,
+    event: mode === "noinfer" ? nonInferringEvent : inferringEvent,
+    result,
+    statusCode,
+    responseStream: mode === "stream",
+  });
+
 describe("AppSec orchestrator", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -74,17 +97,14 @@ describe("AppSec orchestrator", () => {
 
   describe("processAppSecResponse", () => {
     it("should not publish when span is falsy", () => {
-      processAppsecResponse(null, { statusCode: 200 }, "200", { kind: "buffered", supportsInference: true });
+      publishResponse(null, { statusCode: 200 }, "200", "infer");
       expect(mockPublish).not.toHaveBeenCalled();
     });
 
     it("should publish the normalized status code and the response headers", () => {
       const span = { setTag: jest.fn() };
 
-      processAppsecResponse(span, { statusCode: 200, headers: { "content-type": "application/json" } }, "200", {
-        kind: "buffered",
-        supportsInference: true,
-      });
+      publishResponse(span, { statusCode: 200, headers: { "content-type": "application/json" } }, "200", "infer");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -98,7 +118,7 @@ describe("AppSec orchestrator", () => {
     it("should publish with undefined statusCode and headers when result has none", () => {
       const span = { setTag: jest.fn() };
 
-      processAppsecResponse(span, {}, undefined, { kind: "buffered", supportsInference: true });
+      publishResponse(span, {}, undefined, "infer");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -112,7 +132,7 @@ describe("AppSec orchestrator", () => {
     it("should ignore the status code carried by the result", () => {
       const span = { setTag: jest.fn() };
 
-      processAppsecResponse(span, { statusCode: 200 }, "502", { kind: "buffered", supportsInference: true });
+      publishResponse(span, { statusCode: 200 }, "502", "infer");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -128,7 +148,7 @@ describe("AppSec orchestrator", () => {
 
       const result = { headers: { "content-type": "application/json" } };
 
-      processAppsecResponse(span, result, "200", { kind: "buffered", supportsInference: true });
+      publishResponse(span, result, "200", "infer");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -142,10 +162,7 @@ describe("AppSec orchestrator", () => {
     it("should lowercase the response header names", () => {
       const span = { setTag: jest.fn() };
 
-      processAppsecResponse(span, { statusCode: 200, headers: { "X-Option": "test_value" } }, "200", {
-        kind: "buffered",
-        supportsInference: true,
-      });
+      publishResponse(span, { statusCode: 200, headers: { "X-Option": "test_value" } }, "200", "infer");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -159,7 +176,7 @@ describe("AppSec orchestrator", () => {
     it("should merge multi value response headers", () => {
       const span = { setTag: jest.fn() };
 
-      processAppsecResponse(
+      publishResponse(
         span,
         {
           statusCode: 200,
@@ -167,7 +184,7 @@ describe("AppSec orchestrator", () => {
           multiValueHeaders: { "X-Option": ["a", "b"] },
         },
         "200",
-        { kind: "buffered", supportsInference: true },
+        "infer",
       );
 
       expect(mockPublish).toHaveBeenCalledWith({
@@ -182,10 +199,7 @@ describe("AppSec orchestrator", () => {
     it("should ignore multi value response headers that are not arrays", () => {
       const span = { setTag: jest.fn() };
 
-      processAppsecResponse(span, { statusCode: 200, multiValueHeaders: { "Set-Cookie": "a=b" } }, "200", {
-        kind: "buffered",
-        supportsInference: true,
-      });
+      publishResponse(span, { statusCode: 200, multiValueHeaders: { "Set-Cookie": "a=b" } }, "200", "infer");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -199,10 +213,7 @@ describe("AppSec orchestrator", () => {
     it("should stringify non string response header values", () => {
       const span = { setTag: jest.fn() };
 
-      processAppsecResponse(span, { statusCode: 200, headers: { "Content-Length": 42, "X-Flag": true } }, "200", {
-        kind: "buffered",
-        supportsInference: true,
-      });
+      publishResponse(span, { statusCode: 200, headers: { "Content-Length": 42, "X-Flag": true } }, "200", "infer");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -216,10 +227,7 @@ describe("AppSec orchestrator", () => {
     it("should skip response headers with a null value", () => {
       const span = { setTag: jest.fn() };
 
-      processAppsecResponse(span, { statusCode: 200, headers: { "X-Option": null } }, "200", {
-        kind: "buffered",
-        supportsInference: true,
-      });
+      publishResponse(span, { statusCode: 200, headers: { "X-Option": null } }, "200", "infer");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -233,7 +241,7 @@ describe("AppSec orchestrator", () => {
     it("should publish no status code when none is normalized, even if the result carries one", () => {
       const span = { setTag: jest.fn() };
 
-      processAppsecResponse(span, { statusCode: 204 }, undefined, { kind: "buffered", supportsInference: true });
+      publishResponse(span, { statusCode: 204 }, undefined, "infer");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -248,10 +256,7 @@ describe("AppSec orchestrator", () => {
       const span = { setTag: jest.fn() };
       const body = JSON.stringify({ payload: { key: "value" } });
 
-      processAppsecResponse(span, { statusCode: 200, headers: { "Content-Type": "application/json" }, body }, "200", {
-        kind: "buffered",
-        supportsInference: true,
-      });
+      publishResponse(span, { statusCode: 200, headers: { "Content-Type": "application/json" }, body }, "200", "infer");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -266,7 +271,7 @@ describe("AppSec orchestrator", () => {
       const span = { setTag: jest.fn() };
       const body = JSON.stringify({ payload: 1 });
 
-      processAppsecResponse(span, { statusCode: 200, body }, "200", { kind: "buffered", supportsInference: true });
+      publishResponse(span, { statusCode: 200, body }, "200", "infer");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -280,10 +285,7 @@ describe("AppSec orchestrator", () => {
     it("should publish the body raw, without parsing or decoding it", () => {
       const span = { setTag: jest.fn() };
 
-      processAppsecResponse(span, { statusCode: 200, body: "eyJhIjoiYiJ9", isBase64Encoded: true }, "200", {
-        kind: "buffered",
-        supportsInference: true,
-      });
+      publishResponse(span, { statusCode: 200, body: "eyJhIjoiYiJ9", isBase64Encoded: true }, "200", "infer");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -298,7 +300,7 @@ describe("AppSec orchestrator", () => {
       const span = { setTag: jest.fn() };
       const result = { message: "ok", items: [1, 2] };
 
-      processAppsecResponse(span, result, "200", { kind: "buffered", supportsInference: true });
+      publishResponse(span, result, "200", "infer");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -313,7 +315,7 @@ describe("AppSec orchestrator", () => {
       const span = { setTag: jest.fn() };
       const result = { body: { value: 1 } };
 
-      processAppsecResponse(span, result, "200", { kind: "buffered", supportsInference: true });
+      publishResponse(span, result, "200", "infer");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -328,7 +330,7 @@ describe("AppSec orchestrator", () => {
       const span = { setTag: jest.fn() };
       const result = { headers: { "content-type": "text/plain" }, payload: 1 };
 
-      processAppsecResponse(span, result, "200", { kind: "buffered", supportsInference: true });
+      publishResponse(span, result, "200", "infer");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -343,7 +345,7 @@ describe("AppSec orchestrator", () => {
       const span = { setTag: jest.fn() };
       const result = { multiValueHeaders: { count: [2] } };
 
-      processAppsecResponse(span, result, "200", { kind: "buffered", supportsInference: true });
+      publishResponse(span, result, "200", "infer");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -358,7 +360,7 @@ describe("AppSec orchestrator", () => {
       const span = { setTag: jest.fn() };
       const result = { isBase64Encoded: true, payload: 1 };
 
-      processAppsecResponse(span, result, "200", { kind: "buffered", supportsInference: true });
+      publishResponse(span, result, "200", "infer");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -373,7 +375,7 @@ describe("AppSec orchestrator", () => {
       const span = { setTag: jest.fn() };
       const result = { statusCode: undefined, body: { value: 1 } };
 
-      processAppsecResponse(span, result, "200", { kind: "buffered", supportsInference: true });
+      publishResponse(span, result, "200", "infer");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -387,7 +389,7 @@ describe("AppSec orchestrator", () => {
     it("should publish neither body nor headers when the trigger does not infer responses", () => {
       const span = { setTag: jest.fn() };
 
-      processAppsecResponse(span, { payload: 1 }, "200", { kind: "buffered", supportsInference: false });
+      publishResponse(span, { payload: 1 }, "200", "noinfer");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -401,10 +403,7 @@ describe("AppSec orchestrator", () => {
     it("should still publish the headers of a structured response when the trigger does not infer", () => {
       const span = { setTag: jest.fn() };
 
-      processAppsecResponse(span, { statusCode: 200, headers: { "X-Option": "a" } }, "200", {
-        kind: "buffered",
-        supportsInference: false,
-      });
+      publishResponse(span, { statusCode: 200, headers: { "X-Option": "a" } }, "200", "noinfer");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -418,7 +417,7 @@ describe("AppSec orchestrator", () => {
     it("should publish no response data for a streaming function that returned nothing", () => {
       const span = { setTag: jest.fn() };
 
-      processAppsecResponse(span, undefined, "200", { kind: "streaming" });
+      publishResponse(span, undefined, "200", "stream");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -432,7 +431,7 @@ describe("AppSec orchestrator", () => {
     it("should publish no response data for a streaming function that returned a payload", () => {
       const span = { setTag: jest.fn() };
 
-      processAppsecResponse(span, { payload: 1 }, "200", { kind: "streaming" });
+      publishResponse(span, { payload: 1 }, "200", "stream");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -446,11 +445,11 @@ describe("AppSec orchestrator", () => {
     it("should publish no response data for a streaming function that returned a structured response", () => {
       const span = { setTag: jest.fn() };
 
-      processAppsecResponse(
+      publishResponse(
         span,
         { statusCode: 201, headers: { "Content-Type": "text/plain" }, body: "streamed", isBase64Encoded: true },
         "201",
-        { kind: "streaming" },
+        "stream",
       );
 
       expect(mockPublish).toHaveBeenCalledWith({
@@ -465,7 +464,7 @@ describe("AppSec orchestrator", () => {
     it("should publish a non object result as the body", () => {
       const span = { setTag: jest.fn() };
 
-      processAppsecResponse(span, "plain text", "200", { kind: "buffered", supportsInference: true });
+      publishResponse(span, "plain text", "200", "infer");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -479,7 +478,7 @@ describe("AppSec orchestrator", () => {
     it("should publish no body when the handler returned nothing", () => {
       const span = { setTag: jest.fn() };
 
-      processAppsecResponse(span, undefined, "502", { kind: "buffered", supportsInference: true });
+      publishResponse(span, undefined, "502", "infer");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
@@ -490,8 +489,81 @@ describe("AppSec orchestrator", () => {
       });
     });
 
+    describe("which triggers serve a result without a status code as the body", () => {
+      const inferred = (span: any) => ({
+        span,
+        statusCode: "200",
+        responseHeaders: { "content-type": "application/json" },
+        responseBody: { payload: 1 },
+        isBase64Encoded: false,
+      });
+      const nothing = (span: any) => ({
+        span,
+        statusCode: "200",
+        responseHeaders: undefined,
+        responseBody: undefined,
+        isBase64Encoded: false,
+      });
+
+      it.each([
+        [
+          "an HTTP API payload format 2.0 trigger",
+          {
+            version: "2.0",
+            rawQueryString: "",
+            requestContext: { domainName: "abc.execute-api.eu-west-1.amazonaws.com" },
+          },
+          true,
+        ],
+        [
+          "a function url trigger",
+          { version: "2.0", rawQueryString: "", requestContext: { domainName: "abc.lambda-url.eu-west-1.on.aws" } },
+          true,
+        ],
+        [
+          "a REST API payload format 1.0 trigger",
+          { requestContext: { stage: "dev" }, httpMethod: "GET", resource: "/" },
+          false,
+        ],
+        ["an ALB trigger", { requestContext: { elb: { targetGroupArn: "arn" } }, httpMethod: "GET", path: "/" }, false],
+        ["a non HTTP trigger", { Records: [] }, false],
+        ["a missing event", undefined, false],
+        ["a non object event", "string event", false],
+      ])("should decide inference from the trigger: %s", (_label, event, infers) => {
+        const span = { setTag: jest.fn() };
+
+        processAppsecResponse({ span, event, result: { payload: 1 }, statusCode: "200", responseStream: false });
+
+        expect(mockPublish).toHaveBeenCalledWith(infers ? inferred(span) : nothing(span));
+      });
+    });
+
+    it("should stop inferring when the handler strips the event identity fields", () => {
+      const span = { setTag: jest.fn() };
+      const mutated: any = { ...inferringEvent };
+      delete mutated.version;
+      delete mutated.requestContext;
+
+      // Accepted trade: the mode is resolved where it is consumed, so a handler that rewrites the
+      // event's identity fields loses inference. Resolving it earlier meant shared mutable state.
+      processAppsecResponse({
+        span,
+        event: mutated,
+        result: { payload: 1 },
+        statusCode: "200",
+        responseStream: false,
+      });
+
+      expect(mockPublish).toHaveBeenCalledWith({
+        span,
+        statusCode: "200",
+        responseHeaders: undefined,
+        responseBody: undefined,
+        isBase64Encoded: false,
+      });
+    });
+
     describe("when the envelope carries an unservable status code", () => {
-      const buffered = { kind: "buffered" as const, supportsInference: true };
       const nothing = (span: any) => ({
         span,
         statusCode: "200",
@@ -515,7 +587,7 @@ describe("AppSec orchestrator", () => {
       ])("should publish no response data when the status code is %s", (_label, statusCode) => {
         const span = { setTag: jest.fn() };
 
-        processAppsecResponse(span, { statusCode, body: '{"orderId":123}' }, "200", buffered);
+        publishResponse(span, { statusCode, body: '{"orderId":123}' }, "200", "infer");
 
         expect(mockPublish).toHaveBeenCalledWith(nothing(span));
       });
@@ -523,10 +595,7 @@ describe("AppSec orchestrator", () => {
       it("should publish nothing rather than infer a body when the trigger does not infer", () => {
         const span = { setTag: jest.fn() };
 
-        processAppsecResponse(span, { statusCode: null, body: '{"orderId":123}' }, "200", {
-          kind: "buffered",
-          supportsInference: false,
-        });
+        publishResponse(span, { statusCode: null, body: '{"orderId":123}' }, "200", "noinfer");
 
         expect(mockPublish).toHaveBeenCalledWith(nothing(span));
       });
@@ -534,7 +603,7 @@ describe("AppSec orchestrator", () => {
       it("should publish nothing rather than infer the whole envelope as the body", () => {
         const span = { setTag: jest.fn() };
 
-        processAppsecResponse(span, { statusCode: null, payload: 1 }, "200", buffered);
+        publishResponse(span, { statusCode: null, payload: 1 }, "200", "infer");
 
         expect(mockPublish).toHaveBeenCalledWith(nothing(span));
       });
@@ -546,7 +615,7 @@ describe("AppSec orchestrator", () => {
       ])("should publish the envelope for %s", (_label, statusCode, published) => {
         const span = { setTag: jest.fn() };
 
-        processAppsecResponse(span, { statusCode, body: '{"orderId":123}' }, published as string, buffered);
+        publishResponse(span, { statusCode, body: '{"orderId":123}' }, published as string, "infer");
 
         expect(mockPublish).toHaveBeenCalledWith({
           span,
@@ -569,14 +638,13 @@ describe("AppSec orchestrator", () => {
         responseBody: undefined,
         isBase64Encoded: false,
       });
-      const buffered = { kind: "buffered" as const, supportsInference: true };
 
       it("should survive a throwing status code getter", () => {
         const span = { setTag: jest.fn() };
         const result = {};
         Object.defineProperty(result, "statusCode", { get: throwing, enumerable: true });
 
-        expect(() => processAppsecResponse(span, result, "200", buffered)).not.toThrow();
+        expect(() => publishResponse(span, result, "200", "infer")).not.toThrow();
         expect(mockPublish).toHaveBeenCalledWith(degraded(span, "200"));
       });
 
@@ -585,7 +653,7 @@ describe("AppSec orchestrator", () => {
         const result = { statusCode: 200 };
         Object.defineProperty(result, "body", { get: throwing, enumerable: true });
 
-        expect(() => processAppsecResponse(span, result, "200", buffered)).not.toThrow();
+        expect(() => publishResponse(span, result, "200", "infer")).not.toThrow();
         expect(mockPublish).toHaveBeenCalledWith(degraded(span, "200"));
       });
 
@@ -594,7 +662,7 @@ describe("AppSec orchestrator", () => {
         const result = { statusCode: 200, body: "ok" };
         Object.defineProperty(result, "isBase64Encoded", { get: throwing, enumerable: true });
 
-        expect(() => processAppsecResponse(span, result, "200", buffered)).not.toThrow();
+        expect(() => publishResponse(span, result, "200", "infer")).not.toThrow();
         expect(mockPublish).toHaveBeenCalledWith(degraded(span, "200"));
       });
 
@@ -603,7 +671,7 @@ describe("AppSec orchestrator", () => {
         const result = { statusCode: 200, body: "ok" };
         Object.defineProperty(result, "headers", { get: throwing, enumerable: true });
 
-        expect(() => processAppsecResponse(span, result, "200", buffered)).not.toThrow();
+        expect(() => publishResponse(span, result, "200", "infer")).not.toThrow();
         expect(mockPublish).toHaveBeenCalledWith(degraded(span, "200"));
       });
 
@@ -612,7 +680,7 @@ describe("AppSec orchestrator", () => {
         const result = { statusCode: 200, body: "ok" };
         Object.defineProperty(result, "multiValueHeaders", { get: throwing, enumerable: true });
 
-        expect(() => processAppsecResponse(span, result, "200", buffered)).not.toThrow();
+        expect(() => publishResponse(span, result, "200", "infer")).not.toThrow();
         expect(mockPublish).toHaveBeenCalledWith(degraded(span, "200"));
       });
 
@@ -621,7 +689,7 @@ describe("AppSec orchestrator", () => {
         const headers = {};
         Object.defineProperty(headers, "X-Option", { get: throwing, enumerable: true });
 
-        expect(() => processAppsecResponse(span, { statusCode: 200, headers }, "200", buffered)).not.toThrow();
+        expect(() => publishResponse(span, { statusCode: 200, headers }, "200", "infer")).not.toThrow();
         expect(mockPublish).toHaveBeenCalledWith(degraded(span, "200"));
       });
 
@@ -629,7 +697,7 @@ describe("AppSec orchestrator", () => {
         const span = { setTag: jest.fn() };
         const headers = { "X-Option": { toString: throwing } };
 
-        expect(() => processAppsecResponse(span, { statusCode: 200, headers }, "200", buffered)).not.toThrow();
+        expect(() => publishResponse(span, { statusCode: 200, headers }, "200", "infer")).not.toThrow();
         expect(mockPublish).toHaveBeenCalledWith(degraded(span, "200"));
       });
 
@@ -639,7 +707,7 @@ describe("AppSec orchestrator", () => {
         values.join = throwing;
 
         expect(() =>
-          processAppsecResponse(span, { statusCode: 200, multiValueHeaders: { "X-Option": values } }, "200", buffered),
+          publishResponse(span, { statusCode: 200, multiValueHeaders: { "X-Option": values } }, "200", "infer"),
         ).not.toThrow();
         expect(mockPublish).toHaveBeenCalledWith(degraded(span, "200"));
       });
@@ -648,10 +716,7 @@ describe("AppSec orchestrator", () => {
     it("should publish no body when a proxy integration response carries none", () => {
       const span = { setTag: jest.fn() };
 
-      processAppsecResponse(span, { statusCode: 204, body: null }, "204", {
-        kind: "buffered",
-        supportsInference: true,
-      });
+      publishResponse(span, { statusCode: 204, body: null }, "204", "infer");
 
       expect(mockPublish).toHaveBeenCalledWith({
         span,
