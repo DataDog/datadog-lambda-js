@@ -917,6 +917,15 @@ describe("getTraceEventExtractor", () => {
       },
     ],
     [
+      "KafkaEventTraceExtractor",
+      "self-managed Kafka event",
+      KafkaEventTraceExtractor,
+      {
+        eventSource: "aws:SelfManagedKafka",
+        records: {},
+      },
+    ],
+    [
       "EventBridgeEventTraceExtractor",
       "EventBridge event",
       EventBridgeEventTraceExtractor,

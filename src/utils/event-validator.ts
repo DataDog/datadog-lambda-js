@@ -79,7 +79,7 @@ export class EventValidator {
 
   static isKafkaEvent(event: any): event is MSKEvent | SelfManagedKafkaEvent {
     return (
-      (event.eventSource === "aws:kafka" || event.eventSource === "SelfManagedKafka") &&
+      (event.eventSource === "aws:kafka" || event.eventSource === "aws:SelfManagedKafka") &&
       event.records !== null &&
       typeof event.records === "object"
     );

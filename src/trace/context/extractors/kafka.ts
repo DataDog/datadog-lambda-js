@@ -53,7 +53,7 @@ export class KafkaEventTraceExtractor implements EventTraceExtractor {
             // A batch can span topics, so the target is resolved per record
             // rather than once for the whole event.
             const topic = this.getTopicName(record, topicPartition);
-            if (topic && headers) {
+            if (topic) {
               this.tracerWrapper.setConsumeCheckpoint(headers, "kafka", topic);
             }
           } catch (error) {

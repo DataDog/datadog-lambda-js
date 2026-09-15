@@ -206,7 +206,7 @@ describe("KafkaEventTraceExtractor", () => {
       expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).not.toHaveBeenCalled();
     });
 
-    it("returns null when a record carries no headers", () => {
+    it("returns null but still checkpoints when a record carries no headers", () => {
       const tracerWrapper = new TracerWrapper();
       const payload = buildEvent({ "demo-topic-0": [buildRecord({ headers: [] })] });
 
@@ -214,7 +214,11 @@ describe("KafkaEventTraceExtractor", () => {
       const traceContext = extractor.extract(payload);
 
       expect(traceContext).toBeNull();
-      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).not.toHaveBeenCalled();
+
+      // Records from uninstrumented producers have no context to extract, but
+      // they must still produce a DSM consume node as a pathway root, matching
+      // the SQS/Kinesis extractors' null-carrier behaviour.
+      expect(mockDataStreamsCheckpointer.setConsumeCheckpoint).toHaveBeenCalledWith("kafka", "demo-topic", null, false);
     });
 
     it("returns null when headers contain no trace context", () => {
