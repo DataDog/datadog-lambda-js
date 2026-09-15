@@ -55,6 +55,10 @@ export class KafkaEventTraceExtractor implements EventTraceExtractor {
             const topic = this.getTopicName(record, topicPartition);
             if (topic) {
               this.tracerWrapper.setConsumeCheckpoint(headers, "kafka", topic);
+            } else {
+              logDebug("Skipping DSM checkpoint for Kafka record: unable to resolve topic name", {
+                topicPartition,
+              });
             }
           } catch (error) {
             if (error instanceof Error) {
