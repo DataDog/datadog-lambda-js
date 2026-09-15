@@ -1,3 +1,5 @@
+import { existsSync, readFileSync } from "fs";
+import { dirname, join } from "path";
 import { logDebug, logWarning } from "../utils";
 import { SpanContextWrapper } from "./span-context-wrapper";
 import { TraceSource } from "./trace-context-service";
@@ -27,20 +29,28 @@ export interface TraceOptions {
 // This lets a customer bring their own version of the tracer.
 export class TracerWrapper {
   private tracer: any;
+  private loadedTracerVersion = "";
 
   constructor() {
     try {
       // Try and use the same version of the tracing library the user has installed.
       // This handles edge cases where two versions of dd-trace are installed, one in the layer
       // and one in the user's code.
-      const path = require.resolve("dd-trace", { paths: ["/var/task/node_modules", ...module.paths] });
-      this.tracer = require(path);
+      const paths = ["/var/task/node_modules", ...module.paths];
+      const tracerPath = require.resolve("dd-trace", { paths });
+      this.tracer = require(tracerPath);
+      this.loadedTracerVersion = readInstalledPackageVersion(tracerPath, "dd-trace");
       return;
     } catch (err) {
       if (err instanceof Object || err instanceof Error) {
         logDebug("Couldn't require dd-trace from main", err);
       }
     }
+  }
+
+  // tracer version loaded at runtime
+  public get tracerVersion(): string {
+    return this.loadedTracerVersion;
   }
 
   public get isTracerAvailable(): boolean {
@@ -133,4 +143,27 @@ export class TracerWrapper {
       }
     }
   }
+}
+
+// Walk up from the loaded entry. require.resolve("dd-trace/package.json") fails
+// when the package exports map does not expose ./package.json.
+function readInstalledPackageVersion(entryPath: string, packageName: string): string {
+  try {
+    let dir = dirname(entryPath);
+    while (dir !== dirname(dir)) {
+      const candidate = join(dir, "package.json");
+      if (existsSync(candidate)) {
+        const parsed = JSON.parse(readFileSync(candidate, "utf-8"));
+        if (parsed.name === packageName) {
+          return parsed.version ?? "";
+        }
+      }
+      dir = dirname(dir);
+    }
+  } catch (err) {
+    if (err instanceof Object || err instanceof Error) {
+      logDebug("Couldn't resolve the dd-trace version", err);
+    }
+  }
+  return "";
 }

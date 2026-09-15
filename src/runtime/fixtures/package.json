@@ -1,0 +1,8 @@
+{
+  "name": "datadog-lambda-js-durable-handler-fixture",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@aws/durable-execution-sdk-js": "2.3.0"
+  }
+}

@@ -33,6 +33,21 @@ Besides the environment variables supported by dd-trace-js, the datadog-lambda-j
 | DD_DURABLE_CROSS_INVOCATION_TRACING_ENABLED | For AWS Durable functions, the tracer creates extra checkpoints named `_datadog_{N}` to propagate trace context across function invocations, keeping spans from multiple invocations in one intact trace for each durable execution. | `true` |
 
 
+## Tracer compatibility
+
+`dd-trace` is an optional peer dependency, so you choose which tracer version runs alongside this
+library. `dd-trace` v6 requires Node 22 or newer, which splits the supported range by runtime:
+
+| Runtime | Lambda layer | `dd-trace` line to install from npm |
+| ------- | ------------ | ----------------------------------- |
+| Node 18.x, 20.x | `Datadog-Node18-x`, `Datadog-Node20-x` | `5.x` |
+| Node 22.x, 24.x, 26.x | `Datadog-Node22-x`, `Datadog-Node24-x`, `Datadog-Node26-x` | `6.x` |
+
+The Lambda layers bundle the version matching their runtime.
+If installed from npm instead, pick the version matching your runtime. Because the peer dependency is
+optional, npm will not automaticlly install dd-trace.
+
+
 ## Lambda Profiling Beta
 
 Datadog's [Continuous Profiler](https://www.datadoghq.com/product/code-profiling/) is now available in beta for NodeJS in version 6.87.0 and layer version 87 and above. This optional feature is enabled by setting the `DD_PROFILING_ENABLED` environment variable to `true`. During the beta period, profiling is available at no additional cost.

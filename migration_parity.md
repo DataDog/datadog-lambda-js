@@ -54,12 +54,13 @@ Each row gates the release independently of the feature rows below.
 | Public types in `index.d.v5.ts` | dd:`index.d.v5.ts` | L1 (dd-trace-js, v5.x branch) | type test on v5.x | pending | — (process) |
 | No post-Node-18 syntax on the plugin path | dd:`packages/datadog-plugin-lambda/**` | L1 (dd-trace-js lint) | lint rule pinned to Node 18 target — new | pending | dd-trace |
 | Config wiring applied per-line (`config/index.js` is not cherry-pick-clean) | dd:`packages/dd-trace/src/config/index.js` × 2 lines | L1 (dd-trace-js) | config spec on both lines | pending | dd-trace |
-| npm range resolves to v5 on Node 18 | shim:`package.json` | L1 (datadog-lambda-js) | install test on Node 18 — new | pending | both |
-| npm range floor bumped to latest v5.x at shim release (check registry, not local tags) | shim:`package.json` | release | release checklist item — new | pending | both |
-| Shim declares `engines.node >=18` | shim:`package.json` | L1 (datadog-lambda-js) | package check — new | pending | datadog-lambda-js |
-| Node 18/20 layers built and published (`v5.x` line) | shim:`scripts/build_layers.sh`, `scripts/move_ddtrace_dependency.js` | release | per-runtime dd-trace pin threaded from `NODE_VERSIONS` loop + test | pending | both |
-| Per-runtime dd-trace pin stamped into the release | shim:release scripts | release | release notes mapping check — new | pending | both |
-| Node 22/24/26 layers built and published (`v6.x` line) | shim:`scripts/build_layers.sh`, `scripts/move_ddtrace_dependency.js` | release | same per-runtime pin plumbing; node26 must be in the `NODE_VERSIONS` loop | pending | both |
+| npm package works on Node 18/20 with customer-installed dd-trace v5 | shim:`package.json` + packed npm artifact | L1 (datadog-lambda-js) | packed-tarball install test on Node 18 and 20 — new | pending | both |
+| npm range floor bumped to latest v5.x at shim release (check registry, not local tags) | shim:`package.json` (`peerDependencies`) + `scripts/dd_trace_versions.sh` | release | `scripts/check_dd_trace_v5_pin.sh` asserts the peer range advertises both pins and fails on registry drift; gated on the npm publish job | ported | both |
+| Shim declares `engines.node >=18` | shim:`package.json` | L1 (datadog-lambda-js) | `scripts/test_npm_package.sh` installs the packed tarball on every runtime | ported | datadog-lambda-js |
+| npm package works on Node 18/20 with customer-installed dd-trace v5 | shim:`package.json` + packed npm artifact | L1 (datadog-lambda-js) | `scripts/test_npm_package.sh` across the Node × dd-trace matrix, incl. the no-tracer case | ported | both |
+| Node 18/20 layers built and published (`v5.x` line) | shim:`scripts/install_deps.sh` (invoked from `Dockerfile`) | release | pin resolved from the build image's Node major + test | ported | both |
+| Per-runtime dd-trace pin stamped into the release | shim:`src/trace/tracer-wrapper.ts` | release | the `dd_trace` span tag is resolved from the loaded tracer instead of stamped at build time, so it is correct per runtime and for npm consumers without release plumbing | ported | both |
+| Node 22/24/26 layers built and published (`v6.x` line) | shim:`package.json` (`dd-trace` range) | release | same per-runtime pin plumbing; node26 must be in the `NODE_VERSIONS` loop | ported | both |
 | `nodeMaxMajor` stays above the newest shipped runtime | dd:`package.json` (`nodeMaxMajor`) × 3 lines | release | — new: assert `max(NODE_VERSIONS major) < nodeMaxMajor` at layer build, so a new runtime cannot ship into a guardrail bail-out | pending | dd-trace |
 
 ## Entry points and shim
@@ -89,7 +90,7 @@ no promises/`async` in npm production code). Everything else migrates.
 | Feature | Owner (code location) | Test type/location | Test implementation | Migration status | Effect in layer |
 |---|---|---|---|---|---|
 | promise handler | dd:`lambda.js` `wrap` → instrumentation channel | L1 + L2 | `dl:src/utils/handler.spec.ts` → port + golden | pending | dd-trace |
-| callback handler (no early completion) | dd:`packages/datadog-plugin-lambda/src/handler-utils.js` (`promisifiedHandler`) | L1 + L2 | `dl:src/utils/handler.spec.ts` → port + golden; first test pins the `tracePromise` non-thenable behavior empirically | pending | dd-trace |
+| callback handler (no early completion) | dd:`packages/datadog-plugin-lambda/src/handler-utils.js` (`promisifiedHandler`) | L1 + L2 | `dl:src/utils/handler.spec.ts` → port + golden `manual-callback`; first test pins the `tracePromise` non-thenable behavior empirically | pending | dd-trace |
 | sync handler | dd:`lambda.js` `wrap` path | L1 + L2 | same spec + golden | pending | dd-trace |
 | callback/promise race (first wins) | dd:`handler-utils.js` | L1 | `dl:src/utils/handler.spec.ts` race cases → port | pending | dd-trace |
 | `context.done/succeed/fail` | dd:`handler-utils.js` | L1 | same spec → port | pending | dd-trace |
@@ -163,7 +164,7 @@ fallback (unconditional; sampling-priority gated on `mergeXrayTraces` — docume
 | `_dd.parent_source` | dd:`…/src/index.js` | L2 or L3 | — new fixture, else e2e-assigned | pending | dd-trace |
 | `proactive_initialization` | dd:`…/src/cold-start.js` | L3 only (RIE cannot produce it; normalization drops markers) | e2e — assigned to `lambda-features` | pending | dd-trace |
 | HTTP 5xx → span error + enhanced error metric | dd:`…/src/index.js` + `enhanced-metrics.js` | L1 + L2 | golden 500 fixture + unit | pending | dd-trace |
-| payload capture + depth cap | dd:`…/src/handler-utils.js` (`tagObject`) | L1 + L2 | `dl:src/utils/tag-object.spec.ts` → port + golden toggle fixture | pending | dd-trace |
+| payload capture + depth cap | dd:`…/src/handler-utils.js` (`tagObject`) | L1 + L2 | `dl:src/utils/tag-object.spec.ts` → port + golden `cjs-capture-payload` (toggle on; default-off path pinned by every other golden) | pending | dd-trace |
 | log injection (trace ids in console output) | dd:`…/src/console-patcher.js` | L1 + L2 | `dl:src/trace/patch-console.spec.ts` → port + golden | pending | dd-trace |
 
 ## Span pointers
@@ -212,6 +213,8 @@ conditional on the extension being present.
 | Feature | Owner (code location) | Test type/location | Test implementation | Migration status | Effect in layer |
 |---|---|---|---|---|---|
 | HTTP header injection (`patch-http.ts`) | dd-core: dd-trace http/https plugins | L2 | golden (downstream headers visible in fixtures) | dd-core | dd-trace |
+| fetch/undici header injection | dd-core: dd-trace undici plugin | L2 | golden `cjs-fetch-requests` (mock echo of injected headers) | dd-core | dd-trace |
+| Lambda profiling (`DD_PROFILING_ENABLED`, layer ≥87) | dd-core: dd-trace profiler (`@datadog/pprof`) — never lived in this repo's business logic | L1 (dd-trace-js profiler suites) + L3 `lambda-features` Profiling row | existing dd-trace profiler tests; prune-list mapping review covers the native footprint | dd-core | dd-trace |
 | tracer wrapper / span wrapper plumbing | dd-core: dd-trace tracer API | — | covered transitively by plugin tests | dd-core | dd-trace |
 
 ## Release and packaging
@@ -222,7 +225,7 @@ conditional on the extension being present.
 | layer names, GovCloud, signing, docs automation unchanged | shim:`scripts/publish_*.sh`, `create_documentation_pr.sh` | release | pipeline dry-run | pending | both |
 | size gate 9 MB / 24 MB unchanged | shim:`scripts/check_layer_size.sh` | release | existing gate | pending | both |
 | prune list extended for v5/v6 native footprint; **each prune entry maps to a feature row** (profiling, AppSec natives — `--omit=optional` is not available) | shim:`Dockerfile` | release + L3 (Profiling/Appsec Usage rows) | — new mapping review | pending | dd-trace |
-| per-runtime dd-trace resolution (v5.x for 18/20, v6.x for 22/24/26) | shim:`scripts/move_ddtrace_dependency.js` + `build_layers.sh` | release | — new: takes a list, threaded from `NODE_VERSIONS`, plus test | pending | both |
+| per-runtime dd-trace resolution (v5.x for 18/20, v6.x for 22/24/26) | shim:`scripts/install_deps.sh` + `scripts/dd_trace_versions.sh` | release | — new: assert each layer ships the tracer line its runtime expects | ported | both |
 | shim version ↔ layer version mapping (`13.N.0` ↔ layer N) | shim:`package.json` | release | release check | pending | datadog-lambda-js |
 | Node 18/20/22/24/26 layers all build and publish post-migration | shim:release pipeline | release | pipeline | pending | both |
 | test-only layer assembler in dd-trace-js (never publishes/signs/prunes) | dd:`integration-tests/lambda/build-test-layer.sh` — new | L2 | per-PR CI; fails if run with release credentials | pending | — (process) |

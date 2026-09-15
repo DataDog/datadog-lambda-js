@@ -24,6 +24,10 @@ else
     printf "Tag found in environment: $CI_COMMIT_TAG\n"
 fi
 
+# Release gate: the Node 18/20 layers build from the hand-maintained v5 pin;
+# refuse to publish when it has fallen behind the latest dd-trace v5.
+./scripts/check_dd_trace_v5_pin.sh
+
 echo 'Publishing to NPM'
 if [ -d "./dist" ]; then
     rm -rf ./dist

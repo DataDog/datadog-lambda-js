@@ -1,6 +1,6 @@
 import { readFileSync } from "fs";
 import { TraceListener } from "./listener";
-import { ddtraceVersion, parentSpanFinishTimeHeader } from "./constants";
+import { parentSpanFinishTimeHeader } from "./constants";
 import { datadogLambdaVersion } from "../constants";
 import { Context } from "aws-lambda";
 import { SpanWrapper } from "./span-wrapper";
@@ -12,6 +12,7 @@ import {
   DATADOG_TRACE_ID_HEADER,
 } from "./context/extractor";
 import { TracerWrapper } from "./tracer-wrapper";
+import { _resetColdStart, setSandboxInit } from "../utils/cold-start";
 
 const mockProcessAppsecRequest = jest.fn();
 const mockProcessAppsecResponse = jest.fn();
@@ -49,8 +50,12 @@ jest.mock("./trace-context-service", () => {
   };
 });
 
+// Pinned so the expectations don't follow whichever dd-trace line the test run installed.
+const mockTracerVersion = "0.0.0-test";
+
 describe("TraceListener", () => {
   jest.spyOn(TracerWrapper.prototype, "isTracerAvailable", "get").mockReturnValue(true);
+  jest.spyOn(TracerWrapper.prototype, "tracerVersion", "get").mockReturnValue(mockTracerVersion);
   jest.spyOn(TracerWrapper.prototype, "extract").mockImplementation((val) => val);
   jest.spyOn(TracerWrapper.prototype, "startSpan").mockReturnValue({
     toSpanId: () => "mockSpanId",
@@ -96,6 +101,7 @@ describe("TraceListener", () => {
     invokedFunctionArn: "arn:aws:lambda:us-east-1:123456789101:function:my-lambda:1",
   };
   beforeEach(() => {
+    _resetColdStart();
     wrapSpy.mockClear();
     mockProcessAppsecRequest.mockClear();
     mockProcessAppsecResponse.mockClear();
@@ -108,6 +114,7 @@ describe("TraceListener", () => {
   });
 
   afterEach(() => {
+    _resetColdStart();
     process.env = oldEnv;
   });
 
@@ -133,12 +140,26 @@ describe("TraceListener", () => {
           resource_names: "my-Lambda",
           functionname: "my-lambda",
           datadog_lambda: datadogLambdaVersion,
-          dd_trace: ddtraceVersion,
+          dd_trace: mockTracerVersion,
         },
         type: "serverless",
       },
       unwrappedFunc,
     );
+  });
+
+  it("tags proactive initialization on the wrapped span", async () => {
+    setSandboxInit(0, 10_001);
+    const listener = new TraceListener(defaultConfig);
+    await listener.onStartInvocation({}, context as any);
+    const unwrappedFunc = () => {};
+    const wrappedFunc = listener.onWrap(unwrappedFunc);
+    wrappedFunc();
+    await listener.onCompleteInvocation();
+
+    const options = wrapSpy.mock.calls[0][1];
+    expect(options.tags?.cold_start).toBe("false");
+    expect(options.tags?.proactive_initialization).toBe(true);
   });
 
   it("wraps dd-trace span around invocation, with trace context from event", async () => {
@@ -175,7 +196,7 @@ describe("TraceListener", () => {
           functionname: "my-lambda",
           "_dd.parent_source": "event",
           datadog_lambda: datadogLambdaVersion,
-          dd_trace: ddtraceVersion,
+          dd_trace: mockTracerVersion,
         },
         type: "serverless",
         childOf: mockController.mockSpanContext,
@@ -208,7 +229,7 @@ describe("TraceListener", () => {
           resource_names: "my-Lambda",
           functionname: "my-lambda",
           datadog_lambda: datadogLambdaVersion,
-          dd_trace: ddtraceVersion,
+          dd_trace: mockTracerVersion,
         },
         type: "serverless",
       },
@@ -251,7 +272,7 @@ describe("TraceListener", () => {
           functionname: "my-lambda",
           "_dd.parent_source": "xray",
           datadog_lambda: datadogLambdaVersion,
-          dd_trace: ddtraceVersion,
+          dd_trace: mockTracerVersion,
         },
         type: "serverless",
         childOf: mockController.mockSpanContext,
@@ -282,7 +303,7 @@ describe("TraceListener", () => {
           resource_names: "my-Lambda",
           functionname: "my-lambda",
           datadog_lambda: datadogLambdaVersion,
-          dd_trace: ddtraceVersion,
+          dd_trace: mockTracerVersion,
         },
         type: "serverless",
       },
@@ -312,7 +333,7 @@ describe("TraceListener", () => {
           resource_names: "my-Lambda",
           functionname: "my-lambda",
           datadog_lambda: datadogLambdaVersion,
-          dd_trace: ddtraceVersion,
+          dd_trace: mockTracerVersion,
         },
         type: "serverless",
       },
@@ -391,7 +412,7 @@ describe("TraceListener", () => {
           "function_trigger.event_source_arn":
             "arn:aws:sqs:sa-east-1:123456123456:rstrat-sfn-sqs-demo-dev-process-event-queue",
           datadog_lambda: datadogLambdaVersion,
-          dd_trace: ddtraceVersion,
+          dd_trace: mockTracerVersion,
         },
         type: "serverless",
         childOf: expect.objectContaining({
@@ -455,7 +476,7 @@ describe("TraceListener", () => {
           resource_names: "my-Lambda",
           functionname: "my-lambda",
           datadog_lambda: datadogLambdaVersion,
-          dd_trace: ddtraceVersion,
+          dd_trace: mockTracerVersion,
         },
         type: "serverless",
       },

@@ -27,14 +27,19 @@ export BUILDX_NO_DEFAULT_ATTESTATIONS=1
 ALL_LAMBDA_HANDLERS=("async-metrics" "esm" "sync-metrics" "http-requests" "process-input-traced" "throw-error-traced" "status-code-500s" "container-cjs" "container-esm")
 ZIP_LAMBDA_HANDLERS=("async-metrics" "esm" "sync-metrics" "http-requests" "process-input-traced" "throw-error-traced" "status-code-500s")
 
-LOGS_WAIT_SECONDS=20
+LOG_FETCH_ATTEMPTS=10
+LOG_FETCH_INTERVAL_SECONDS=10
 
-script_path=${BASH_SOURCE[0]}
-scripts_dir=$(dirname $script_path)
-repo_dir=$(dirname $scripts_dir)
+scripts_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+repo_dir=$(dirname "$scripts_dir")
 cwd=$(pwd)
 
 integration_tests_dir="$repo_dir/integration_tests"
+
+# shellcheck source=scripts/dd_trace_versions.sh
+source "$scripts_dir/dd_trace_versions.sh"
+# shellcheck source=scripts/wait_for_complete_logs.sh
+source "$scripts_dir/wait_for_complete_logs.sh"
 
 script_utc_start_time=$(date -u +"%Y%m%dT%H%M%S")
 
@@ -101,24 +106,39 @@ cd $repo_dir
 # In CI the script is typically invoked without BUILD_LAYERS=true, so the
 # Docker-internal yarn install that path would do isn't reached, and the host
 # repo would otherwise tsc against an empty node_modules.
-yarn install --frozen-lockfile
+#
+# The build stamps the resolved dd-trace version into dist/, so resolve it for
+# the runtime under test. A run covering every runtime packs once, against v6.
+TARGET_NODE_MAJOR=${RUNTIME_PARAM:-$DD_TRACE_V6_MIN_NODE_MAJOR} ./scripts/install_deps.sh
 yarn build
 npm pack
 mv datadog-lambda-js-*.tgz $integration_tests_dir/container/cjs/datadog-lambda-js-local.tgz
 cp $integration_tests_dir/container/cjs/datadog-lambda-js-local.tgz \
    $integration_tests_dir/container/esm/datadog-lambda-js-local.tgz
 
+# dd-trace version the container-image handlers install, matching the layer's.
+DD_TRACE_DEFAULT_VERSION=$(node -p "require('dd-trace/package.json').version")
+
 cd $integration_tests_dir
 yarn
 
 function run_serverless() {
     NODE_VERSION=${!nodejs_version} NODE_MAJOR=$(lambda_node_image_tag $parameters_set) RUNTIME=$parameters_set SERVERLESS_RUNTIME=${!serverless_runtime} \
+        DD_TRACE_VERSION=$(container_dd_trace_version $parameters_set) \
         serverless "$@"
 }
 
 input_event_files=$(ls ./input_events)
 # Sort event files by name so that snapshots stay consistent
 input_event_files=($(for file_name in ${input_event_files[@]}; do echo $file_name; done | sort))
+
+# dd-trace version to install in the container-{cjs,esm} images, so they track
+# the same tracer line as the layer built for that runtime.
+function container_dd_trace_version() {
+    local node_major="${1#node}"
+    local override=$(dd_trace_version_for_node_major "$node_major")
+    echo "${override:-$DD_TRACE_DEFAULT_VERSION}"
+}
 
 # ECR tag for public.ecr.aws/lambda/nodejs used by container-{cjs,esm} tests.
 # Node 26 is preview-only on ECR until GA; plain :26 does not exist yet.
@@ -197,103 +217,50 @@ nodejs version : ${!nodejs_version} and run id : ${!run_id}"
         done
     done
 done
-set -e
-
-echo "Sleeping $LOGS_WAIT_SECONDS seconds to wait for logs to appear in CloudWatch..."
-sleep $LOGS_WAIT_SECONDS
-
 set +e # Don't exit this script if there is a diff or the logs endpoint fails
 echo "Fetching logs for invocations and comparing to snapshots"
+expected_completion_count=${#input_event_files[@]}
 for handler_name in "${LAMBDA_HANDLERS[@]}"; do
     for parameters_set in "${PARAMETERS_SETS[@]}"; do
         function_name="${handler_name}_node"
         function_snapshot_path="./snapshots/logs/${handler_name}_${parameters_set}.log"
-        unstripped_path="./snapshots/logs/${handler_name}_${parameters_set}.log.unstripped"
         serverless_runtime=$parameters_set[0]
         nodejs_version=$parameters_set[1]
         run_id=$parameters_set[2]
-        # Fetch logs with serverless cli, retrying to avoid AWS account-wide rate limit error
-        retry_counter=0
-        while [ $retry_counter -lt 10 ]; do
-            raw_logs=$(run_serverless logs --stage ${!run_id} -f $function_name --startTime $script_utc_start_time)
-            fetch_logs_exit_code=$?
-            if [ $fetch_logs_exit_code -eq 1 ]; then
-                echo "Retrying fetch logs for $function_name..."
-                retry_counter=$(($retry_counter + 1))
-                sleep 10
-                continue
-            fi
-            break
-        done
-
-        if [ $retry_counter -eq 9 ]; then
-            echo "FAILURE: Could not retrieve logs for $function_name"
-            echo "Error from final attempt to retrieve logs:"
-            echo $raw_logs
-
-            exit 1
+        if ! raw_logs=$(wait_for_complete_logs \
+            "$expected_completion_count" \
+            "$LOG_FETCH_ATTEMPTS" \
+            "$LOG_FETCH_INTERVAL_SECONDS" \
+            run_serverless logs --stage "${!run_id}" -f "$function_name" --startTime "$script_utc_start_time"); then
+            mismatch_found=true
+            continue
         fi
 
+        if ! logs=$(printf '%s\n' "$raw_logs" | \
+            RUN_ID="${!run_id}" "$scripts_dir/normalize_integration_logs.sh" aws); then
+            echo "FAILURE: Could not normalize logs for $function_name" >&2
+            mismatch_found=true
+            continue
+        fi
 
-        # Replace invocation-specific data like timestamps and IDs with XXXX to normalize logs across executions
-        logs=$(
-            echo "$raw_logs" |
-                node parse-json.js |
-                # Filter serverless cli errors
-                sed '/Serverless: Recoverable error occurred/d' |
-                # Normalize Lambda runtime report logs
-                perl -p -e 's/(RequestId|TraceId|init|SegmentId|Duration|Memory Used|"e"):( )?[a-z0-9\.\-]+/\1:\2XXXX/g' |
-                # Drop init duration from END lines; cold starts sometimes include it, warm starts do not.
-                perl -p -e 's/ \(init: XXXX ms\)//g' |
-                # Node.js 26 preview and container-image runtimes emit extra platform noise.
-                sed '/preview runtime version and should not be used for production workloads/d' |
-                sed '/^INIT_REPORT /d' |
-                sed '/DEP0205.*module\.register()/d' |
-                sed '/node --trace-deprecation.*where the warning was created/d' |
-                # Normalize DD APM headers and AWS account ID
-                perl -p -e "s/(x-datadog-parent-id:|x-datadog-trace-id:|account_id:)[0-9]+/\1XXXX/g" |
-                # Strip API key from logged requests
-                perl -p -e "s/(api_key=|'api_key': ')[a-z0-9\.\-]+/\1XXXX/g" |
-                # Normalize log timestamps
-                perl -p -e "s/[0-9]{4}\-[0-9]{2}\-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]+( \(\-?\+?[0-9:]+\))?/XXXX-XX-XX XX:XX:XX.XXX/" |
-                # Normalize DD trace ID injection
-                perl -p -e "s/(dd\.trace_id=)[0-9]+ (dd\.span_id=)[0-9]+/\1XXXX \2XXXX/" |
-                # Normalize execution ID in logs prefix
-                perl -p -e $'s/[0-9a-z]+\-[0-9a-z]+\-[0-9a-z]+\-[0-9a-z]+\-[0-9a-z]+\t/XXXX-XXXX-XXXX-XXXX-XXXX\t/' |
-                # Normalize minor package version tag so that these snapshots aren't broken on version bumps
-                perl -p -e "s/(dd_lambda_layer:datadog-nodev[0-9]+\.)[0-9]+\.[0-9]+/\1XX\.X/g" |
-                perl -p -e 's/"(span_id|apiid|runtime-id|record_ids|parent_id|trace_id|start|duration|tcp\.local\.address|tcp\.local\.port|dns\.address|request_id|function_arn|x-datadog-trace-id|x-datadog-parent-id|datadog_lambda|dd_trace|process_id)":\ ("?)[a-zA-Z0-9\.:\-]+("?)/"\1":\2XXXX\3/g' |
-                # Strip out run ID (from function name, resource, etc.)
-                perl -p -e "s/${!run_id}/XXXX/g" |
-                # Normalize line numbers in stack traces
-                perl -p -e 's/(.js:)[0-9]*:[0-9]*/\1XXX:XXX/g' |
-                # Remove metrics and metas in logged traces (their order is inconsistent)
-                perl -p -e 's/"(meta|metrics)":{(.*?)}/"\1":{"XXXX": "XXXX"}/g' |
-                # Normalize enhanced metric datadog_lambda tag
-                perl -p -e "s/(datadog_lambda:v)[0-9\.]+/\1X.X.X/g" |
-                # Normalize lookup resource
-                perl -p -e "s/(\"resource\":\"169.)[0-9\.]+/\1X.X.X/g" |
-                # Normalize Axios version
-                perl -p -e "s/User-Agent:axios\/\d+\.\d+\.\d+/User-Agent:axios\/X\.X\.X/g" |
-                # Remove init start line
-                perl -p -e "s/INIT_START.*//g" |
-                sed -E "s/(tracestate\:)([A-Za-z0-9\-\=\:\;].+)/\1XXX/g" |
-                sed -E "s/(\"_dd.p.tid\"\: \")[a-z0-9\.\-]+/\1XXXX/g" |
-                sed -E "s/(_dd.p.tid=)[a-z0-9\.\-]+/\1XXXX/g"
-        )
-
-        if [ ! -f $function_snapshot_path ]; then
+        if [ ! -f "$function_snapshot_path" ]; then
             # If no snapshot file exists yet, we create one
             echo "Writing logs to $function_snapshot_path because no snapshot exists yet"
-            echo "$logs" >$function_snapshot_path
+            printf '%s\n' "$logs" > "$function_snapshot_path"
         else
+            if ! normalized_snapshot=$(RUN_ID="${!run_id}" \
+                "$scripts_dir/normalize_integration_logs.sh" aws formatted < "$function_snapshot_path"); then
+                echo "FAILURE: Could not normalize snapshot for $function_name" >&2
+                mismatch_found=true
+                continue
+            fi
             # Compare new logs to snapshots
-            diff_output=$(echo "$logs" | sort | diff -w - <(sort $function_snapshot_path))
+            diff_output=$(printf '%s\n' "$logs" | sort | diff -w - <(printf '%s\n' "$normalized_snapshot" | sort))
             if [ $? -eq 1 ]; then
                 if [ -n "$UPDATE_SNAPSHOTS" ]; then
                     # If $UPDATE_SNAPSHOTS is set to true write the new logs over the current snapshot
                     echo "Overwriting log snapshot for $function_snapshot_path"
-                    echo "$logs" >$function_snapshot_path
+                    printf '%s\n' "$logs" > "$function_snapshot_path"
                 else
                     echo "Failed: Mismatch found between new $function_name logs (first) and snapshot (second):"
                     echo "$diff_output"
