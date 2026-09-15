@@ -67,7 +67,10 @@ function extractResponseData(result: any, mode: ResponseMode) {
   // about the response can be derived from the returned value.
   if (mode.kind === "streaming") return noResponseData();
 
-  if (isStructuredResponse(result)) {
+  if (carriesStatusCode(result)) {
+    // AWS may reject this envelope or infer a body from it; neither outcome is knowable here.
+    if (!isServableStatusCode(result.statusCode)) return noResponseData();
+
     return {
       responseHeaders: normalizeResponseHeaders(result),
       responseBody: result.body ?? undefined,
@@ -92,8 +95,17 @@ function noResponseData() {
   return { responseHeaders: undefined, responseBody: undefined, isBase64Encoded: false };
 }
 
-function isStructuredResponse(result: any): boolean {
+function carriesStatusCode(result: any): boolean {
   return typeof result === "object" && result !== null && result.statusCode !== undefined;
+}
+
+function isServableStatusCode(statusCode: unknown): boolean {
+  if (typeof statusCode !== "number" && typeof statusCode !== "string") return false;
+  if (typeof statusCode === "string" && !/^\d{3}$/.test(statusCode)) return false;
+
+  const code = Number(statusCode);
+
+  return Number.isInteger(code) && code >= 100 && code <= 599;
 }
 
 function normalizeResponseHeaders(result: any): Record<string, string> | undefined {

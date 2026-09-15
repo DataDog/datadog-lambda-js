@@ -490,6 +490,74 @@ describe("AppSec orchestrator", () => {
       });
     });
 
+    describe("when the envelope carries an unservable status code", () => {
+      const buffered = { kind: "buffered" as const, supportsInference: true };
+      const nothing = (span: any) => ({
+        span,
+        statusCode: "200",
+        responseHeaders: undefined,
+        responseBody: undefined,
+        isBase64Encoded: false,
+      });
+
+      it.each([
+        ["null", null],
+        ["zero", 0],
+        ["not a number", NaN],
+        ["at six hundred", 600],
+        ["below the range", 99],
+        ["a non numeric string", "abc"],
+        ["a padded string", " 200 "],
+        ["an object", {}],
+        ["a boolean", true],
+        ["an array", [200]],
+        ["a fractional number", 200.5],
+      ])("should publish no response data when the status code is %s", (_label, statusCode) => {
+        const span = { setTag: jest.fn() };
+
+        processAppsecResponse(span, { statusCode, body: '{"orderId":123}' }, "200", buffered);
+
+        expect(mockPublish).toHaveBeenCalledWith(nothing(span));
+      });
+
+      it("should publish nothing rather than infer a body when the trigger does not infer", () => {
+        const span = { setTag: jest.fn() };
+
+        processAppsecResponse(span, { statusCode: null, body: '{"orderId":123}' }, "200", {
+          kind: "buffered",
+          supportsInference: false,
+        });
+
+        expect(mockPublish).toHaveBeenCalledWith(nothing(span));
+      });
+
+      it("should publish nothing rather than infer the whole envelope as the body", () => {
+        const span = { setTag: jest.fn() };
+
+        processAppsecResponse(span, { statusCode: null, payload: 1 }, "200", buffered);
+
+        expect(mockPublish).toHaveBeenCalledWith(nothing(span));
+      });
+
+      it.each([
+        ["a string status code", "201", "201"],
+        ["the lowest servable status code", 100, "100"],
+        ["the highest servable status code", 599, "599"],
+      ])("should publish the envelope for %s", (_label, statusCode, published) => {
+        const span = { setTag: jest.fn() };
+
+        processAppsecResponse(span, { statusCode, body: '{"orderId":123}' }, published as string, buffered);
+
+        expect(mockPublish).toHaveBeenCalledWith({
+          span,
+          statusCode: published,
+          responseHeaders: undefined,
+          responseBody: '{"orderId":123}',
+          isBase64Encoded: false,
+        });
+      });
+    });
+
     describe("when reading the result throws", () => {
       const throwing = () => {
         throw new Error("instrumentation read");
