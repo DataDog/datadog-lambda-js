@@ -1,4 +1,10 @@
-import { parseEventSource, parseEventSourceARN, extractTriggerTags, extractHTTPStatusCodeTag } from "./trigger";
+import {
+  parseEventSource,
+  parseEventSourceARN,
+  extractTriggerTags,
+  extractHTTPStatusCodeTag,
+  supportsInferredResponse,
+} from "./trigger";
 import { readFileSync } from "fs";
 
 import { Context } from "aws-lambda";
@@ -235,5 +241,48 @@ describe("parseEventSource", () => {
         }
       }
     }
+  });
+});
+
+describe("supportsInferredResponse", () => {
+  it("should support an HTTP API payload format 2.0 trigger", () => {
+    expect(
+      supportsInferredResponse({
+        version: "2.0",
+        rawQueryString: "",
+        requestContext: { domainName: "abc.execute-api.eu-west-1.amazonaws.com" },
+      }),
+    ).toBe(true);
+  });
+
+  it("should support a function url trigger", () => {
+    expect(
+      supportsInferredResponse({
+        version: "2.0",
+        rawQueryString: "",
+        requestContext: { domainName: "abc.lambda-url.eu-west-1.on.aws" },
+      }),
+    ).toBe(true);
+  });
+
+  it("should not support a REST API payload format 1.0 trigger", () => {
+    expect(supportsInferredResponse({ requestContext: { stage: "dev" }, httpMethod: "GET", resource: "/" })).toBe(
+      false,
+    );
+  });
+
+  it("should not support an ALB trigger", () => {
+    expect(
+      supportsInferredResponse({ requestContext: { elb: { targetGroupArn: "arn" } }, httpMethod: "GET", path: "/" }),
+    ).toBe(false);
+  });
+
+  it("should not support a non HTTP trigger", () => {
+    expect(supportsInferredResponse({ Records: [] })).toBe(false);
+  });
+
+  it("should not throw on a missing event", () => {
+    expect(supportsInferredResponse(undefined)).toBe(false);
+    expect(supportsInferredResponse("string event")).toBe(false);
   });
 });

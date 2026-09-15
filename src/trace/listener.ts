@@ -2,7 +2,7 @@ import { Context } from "aws-lambda";
 
 import { patchHttp, unpatchHttp } from "./patch-http";
 
-import { extractTriggerTags, extractHTTPStatusCodeTag, parseEventSource } from "./trigger";
+import { extractTriggerTags, extractHTTPStatusCodeTag, parseEventSource, supportsInferredResponse } from "./trigger";
 import { ColdStartTracerConfig, ColdStartTracer } from "./cold-start-tracer";
 import { logDebug, tagObject } from "../utils";
 import {
@@ -108,6 +108,7 @@ export class TraceListener {
   private inferredSpan?: SpanWrapper;
   private wrappedCurrentSpan?: SpanWrapper;
   private triggerTags?: { [key: string]: string };
+  private inferredResponseSupported = false;
   private lambdaSpanParentContext?: SpanContext;
   private spanPointerAttributesList: SpanPointerAttributes[] | undefined;
 
@@ -179,6 +180,8 @@ export class TraceListener {
    */
   public onRequestStart(event: any): void {
     if (!this.config.appsecEnabled) return;
+    // Resolved here because the user function receives this very object and may mutate it.
+    this.inferredResponseSupported = supportsInferredResponse(event);
     processAppsecRequest(event, this.tracerWrapper.currentSpan);
   }
 
@@ -243,7 +246,14 @@ export class TraceListener {
       this.inferredSpan?.setTag("http.status_code", statusCode);
     }
     if (this.config.appsecEnabled) {
-      processAppsecResponse(this.tracerWrapper.currentSpan, result, statusCode);
+      processAppsecResponse(
+        this.tracerWrapper.currentSpan,
+        result,
+        statusCode,
+        isResponseStreamFunction
+          ? { kind: "streaming" }
+          : { kind: "buffered", supportsInference: this.inferredResponseSupported },
+      );
     }
     // Kept behind AppSec so 5xx responses still reach the WAF, and still nested on inferredSpan
     // so the early return only happens when there is an inferred span, as before.
