@@ -9,6 +9,7 @@ import {
   EventBridgeEventTraceExtractor,
   EventBridgeSQSEventTraceExtractor,
   HTTPEventTraceExtractor,
+  KafkaEventTraceExtractor,
   KinesisEventTraceExtractor,
   LambdaContextTraceExtractor,
   SNSEventTraceExtractor,
@@ -98,6 +99,7 @@ export class TraceContextExtractor {
     if (EventValidator.isSQSEvent(event)) return new SQSEventTraceExtractor(this.tracerWrapper, this.config);
     if (EventValidator.isKinesisStreamEvent(event))
       return new KinesisEventTraceExtractor(this.tracerWrapper, this.config);
+    if (EventValidator.isKafkaEvent(event)) return new KafkaEventTraceExtractor(this.tracerWrapper, this.config);
     if (EventValidator.isEventBridgeEvent(event))
       return new EventBridgeEventTraceExtractor(this.tracerWrapper, this.config);
 
