@@ -101,12 +101,14 @@ describe("MSKEventTraceExtractor", () => {
     expect(extract).not.toHaveBeenCalled();
   });
 
-  it("returns null after an extraction error", () => {
+  it("continues scanning after an extraction error", () => {
     extract.mockImplementationOnce(() => {
       throw new Error("invalid carrier");
     });
-    expect(extractor.extract(event({ "topic-0": [record(w3cHeaders), record(datadogHeaders)] }))).toBeNull();
-    expect(extract).toHaveBeenCalledTimes(1);
+    extract.mockReturnValueOnce(spanContext);
+    expect(extractor.extract(event({ "topic-0": [record(w3cHeaders), record(datadogHeaders)] }))).toBe(spanContext);
+    expect(extract).toHaveBeenCalledTimes(2);
+    expect(extract).toHaveBeenNthCalledWith(2, datadogHeaders);
   });
 
   it("returns null when the tracer cannot extract context", () => {

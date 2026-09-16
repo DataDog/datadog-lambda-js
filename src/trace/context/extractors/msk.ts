@@ -14,12 +14,12 @@ export class MSKEventTraceExtractor implements EventTraceExtractor {
       return null;
     }
 
-    try {
-      // A Lambda span can have only one parent. Use the first record with valid
-      // trace context, without combining headers from different records.
-      for (const records of Object.values(event.records)) {
-        if (!Array.isArray(records)) continue;
-        for (const record of records) {
+    // A Lambda span can have only one parent. Use the first record with valid
+    // trace context, without combining headers from different records.
+    for (const records of Object.values(event.records)) {
+      if (!Array.isArray(records)) continue;
+      for (const record of records) {
+        try {
           const headers = this.getParsedRecordHeaders(record);
           if (!headers) continue;
           const traceContext = this.tracerWrapper.extract(headers);
@@ -27,10 +27,10 @@ export class MSKEventTraceExtractor implements EventTraceExtractor {
             logDebug("Extracted trace context from MSK event");
             return traceContext;
           }
+        } catch (error) {
+          handleExtractionError(error, "MSK");
         }
       }
-    } catch (error) {
-      handleExtractionError(error, "MSK");
     }
 
     logDebug("Failed to extract trace context from MSK event");
