@@ -15,6 +15,7 @@ import {
   EventBridgeSQSEventTraceExtractor,
   HTTPEventTraceExtractor,
   KinesisEventTraceExtractor,
+  MSKEventTraceExtractor,
   SNSEventTraceExtractor,
   SNSSQSEventTraceExtractor,
   SQSEventTraceExtractor,
@@ -812,6 +813,11 @@ describe("getTraceEventExtractor", () => {
     ["a string", "some-value"],
     ["a number", 1234],
     ["an object which doesn't match any expected event", { custom: "event" }],
+    ["MSK without records", { eventSource: "aws:kafka" }],
+    ["MSK with null records", { eventSource: "aws:kafka", records: null }],
+    ["MSK with array records", { eventSource: "aws:kafka", records: [] }],
+    ["MSK with string records", { eventSource: "aws:kafka", records: "invalid" }],
+    ["records without an MSK event source", { records: { "topic-0": [] } }],
   ])("returns undefined when event is '%s'", (_, event) => {
     const tracerWrapper = new TracerWrapper();
     const traceContextExtractor = new TraceContextExtractor(tracerWrapper, {} as TraceConfig);
@@ -893,6 +899,12 @@ describe("getTraceEventExtractor", () => {
           },
         ],
       },
+    ],
+    [
+      "MSKEventTraceExtractor",
+      "MSK event",
+      MSKEventTraceExtractor,
+      { eventSource: "aws:kafka", records: { "topic-0": [] } },
     ],
     [
       "KinesisEventTraceExtractor",

@@ -10,6 +10,7 @@ import {
   EventBridgeSQSEventTraceExtractor,
   HTTPEventTraceExtractor,
   KinesisEventTraceExtractor,
+  MSKEventTraceExtractor,
   LambdaContextTraceExtractor,
   SNSEventTraceExtractor,
   SNSSQSEventTraceExtractor,
@@ -95,6 +96,8 @@ export class TraceContextExtractor {
     if (EventValidator.isEventBridgeSQSEvent(event))
       return new EventBridgeSQSEventTraceExtractor(this.tracerWrapper, this.config);
     if (EventValidator.isAppSyncResolverEvent(event)) return new AppSyncEventTraceExtractor(this.tracerWrapper);
+    if (EventValidator.isMSKEvent(event)) return new MSKEventTraceExtractor(this.tracerWrapper);
+
     if (EventValidator.isSQSEvent(event)) return new SQSEventTraceExtractor(this.tracerWrapper, this.config);
     if (EventValidator.isKinesisStreamEvent(event))
       return new KinesisEventTraceExtractor(this.tracerWrapper, this.config);
