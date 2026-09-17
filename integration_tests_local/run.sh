@@ -7,10 +7,11 @@
 # with the `rie` mode of scripts/normalize_integration_logs.sh, and diffed against LOCAL snapshots in ./snapshots/
 # (not integration_tests/snapshots/).
 #
-# The case set is deliberately at least as wide as the AWS-based suite in
-# integration_tests/serverless.yml: every handler variant that suite deploys
-# has a docker-based counterpart here, so the frozen goldens are not a
-# coverage regression relative to the tests we had before the migration.
+# The case set is deliberately at least as wide as the deprecated real AWS
+# Lambda resource-based suite in integration_tests/serverless.yml: every
+# handler variant it deployed has a docker-based counterpart here, so the
+# frozen goldens are not a coverage regression relative to the tests we had
+# before the migration.
 #
 # Case                     | image | entrypoint handler                       | what it covers
 # ------------------------ | ----- | ---------------------------------------- | --------------
@@ -380,9 +381,8 @@ if [ "$rie_actual_sha256" != "$RIE_SHA256" ]; then
 fi
 
 # Build and pack the locally-modified datadog-lambda-js so the container-image
-# tests install the version under test (same as the retired AWS suite did in
-# scripts/run_integration_tests.sh, now the integration-tests-residual suite
-# in serverless-e2e-tests).
+# tests install the version under test (same as the deprecated real AWS Lambda
+# resource-based suite did in scripts/run_integration_tests.sh).
 if [ -z "$SKIP_PACK" ]; then
     echo "Packing local datadog-lambda-js for container tests"
     cd "$repo_dir"

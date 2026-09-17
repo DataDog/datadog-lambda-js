@@ -35,11 +35,10 @@ Reference: https://datadoghq.atlassian.net/wiki/spaces/SLS/pages/3375925277
 2. Run `yarn upgrade dd-trace` (or `yarn upgrade dd-trace@^a.b.c` for a
    specific version) to pick up the latest tracer.
 3. If dd-trace changed, refresh the integration test snapshots. The local
-   docker suite is the behavioral gate:
+   RIE-based docker suite is the behavioral gate:
    `UPDATE_SNAPSHOTS=true ./integration_tests_local/run.sh`
-   The real-AWS residual snapshots live in the `integration-tests-residual`
-   suite of the `serverless-e2e-tests` repo — refresh them from there if the
-   tracer bump changes platform-visible output.
+   Rely on the end-to-end test suites for coverage that requires real AWS
+   Lambda resources.
 4. Bump `package.json` version to `X.Y.0`:
    - Minor version bumps on every release, and **must match the layer
      version**.

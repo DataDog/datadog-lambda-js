@@ -1,7 +1,7 @@
 // Tests for the shared AWS/RIE integration-log normalizer. The readiness
-// (wait_for_complete_logs) and runner tests that lived here moved with the
-// retired AWS suite to the integration-tests-residual suite in
-// serverless-e2e-tests.
+// (wait_for_complete_logs) and runner tests were removed with the deprecated
+// real AWS Lambda resource-based suite. Cases requiring real AWS Lambda
+// resources rely on the end-to-end test suites.
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 

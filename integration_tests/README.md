@@ -3,24 +3,23 @@
 This directory now hosts only the **fixtures shared with the local docker-based
 integration suite** (`integration_tests_local/`):
 
-- `input_events/` — the nine event payloads both suites invoke with,
+- `input_events/` — the nine event payloads the local RIE-based suite invokes
+  with,
 - `parse-json.js` — JSON-log line parser used by `integration_tests_local/normalize.sh`,
 - `container/` — the container-image fixtures (`cjs`, `esm`) built by the local suite.
 
-## The AWS-based suite was retired
+## The real AWS Lambda resource-based suite was deprecated
 
 The serverless-deployed suite that used to live here (`serverless.yml`,
 `snapshots/`, per-handler files, `scripts/run_integration_tests.sh`) was removed.
-Its coverage moved to two homes:
+The in-repo integration coverage now uses `integration_tests_local/`, a
+docker/RIE-based suite that runs per PR without an AWS account. Its goldens are
+strictly stronger for behavior: they preserve span `meta`/`metrics` keys, which
+the deprecated suite's normalization stripped wholesale.
 
-- **Behavior** → `integration_tests_local/` (docker/RIE, runs per PR in GitHub
-  Actions, no AWS account needed). Its goldens are strictly stronger: they
-  preserve span `meta`/`metrics` keys, which the retired suite's normalization
-  stripped wholesale.
-- **Real-AWS residual signals** (the real layer artifact on the real platform,
-  direct-API metric intake, `_X_AMZN_TRACE_ID` pass-through, a real API Gateway
-  trigger, platform-drift canary) → the `integration-tests-residual` suite in the
-  `serverless-e2e-tests` repo, which continues to diff against the same snapshots.
+Cases that require real AWS Lambda resources are covered by the end-to-end test
+suites.
 
-Do not re-add serverless-deployed tests here; add cases to the local suite, or to
-`serverless-e2e-tests` if they genuinely need real AWS.
+Do not re-add serverless-deployed tests here. Add behavioral cases to the local
+RIE-based suite, and rely on the end-to-end suites for real AWS Lambda resource
+cases.

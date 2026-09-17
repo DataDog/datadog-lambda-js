@@ -39,10 +39,8 @@ We love pull requests. For new features, consider opening an issue to discuss th
    ```bash
    ./integration_tests_local/run.sh
    ```
-1. The real-AWS residual coverage (real layer artifact on the real platform, direct-API
-   metric intake, X-Ray pass-through, a real API Gateway trigger) lives in the
-   `integration-tests-residual` suite of the `serverless-e2e-tests` repo and runs from
-   that repo's pipeline. See `integration_tests/README.md`.
+1. Rely on the end-to-end test suites for cases that require real AWS Lambda
+   resources. See `integration_tests/README.md`.
 1. Push to your fork and [submit a pull request][pr].
 
 [pr]: https://github.com/your-username/datadog-lambda-js/compare/DataDog:main..main.
