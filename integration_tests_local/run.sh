@@ -387,12 +387,11 @@ if [ -z "$SKIP_PACK" ]; then
     echo "Packing local datadog-lambda-js for container tests"
     cd "$repo_dir"
     if [ -f "$repo_dir/scripts/install_deps.sh" ]; then
-        # install_deps.sh installs the tracer line matching the target
-        # runtime (v5 on 18/20, v6 on 22+). v6 install requires host Node 22+.
-        # A full sweep packs once; run per-runtime like CI
-        # (RUNTIME_PARAM=18 ./integration_tests_local/run.sh) so the layer
-        # fixture's pinned dd-trace matches each leg.
-        TARGET_NODE_MAJOR=${RUNTIME_PARAM:-22} "$repo_dir/scripts/install_deps.sh"
+        # The npm tarball does not contain dd-trace, so a full sweep can pack
+        # once using the tracer line supported by the contributor's host. Each
+        # fixture image installs the exact runtime-compatible tracer below.
+        pack_node_major=${RUNTIME_PARAM:-$(node -p "process.versions.node.split('.')[0]")}
+        TARGET_NODE_MAJOR="$pack_node_major" "$repo_dir/scripts/install_deps.sh"
     else
         yarn install --frozen-lockfile
     fi
@@ -407,7 +406,8 @@ fi
 
 # The layer fixture's build context is derived from the repo build (dist/ +
 # handler.mjs + the module_importer overlay + lockfile-pinned dependencies),
-# mirroring the release Dockerfile's layer layout. Prepared once per run.
+# mirroring the release Dockerfile's layer layout. Prepared once per run; its
+# dd-trace pin is replaced inside each runtime image.
 layer_context_prepared=false
 function prepare_layer_context() {
     if [ "$layer_context_prepared" = true ]; then
@@ -549,16 +549,13 @@ function write_snapshot() {
 
 for node_version in "${RUNTIMES[@]}"; do
     node_image_tag=$(lambda_node_image_tag "$node_version")
-    # In the dd-trace v6 world the container fixtures take a DD_TRACE_VERSION
-    # build-arg (fixture package.json pins the newest line, which older
-    # runtimes cannot install). Pin the fixture to the tracer line that
-    # actually supports this runtime. On the v5 world there is no
-    # dd_trace_versions.sh and the fixture Dockerfiles declare no such ARG;
-    # docker only warns about the unused build-arg, so this stays harmless.
-    dd_trace_build_version=""
-    if [ -f "$repo_dir/scripts/dd_trace_versions.sh" ]; then
-        . "$repo_dir/scripts/dd_trace_versions.sh"
-        dd_trace_build_version=$(dd_trace_version_for_node_major "$node_version")
+    # Resolve both tracer lines to exact versions. The v5 compatibility pin is
+    # maintained explicitly; the v6 pin follows the root Yarn lockfile, so the
+    # regular dependency-update workflow updates the RIE fixtures as well.
+    . "$repo_dir/scripts/dd_trace_versions.sh"
+    dd_trace_build_version=$(dd_trace_version_for_node_major "$node_version")
+    if [ -z "$dd_trace_build_version" ]; then
+        dd_trace_build_version=$(node "$repo_dir/scripts/get_locked_dependency_version.js" dd-trace)
     fi
     for case_name in "${CASES[@]}"; do
         configure_case "$case_name" || exit 1

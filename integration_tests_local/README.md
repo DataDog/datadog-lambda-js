@@ -50,13 +50,13 @@ CI runs the complete runtime/case matrix on native `linux/amd64` and
 snapshots: the normalizer removes platform-owned preview/deprecation records
 as complete structured records before formatting them.
 
-On a tree that pins dd-trace v6 (which older runtimes cannot install), the
-pack step installs through `scripts/install_deps.sh` with
-`TARGET_NODE_MAJOR=$RUNTIME_PARAM` and the container fixtures get a matching
-`DD_TRACE_VERSION` build-arg. Packing the v6 line needs host Node 22+ (CI
-sets `setup-node` to the matrix runtime for that reason). Run per-runtime
-there, like CI does: a full sweep packs only once, so its layer fixture
-would carry the first leg's tracer line into every other leg.
+The npm tarball does not bundle `dd-trace`, so a full sweep packs it once with
+the tracer line supported by the contributor's host. Every fixture image,
+including the layer fixture, then installs the tracer version for its Lambda
+runtime: the maintained v5 compatibility pin on Node 18/20 and the exact v6
+version resolved by the root `yarn.lock` on Node 22+. Consequently the normal
+dependency-update workflow also updates the RIE fixtures without a separate v6
+pin. CI additionally sets the host Node version to its matrix runtime.
 
 The case names are:
 
