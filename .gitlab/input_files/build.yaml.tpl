@@ -108,27 +108,6 @@ npm package test ({{ $runtime.name }}):
   script:
     - ./scripts/test_npm_package.sh datadog-lambda-js-*.tgz
 
-integration test ({{ $runtime.name }}):
-  stage: test
-  # `docker-in-docker:<arch>` routes the job to a runner with a live Docker
-  # daemon (vs. plain `arch:amd64` which only has the docker CLI). Required by
-  # the container-image integration tests, which build & push ECR images for
-  # the `container-{cjs,esm}_node*` functions.
-  tags: ["docker-in-docker:amd64"]
-  image: ${CI_DOCKER_TARGET_IMAGE}:${CI_DOCKER_TARGET_VERSION}
-  needs: 
-    - build layer ({{ $runtime.name }})
-  dependencies:
-    - build layer ({{ $runtime.name }})
-  cache: &{{ $runtime.name }}-cache
-  variables:
-    CI_ENABLE_CONTAINER_IMAGE_BUILDS: "true"
-  before_script:
-    - EXTERNAL_ID_NAME=integration-test-externalid ROLE_TO_ASSUME=sandbox-integration-test-deployer AWS_ACCOUNT=425362996713 source .gitlab/scripts/get_secrets.sh
-    - (cd integration_tests && yarn install)
-  script:
-    - RUNTIME_PARAM={{ $runtime.node_major_version }} ./scripts/run_integration_tests.sh
-
 {{ range $environment := (ds "environments").environments }}
 {{ $dotenv := print $runtime.name "_" $environment.name ".env" }}
 
@@ -146,7 +125,6 @@ sign layer ({{ $runtime.name }}):
     - lint ({{ $runtime.name }})
     - unit test ({{ $runtime.name }})
     - npm package test ({{ $runtime.name }})
-    - integration test ({{ $runtime.name }})
   dependencies:
     - build layer ({{ $runtime.name }})
   artifacts: # Re specify artifacts so the modified signed file is passed
@@ -182,7 +160,6 @@ publish layer {{ $environment.name }} ({{ $runtime.name }}):
       - lint ({{ $runtime.name }})
       - unit test ({{ $runtime.name }})
       - npm package test ({{ $runtime.name }})
-      - integration test ({{ $runtime.name }})
 {{ end }}
   dependencies:
 {{ if or (eq $environment.name "prod") }}

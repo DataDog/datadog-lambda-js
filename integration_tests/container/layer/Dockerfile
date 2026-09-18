@@ -11,6 +11,10 @@
 ARG NODE_VERSION=22
 FROM public.ecr.aws/lambda/nodejs:${NODE_VERSION}
 
+# Exact lockfile-resolved v6 pin, or the maintained v5 compatibility pin for
+# Node 18/20. The runner always supplies it.
+ARG DD_TRACE_VERSION
+
 # Install dependencies BEFORE copying layer_pkg: npm prunes anything in
 # node_modules that is not in deps.package.json, so copying the layer tree
 # first would silently delete it.
@@ -18,7 +22,10 @@ COPY deps.package.json /opt/nodejs/package.json
 # --omit=optional matches the release build's --ignore-optional: pprof/appsec
 # natives are not exercised by these fixtures and skipping them keeps the
 # build fast.
-RUN cd /opt/nodejs && npm install --omit=dev --omit=optional --no-audit --no-fund
+RUN cd /opt/nodejs \
+    && test -n "$DD_TRACE_VERSION" \
+    && npm pkg set dependencies.dd-trace="$DD_TRACE_VERSION" \
+    && npm install --omit=dev --omit=optional --no-audit --no-fund
 COPY layer_pkg /opt/nodejs/node_modules/datadog-lambda-js/
 
 # handler.js (CJS) and esm.mjs (top-level await) are plain unwrapped user
