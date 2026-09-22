@@ -243,7 +243,13 @@ export class TraceListener {
       this.inferredSpan?.setTag("http.status_code", statusCode);
     }
     if (this.config.appsecEnabled) {
-      processAppsecResponse(this.tracerWrapper.currentSpan, result, statusCode);
+      processAppsecResponse({
+        span: this.tracerWrapper.currentSpan,
+        event,
+        result,
+        statusCode,
+        responseStream: isResponseStreamFunction,
+      });
     }
     // Kept behind AppSec so 5xx responses still reach the WAF, and still nested on inferredSpan
     // so the early return only happens when there is an inferred span, as before.

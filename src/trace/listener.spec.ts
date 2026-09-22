@@ -721,7 +721,13 @@ describe("TraceListener", () => {
 
         expect(mockProcessAppsecResponse).toHaveBeenCalledTimes(1);
         // Non-HTTP trigger: there is no normalized status code to hand over.
-        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, result, undefined);
+        expect(mockProcessAppsecResponse).toHaveBeenCalledWith({
+          span: mockSpan,
+          event,
+          result,
+          statusCode: undefined,
+          responseStream: false,
+        });
       } finally {
         currentSpanSpy.mockRestore();
       }
@@ -741,7 +747,13 @@ describe("TraceListener", () => {
         await listener.onStartInvocation(event, context as any);
         listener.onEndingInvocation(event, result, false);
 
-        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, result, "200");
+        expect(mockProcessAppsecResponse).toHaveBeenCalledWith({
+          span: mockSpan,
+          event,
+          result,
+          statusCode: "200",
+          responseStream: false,
+        });
       } finally {
         currentSpanSpy.mockRestore();
       }
@@ -758,7 +770,13 @@ describe("TraceListener", () => {
         await listener.onStartInvocation(event, context as any);
         listener.onEndingInvocation(event, undefined, false);
 
-        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, undefined, "502");
+        expect(mockProcessAppsecResponse).toHaveBeenCalledWith({
+          span: mockSpan,
+          event,
+          result: undefined,
+          statusCode: "502",
+          responseStream: false,
+        });
       } finally {
         currentSpanSpy.mockRestore();
       }
@@ -775,7 +793,13 @@ describe("TraceListener", () => {
         await listener.onStartInvocation(event, context as any);
         listener.onEndingInvocation(event, undefined, true);
 
-        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, undefined, "200");
+        expect(mockProcessAppsecResponse).toHaveBeenCalledWith({
+          span: mockSpan,
+          event,
+          result: undefined,
+          statusCode: "200",
+          responseStream: true,
+        });
       } finally {
         currentSpanSpy.mockRestore();
       }
@@ -815,7 +839,13 @@ describe("TraceListener", () => {
         const responseIs5xxError = listener.onEndingInvocation(event, { statusCode: 500 }, false);
 
         expect(responseIs5xxError).toBe(true);
-        expect(mockProcessAppsecResponse).toHaveBeenCalledWith(mockSpan, { statusCode: 500 }, "500");
+        expect(mockProcessAppsecResponse).toHaveBeenCalledWith({
+          span: mockSpan,
+          event,
+          result: { statusCode: 500 },
+          statusCode: "500",
+          responseStream: false,
+        });
       } finally {
         currentSpanSpy.mockRestore();
       }
