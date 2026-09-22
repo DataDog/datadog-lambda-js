@@ -5,15 +5,16 @@ datadog-lambda-js. It runs eleven cases — container-image, layer-mode, and
 manual-wrap handlers, plus targeted feature cases (HTTP header injection,
 custom trace extractors, proactive initialization) — inside Docker against the
 [AWS Lambda Runtime Interface Emulator (RIE)](https://github.com/aws/aws-lambda-runtime-interface-emulator),
-invokes them with the same input events as the AWS-based suite, captures
-logs from `docker logs`, normalizes them with the `rie` mode of
+invokes them with the same input events as the deprecated real AWS Lambda
+resource-based suite, captures logs from `docker logs`, normalizes them with
+the `rie` mode of
 `../scripts/normalize_integration_logs.sh`, and diffs them against **local**
 snapshots in `./snapshots/`.
 
-The case set is deliberately at least as wide as the AWS-based suite
-(`integration_tests/serverless.yml`): every behavior the old suite pinned
-has a docker-based counterpart here, so the frozen goldens are a strict
-superset oracle for the dd-trace-js migration.
+The case set is deliberately at least as wide as the deprecated real AWS
+Lambda resource-based suite (`integration_tests/serverless.yml`): every
+behavior it pinned has a docker-based counterpart here, so the frozen goldens
+are a strict superset oracle for the dd-trace-js migration.
 
 Nothing here touches AWS, and nothing here touches
 `integration_tests/snapshots/` (the AWS suite's snapshots).
@@ -49,13 +50,13 @@ CI runs the complete runtime/case matrix on native `linux/amd64` and
 snapshots: the normalizer removes platform-owned preview/deprecation records
 as complete structured records before formatting them.
 
-On a tree that pins dd-trace v6 (which older runtimes cannot install), the
-pack step installs through `scripts/install_deps.sh` with
-`TARGET_NODE_MAJOR=$RUNTIME_PARAM` and the container fixtures get a matching
-`DD_TRACE_VERSION` build-arg. Packing the v6 line needs host Node 22+ (CI
-sets `setup-node` to the matrix runtime for that reason). Run per-runtime
-there, like CI does: a full sweep packs only once, so its layer fixture
-would carry the first leg's tracer line into every other leg.
+The npm tarball does not bundle `dd-trace`, so a full sweep packs it once with
+the tracer line supported by the contributor's host. Every fixture image,
+including the layer fixture, then installs the tracer version for its Lambda
+runtime: the maintained v5 compatibility pin on Node 18/20 and the exact v6
+version resolved by the root `yarn.lock` on Node 22+. Consequently the normal
+dependency-update workflow also updates the RIE fixtures without a separate v6
+pin. CI additionally sets the host Node version to its matrix runtime.
 
 The case names are:
 
@@ -83,8 +84,9 @@ Two legacy aliases remain for muscle memory: `VARIANT_PARAM=cjs|esm` maps to
 Unless `SKIP_PACK=true` is set, each run repacks the library under test
 (`yarn install --frozen-lockfile && yarn build && npm pack`) into
 `integration_tests/container/{cjs,esm}/datadog-lambda-js-local.tgz`, exactly
-like `scripts/run_integration_tests.sh` does, so the containers always test
-the working tree. The layer fixture instead assembles
+like the deprecated real AWS Lambda resource-based suite
+(`scripts/run_integration_tests.sh`) did, so the containers always test the
+working tree. The layer fixture instead assembles
 `integration_tests/container/layer/layer_pkg/` from the repo build via
 `prepare-layer.js`, mirroring the release Dockerfile's layer layout. The
 dependency manifest mirrors the release build's full dependency closure —
@@ -253,9 +255,13 @@ under test. A base-image change must be reviewed, not hidden by normalization.
   per event, or the shared `default.json`), with optional
   `<case>_node<major>[_<event>].json` overrides
 
-## Comparison with the AWS-based suite
+## Comparison with the deprecated real AWS Lambda resource-based suite
 
-| | AWS suite (`scripts/run_integration_tests.sh`) | this harness |
+> The in-repo real AWS Lambda resource-based suite was deprecated in favor of
+> this RIE-based suite. Real AWS Lambda resource cases rely on the end-to-end
+> test suites. This table is kept for historical context.
+
+| | Deprecated AWS suite (`scripts/run_integration_tests.sh`) | this harness |
 |---|---|---|
 | handlers | layer, container, and manual-wrap variants | container + layer + manual-wrap cases |
 | infra | real Lambda via serverless, CloudWatch logs | docker + RIE, `docker logs` |
