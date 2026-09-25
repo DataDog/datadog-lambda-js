@@ -269,8 +269,9 @@ does not alter the handler, tracer, invocation body, or RIE timeout.
 
 These are L2 emulator goldens, not evidence of real AWS termination behavior
 or layer packaging. The redirect case covers the raw-handler hook used by
-layers; real AWS timeout behavior still needs L3 coverage. The current CI
-workflow compares these goldens on native amd64; the local capture used arm64.
+layers; real AWS timeout behavior still needs L3 coverage. The CI workflow is
+configured to compare these goldens on native amd64 and arm64; the local capture
+used arm64.
 
 ## Proactive initialization (cjs-proactive-init)
 
