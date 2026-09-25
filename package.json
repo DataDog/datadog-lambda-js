@@ -14,7 +14,7 @@
     "node": ">=18"
   },
   "peerDependencies": {
-    "dd-trace": "^5.126.0 || ^6.15.0"
+    "dd-trace": "^5.128.0 || ^6.17.0"
   },
   "peerDependenciesMeta": {
     "dd-trace": {
