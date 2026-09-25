@@ -51,7 +51,10 @@ repo_dir=$(dirname "$scripts_dir")
 function filter_runtime_noise() {
     sed '/preview runtime version and should not be used for production workloads/d' |
         sed '/DEP0205.*module\.register()/d' |
-        sed '/node --trace-deprecation.*where the warning was created/d'
+        sed '/node --trace-deprecation.*where the warning was created/d' |
+        # runtime_worker_pool_initializing's workerCount reflects the host's visible CPU
+        # count, not anything the library controls, so it can't be pinned in a golden.
+        sed '/"event":"runtime_worker_pool_initializing"/d'
 }
 
 if [ "$input_format" = formatted ]; then
