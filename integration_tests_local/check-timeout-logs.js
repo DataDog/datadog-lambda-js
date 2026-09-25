@@ -56,8 +56,11 @@ for (const [requestId, startIndex] of starts) {
   assert.equal(span.meta["error.message"], "Datadog detected an impending timeout");
   assert.ok(index > startIndex && index < reports.get(requestId), "span exported before runtime timeout REPORT");
   // The configured guard fires ~1.5s in, allowing 1s of scheduling overhead.
-  // Merely checking <5s would also accept a broken/default 100ms flush deadline.
-  assert.ok(span.duration > 0 && span.duration < 2.5e9, "span must honor the 3500ms flush deadline");
+  // Expected around 1.5s; allow generous tolerance while rejecting immediate firing.
+  assert.ok(
+    span.duration >= 0.5e9 && span.duration < 2.5e9,
+      `timeout span duration outside expected window: ${span.duration / 1e9}s`,
+  );
   const matchingChildren = children.filter(
     ({ span: child }) => child.trace_id === span.trace_id && child.parent_id === span.span_id,
   );
