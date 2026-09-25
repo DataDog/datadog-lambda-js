@@ -36,6 +36,9 @@ jobs:
         with:
           node-version: 18.12
 
+      - name: Test timeout trace assertions
+        run: node --test integration_tests_local/check-timeout-logs.test.js
+
       - name: Run local container integration tests (nodejs${{ matrix.node_major }}.x)
         run: PLATFORM=linux/amd64 RUNTIME_PARAM=${{ matrix.node_major }} ./integration_tests_local/run.sh
 

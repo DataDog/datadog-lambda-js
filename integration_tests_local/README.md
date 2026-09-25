@@ -1,7 +1,7 @@
 # Local integration tests (docker + AWS RIE, no AWS account required)
 
 This directory contains a **local** integration test harness for
-datadog-lambda-js. It runs eleven cases — container-image, layer-mode, and
+datadog-lambda-js. It runs container-image, layer-mode, and
 manual-wrap handlers, plus targeted feature cases (HTTP header injection,
 custom trace extractors, proactive initialization) — inside Docker against the
 [AWS Lambda Runtime Interface Emulator (RIE)](https://github.com/aws/aws-lambda-runtime-interface-emulator),
@@ -42,6 +42,10 @@ SKIP_PACK=true RUNTIME_PARAM=18 CASE_PARAM=container-esm ./integration_tests_loc
 
 # Force amd64 images instead of arm64
 PLATFORM=linux/amd64 ./integration_tests_local/run.sh
+
+# Bypass a broken local VM host-port forward without changing the function.
+# Runs the same HTTP requests using curl inside the target container.
+RIE_HTTP_TRANSPORT=container RUNTIME_PARAM=22 CASE_PARAM=manual-timeout ./integration_tests_local/run.sh
 ```
 
 On a tree that pins dd-trace v6 (which older runtimes cannot install), the
@@ -62,6 +66,8 @@ The case names are:
 | `manual-send-metrics` | manual wrap calling `sendDistributionMetric` inside and outside the handler; per-event return values |
 | `manual-process-input` | manual wrap with userland `dd-trace` init reading the active span; per-event return values |
 | `manual-callback` | manual wrap of a callback-style `(event, context, callback)` handler; pins the `promisifiedHandler` seam end to end (the migration spike broke exactly this) |
+| `manual-timeout` | explicit userland tracer init, then manual wrap; impending-timeout error on the invocation and `killAll()` flushing an unfinished child before RIE terminates the runtime |
+| `cjs-timeout` | the same timeout contract through `DD_LAMBDA_HANDLER` and the npm redirect entrypoint, exercising the raw-handler hook also used by layers |
 | `manual-metrics-only` | `DD_TRACE_ENABLED=false` (metrics-only customers): enhanced + custom metrics still flush, no `aws.lambda` span, no trace JSON, no `dd.trace_id` log correlation |
 | `cjs-capture-payload` | `DD_CAPTURE_LAMBDA_PAYLOAD=true` in redirect mode; span meta gains `function.request` / `function.response` with the captured payloads |
 | `cjs-http-requests` | downstream HTTP calls against a hermetic mock server in redirect mode; asserts injected `x-datadog-*`/`traceparent` headers and log injection via dd-trace's http plugin |
@@ -104,6 +110,7 @@ snapshots/logs/<case>.log                    # shared across runtimes
 snapshots/return_values/default.json         # return mode "default": every event, every case
 snapshots/return_values/<case>.json          # return mode "case": one payload for all 9 events
 snapshots/return_values/<case>_<event>.json  # return mode "per-event": payload embeds event data
+snapshots/return_values/<timeout-case>.txt  # RIE's plain-text timeout response
 ```
 
 The normalized logs of most cases are identical across all five runtimes, so
@@ -172,6 +179,99 @@ while `manual-http-requests` is manual-wrapped with no tracer (TraceListener
 falls back to the library's own `patchHttp`). See "Known emulation gaps" for
 what the manual case cannot pin locally.
 
+## Impending timeouts (manual-timeout, cjs-timeout)
+
+These cases exercise both pre-migration dd-trace hook paths: manual
+`datadog(handler)` wrapping and the `DD_LAMBDA_HANDLER` redirect. The manual
+fixture initializes dd-trace **before** importing the shim; importing the shim
+alone does not initialize tracing or install the timeout monitor.
+
+The handler opens a `timeout.unfinished` child span and waits 60 seconds.
+`AWS_LAMBDA_FUNCTION_TIMEOUT=5` gives the invocation a real RIE deadline, and
+`DD_APM_FLUSH_DEADLINE_MILLISECONDS=3500` makes dd-trace flush roughly 1.5
+seconds into the invocation (less the init time). RIE then kills the runtime
+at five seconds. All nine input events are exercised, with a fresh runtime
+after each timeout. The two cases add about 90 seconds per runtime leg.
+
+RIE v1.36 returns HTTP 200 with the **plain text**
+`Task timed out after 5.00 seconds`, not Lambda's JSON error envelope.
+Consequently, these return goldens use `.txt`. Completion is gated on REPORT,
+timeout-reset, and SIGKILL records; a killed runtime never emits INVOKE RTDONE.
+The HTTP client is bounded to 15 seconds so a broken deadline cannot hang CI.
+
+Before normalization or snapshot creation, `check-timeout-logs.js` reads all
+trace payloads and asserts for every raw request ID:
+
+- exactly one `aws.lambda` span across all payloads, with `error=1`,
+  `error.type=Impending Timeout`, and the expected error message;
+- exactly one unfinished child in that invocation's trace, with the invocation
+  as its parent and no error on the child;
+- both spans were exported before REPORT, and the invocation span finished
+  within 2.5 seconds (the configured 1.5-second guard plus scheduling headroom,
+  which also rejects silently falling back to the default 100ms flush deadline);
+- RIE actually reset and killed the runtime once per invocation.
+
+This catches duplicate invocation spans even when they appear in separate
+traces, and prevents a metrics-only run from becoming a passing golden. The
+helper preserves trace payloads unchanged. It normalizes only volatile IDs
+and timestamps in RIE timeout diagnostics, including Go's varying log-field
+order. Every diagnostic record and severity remains in the snapshot; the
+shared AWS/RIE normalizer is unchanged.
+
+Run the helper's regression tests independently with:
+
+```bash
+node --test integration_tests_local/check-timeout-logs.test.js
+```
+
+### Golden provenance
+
+The timeout goldens were captured from pre-migration library commit
+`cf751a76003e9bdf18a4283bccdfa54785943b51` (`datadog-lambda-js` 12.142.0),
+with no production-source changes. Both cases used RIE v1.36 on
+`linux/arm64`, across Node 18/20/22/24/26, with dd-trace 5.105.0 — the version
+`integration_tests/container/cjs/package.json` pins — on every runtime. The
+per-runtime `DD_TRACE_VERSION` build-arg in `run.sh` is inert here: it only
+applies when `scripts/dd_trace_versions.sh` exists, which is a v6-era file.
+All five runtimes produced the same shared goldens; no runtime-specific
+timeout overrides were needed.
+
+Both cases then passed a comparison-only rerun across all five runtimes
+(90 invocations total), leaving all four timeout snapshot files byte-for-byte
+unchanged. The existing `manual-throw-error` and `container-cjs` goldens also
+passed unchanged on Node 22 through the same transport. The checker has nine
+regression tests, verified on host Node 25 and container Node 18.
+
+An earlier capture used a different baseline, `4b9f41d2`, with dd-trace 5.126.0
+on Node 18/20 and 6.12.0 on Node 22/24/26. It passed on that baseline, with a
+nonempty `dd_trace` tag and no `links` field. The goldens were recaptured for
+the current branch and its 5.105.0 fixture pin: this build emits `links: []`
+and an empty `dd_trace` tag (see below).
+
+When intentionally recapturing an existing shared golden, first review why
+the baseline changed, then remove only the affected golden. `UPDATE_SNAPSHOTS=true`
+deliberately refuses to overwrite an existing shared golden, so a divergent
+runtime cannot silently replace the expectation from an earlier leg.
+
+**Known unrelated defect these goldens bake in.** The `dd_trace` span tag is
+the empty string. `scripts/update_dist_version.sh` derives it with
+`sed -n -E "s/dd-trace@([0-9]*\.[0-9]*\.[0-9]*):/\1/p" yarn.lock`, which
+expects a pinned entry, but `yarn.lock` now records the range
+`dd-trace@^5.113.0:` — so the substitution yields nothing. The committed
+`container-cjs` golden shows the same empty tag, so this predates the timeout
+work and is not caused by it. Worth fixing on its own, together with a recapture
+of every golden carrying `dd_trace`.
+
+The local capture used `RIE_HTTP_TRANSPORT=container` because Colima's
+published host ports were unreachable. RIE was reachable over IPv4 inside
+the containers, so this was not an IPv6-only RIE listener. This transport
+does not alter the handler, tracer, invocation body, or RIE timeout.
+
+These are L2 emulator goldens, not evidence of real AWS termination behavior
+or layer packaging. The redirect case covers the raw-handler hook used by
+layers; real AWS timeout behavior still needs L3 coverage. The current CI
+workflow compares these goldens on native amd64; the local capture used arm64.
+
 ## Proactive initialization (cjs-proactive-init)
 
 The library stamps `initTime = Date.now()` at wrapper-module load
@@ -235,6 +335,8 @@ under test. A base-image change must be reviewed, not hidden by normalization.
   Reads stdin, writes stdout; honors `RUN_ID` for optional per-run ID stripping.
 - `prepare-layer.js` — assembles the layer fixture's build context from the
   repo build, mirroring the release Dockerfile's `/opt` layout
+- `check-timeout-logs.js` — validates raw timeout traces and normalizes only
+  the timeout-specific RIE diagnostics before the shared normalizer
 - `bin/` — downloaded RIE binary (gitignored)
 - `snapshots/logs/` — normalized log snapshots, shared per case across
   runtimes, with optional `<case>_node<major>.log` overrides
