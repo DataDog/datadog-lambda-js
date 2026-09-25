@@ -12,7 +12,7 @@ import {
   isProvisionedConcurrency,
 } from "../utils/cold-start";
 import { datadogLambdaVersion } from "../constants";
-import { ddtraceVersion, parentSpanFinishTimeHeader, DD_SERVICE_ENV_VAR } from "./constants";
+import { parentSpanFinishTimeHeader, DD_SERVICE_ENV_VAR } from "./constants";
 import { patchConsole } from "./patch-console";
 import { SpanContext, TraceOptions, TracerWrapper } from "./tracer-wrapper";
 import { SpanInferrer } from "./span-inferrer";
@@ -243,7 +243,13 @@ export class TraceListener {
       this.inferredSpan?.setTag("http.status_code", statusCode);
     }
     if (this.config.appsecEnabled) {
-      processAppsecResponse(this.tracerWrapper.currentSpan, result, statusCode);
+      processAppsecResponse({
+        span: this.tracerWrapper.currentSpan,
+        event,
+        result,
+        statusCode,
+        responseStream: isResponseStreamFunction,
+      });
     }
     // Kept behind AppSec so 5xx responses still reach the WAF, and still nested on inferredSpan
     // so the early return only happens when there is an inferred span, as before.
@@ -352,7 +358,7 @@ export class TraceListener {
         resource_names: this.context.functionName,
         functionname: this.context?.functionName?.toLowerCase(),
         datadog_lambda: datadogLambdaVersion,
-        dd_trace: ddtraceVersion,
+        dd_trace: this.tracerWrapper.tracerVersion,
       };
       if (isProactiveInitialization()) {
         options.tags.proactive_initialization = true;

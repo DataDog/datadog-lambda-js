@@ -42,71 +42,9 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
   "v": 1
 }
 XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	Processed APIGateway request
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 REPORT RequestId: XXXX	Init Duration: XXXX ms	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-START RequestId: XXXX Version: $LATEST
-XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.invocations",
-  "t": [
-    "region:us-east-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-local-manual-send-metrics",
-    "resource:integration-tests-js-local-manual-send-metrics",
-    "memorysize:3008",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejsXX.x"
-  ],
-  "v": 1
-}
-{
-  "e": XXXX,
-  "m": "serverless.integration_test.execution",
-  "t": [
-    "tagkey:tagvalue",
-    "eventsource:undefined",
-    "dd_lambda_layer:datadog-nodevXX.XX.X"
-  ],
-  "v": 1
-}
-XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	Processed undefined request
-END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
-START RequestId: XXXX Version: $LATEST
-XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
-{
-  "e": XXXX,
-  "m": "aws.lambda.enhanced.invocations",
-  "t": [
-    "region:us-east-1",
-    "account_id:XXXX",
-    "functionname:integration-tests-js-local-manual-send-metrics",
-    "resource:integration-tests-js-local-manual-send-metrics",
-    "memorysize:3008",
-    "cold_start:false",
-    "datadog_lambda:vX.X.X",
-    "runtime:nodejsXX.x"
-  ],
-  "v": 1
-}
-{
-  "e": XXXX,
-  "m": "serverless.integration_test.execution",
-  "t": [
-    "tagkey:tagvalue",
-    "eventsource:undefined",
-    "dd_lambda_layer:datadog-nodevXX.XX.X"
-  ],
-  "v": 1
-}
-XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	Processed undefined request
-END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 START RequestId: XXXX Version: $LATEST
 {
@@ -138,8 +76,8 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	Processed undefined reque
 XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 START RequestId: XXXX Version: $LATEST
+XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -166,11 +104,11 @@ START RequestId: XXXX Version: $LATEST
   "v": 1
 }
 XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	Processed undefined request
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
-XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 START RequestId: XXXX Version: $LATEST
+XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -231,6 +169,68 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	Processed undefined reque
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
 XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
+XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
+START RequestId: XXXX Version: $LATEST
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:us-east-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-local-manual-send-metrics",
+    "resource:integration-tests-js-local-manual-send-metrics",
+    "memorysize:3008",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejsXX.x"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "serverless.integration_test.execution",
+  "t": [
+    "tagkey:tagvalue",
+    "eventsource:undefined",
+    "dd_lambda_layer:datadog-nodevXX.XX.X"
+  ],
+  "v": 1
+}
+XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	Processed undefined request
+END RequestId: XXXX
+REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
+START RequestId: XXXX Version: $LATEST
+XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
+{
+  "e": XXXX,
+  "m": "aws.lambda.enhanced.invocations",
+  "t": [
+    "region:us-east-1",
+    "account_id:XXXX",
+    "functionname:integration-tests-js-local-manual-send-metrics",
+    "resource:integration-tests-js-local-manual-send-metrics",
+    "memorysize:3008",
+    "cold_start:false",
+    "datadog_lambda:vX.X.X",
+    "runtime:nodejsXX.x"
+  ],
+  "v": 1
+}
+{
+  "e": XXXX,
+  "m": "serverless.integration_test.execution",
+  "t": [
+    "tagkey:tagvalue",
+    "eventsource:undefined",
+    "dd_lambda_layer:datadog-nodevXX.XX.X"
+  ],
+  "v": 1
+}
+XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	Processed undefined request
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
+END RequestId: XXXX
+REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 START RequestId: XXXX Version: $LATEST
 {
@@ -272,8 +272,8 @@ XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	Processed SNS request
 XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 START RequestId: XXXX Version: $LATEST
+XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -320,6 +320,6 @@ START RequestId: XXXX Version: $LATEST
   "v": 1
 }
 XXXX-XX-XXTXX:XX:XX.XXXZ	XXXX-XXXX-XXXX-XXXX-XXXX	INFO	Processed SQS request
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)

@@ -1,7 +1,7 @@
 XXXX [INFO] (rapid) exec '/lambda-entrypoint.sh' (cwd=/var/task, handler=/opt/nodejs/node_modules/datadog-lambda-js/handler.handler)
-START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INIT START(type: on-demand, phase: init)
 XXXX [INFO] (rapid) The extension's directory "/opt/extensions" does not exist, assuming no extensions to be loaded.
+START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) Starting runtime without AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN , Expected?: false
 XXXX [INFO] (rapid) INIT RTDONE(status: success)
 XXXX [INFO] (rapid) INIT REPORT(durationMs: XXXX)
@@ -88,7 +88,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "resource_names": "integration-tests-js-local-layer-cjs",
           "functionname": "integration-tests-js-local-layer-cjs",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "api-gateway",
           "function_trigger.event_source_arn": "arn:aws:apigateway:us-east-1::/restapis/wt6mne2s9k/stages/test",
           "http.method": "GET",
@@ -197,7 +197,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "resource_names": "integration-tests-js-local-layer-cjs",
           "functionname": "integration-tests-js-local-layer-cjs",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
           "_dd.integration": "opentracing",
@@ -214,11 +214,11 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
     ]
   ]
 }
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
-XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 START RequestId: XXXX Version: $LATEST
+XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -303,7 +303,7 @@ START RequestId: XXXX Version: $LATEST
           "resource_names": "integration-tests-js-local-layer-cjs",
           "functionname": "integration-tests-js-local-layer-cjs",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
           "_dd.integration": "opentracing",
@@ -320,11 +320,11 @@ START RequestId: XXXX Version: $LATEST
     ]
   ]
 }
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
-START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
+START RequestId: XXXX Version: $LATEST
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -409,7 +409,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "resource_names": "integration-tests-js-local-layer-cjs",
           "functionname": "integration-tests-js-local-layer-cjs",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
           "_dd.integration": "opentracing",
@@ -514,7 +514,7 @@ START RequestId: XXXX Version: $LATEST
           "resource_names": "integration-tests-js-local-layer-cjs",
           "functionname": "integration-tests-js-local-layer-cjs",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
           "_dd.integration": "opentracing",
@@ -531,9 +531,9 @@ START RequestId: XXXX Version: $LATEST
     ]
   ]
 }
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 START RequestId: XXXX Version: $LATEST
 {
@@ -619,7 +619,7 @@ START RequestId: XXXX Version: $LATEST
           "resource_names": "integration-tests-js-local-layer-cjs",
           "functionname": "integration-tests-js-local-layer-cjs",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
           "_dd.integration": "opentracing",
@@ -639,8 +639,8 @@ START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 START RequestId: XXXX Version: $LATEST
+XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -724,7 +724,7 @@ START RequestId: XXXX Version: $LATEST
           "resource_names": "integration-tests-js-local-layer-cjs",
           "functionname": "integration-tests-js-local-layer-cjs",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
           "_dd.integration": "opentracing",
@@ -741,8 +741,8 @@ START RequestId: XXXX Version: $LATEST
     ]
   ]
 }
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
 START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
@@ -828,7 +828,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "resource_names": "integration-tests-js-local-layer-cjs",
           "functionname": "integration-tests-js-local-layer-cjs",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "sns",
           "function_trigger.event_source_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda",
           "_dd.integration": "opentracing",
@@ -845,9 +845,9 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
     ]
   ]
 }
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 {
@@ -931,7 +931,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "resource_names": "integration-tests-js-local-layer-cjs",
           "functionname": "integration-tests-js-local-layer-cjs",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "sqs",
           "function_trigger.event_source_arn": "arn:aws:sqs:us-east-2:123456789012:my-queue",
           "_dd.integration": "opentracing",
@@ -948,6 +948,6 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
     ]
   ]
 }
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)

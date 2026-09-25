@@ -5,15 +5,16 @@ datadog-lambda-js. It runs container-image, layer-mode, and
 manual-wrap handlers, plus targeted feature cases (HTTP header injection,
 custom trace extractors, proactive initialization) — inside Docker against the
 [AWS Lambda Runtime Interface Emulator (RIE)](https://github.com/aws/aws-lambda-runtime-interface-emulator),
-invokes them with the same input events as the AWS-based suite, captures
-logs from `docker logs`, normalizes them with the `rie` mode of
+invokes them with the same input events as the deprecated real AWS Lambda
+resource-based suite, captures logs from `docker logs`, normalizes them with
+the `rie` mode of
 `../scripts/normalize_integration_logs.sh`, and diffs them against **local**
 snapshots in `./snapshots/`.
 
-The case set is deliberately at least as wide as the AWS-based suite
-(`integration_tests/serverless.yml`): every behavior the old suite pinned
-has a docker-based counterpart here, so the frozen goldens are a strict
-superset oracle for the dd-trace-js migration.
+The case set is deliberately at least as wide as the deprecated real AWS
+Lambda resource-based suite (`integration_tests/serverless.yml`): every
+behavior it pinned has a docker-based counterpart here, so the frozen goldens
+are a strict superset oracle for the dd-trace-js migration.
 
 Nothing here touches AWS, and nothing here touches
 `integration_tests/snapshots/` (the AWS suite's snapshots).
@@ -48,12 +49,18 @@ PLATFORM=linux/amd64 ./integration_tests_local/run.sh
 RIE_HTTP_TRANSPORT=container RUNTIME_PARAM=22 CASE_PARAM=manual-timeout ./integration_tests_local/run.sh
 ```
 
-On a tree that pins dd-trace v6 (which older runtimes cannot install), the
-pack step installs through `scripts/install_deps.sh` with
-`TARGET_NODE_MAJOR=$RUNTIME_PARAM` and the container fixtures get a matching
-`DD_TRACE_VERSION` build-arg. Run per-runtime there, like CI does: a full
-sweep packs only once, so its layer fixture would carry the first leg's
-tracer line into every other leg.
+CI runs the complete runtime/case matrix on native `linux/amd64` and
+`linux/arm64` GitHub-hosted runners. Both architectures share the same
+snapshots: the normalizer removes platform-owned preview/deprecation records
+as complete structured records before formatting them.
+
+The npm tarball does not bundle `dd-trace`, so a full sweep packs it once with
+the tracer line supported by the contributor's host. Every fixture image,
+including the layer fixture, then installs the tracer version for its Lambda
+runtime: the maintained v5 compatibility pin on Node 18/20 and the exact v6
+version resolved by the root `yarn.lock` on Node 22+. Consequently the normal
+dependency-update workflow also updates the RIE fixtures without a separate v6
+pin. CI additionally sets the host Node version to its matrix runtime.
 
 The case names are:
 
@@ -83,8 +90,9 @@ Two legacy aliases remain for muscle memory: `VARIANT_PARAM=cjs|esm` maps to
 Unless `SKIP_PACK=true` is set, each run repacks the library under test
 (`yarn install --frozen-lockfile && yarn build && npm pack`) into
 `integration_tests/container/{cjs,esm}/datadog-lambda-js-local.tgz`, exactly
-like `scripts/run_integration_tests.sh` does, so the containers always test
-the working tree. The layer fixture instead assembles
+like the deprecated real AWS Lambda resource-based suite
+(`scripts/run_integration_tests.sh`) did, so the containers always test the
+working tree. The layer fixture instead assembles
 `integration_tests/container/layer/layer_pkg/` from the repo build via
 `prepare-layer.js`, mirroring the release Dockerfile's layer layout. The
 dependency manifest mirrors the release build's full dependency closure —
@@ -230,11 +238,16 @@ The timeout goldens were captured from pre-migration library commit
 `cf751a76003e9bdf18a4283bccdfa54785943b51` (`datadog-lambda-js` 12.142.0),
 with no production-source changes. Both cases used RIE v1.36 on
 `linux/arm64`, across Node 18/20/22/24/26, with dd-trace 5.105.0 — the version
-`integration_tests/container/cjs/package.json` pins — on every runtime. The
-per-runtime `DD_TRACE_VERSION` build-arg in `run.sh` is inert here: it only
-applies when `scripts/dd_trace_versions.sh` exists, which is a v6-era file.
+`integration_tests/container/cjs/package.json` pinned at that commit — on every
+runtime. The per-runtime `DD_TRACE_VERSION` build-arg was inert on that baseline
+because it did not yet have `scripts/dd_trace_versions.sh`.
 All five runtimes produced the same shared goldens; no runtime-specific
 timeout overrides were needed.
+
+The branch has since incorporated current main to resolve the workflow conflict.
+Main uses the v5/v6 runtime split and runtime tracer-version reporting. These
+timeout goldens still record the older baseline above and need recapture and
+strict comparison against the updated baseline before this PR is ready.
 
 Both cases then passed a comparison-only rerun across all five runtimes
 (90 invocations total), leaving all four timeout snapshot files byte-for-byte
@@ -245,22 +258,22 @@ regression tests, verified on host Node 25 and container Node 18.
 An earlier capture used a different baseline, `4b9f41d2`, with dd-trace 5.126.0
 on Node 18/20 and 6.12.0 on Node 22/24/26. It passed on that baseline, with a
 nonempty `dd_trace` tag and no `links` field. The goldens were recaptured for
-the current branch and its 5.105.0 fixture pin: this build emits `links: []`
+the `cf751a76` baseline and its 5.105.0 fixture pin: that build emits `links: []`
 and an empty `dd_trace` tag (see below).
 
 When intentionally recapturing an existing shared golden, first review why
-the baseline changed, then remove only the affected golden. `UPDATE_SNAPSHOTS=true`
-deliberately refuses to overwrite an existing shared golden, so a divergent
-runtime cannot silently replace the expectation from an earlier leg.
+the baseline changed. The current runner lets the first leg overwrite a shared
+golden in `UPDATE_SNAPSHOTS=true` mode and requires later legs in that run to
+agree. Unlike the older capture baseline, it no longer requires deleting the
+existing golden first.
 
-**Known unrelated defect these goldens bake in.** The `dd_trace` span tag is
-the empty string. `scripts/update_dist_version.sh` derives it with
+**Historical capture-baseline defect.** These goldens record an empty `dd_trace`
+span tag. At `cf751a76`, `scripts/update_dist_version.sh` derived it with
 `sed -n -E "s/dd-trace@([0-9]*\.[0-9]*\.[0-9]*):/\1/p" yarn.lock`, which
-expects a pinned entry, but `yarn.lock` now records the range
-`dd-trace@^5.113.0:` — so the substitution yields nothing. The committed
-`container-cjs` golden shows the same empty tag, so this predates the timeout
-work and is not caused by it. Worth fixing on its own, together with a recapture
-of every golden carrying `dd_trace`.
+expected a pinned entry, but `yarn.lock` recorded the range
+`dd-trace@^5.113.0:` — so the substitution yielded nothing. The `container-cjs`
+golden at that baseline had the same empty tag. Main has since fixed version
+reporting; the pending timeout recapture must reflect that fix.
 
 The local capture used `RIE_HTTP_TRANSPORT=container` because Colima's
 published host ports were unreachable. RIE was reachable over IPv4 inside
@@ -323,6 +336,11 @@ Node 26 is a strict leg like every other; where its preview runtime
 genuinely diverges (error stack frames, warning emission) it carries
 `*_node26` override goldens rather than widened normalization.
 
+Architecture-only preview/deprecation noise is not a Node 26 behavioral
+difference. Those records are removed before JSON formatting so their
+timestamp/level/request-id envelopes cannot make the shared snapshots depend
+on whether the test ran on amd64 or arm64.
+
 When AWS publishes the bare Node 26 GA image, swap the pinned tag and re-run.
 If GA output diverges further, add `*_node26` overrides captured from the
 pinned pre-migration ref. Do not absorb the difference into the shared
@@ -345,9 +363,13 @@ under test. A base-image change must be reviewed, not hidden by normalization.
   per event, or the shared `default.json`), with optional
   `<case>_node<major>[_<event>].json` overrides
 
-## Comparison with the AWS-based suite
+## Comparison with the deprecated real AWS Lambda resource-based suite
 
-| | AWS suite (`scripts/run_integration_tests.sh`) | this harness |
+> The in-repo real AWS Lambda resource-based suite was deprecated in favor of
+> this RIE-based suite. Real AWS Lambda resource cases rely on the end-to-end
+> test suites. This table is kept for historical context.
+
+| | Deprecated AWS suite (`scripts/run_integration_tests.sh`) | this harness |
 |---|---|---|
 | handlers | layer, container, and manual-wrap variants | container + layer + manual-wrap cases |
 | infra | real Lambda via serverless, CloudWatch logs | docker + RIE, `docker logs` |

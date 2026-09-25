@@ -1,8 +1,8 @@
 XXXX [INFO] (rapid) exec '/lambda-entrypoint.sh' (cwd=/var/task, handler=node_modules/datadog-lambda-js/dist/handler.handler)
+START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INIT START(type: on-demand, phase: init)
 XXXX [INFO] (rapid) The extension's directory "/opt/extensions" does not exist, assuming no extensions to be loaded.
 XXXX [INFO] (rapid) Starting runtime without AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN , Expected?: false
-START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INIT RTDONE(status: success)
 XXXX [INFO] (rapid) INIT REPORT(durationMs: XXXX)
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
@@ -60,8 +60,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "process_id":XXXX
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -85,7 +84,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "resource_names": "integration-tests-js-local-cjs-custom-extractor",
           "functionname": "integration-tests-js-local-cjs-custom-extractor",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "_dd.parent_source": "event",
           "function_trigger.event_source": "api-gateway",
           "function_trigger.event_source_arn": "arn:aws:apigateway:us-east-1::/restapis/wt6mne2s9k/stages/test",
@@ -100,8 +99,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "process_id":XXXX
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -167,8 +165,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "process_id":XXXX
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -192,7 +189,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "resource_names": "integration-tests-js-local-cjs-custom-extractor",
           "functionname": "integration-tests-js-local-cjs-custom-extractor",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "_dd.parent_source": "event",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
@@ -204,8 +201,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "process_id":XXXX
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -271,8 +267,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "process_id":XXXX
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -296,7 +291,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "resource_names": "integration-tests-js-local-cjs-custom-extractor",
           "functionname": "integration-tests-js-local-cjs-custom-extractor",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "_dd.parent_source": "event",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
@@ -308,15 +303,14 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "process_id":XXXX
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
 }
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 {
@@ -375,8 +369,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "process_id":XXXX
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -400,7 +393,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "resource_names": "integration-tests-js-local-cjs-custom-extractor",
           "functionname": "integration-tests-js-local-cjs-custom-extractor",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "_dd.parent_source": "event",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
@@ -412,8 +405,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "process_id":XXXX
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -421,8 +413,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
+START RequestId: XXXX Version: $LATEST
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -478,8 +470,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "process_id":XXXX
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -503,7 +494,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "resource_names": "integration-tests-js-local-cjs-custom-extractor",
           "functionname": "integration-tests-js-local-cjs-custom-extractor",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "_dd.parent_source": "event",
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
@@ -515,8 +506,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "process_id":XXXX
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -524,8 +514,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
+START RequestId: XXXX Version: $LATEST
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -581,8 +571,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "process_id":XXXX
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -606,7 +595,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "resource_names": "integration-tests-js-local-cjs-custom-extractor",
           "functionname": "integration-tests-js-local-cjs-custom-extractor",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "_dd.parent_source": "event",
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
@@ -618,17 +607,16 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "process_id":XXXX
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
 }
 END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
 XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
-XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
+REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
 START RequestId: XXXX Version: $LATEST
+XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -684,8 +672,7 @@ START RequestId: XXXX Version: $LATEST
           "process_id":XXXX
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -709,7 +696,7 @@ START RequestId: XXXX Version: $LATEST
           "resource_names": "integration-tests-js-local-cjs-custom-extractor",
           "functionname": "integration-tests-js-local-cjs-custom-extractor",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "_dd.parent_source": "event",
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
@@ -721,8 +708,7 @@ START RequestId: XXXX Version: $LATEST
           "process_id":XXXX
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -786,8 +772,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "process_id":XXXX
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -811,7 +796,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "resource_names": "integration-tests-js-local-cjs-custom-extractor",
           "functionname": "integration-tests-js-local-cjs-custom-extractor",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "_dd.parent_source": "event",
           "function_trigger.event_source": "sns",
           "function_trigger.event_source_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda",
@@ -823,17 +808,16 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "process_id":XXXX
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
 }
-END RequestId: XXXX
 XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
+END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 START RequestId: XXXX Version: $LATEST
+XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -887,8 +871,7 @@ START RequestId: XXXX Version: $LATEST
           "process_id":XXXX
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -912,7 +895,7 @@ START RequestId: XXXX Version: $LATEST
           "resource_names": "integration-tests-js-local-cjs-custom-extractor",
           "functionname": "integration-tests-js-local-cjs-custom-extractor",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "_dd.parent_source": "event",
           "function_trigger.event_source": "sqs",
           "function_trigger.event_source_arn": "arn:aws:sqs:us-east-2:123456789012:my-queue",
@@ -924,8 +907,7 @@ START RequestId: XXXX Version: $LATEST
           "process_id":XXXX
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]

@@ -64,6 +64,15 @@ describe("TracerWrapper", () => {
     const wrapper = new TracerWrapper();
     expect(wrapper.isTracerAvailable).toBeTruthy();
   });
+  it("tracerVersion should be the installed dd-trace version", () => {
+    const wrapper = new TracerWrapper();
+    expect(wrapper.tracerVersion).toMatch(/^\d+\.\d+\.\d+/);
+  });
+  it("tracerVersion should be empty when dd-trace is absent", () => {
+    mockNoTracer = true;
+    const wrapper = new TracerWrapper();
+    expect(wrapper.tracerVersion).toBe("");
+  });
   it("isTracerAvailable should return false when dd-trace is present and uninitialised", () => {
     mockNoTracer = false;
     mockTracerInitialised = false;

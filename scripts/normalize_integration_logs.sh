@@ -44,17 +44,27 @@ script_path=${BASH_SOURCE[0]}
 scripts_dir=$(dirname "$script_path")
 repo_dir=$(dirname "$scripts_dir")
 
+# Raw Node.js runtime logs are one JSON object per line. Remove known
+# platform-owned records before parse-json.js expands them; deleting only the
+# pretty-printed message line leaves an empty timestamp/level/requestId shell,
+# whose emission count differs between amd64 and arm64 preview images.
+function filter_runtime_noise() {
+    sed '/preview runtime version and should not be used for production workloads/d' |
+        sed '/DEP0205.*module\.register()/d' |
+        sed '/node --trace-deprecation.*where the warning was created/d'
+}
+
 if [ "$input_format" = formatted ]; then
     cat
 else
-    node "$repo_dir/integration_tests/parse-json.js"
+    filter_runtime_noise | node "$repo_dir/integration_tests/parse-json.js"
 fi |
     sed '/Serverless: Recoverable error occurred/d' |
     perl -p -e 's/(RequestId|TraceId|init|SegmentId|Duration|Memory Used|"e"):( )?[a-z0-9\.\-]+/\1:\2XXXX/g' |
-    sed '/preview runtime version and should not be used for production workloads/d' |
+    # Keep filtering after expansion for formatted historical snapshots and
+    # non-JSON log lines. Raw structured records were already removed whole.
+    filter_runtime_noise |
     sed '/^INIT_REPORT /d' |
-    sed '/DEP0205.*module\.register()/d' |
-    sed '/node --trace-deprecation.*where the warning was created/d' |
     perl -p -e 's/(x-datadog-parent-id:|x-datadog-trace-id:|account_id:)[0-9]+/$1XXXX/g' |
     perl -p -e 's/"(x-datadog-trace-id|x-datadog-parent-id)":"[0-9]+"/"$1":"XXXX"/g' |
     perl -p -e 's/"traceparent":"[0-9a-f-]+"/"traceparent":"XXXX"/g' |

@@ -1,7 +1,0 @@
-{
-    "message": "hello, dog!",
-    "recordIds": [
-        "my-bucket-name/copied_object.txt"
-    ],
-    "eventType": "S3"
-}
