@@ -187,8 +187,8 @@ function configure_case() {
             case_return_mode=case
             # Stack frames carry line:col that shift with fixture edits and
             # node-internal frames whose line numbers vary by Node major.
-            # The node26 preview RIC embeds a per-invocation requestId in the
-            # error body; strip it wherever it appears.
+            # Node 24 and the Node 26 preview RIC embed a per-invocation requestId
+            # in the error body; retain the field and normalize its value.
             case_return_filter='s/:[0-9]+:[0-9]+([\)"])/:XXX:XXX\1/g; s/"requestId":"[0-9a-f-]+"/"requestId":"XXXX"/g'
             ;;
         manual-status-500)
@@ -514,11 +514,18 @@ input_event_files=($(for file_name in ${input_event_files[@]}; do echo $file_nam
 set +e # Don't exit this script if an invocation fails or there's a diff
 
 function lambda_node_image_tag() {
-    if [ "$1" = "26" ]; then
-        echo "26-preview.2026.08.21.22"
-    else
-        echo "$1"
-    fi
+    # Multi-architecture manifest digests keep local caches and clean CI runners
+    # on the same runtime. Floating major tags can change logs and error bodies
+    # independently of the library under test. Review snapshot changes when
+    # intentionally updating these pins; do not normalize runtime changes away.
+    case "$1" in
+        18) echo "18@sha256:daf6a5c0a2b36153b94c91f3563e8ef89b3b19e4129963c6ccb07b8c5251f7ef" ;;
+        20) echo "20@sha256:a4440274d6f0fb4e6cb92cd5f2a97254efe6612f631d9974b197ecbd4a61fcab" ;;
+        22) echo "22@sha256:1922086069c2effeb6b5c3f3b839d393c21dadb28df5bea0920cdb97a71451bd" ;;
+        24) echo "24@sha256:1c7e718a6973b27b31cd3535ac58537b242c932427bbf4ca72b27bc14977b656" ;;
+        26) echo "26-preview.2026.08.21.22@sha256:b9d6953f685b42667843f9bbc4f77d4711749c93df8fef984baa44bfdea89195" ;;
+        *) echo "Unsupported Lambda Node image: $1" >&2; return 1 ;;
+    esac
 }
 
 function compare_snapshot() {
@@ -595,7 +602,7 @@ function write_snapshot() {
 }
 
 for node_version in "${RUNTIMES[@]}"; do
-    node_image_tag=$(lambda_node_image_tag "$node_version")
+    node_image_tag=$(lambda_node_image_tag "$node_version") || exit 1
     # Resolve both tracer lines to exact versions. The v5 compatibility pin is
     # maintained explicitly; the v6 pin follows the root Yarn lockfile, so the
     # regular dependency-update workflow updates the RIE fixtures as well.

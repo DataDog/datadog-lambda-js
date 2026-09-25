@@ -305,6 +305,33 @@ the three markers:
 
 ## Pinned runtime infrastructure
 
+All five Lambda base images are pinned to multi-architecture manifest digests
+in `run.sh`'s `lambda_node_image_tag()`. The same reference is used by the CJS,
+ESM, layer, and mock-server fixtures, with `PLATFORM` selecting amd64 or arm64.
+The pins come from [CI run 36168116285](https://github.com/DataDog/datadog-lambda-js/actions/runs/36168116285)
+on September 25, 2026. A warm local Docker cache and a clean CI runner must not
+silently test different runtime releases under the same major-version tag.
+
+That discrepancy caused two baseline changes with no library-source changes:
+the newer Node 22/24 managed runtime emits a structured
+`runtime_worker_pool_initializing` DEBUG record, and Node 24 now includes
+`requestId` in its thrown-error response. The corresponding proactive-init log
+goldens and Node 24 error-return golden were recaptured from the pre-migration
+library at `8785aeee`, using the pinned images on arm64. The runtime record is
+preserved in full, including `workerCount: 4` (the harness specifies `--cpus 4`)
+and `executionEnvironmentMaxConcurrency: 1`; the response retains `requestId`
+with its existing volatile-value normalization. The shared normalizer and the
+three raw proactive-init assertions are unchanged.
+
+After recapture, all 18 cases passed in comparison-only mode on both Node 22
+and Node 24 / arm64 (324 invocations). The three refreshed expectations kept
+the same hashes, and the timeout goldens were not changed by this refresh.
+
+To update a runtime, change its digest in `lambda_node_image_tag()`, inspect
+the runtime differences, and recapture only the affected expectations before
+running comparison-only tests on both architectures. Do not remove runtime
+records to make a new base image match an older golden.
+
 The harness pins AWS Runtime Interface Emulator (RIE) `v1.36` and verifies the
 cached binary on every run before mounting it into a container:
 
@@ -320,7 +347,7 @@ Node 26 is still preview-only in ECR Public: the bare
 `public.ecr.aws/lambda/nodejs:26` tag does not exist. The logical runtime stays
 `26` for image names, function names, and snapshot paths, while the Docker
 base-image build argument maps to the dated multi-arch tag
-`26-preview.2026.08.21.22`.
+`26-preview.2026.08.21.22` plus its manifest digest.
 
 Node 26 is a strict leg like every other; where its preview runtime
 genuinely diverges (error stack frames, warning emission) it carries
