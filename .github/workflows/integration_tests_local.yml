@@ -59,6 +59,9 @@ jobs:
         with:
           node-version: ${{ matrix.node_version }}
 
+      - name: Test timeout trace assertions
+        run: node --test integration_tests_local/check-timeout-logs.test.js
+
       - name: Run local container integration tests (nodejs${{ matrix.node_major }}.x, ${{ matrix.architecture }})
         run: PLATFORM=${{ matrix.platform }} RUNTIME_PARAM=${{ matrix.node_major }} ./integration_tests_local/run.sh
 

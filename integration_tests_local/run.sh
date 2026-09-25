@@ -24,6 +24,8 @@
 # manual-send-metrics      | cjs   | send-metrics.handle                      | manual wrap; sendDistributionMetric via DD_FLUSH_TO_LOG
 # manual-process-input     | cjs   | process-input.handle                     | manual wrap; dd-trace child spans via tracer.wrap
 # manual-callback          | cjs   | callback.handle                          | manual wrap; callback-style (event, context, callback) handler — the spike's proven break seam
+# manual-timeout           | cjs   | timeout.handle                           | manual wrap; impending timeout -> aws.lambda span tagged error.type=Impending Timeout, flushed before the runtime kills the invoke
+# cjs-timeout              | cjs   | node_modules/datadog-lambda-js/dist/handler.handler | DD_LAMBDA_HANDLER path; same timeout and unfinished-child flush contract
 # cjs-http-requests       | cjs   | node_modules/datadog-lambda-js/dist/handler.handler | npm redirect; downstream HTTP header injection via dd-trace's http plugin (hermetic mock server)
 # manual-http-requests    | cjs   | http-requests-manual.handle              | manual wrap; patchHttp fallback wrapping + per-request logging (hermetic mock)
 # cjs-fetch-requests      | cjs   | node_modules/datadog-lambda-js/dist/handler.handler | npm redirect; header injection on global fetch via dd-trace's undici plugin (hermetic mock)
@@ -44,6 +46,8 @@
 #   VARIANT_PARAM            - legacy alias: cjs -> container-cjs, esm -> container-esm
 #   SIMULATE_PROACTIVE_INIT  - legacy alias for CASE_PARAM=cjs-proactive-init
 #   PLATFORM                 - docker platform (default: linux/arm64)
+#   RIE_HTTP_TRANSPORT        - host (default) or container; container uses docker exec
+#                               when the local VM cannot forward published ports
 #   UPDATE_SNAPSHOTS=true    - overwrite local snapshots instead of diffing
 #   SKIP_PACK=true           - reuse existing container/*/datadog-lambda-js-local.tgz
 #                              and the existing layer fixture context
@@ -64,6 +68,11 @@ repo_dir=$(dirname "$local_dir")
 integration_tests_dir="$repo_dir/integration_tests"
 
 PLATFORM=${PLATFORM:-linux/arm64}
+RIE_HTTP_TRANSPORT=${RIE_HTTP_TRANSPORT:-host}
+case "$RIE_HTTP_TRANSPORT" in
+    host|container) ;;
+    *) echo "Unsupported RIE_HTTP_TRANSPORT: $RIE_HTTP_TRANSPORT (use host or container)"; exit 1 ;;
+esac
 RIE_VERSION=1.36
 case "$PLATFORM" in
     linux/arm64)
@@ -117,6 +126,8 @@ ALL_CASES=(
     "manual-send-metrics"
     "manual-process-input"
     "manual-callback"
+    "manual-timeout"
+    "cjs-timeout"
     "cjs-http-requests"
     "manual-http-requests"
     "cjs-fetch-requests"
@@ -135,6 +146,9 @@ function configure_case() {
     case_expect_error=false
     case_proactive=false
     case_needs_mock=false
+    case_invoke_timeout=0
+    case_timeout=false
+    case_return_extension=json
     # Return-value golden shape:
     #   default   - every event returns the shared default.json payload
     #   case      - every event returns one case-specific payload (error bodies)
@@ -173,8 +187,8 @@ function configure_case() {
             case_return_mode=case
             # Stack frames carry line:col that shift with fixture edits and
             # node-internal frames whose line numbers vary by Node major.
-            # The node26 preview RIC embeds a per-invocation requestId in the
-            # error body; strip it wherever it appears.
+            # Node 24 and the Node 26 preview RIC embed a per-invocation requestId
+            # in the error body; retain the field and normalize its value.
             case_return_filter='s/:[0-9]+:[0-9]+([\)"])/:XXX:XXX\1/g; s/"requestId":"[0-9a-f-]+"/"requestId":"XXXX"/g'
             ;;
         manual-status-500)
@@ -202,6 +216,27 @@ function configure_case() {
             # through the RIE invoke.
             case_image=cjs
             case_entry_handler="callback.handle"
+            ;;
+        manual-timeout|cjs-timeout)
+            # dd-trace's pre-migration monitor flushes the invocation and an
+            # unfinished child ~1.5s in; RIE kills the runtime at 5s. Exercise
+            # both hook branches: the shim export and DD_LAMBDA_HANDLER.
+            case_image=cjs
+            case_entry_handler="timeout.handle"
+            case_extra_env=(
+                -e AWS_LAMBDA_FUNCTION_TIMEOUT=5
+                -e DD_APM_FLUSH_DEADLINE_MILLISECONDS=3500
+            )
+            if [ "$case_name" = cjs-timeout ]; then
+                case_entry_handler="node_modules/datadog-lambda-js/dist/handler.handler"
+                case_extra_env+=(-e DD_LAMBDA_HANDLER=timeout-handler.handle)
+            fi
+            # RIE v1.36 returns a plain-text timeout body, not an error JSON
+            # envelope, and emits Reset/SIGKILL instead of INVOKE RTDONE.
+            case_timeout=true
+            case_return_mode=case
+            case_return_extension=txt
+            case_invoke_timeout=15
             ;;
         manual-metrics-only)
             # DD_TRACE_ENABLED=false — metrics-only customers. The golden pins
@@ -428,6 +463,18 @@ function prepare_layer_context() {
 # golden shows the injected downstream trace context.
 mock_script='const http=require("http");http.createServer((req,res)=>{res.setHeader("content-type","application/json");res.end(JSON.stringify({url:req.url,headers:req.headers}));}).listen(8080);'
 mock_started=false
+function container_http() {
+    local target_cid=$1
+    local host_port=$2
+    local resource=$3
+    shift 3
+    if [ "$RIE_HTTP_TRANSPORT" = container ]; then
+        docker exec -i "$target_cid" curl -s "$@" "http://127.0.0.1:8080$resource"
+    else
+        curl -s "$@" "http://127.0.0.1:$host_port$resource"
+    fi
+}
+
 function start_mock() {
     local base_image=$1
     if [ "$mock_started" = true ]; then
@@ -446,7 +493,7 @@ function start_mock() {
         # Desktop port proxy before the backend is reachable, which then
         # drops the next real request ("empty reply"). Any HTTP response —
         # the mock 200s every path — proves the full path works.
-        if curl -s -o /dev/null --max-time 2 "http://localhost:$port/"; then
+        if container_http "$mock_cid" "$port" / -o /dev/null --max-time 2; then
             ready=true
             break
         fi
@@ -467,11 +514,18 @@ input_event_files=($(for file_name in ${input_event_files[@]}; do echo $file_nam
 set +e # Don't exit this script if an invocation fails or there's a diff
 
 function lambda_node_image_tag() {
-    if [ "$1" = "26" ]; then
-        echo "26-preview.2026.08.21.22"
-    else
-        echo "$1"
-    fi
+    # Multi-architecture manifest digests keep local caches and clean CI runners
+    # on the same runtime. Floating major tags can change logs and error bodies
+    # independently of the library under test. Review snapshot changes when
+    # intentionally updating these pins; do not normalize runtime changes away.
+    case "$1" in
+        18) echo "18@sha256:daf6a5c0a2b36153b94c91f3563e8ef89b3b19e4129963c6ccb07b8c5251f7ef" ;;
+        20) echo "20@sha256:a4440274d6f0fb4e6cb92cd5f2a97254efe6612f631d9974b197ecbd4a61fcab" ;;
+        22) echo "22@sha256:1922086069c2effeb6b5c3f3b839d393c21dadb28df5bea0920cdb97a71451bd" ;;
+        24) echo "24@sha256:1c7e718a6973b27b31cd3535ac58537b242c932427bbf4ca72b27bc14977b656" ;;
+        26) echo "26-preview.2026.08.21.22@sha256:b9d6953f685b42667843f9bbc4f77d4711749c93df8fef984baa44bfdea89195" ;;
+        *) echo "Unsupported Lambda Node image: $1" >&2; return 1 ;;
+    esac
 }
 
 function compare_snapshot() {
@@ -548,7 +602,7 @@ function write_snapshot() {
 }
 
 for node_version in "${RUNTIMES[@]}"; do
-    node_image_tag=$(lambda_node_image_tag "$node_version")
+    node_image_tag=$(lambda_node_image_tag "$node_version") || exit 1
     # Resolve both tracer lines to exact versions. The v5 compatibility pin is
     # maintained explicitly; the v6 pin follows the root Yarn lockfile, so the
     # regular dependency-update workflow updates the RIE fixtures as well.
@@ -625,7 +679,7 @@ for node_version in "${RUNTIMES[@]}"; do
         # exit status proves the whole proxy + HTTP path.
         ready=false
         for i in $(seq 1 60); do
-            if curl -s -o /dev/null --max-time 2 "http://localhost:$port/"; then
+            if container_http "$cid" "$port" / -o /dev/null --max-time 2; then
                 ready=true
                 break
             fi
@@ -649,9 +703,9 @@ for node_version in "${RUNTIMES[@]}"; do
         for input_event_file in "${input_event_files[@]}"; do
             input_event_name=$(echo "$input_event_file" | sed "s/.json//")
             # curl does not fail on HTTP errors, so validate the response status.
-            invoke_response=$(curl -s -w '\n%{http_code}' -XPOST \
-                "http://localhost:$port/2015-03-31/functions/function/invocations" \
-                -d @"$integration_tests_dir/input_events/$input_event_file")
+            invoke_response=$(container_http "$cid" "$port" /2015-03-31/functions/function/invocations \
+                --max-time "$case_invoke_timeout" -w '\n%{http_code}' -XPOST \
+                --data-binary @- < "$integration_tests_dir/input_events/$input_event_file")
             invoke_success=$?
             http_code=$(printf '%s\n' "$invoke_response" | tail -n1)
             return_value=$(printf '%s\n' "$invoke_response" | sed '$d')
@@ -680,6 +734,11 @@ for node_version in "${RUNTIMES[@]}"; do
                     continue
                 fi
             fi
+            if [ "$case_timeout" = true ] && [ "$return_value" != "Task timed out after 5.00 seconds" ]; then
+                echo "Failed: expected the RIE timeout body for $handler_name with $input_event_name, got: $return_value"
+                mismatch_found=true
+                continue
+            fi
             echo "  $input_event_name -> $return_value"
 
             # Return-value goldens resolve from most to least specific; the
@@ -705,7 +764,7 @@ for node_version in "${RUNTIMES[@]}"; do
                 case "$case_return_mode" in
                     case)
                         # Same payload for every event (e.g. an error body).
-                        return_snapshot="$local_dir/snapshots/return_values/${case_name}.json"
+                        return_snapshot="$local_dir/snapshots/return_values/${case_name}.${case_return_extension}"
                         ;;
                     per-event)
                         # Payload embeds event data (record ids, request ids),
@@ -742,7 +801,7 @@ for node_version in "${RUNTIMES[@]}"; do
         # The managed-instances path used by the proactive-init case emits
         # REPORT but never RTDONE, so requiring it there would always time out.
         expected_invocation_count=${#input_event_files[@]}
-        if [ "$case_proactive" = true ]; then
+        if [ "$case_proactive" = true ] || [ "$case_timeout" = true ]; then
             expected_rtdone_count=0
         else
             expected_rtdone_count=$expected_invocation_count
@@ -753,8 +812,16 @@ for node_version in "${RUNTIMES[@]}"; do
             raw_logs=$(docker logs "$cid" 2>&1)
             report_count=$(printf '%s\n' "$raw_logs" | grep -c '^REPORT RequestId:' || true)
             rtdone_count=$(printf '%s\n' "$raw_logs" | grep -c 'INVOKE RTDONE' || true)
+            timeout_logs_ready=true
+            if [ "$case_timeout" = true ]; then
+                reset_count=$(printf '%s\n' "$raw_logs" | grep -c 'Reset initiated: Timeout' || true)
+                kill_count=$(printf '%s\n' "$raw_logs" | grep -c 'Sending SIGKILL to runtime-' || true)
+                if [ "$reset_count" -lt "$expected_invocation_count" ] || [ "$kill_count" -lt "$expected_invocation_count" ]; then
+                    timeout_logs_ready=false
+                fi
+            fi
             if [ "$report_count" -ge "$expected_invocation_count" ] && \
-                [ "$rtdone_count" -ge "$expected_rtdone_count" ]; then
+                [ "$rtdone_count" -ge "$expected_rtdone_count" ] && [ "$timeout_logs_ready" = true ]; then
                 logs_ready=true
                 break
             fi
@@ -786,7 +853,19 @@ for node_version in "${RUNTIMES[@]}"; do
             done
         fi
 
-        logs=$(printf '%s\n' "$raw_logs" | "$repo_dir/scripts/normalize_integration_logs.sh" rie)
+        snapshot_logs=$raw_logs
+        if [ "$case_timeout" = true ]; then
+            snapshot_logs=$(printf '%s\n' "$raw_logs" | node "$local_dir/check-timeout-logs.js" "$expected_invocation_count")
+            if [ "$?" -ne 0 ]; then
+                echo "FAILURE: timeout trace assertions failed for $function_name" >&2
+                mismatch_found=true
+                docker rm -f "$cid" >/dev/null 2>&1
+                container_ids=("${container_ids[@]/$cid}")
+                continue
+            fi
+            echo "Ok: exactly one timeout-tagged Lambda span and one flushed child per invocation"
+        fi
+        logs=$(printf '%s\n' "$snapshot_logs" | "$repo_dir/scripts/normalize_integration_logs.sh" rie)
 
         # `runtime:nodejsNN.x` is the only genuinely runtime-specific line in
         # the whole log — everything else is identical across 18/20/22/24/26.
