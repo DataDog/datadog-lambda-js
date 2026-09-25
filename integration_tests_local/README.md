@@ -166,10 +166,11 @@ filter to absorb it would be invisible. Current overrides:
   assertions — the proactive-initialization markers — are grep-checked on
   the raw logs and are identical on every runtime.
 
-In update mode, a leg that disagrees with an existing shared golden **fails**
-instead of overwriting it — otherwise the last runtime to run would silently
-define the expectation for all of them. To capture a genuine per-runtime
-divergence, `touch` the override file first so the write targets it.
+In update mode, the first leg writes the shared golden. Later legs in the
+same run **fail** if they disagree instead of overwriting it — otherwise the
+last runtime to run would silently define the expectation for all of them.
+To capture a genuine per-runtime divergence, `touch` the override file first
+so the write targets it.
 
 ## The mock HTTP server (cjs-http-requests, manual-http-requests)
 
@@ -234,46 +235,35 @@ node --test integration_tests_local/check-timeout-logs.test.js
 
 ### Golden provenance
 
-The timeout goldens were captured from pre-migration library commit
-`cf751a76003e9bdf18a4283bccdfa54785943b51` (`datadog-lambda-js` 12.142.0),
-with no production-source changes. Both cases used RIE v1.36 on
-`linux/arm64`, across Node 18/20/22/24/26, with dd-trace 5.105.0 — the version
-`integration_tests/container/cjs/package.json` pinned at that commit — on every
-runtime. The per-runtime `DD_TRACE_VERSION` build-arg was inert on that baseline
-because it did not yet have `scripts/dd_trace_versions.sh`.
-All five runtimes produced the same shared goldens; no runtime-specific
-timeout overrides were needed.
+The timeout goldens were recaptured after merging main, from pre-migration
+library commit `291fd14e9b8c54b94ba5b57998f726231839dc92`
+(`datadog-lambda-js` 12.143.0), with no additional production-source changes.
+Both cases used RIE v1.36 on `linux/arm64`, across Node 18/20/22/24/26. The
+fixture runner installed dd-trace 5.126.0 on Node 18/20 and the lockfile-resolved
+6.15.0 on Node 22/24/26. All five runtimes produced the same shared goldens;
+no runtime-specific timeout overrides were needed.
 
-The branch has since incorporated current main to resolve the workflow conflict.
-Main uses the v5/v6 runtime split and runtime tracer-version reporting. These
-timeout goldens still record the older baseline above and need recapture and
-strict comparison against the updated baseline before this PR is ready.
+Both cases passed a comparison-only rerun across all five runtimes (90
+invocations), leaving all four timeout snapshot files byte-for-byte unchanged.
 
-Both cases then passed a comparison-only rerun across all five runtimes
-(90 invocations total), leaving all four timeout snapshot files byte-for-byte
-unchanged. The existing `manual-throw-error` and `container-cjs` goldens also
-passed unchanged on Node 22 through the same transport. The checker has nine
-regression tests, verified on host Node 25 and container Node 18.
+The existing `manual-throw-error` and `container-cjs` goldens also passed
+unchanged on Node 22 through the same transport. The checker has nine
+regression tests.
 
-An earlier capture used a different baseline, `4b9f41d2`, with dd-trace 5.126.0
-on Node 18/20 and 6.12.0 on Node 22/24/26. It passed on that baseline, with a
-nonempty `dd_trace` tag and no `links` field. The goldens were recaptured for
-the `cf751a76` baseline and its 5.105.0 fixture pin: that build emits `links: []`
-and an empty `dd_trace` tag (see below).
+The previous files recorded the older `cf751a76` baseline with dd-trace
+5.105.0 on every runtime. Those snapshots stopped matching after the main
+merge: the current tracer omits empty `links: []` fields, and the shim resolves
+the loaded tracer's version at runtime instead of recording an empty
+`dd_trace` tag. The recapture changes only those fields and ordinary RIE
+record ordering under the existing line-order comparison. Timeout error
+decoration, span counts, parent/child relationships, and flush checks remain
+unchanged. Neither the raw checker nor the shared normalizer was loosened.
 
 When intentionally recapturing an existing shared golden, first review why
 the baseline changed. The current runner lets the first leg overwrite a shared
 golden in `UPDATE_SNAPSHOTS=true` mode and requires later legs in that run to
 agree. Unlike the older capture baseline, it no longer requires deleting the
 existing golden first.
-
-**Historical capture-baseline defect.** These goldens record an empty `dd_trace`
-span tag. At `cf751a76`, `scripts/update_dist_version.sh` derived it with
-`sed -n -E "s/dd-trace@([0-9]*\.[0-9]*\.[0-9]*):/\1/p" yarn.lock`, which
-expected a pinned entry, but `yarn.lock` recorded the range
-`dd-trace@^5.113.0:` — so the substitution yielded nothing. The `container-cjs`
-golden at that baseline had the same empty tag. Main has since fixed version
-reporting; the pending timeout recapture must reflect that fix.
 
 The local capture used `RIE_HTTP_TRANSPORT=container` because Colima's
 published host ports were unreachable. RIE was reachable over IPv4 inside

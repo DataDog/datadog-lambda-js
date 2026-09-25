@@ -64,8 +64,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -89,7 +88,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "resource_names": "integration-tests-js-local-cjs-timeout",
           "functionname": "integration-tests-js-local-cjs-timeout",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "api-gateway",
           "function_trigger.event_source_arn": "arn:aws:apigateway:us-east-1::/restapis/wt6mne2s9k/stages/test",
           "http.method": "GET",
@@ -105,8 +104,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -130,8 +128,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -139,9 +136,9 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 XXXX [ERROR] (rapid) Invoke failed InvokeID=XXXX error=errResetReceived
 XXXX [WARNING] (rapid) Reset initiated: Timeout
 XXXX [INFO] (rapid) Sending SIGKILL to runtime-XX(XX).
-XXXX [INFO] (rapid) Waiting for runtime domain processes termination
 END RequestId: XXXX
 REPORT RequestId: XXXX	Init Duration: XXXX ms	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
+XXXX [INFO] (rapid) Waiting for runtime domain processes termination
 START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INIT START(type: on-demand, phase: invoke)
 XXXX [INFO] (rapid) The extension's directory "/opt/extensions" does not exist, assuming no extensions to be loaded.
@@ -209,8 +206,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -234,7 +230,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "resource_names": "integration-tests-js-local-cjs-timeout",
           "functionname": "integration-tests-js-local-cjs-timeout",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
           "error.message": "Datadog detected an impending timeout",
@@ -248,8 +244,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -273,8 +268,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -282,9 +276,9 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 XXXX [ERROR] (rapid) Invoke failed InvokeID=XXXX error=errResetReceived
 XXXX [WARNING] (rapid) Reset initiated: Timeout
 XXXX [INFO] (rapid) Sending SIGKILL to runtime-XX(XX).
+XXXX [INFO] (rapid) Waiting for runtime domain processes termination
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) Waiting for runtime domain processes termination
 START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INIT START(type: on-demand, phase: invoke)
 XXXX [INFO] (rapid) The extension's directory "/opt/extensions" does not exist, assuming no extensions to be loaded.
@@ -352,8 +346,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -377,7 +370,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "resource_names": "integration-tests-js-local-cjs-timeout",
           "functionname": "integration-tests-js-local-cjs-timeout",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
           "error.message": "Datadog detected an impending timeout",
@@ -391,8 +384,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -416,8 +408,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -425,9 +416,9 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 XXXX [ERROR] (rapid) Invoke failed InvokeID=XXXX error=errResetReceived
 XXXX [WARNING] (rapid) Reset initiated: Timeout
 XXXX [INFO] (rapid) Sending SIGKILL to runtime-XX(XX).
+XXXX [INFO] (rapid) Waiting for runtime domain processes termination
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) Waiting for runtime domain processes termination
 START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INIT START(type: on-demand, phase: invoke)
 XXXX [INFO] (rapid) The extension's directory "/opt/extensions" does not exist, assuming no extensions to be loaded.
@@ -495,8 +486,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -520,7 +510,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "resource_names": "integration-tests-js-local-cjs-timeout",
           "functionname": "integration-tests-js-local-cjs-timeout",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "dynamodb",
           "function_trigger.event_source_arn": "arn:aws:dynamodb:us-east-1:1234567890:table/someTableName/stream/2024-12-11T20:00:00.000",
           "error.message": "Datadog detected an impending timeout",
@@ -534,8 +524,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -559,8 +548,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -569,10 +557,10 @@ XXXX [ERROR] (rapid) Invoke failed InvokeID=XXXX error=errResetReceived
 XXXX [WARNING] (rapid) Reset initiated: Timeout
 XXXX [INFO] (rapid) Sending SIGKILL to runtime-XX(XX).
 END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
 XXXX [INFO] (rapid) Waiting for runtime domain processes termination
-XXXX [INFO] (rapid) INIT START(type: on-demand, phase: invoke)
+REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
 START RequestId: XXXX Version: $LATEST
+XXXX [INFO] (rapid) INIT START(type: on-demand, phase: invoke)
 XXXX [INFO] (rapid) The extension's directory "/opt/extensions" does not exist, assuming no extensions to be loaded.
 XXXX [INFO] (rapid) Starting runtime without AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN , Expected?: false
 XXXX [INFO] (rapid) INIT RTDONE(status: success)
@@ -637,8 +625,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -662,7 +649,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "resource_names": "integration-tests-js-local-cjs-timeout",
           "functionname": "integration-tests-js-local-cjs-timeout",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
           "error.message": "Datadog detected an impending timeout",
@@ -676,8 +663,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -701,8 +687,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -710,9 +695,9 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 XXXX [ERROR] (rapid) Invoke failed InvokeID=XXXX error=errResetReceived
 XXXX [WARNING] (rapid) Reset initiated: Timeout
 XXXX [INFO] (rapid) Sending SIGKILL to runtime-XX(XX).
+XXXX [INFO] (rapid) Waiting for runtime domain processes termination
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) Waiting for runtime domain processes termination
 START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INIT START(type: on-demand, phase: invoke)
 XXXX [INFO] (rapid) The extension's directory "/opt/extensions" does not exist, assuming no extensions to be loaded.
@@ -779,8 +764,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -804,7 +788,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "resource_names": "integration-tests-js-local-cjs-timeout",
           "functionname": "integration-tests-js-local-cjs-timeout",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
           "error.message": "Datadog detected an impending timeout",
@@ -818,8 +802,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -843,8 +826,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -921,8 +903,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -946,7 +927,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "resource_names": "integration-tests-js-local-cjs-timeout",
           "functionname": "integration-tests-js-local-cjs-timeout",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "s3",
           "function_trigger.event_source_arn": "arn:aws:s3:::my-bucket-name",
           "error.message": "Datadog detected an impending timeout",
@@ -960,8 +941,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -985,8 +965,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -1063,8 +1042,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1088,7 +1066,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "resource_names": "integration-tests-js-local-cjs-timeout",
           "functionname": "integration-tests-js-local-cjs-timeout",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "sns",
           "function_trigger.event_source_arn": "arn:aws:sns:us-east-2:123456789012:sns-lambda",
           "error.message": "Datadog detected an impending timeout",
@@ -1102,8 +1080,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1127,8 +1104,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -1136,9 +1112,9 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 XXXX [ERROR] (rapid) Invoke failed InvokeID=XXXX error=errResetReceived
 XXXX [WARNING] (rapid) Reset initiated: Timeout
 XXXX [INFO] (rapid) Sending SIGKILL to runtime-XX(XX).
-XXXX [INFO] (rapid) Waiting for runtime domain processes termination
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
+XXXX [INFO] (rapid) Waiting for runtime domain processes termination
 START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INIT START(type: on-demand, phase: invoke)
 XXXX [INFO] (rapid) The extension's directory "/opt/extensions" does not exist, assuming no extensions to be loaded.
@@ -1204,8 +1180,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1229,7 +1204,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "resource_names": "integration-tests-js-local-cjs-timeout",
           "functionname": "integration-tests-js-local-cjs-timeout",
           "datadog_lambda":"XXXX",
-          "dd_trace": "",
+          "dd_trace":"XXXX",
           "function_trigger.event_source": "sqs",
           "function_trigger.event_source_arn": "arn:aws:sqs:us-east-2:123456789012:my-queue",
           "error.message": "Datadog detected an impending timeout",
@@ -1243,8 +1218,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       },
       {
         "trace_id":"XXXX",
@@ -1268,8 +1242,7 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_sampling_priority_v1": 1
         },
         "start":XXXX,
-        "duration":XXXX,
-        "links": []
+        "duration":XXXX
       }
     ]
   ]
@@ -1277,6 +1250,6 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 XXXX [ERROR] (rapid) Invoke failed InvokeID=XXXX error=errResetReceived
 XXXX [WARNING] (rapid) Reset initiated: Timeout
 XXXX [INFO] (rapid) Sending SIGKILL to runtime-XX(XX).
+XXXX [INFO] (rapid) Waiting for runtime domain processes termination
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) Waiting for runtime domain processes termination
