@@ -20,3 +20,4 @@ integration_tests/container/*/datadog-lambda-js-local.tgz
 
 # Local integration test harness binaries
 integration_tests_local/bin/
+integration_tests/container/layer/cold_start_fixture/

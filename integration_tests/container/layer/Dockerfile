@@ -31,5 +31,8 @@ COPY layer_pkg /opt/nodejs/node_modules/datadog-lambda-js/
 # handler.js (CJS) and esm.mjs (top-level await) are plain unwrapped user
 # handlers; the layer's handler.mjs wraps them via DD_LAMBDA_HANDLER.
 COPY handler.js esm.mjs ${LAMBDA_TASK_ROOT}/
+COPY cold_start_fixture/ ${LAMBDA_TASK_ROOT}/
+COPY cold_start_fixture/cold-start-probe.js /opt/cold-start-probe.js
+COPY cold_start_fixture/cold-start-probe.js /var/runtime/cold-start-probe.js
 
 CMD ["/opt/nodejs/node_modules/datadog-lambda-js/handler.handler"]
