@@ -21,7 +21,7 @@ if (process.env.DD_TRACE_STARTUP_LOGS === undefined) {
 }
 
 if (getEnvValue("DD_TRACE_ENABLED", "true").toLowerCase() === "true") {
-  initTracer();
+  await initTracer();
 }
 
 const taskRootEnv = getEnvValue(lambdaTaskRootEnvVar, "");
