@@ -81,6 +81,7 @@ describe("module importer", () => {
   it("does not register again when NODE_OPTIONS preloads dd-trace", async () => {
     process.env.NODE_OPTIONS = "--import dd-trace/initialize.mjs";
     const moduleImporter = requireModuleImporter();
+    jest.spyOn(moduleImporter, "isSyncLoaderHookVersionSupported").mockReturnValue(true);
 
     await expect(moduleImporter.initTracer()).resolves.toBe(tracer);
     expect(registerLoader).not.toHaveBeenCalled();
@@ -90,6 +91,7 @@ describe("module importer", () => {
   it("does not register again when execArgv preloads dd-trace", async () => {
     process.execArgv.push("--require", "dd-trace/register.js");
     const moduleImporter = requireModuleImporter();
+    jest.spyOn(moduleImporter, "isSyncLoaderHookVersionSupported").mockReturnValue(true);
 
     await expect(moduleImporter.initTracer()).resolves.toBe(tracer);
     expect(registerLoader).not.toHaveBeenCalled();
