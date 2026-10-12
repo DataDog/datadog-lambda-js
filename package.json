@@ -91,6 +91,7 @@
     "fast-xml-parser": "^4.5.7",
     "import-in-the-middle": "3.4.0",
     "uuid": "^8.3.2",
-    "js-yaml": "^3.15.2"
+    "js-yaml": "^3.15.2",
+    "sprintf-js": "^1.1.3"
   }
 }
