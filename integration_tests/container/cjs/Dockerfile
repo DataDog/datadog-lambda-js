@@ -10,6 +10,9 @@ ARG DD_TRACE_VERSION
 # AWS suite (throw-error, status-code-500s, send-metrics, process-input,
 # http-requests) plus extractor.js for the DD_TRACE_EXTRACTOR case.
 COPY package.json *.js ${LAMBDA_TASK_ROOT}/
+# Known real module loads at each path class; no runtime implementation is overwritten.
+COPY cold-start-probe.js /opt/cold-start-probe.js
+COPY cold-start-probe.js /var/runtime/cold-start-probe.js
 COPY datadog-lambda-js-local.tgz /tmp/datadog-lambda-js-local.tgz
 RUN cd ${LAMBDA_TASK_ROOT} \
     && test -n "$DD_TRACE_VERSION" \

@@ -33,6 +33,8 @@
 # cjs-proactive-init       | cjs   | node_modules/datadog-lambda-js/dist/handler.handler | proactive-initialization markers (raw-log assertions)
 # manual-metrics-only      | cjs   | send-metrics.handle                      | DD_TRACE_ENABLED=false: metrics flush, no spans, no log correlation
 # cjs-capture-payload      | cjs   | node_modules/datadog-lambda-js/dist/handler.handler | DD_CAPTURE_LAMBDA_PAYLOAD=true: function.request/response span tags
+# cjs-cold-start / layer-cold-start | cjs/layer | redirect handler | structural cold/warm module-load tracing
+# cjs-cold-start-{skip,threshold,disabled,provisioned,managed} | cjs | redirect handler | cold-start filtering and suppression
 #
 # Usage (from repo root or this directory):
 #   ./integration_tests_local/run.sh                 # all runtimes, all cases
@@ -135,6 +137,13 @@ ALL_CASES=(
     "cjs-proactive-init"
     "manual-metrics-only"
     "cjs-capture-payload"
+    "cjs-cold-start"
+    "layer-cold-start"
+    "cjs-cold-start-skip"
+    "cjs-cold-start-threshold"
+    "cjs-cold-start-disabled"
+    "cjs-cold-start-provisioned"
+    "cjs-cold-start-managed"
 )
 
 function configure_case() {
@@ -148,6 +157,9 @@ function configure_case() {
     case_needs_mock=false
     case_invoke_timeout=0
     case_timeout=false
+    case_cold_mode=""
+    case_cold_tracing=false
+    case_managed=false
     case_return_extension=json
     # Return-value golden shape:
     #   default   - every event returns the shared default.json payload
@@ -311,6 +323,42 @@ function configure_case() {
             case_entry_handler="node_modules/datadog-lambda-js/dist/handler.handler"
             case_extra_env=(-e DD_LAMBDA_HANDLER=handler.handle -e DD_TRACE_EXTRACTOR=extractor.extract)
             ;;
+        cjs-cold-start|layer-cold-start|cjs-cold-start-skip|cjs-cold-start-threshold|cjs-cold-start-disabled|cjs-cold-start-provisioned|cjs-cold-start-managed)
+            case_image=cjs
+            case_entry_handler="node_modules/datadog-lambda-js/dist/handler.handler"
+            case_cold_mode=enabled
+            case_cold_tracing=true
+            case_extra_env=(-e DD_LAMBDA_HANDLER=cold-start.handle -e DD_MIN_COLD_START_DURATION=10)
+            case "$case_name" in
+                layer-cold-start)
+                    case_image=layer
+                    case_entry_handler="/opt/nodejs/node_modules/datadog-lambda-js/handler.handler"
+                    ;;
+                cjs-cold-start-skip)
+                    case_cold_mode=skip
+                    case_extra_env+=(-e DD_COLD_START_TRACE_SKIP_LIB=./cold-start-skip)
+                    ;;
+                cjs-cold-start-threshold)
+                    case_cold_mode=threshold
+                    case_extra_env=(-e DD_LAMBDA_HANDLER=cold-start.handle -e DD_MIN_COLD_START_DURATION=1000000)
+                    ;;
+                cjs-cold-start-disabled)
+                    case_cold_mode=disabled
+                    case_cold_tracing=false
+                    ;;
+                cjs-cold-start-provisioned)
+                    case_cold_mode=provisioned
+                    case_extra_env+=(-e AWS_LAMBDA_INITIALIZATION_TYPE=provisioned-concurrency)
+                    ;;
+                cjs-cold-start-managed)
+                    case_cold_mode=managed
+                    case_managed=true
+                    # MC alone does not cap the runtime's default worker pool. One worker makes
+                    # the warm-invocation/module-cache assertions deterministic in this fixture.
+                    case_extra_env+=(-e AWS_LAMBDA_INITIALIZATION_TYPE=lambda-managed-instances -e AWS_LAMBDA_MAX_CONCURRENCY=1 -e AWS_LAMBDA_NODEJS_WORKER_COUNT=1 -e AWS_LAMBDA_LOG_FORMAT=text)
+                    ;;
+            esac
+            ;;
         cjs-proactive-init)
             case_image=cjs
             case_entry_handler="node_modules/datadog-lambda-js/dist/handler.handler"
@@ -362,6 +410,7 @@ if [ "$update_snapshots" = true ]; then
 fi
 
 mismatch_found=false
+structural_failure=false
 container_ids=()
 rie_download=""
 mock_cid=""
@@ -448,6 +497,10 @@ function prepare_layer_context() {
     if [ "$layer_context_prepared" = true ]; then
         return
     fi
+    # Keep one fixture body for both entrypoints. Refresh even with SKIP_PACK:
+    # that flag reuses the library artifact, not stale copies of edited fixtures.
+    mkdir -p "$integration_tests_dir/container/layer/cold_start_fixture"
+    cp "$integration_tests_dir/container/cjs"/cold-start*.js "$integration_tests_dir/container/layer/cold_start_fixture/"
     if [ -n "$SKIP_PACK" ] && [ -f "$integration_tests_dir/container/layer/deps.package.json" ]; then
         echo "SKIP_PACK: reusing existing container/layer context"
     else
@@ -653,7 +706,7 @@ for node_version in "${RUNTIMES[@]}"; do
             -e DD_SITE=datadoghq.com \
             -e DD_FLUSH_TO_LOG=true \
             -e DD_INTEGRATION_TEST=true \
-            -e DD_COLD_START_TRACING=false \
+            -e DD_COLD_START_TRACING="$case_cold_tracing" \
             -e DD_TRACE_STARTUP_LOGS=false \
             -e DD_SERVICE_MAPPING="lambda_api_gateway:remappedApiGatewayServiceName,lambda_sns:remappedSnsServiceName,lambda_sqs:remappedSqsServiceName,lambda_s3:remappedS3ServiceName,lambda_eventbridge:remappedEventBridgeServiceName,lambda_kinesis:remappedKinesisServiceName,lambda_dynamodb:remappedDynamoDbServiceName,lambda_url:remappedUrlServiceName" \
             -e AWS_LAMBDA_FUNCTION_NAME="$function_name" \
@@ -801,7 +854,7 @@ for node_version in "${RUNTIMES[@]}"; do
         # The managed-instances path used by the proactive-init case emits
         # REPORT but never RTDONE, so requiring it there would always time out.
         expected_invocation_count=${#input_event_files[@]}
-        if [ "$case_proactive" = true ] || [ "$case_timeout" = true ]; then
+        if [ "$case_proactive" = true ] || [ "$case_timeout" = true ] || [ "$case_managed" = true ]; then
             expected_rtdone_count=0
         else
             expected_rtdone_count=$expected_invocation_count
@@ -854,6 +907,15 @@ for node_version in "${RUNTIMES[@]}"; do
         fi
 
         snapshot_logs=$raw_logs
+        if [ -n "$case_cold_mode" ]; then
+            if ! printf '%s\n' "$raw_logs" | node "$local_dir/check-cold-start-logs.js" "$case_cold_mode" "$expected_invocation_count"; then
+                echo "FAILURE: cold-start trace assertions failed for $function_name" >&2
+                structural_failure=true
+                printf '%s\n' "$raw_logs" > "/tmp/l2-raw-${case_name}-node${node_version}.log"
+                echo "Full raw logs written to /tmp/l2-raw-${case_name}-node${node_version}.log" >&2
+                mismatch_found=true
+            fi
+        fi
         if [ "$case_timeout" = true ]; then
             snapshot_logs=$(printf '%s\n' "$raw_logs" | node "$local_dir/check-timeout-logs.js" "$expected_invocation_count")
             if [ "$?" -ne 0 ]; then
@@ -905,6 +967,13 @@ for node_version in "${RUNTIMES[@]}"; do
         docker rm -f "$cid" >/dev/null 2>&1
         container_ids=("${container_ids[@]/$cid}")
 
+        # Only these dedicated cases use a structural oracle instead of a byte log golden.
+        # Real module timings change the filtered tree; existing cases/normalization stay strict.
+        # Return-value goldens and runtime-tag assertions above still apply to every invocation.
+        if [ -n "$case_cold_mode" ]; then
+            continue
+        fi
+
         # Shared per case, with a per-runtime override for real divergence.
         runtime_log_snapshot="$local_dir/snapshots/logs/${case_name}_node${node_version}.log"
         if [ -f "$runtime_log_snapshot" ]; then
@@ -930,7 +999,11 @@ set -e
 
 if [ "$mismatch_found" = true ]; then
     echo "FAILURE: A mismatch between new data and a snapshot was found and printed above."
-    echo "If the change is expected, generate new snapshots by running 'UPDATE_SNAPSHOTS=true ./integration_tests_local/run.sh'"
+    if [ "$structural_failure" = true ]; then
+        echo "Cold-start structural assertions failed. Updating snapshots cannot repair these failures."
+    else
+        echo "If the change is expected, generate new snapshots by running 'UPDATE_SNAPSHOTS=true ./integration_tests_local/run.sh'"
+    fi
     exit 1
 fi
 

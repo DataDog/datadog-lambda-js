@@ -82,6 +82,60 @@ The case names are:
 | `cjs-fetch-requests` | fetch variant of `cjs-http-requests`: the global fetch (undici) is instrumented by a different dd-trace plugin than http/https; mock echo pins the injected headers on that path |
 | `cjs-custom-extractor` | `DD_TRACE_EXTRACTOR=extractor.extract`; asserts `_dd.parent_source: event` on the inferred span |
 | `cjs-proactive-init` | eager-init managed-instances RIE path with a 15 s init→invoke gap; asserts proactive-initialization markers on the raw logs |
+| `cjs-cold-start` / `layer-cold-start` | real init-time module loads through npm redirect and layer entrypoints; one load span, known require spans, parent/timing/classification checks, and warm-load cleanup |
+| `cjs-cold-start-skip` | a known loaded library and its subtree are absent from traces; other fixture modules remain |
+| `cjs-cold-start-threshold` | a high `DD_MIN_COLD_START_DURATION` suppresses require spans while retaining the first-invocation load span |
+| `cjs-cold-start-disabled` | `DD_COLD_START_TRACING=false` suppresses load and require spans, while the handler still loads the same modules |
+| `cjs-cold-start-provisioned` / `cjs-cold-start-managed` | initialization-mode suppression, including a check that the runtime actually applied the requested mode |
+
+### Cold-start tracing: structural oracle, not a log golden
+
+These seven cases run in the same five-runtime, two-architecture CI matrix. They
+use the existing return-value golden and runtime-tag assertion, but intentionally
+do **not** have byte-for-byte log goldens. Module timings determine which nodes
+cross `DD_MIN_COLD_START_DURATION`, so the full tree changes with machine speed.
+Existing cases still disable cold-start tracing and retain their strict goldens;
+the shared normalizer is unchanged.
+
+`check-cold-start-logs.js` checks all raw trace chunks before normalization:
+
+- exactly one invocation span per request, and proof all requests used one warm environment;
+- exactly one `aws.lambda.load`, in the first invocation's trace, parented to the
+  inferred span when present or the invocation otherwise;
+- real known init-time modules under `/var/task`, `/opt`, and `/var/runtime`, with
+  correctly classified require spans ending before invocation start (2ms tolerance
+  for the millisecond module clock versus the tracer clock);
+- connected, acyclic require trees, unique exported identities, and no replay of
+  fixture modules on later invocations;
+- a lazy module loaded on invocation two, parented to that invocation, not another
+  cold-start load span. Warm require spans are legitimate; replaying init modules is not;
+- skip-library/subtree, min-duration, disabled, and initialization-mode controls.
+
+The fixture uses a 50ms `Atomics.wait` during module evaluation, against a 10ms
+threshold. This is intentional fixture-only load cost, not a busy loop or an
+assertion about exact duration. File-load markers prove the modules actually ran
+even when their spans must be suppressed. No synthetic module-load channel
+messages or tracer internals are used to manufacture the integration output.
+Core-module name classification also has a checker unit test; the fixture does
+not require a core module to exceed a real-time threshold.
+
+```bash
+node --test integration_tests_local/check-*.test.js
+RIE_HTTP_TRANSPORT=container RUNTIME_PARAM=22 CASE_PARAM=cjs-cold-start ./integration_tests_local/run.sh
+SKIP_PACK=true RIE_HTTP_TRANSPORT=container RUNTIME_PARAM=22 CASE_PARAM=layer-cold-start ./integration_tests_local/run.sh
+```
+
+The positive cases expose missing module spans with released dd-trace 6.15.0.
+They depend on the failed-load event cleanup in
+[dd-trace-js #10535](https://github.com/DataDog/dd-trace-js/pull/10535).
+Before merging, update the affected tracer pin to a release containing that fix
+and run the full matrix without a local overlay. CI deliberately uses released
+dependencies, with no workaround or expected-failure exemption. Updating snapshots
+cannot repair a structural failure; raw logs are saved under `/tmp/l2-raw-*.log`.
+
+The managed fixture explicitly sets
+`AWS_LAMBDA_NODEJS_WORKER_COUNT=1`: concurrency one alone still allows a multi-worker
+pool and cannot guarantee one module cache across invocations.
 
 Two legacy aliases remain for muscle memory: `VARIANT_PARAM=cjs|esm` maps to
 `container-cjs`/`container-esm`, and `SIMULATE_PROACTIVE_INIT=true` maps to
