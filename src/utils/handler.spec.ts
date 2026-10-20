@@ -1,8 +1,9 @@
-import { Context, Handler } from "aws-lambda";
+import { Callback, Context, Handler } from "aws-lambda";
 
 import { didFunctionColdStart } from "./cold-start";
 import { promisifiedHandler } from "./handler";
 import { LogLevel, setLogLevel } from "./log";
+import { HANDLER_STREAMING, STREAM_RESPONSE } from "../constants";
 
 const mockContext = {
   invokedFunctionArn: "arn:aws:lambda:us-east-1:123497598159:function:my-test-lambda",
@@ -328,5 +329,167 @@ describe("promisifiedHandler", () => {
 
     // Should return immediately with the response object
     expect(result).toEqual({ statusCode: 200, body: "Plain response", headers: { "Content-Type": "text/plain" } });
+  });
+});
+
+describe("buffered handler completion mode", () => {
+  let oldCompletion: string | undefined;
+  const response = { statusCode: 200, body: "callback response" };
+  const incidental = { incidental: true };
+
+  function createHandler(kind: string, work: (callback: Callback<unknown>, context: Context) => unknown) {
+    if (kind === "rest") {
+      return (...args: Parameters<Handler>) => work(args[2], args[1]);
+    }
+    return (event: unknown, context: Context, callback: Callback<unknown> = () => {}) => work(callback, context);
+  }
+
+  function wrap(handler: unknown) {
+    return promisifiedHandler(handler) as (event: unknown, context: Context) => Promise<unknown>;
+  }
+
+  beforeEach(() => {
+    oldCompletion = process.env.DD_LAMBDA_HANDLER_COMPLETION;
+    delete process.env.DD_LAMBDA_HANDLER_COMPLETION;
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    if (oldCompletion === undefined) {
+      delete process.env.DD_LAMBDA_HANDLER_COMPLETION;
+    } else {
+      process.env.DD_LAMBDA_HANDLER_COMPLETION = oldCompletion;
+    }
+  });
+
+  describe.each(["rest", "default"])("%s parameters", (kind) => {
+    it("preserves the existing incidental-return selection in auto mode", async () => {
+      const handler = createHandler(kind, (callback) => {
+        setTimeout(() => callback(null, response), 10);
+        return incidental;
+      });
+      expect(handler.length).toBe(kind === "rest" ? 0 : 2);
+      await expect(wrap(handler)({}, { ...mockContext })).resolves.toBe(incidental);
+      jest.advanceTimersByTime(10);
+    });
+
+    it("waits for the asynchronous callback instead of returning the incidental object", async () => {
+      process.env.DD_LAMBDA_HANDLER_COMPLETION = "callback";
+      const handler = createHandler(kind, (callback) => {
+        setTimeout(() => callback(null, response), 10);
+        return incidental;
+      });
+      const settled = jest.fn();
+      const result = wrap(handler)({}, { ...mockContext });
+      const observed = result.then(settled);
+      jest.advanceTimersByTime(9);
+      await Promise.resolve();
+      expect(settled).not.toHaveBeenCalled();
+      jest.advanceTimersByTime(1);
+      await expect(result).resolves.toBe(response);
+      await observed;
+    });
+
+    it("propagates asynchronous callback errors", async () => {
+      process.env.DD_LAMBDA_HANDLER_COMPLETION = "callback";
+      const error = new Error("callback failure");
+      const handler = createHandler(kind, (callback) => {
+        setTimeout(() => callback(error), 10);
+        return incidental;
+      });
+      const result = wrap(handler)({}, { ...mockContext });
+      const observed = expect(result).rejects.toBe(error);
+      jest.advanceTimersByTime(10);
+      await observed;
+    });
+
+    it("stays pending if neither callback nor context completion fires", async () => {
+      process.env.DD_LAMBDA_HANDLER_COMPLETION = "callback";
+      const handler = createHandler(kind, () => incidental);
+      const settled = jest.fn();
+      wrap(handler)({}, { ...mockContext }).then(settled, settled);
+      jest.advanceTimersByTime(1000);
+      await Promise.resolve();
+      expect(settled).not.toHaveBeenCalled();
+    });
+
+    it.each(["done", "succeed", "fail"])("honors context.%s with an incidental return", async (method) => {
+      process.env.DD_LAMBDA_HANDLER_COMPLETION = "callback";
+      const error = new Error("context failure");
+      const handler = createHandler(kind, (_callback, context) => {
+        setTimeout(() => {
+          if (method === "done") context.done(undefined, response);
+          else if (method === "succeed") context.succeed(response);
+          else context.fail(error);
+        }, 10);
+        return incidental;
+      });
+      const result = wrap(handler)({}, { ...mockContext });
+      const observed = method === "fail" ? expect(result).rejects.toBe(error) : expect(result).resolves.toBe(response);
+      jest.advanceTimersByTime(10);
+      await observed;
+    });
+
+    it.each(["callback", "promise", "rejection"])("preserves first completion from %s", async (winner) => {
+      process.env.DD_LAMBDA_HANDLER_COMPLETION = "callback";
+      const error = new Error("promise failure");
+      const handler = createHandler(kind, (callback) => {
+        setTimeout(() => callback(null, response), winner === "callback" ? 10 : 20);
+        return new Promise((resolve, reject) => {
+          setTimeout(
+            () => (winner === "rejection" ? reject(error) : resolve("promise response")),
+            winner === "callback" ? 20 : 10,
+          );
+        });
+      });
+      const result = wrap(handler)({}, { ...mockContext });
+      const observed =
+        winner === "rejection"
+          ? expect(result).rejects.toBe(error)
+          : expect(result).resolves.toEqual(winner === "callback" ? response : "promise response");
+      jest.advanceTimersByTime(10);
+      await observed;
+      jest.advanceTimersByTime(10);
+    });
+
+    it("preserves synchronous throws", () => {
+      process.env.DD_LAMBDA_HANDLER_COMPLETION = "callback";
+      const error = new Error("handler failure");
+      expect(() =>
+        wrap(
+          createHandler(kind, () => {
+            throw error;
+          }),
+        )({}, { ...mockContext }),
+      ).toThrow(error);
+    });
+  });
+
+  it.each([undefined, "auto", "unknown"])("preserves genuine synchronous responses for %s", async (mode) => {
+    if (mode !== undefined) process.env.DD_LAMBDA_HANDLER_COMPLETION = mode;
+    await expect(wrap(() => response)({}, { ...mockContext })).resolves.toBe(response);
+  });
+
+  it("reads the mode when wrapping and accepts uppercase callback", async () => {
+    process.env.DD_LAMBDA_HANDLER_COMPLETION = "CALLBACK";
+    const invoke = wrap((_event: unknown, context: Context) => {
+      context.succeed(response);
+      return incidental;
+    });
+    delete process.env.DD_LAMBDA_HANDLER_COMPLETION;
+    await expect(invoke({}, { ...mockContext })).resolves.toBe(response);
+    await expect(wrap(() => incidental)({}, { ...mockContext })).resolves.toBe(incidental);
+  });
+
+  it("leaves response streaming completion and arguments unchanged", async () => {
+    process.env.DD_LAMBDA_HANDLER_COMPLETION = "callback";
+    const stream = {};
+    const context = { ...mockContext };
+    const original = jest.fn().mockResolvedValue(response);
+    const handler = Object.assign(original, { [HANDLER_STREAMING]: STREAM_RESPONSE });
+    const invoke = promisifiedHandler(handler) as (event: unknown, output: unknown, ctx: Context) => Promise<unknown>;
+    await expect(invoke({}, stream, context)).resolves.toBe(response);
+    expect(original).toHaveBeenCalledWith({}, stream, context);
   });
 });
