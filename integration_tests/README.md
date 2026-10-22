@@ -22,4 +22,4 @@ suites.
 
 Do not re-add serverless-deployed tests here. Add behavioral cases to the local
 RIE-based suite, and rely on the end-to-end suites for real AWS Lambda resource
-cases. 
+cases.
