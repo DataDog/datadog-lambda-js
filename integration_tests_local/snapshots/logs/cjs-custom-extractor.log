@@ -57,7 +57,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
         },
         "metrics": {
           "_dd.measured": 1,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX
@@ -96,7 +97,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
         },
         "metrics": {
           "_dd.measured": 1,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX
@@ -162,7 +164,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
         "metrics": {
           "_dd.measured": 1,
           "size_bytes": 37,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX
@@ -198,7 +201,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
         },
         "metrics": {
           "_dd.measured": 1,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX
@@ -264,7 +268,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
         "metrics": {
           "_dd.measured": 1,
           "size_bytes": 37,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX
@@ -300,7 +305,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
         },
         "metrics": {
           "_dd.measured": 1,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX
@@ -366,7 +372,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
         "metrics": {
           "_dd.measured": 1,
           "size_bytes": 37,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX
@@ -402,7 +409,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
         },
         "metrics": {
           "_dd.measured": 1,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX
@@ -467,7 +475,8 @@ START RequestId: XXXX Version: $LATEST
         "metrics": {
           "_dd.measured": 1,
           "object_size": 8388608,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX
@@ -503,7 +512,8 @@ START RequestId: XXXX Version: $LATEST
         },
         "metrics": {
           "_dd.measured": 1,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX
@@ -568,7 +578,8 @@ START RequestId: XXXX Version: $LATEST
         "metrics": {
           "_dd.measured": 1,
           "object_size": 100,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX
@@ -604,7 +615,8 @@ START RequestId: XXXX Version: $LATEST
         },
         "metrics": {
           "_dd.measured": 1,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX
@@ -669,7 +681,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
         "metrics": {
           "_dd.measured": 1,
           "object_size": 100,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX
@@ -705,7 +718,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
         },
         "metrics": {
           "_dd.measured": 1,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX
@@ -769,7 +783,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
         },
         "metrics": {
           "_dd.measured": 1,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX
@@ -805,7 +820,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
         },
         "metrics": {
           "_dd.measured": 1,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX
@@ -868,7 +884,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
         "metrics": {
           "_dd.measured": 1,
           "retry_count": 1,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX
@@ -904,7 +921,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
         },
         "metrics": {
           "_dd.measured": 1,
-          "process_id":XXXX
+          "process_id":XXXX,
+          "_sampling_priority_v1": 1
         },
         "start":XXXX,
         "duration":XXXX
