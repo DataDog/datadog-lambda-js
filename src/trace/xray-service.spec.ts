@@ -52,7 +52,7 @@ describe("XrayService", () => {
 
       expect(traceContext?.toTraceId()).toBe("3995693151288333088");
       expect(traceContext?.toSpanId()).toBe("10713633173203262661");
-      expect(traceContext?.sampleMode()).toBe("2");
+      expect(traceContext?.sampleMode()).toBe(2);
       expect(traceContext?.source).toBe("xray");
     });
 
