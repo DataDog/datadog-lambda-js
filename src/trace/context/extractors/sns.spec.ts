@@ -315,7 +315,7 @@ describe("SNSEventTraceExtractor", () => {
 
       expect(traceContext?.toTraceId()).toBe("1705928277274000281");
       expect(traceContext?.toSpanId()).toBe("1366252104075042743");
-      expect(traceContext?.sampleMode()).toBe("1");
+      expect(traceContext?.sampleMode()).toBe(1);
       expect(traceContext?.source).toBe("event");
     });
 

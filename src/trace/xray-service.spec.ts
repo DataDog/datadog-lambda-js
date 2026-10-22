@@ -371,7 +371,7 @@ describe("XrayService", () => {
 
       expect(ddTraceContext?.toTraceId()).toEqual("625397077193750208");
       expect(ddTraceContext?.toSpanId()).toEqual("6538302989251745223");
-      expect(ddTraceContext?.sampleMode()).toEqual("1");
+      expect(ddTraceContext?.sampleMode()).toEqual(1);
     });
 
     it("returns null when AWS trace header is NOT injected by dd-trace", () => {

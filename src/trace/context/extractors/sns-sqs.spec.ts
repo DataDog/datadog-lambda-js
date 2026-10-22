@@ -271,7 +271,7 @@ describe("SNSSQSEventTraceExtractor", () => {
 
       expect(traceContext?.toTraceId()).toBe("5027664352514971920");
       expect(traceContext?.toSpanId()).toBe("1797917631284315439");
-      expect(traceContext?.sampleMode()).toBe("1");
+      expect(traceContext?.sampleMode()).toBe(1);
       expect(traceContext?.source).toBe("event");
     });
 
