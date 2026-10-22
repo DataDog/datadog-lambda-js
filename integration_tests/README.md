@@ -23,7 +23,3 @@ suites.
 Do not re-add serverless-deployed tests here. Add behavioral cases to the local
 RIE-based suite, and rely on the end-to-end suites for real AWS Lambda resource
 cases.
-
-Use the [handler coverage guide](../integration_tests_local/README.md#handler-coverage-guide)
-to choose L1 unit, L2 local integration, and representative L3 AWS cases for
-customer handler shapes and packaging/runtime variations.
