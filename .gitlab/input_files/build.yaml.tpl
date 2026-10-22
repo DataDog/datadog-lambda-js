@@ -34,7 +34,7 @@ pack npm package:
   image: registry.ddbuild.io/images/mirror/node:22-bullseye
   needs: []
   artifacts:
-    expire_in: 1 hr
+    expire_in: 1 day
     paths:
       - datadog-lambda-js-*.tgz
   before_script: *node-before-script
@@ -55,7 +55,7 @@ build layer ({{ $runtime.name }}):
   tags: ["arch:amd64"]
   image: ${CI_DOCKER_TARGET_IMAGE}:${CI_DOCKER_TARGET_VERSION}
   artifacts:
-    expire_in: 1 hr # Unsigned zips expire in 1 hour
+    expire_in: 1 day # Unsigned zips expire in 1 day
     paths:
       - .layers/datadog_lambda_node{{ $runtime.node_version }}.zip
   variables:
