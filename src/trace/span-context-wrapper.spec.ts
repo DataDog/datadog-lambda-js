@@ -15,10 +15,28 @@ describe("SpanContextWrapper", () => {
 
     expect(spanContext?.toTraceId()).toBe("8768810343773813232");
     expect(spanContext?.toSpanId()).toBe("6918894271950871724");
-    expect(spanContext?.sampleMode()).toBe("1");
+    expect(spanContext?.sampleMode()).toBe(1);
     expect(spanContext?.source).toBe("event");
     expect(spanContext?.spanContext._traceId.toArray()).toEqual([121, 177, 18, 140, 107, 104, 185, 240]);
     expect(spanContext?.spanContext._spanId.toArray()).toEqual([96, 4, 217, 174, 182, 29, 220, 172]);
+  });
+
+  // dd-trace only injects x-datadog-sampling-priority when the priority is an integer.
+  it.each([
+    ["USER_KEEP", SampleMode.USER_KEEP],
+    ["USER_REJECT", SampleMode.USER_REJECT],
+    ["AUTO_KEEP", SampleMode.AUTO_KEEP],
+    ["AUTO_REJECT", SampleMode.AUTO_REJECT],
+  ])("fromTraceContext keeps %s sampling priority as an integer", (_, sampleMode) => {
+    const spanContext = SpanContextWrapper.fromTraceContext({
+      traceId: "8768810343773813232",
+      parentId: "6918894271950871724",
+      sampleMode,
+      source: TraceSource.Xray,
+    });
+
+    expect(spanContext?.sampleMode()).toBe(sampleMode);
+    expect(Number.isInteger(spanContext?.spanContext._sampling.priority)).toBe(true);
   });
 
   describe("sampleMode", () => {

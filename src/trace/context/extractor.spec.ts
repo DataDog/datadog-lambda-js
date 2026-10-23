@@ -144,7 +144,7 @@ describe("TraceContextExtractor", () => {
 
         expect(traceContext?.toTraceId()).toBe("4110911582297405551");
         expect(traceContext?.toSpanId()).toBe("797643193680388251");
-        expect(traceContext?.sampleMode()).toBe("2");
+        expect(traceContext?.sampleMode()).toBe(2);
         expect(traceContext?.source).toBe("event");
       });
     });
@@ -797,7 +797,7 @@ describe("TraceContextExtractor", () => {
 
       expect(traceContext?.toTraceId()).toBe("4110911582297405557");
       expect(traceContext?.toSpanId()).toBe("797643193680388254");
-      expect(traceContext?.sampleMode()).toBe("2");
+      expect(traceContext?.sampleMode()).toBe(2);
       expect(traceContext?.source).toBe("xray");
     });
   });
