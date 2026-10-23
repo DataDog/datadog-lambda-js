@@ -106,7 +106,7 @@ describe("CustomTraceExtractor", () => {
 
       expect(traceContext?.toTraceId()).toBe("4110911582297405551");
       expect(traceContext?.toSpanId()).toBe("797643193680388251");
-      expect(traceContext?.sampleMode()).toBe("2");
+      expect(traceContext?.sampleMode()).toBe(2);
       expect(traceContext?.source).toBe("event");
     });
 
