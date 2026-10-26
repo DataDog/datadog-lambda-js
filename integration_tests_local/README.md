@@ -19,6 +19,10 @@ are a strict superset oracle for the dd-trace-js migration.
 Nothing here touches AWS, and nothing here touches
 `integration_tests/snapshots/` (the AWS suite's snapshots).
 
+See the [handler coverage guide](#handler-coverage-guide) for the planned
+L1/L2/L3 coverage and how to choose representative cases without testing every
+combination.
+
 ## Prerequisites
 
 - Docker (tested with colima on macOS arm64)
@@ -62,26 +66,9 @@ version resolved by the root `yarn.lock` on Node 22+. Consequently the normal
 dependency-update workflow also updates the RIE fixtures without a separate v6
 pin. CI additionally sets the host Node version to its matrix runtime.
 
-The case names are:
-
-| Case | What it covers |
-|---|---|
-| `container-cjs` / `container-esm` | npm-redirect container handlers (CJS / ESM entry), the default onboarding path |
-| `layer-cjs` / `layer-esm` | layer-mode handlers loaded from `/opt/nodejs/node_modules/datadog-lambda-js` (CJS / ESM entry) |
-| `manual-throw-error` | manual `datadog(handler)` wrap of a throwing handler; error body + enhanced error metrics |
-| `manual-status-500` | manual wrap with userland `dd-trace` init returning a 500 API Gateway response (`DD_TRACE_ENABLED=true`); error span tag + enhanced error metrics |
-| `manual-send-metrics` | manual wrap calling `sendDistributionMetric` inside and outside the handler; per-event return values |
-| `manual-process-input` | manual wrap with userland `dd-trace` init reading the active span; per-event return values |
-| `manual-callback` | manual wrap of a callback-style `(event, context, callback)` handler; pins the `promisifiedHandler` seam end to end (the migration spike broke exactly this) |
-| `manual-timeout` | explicit userland tracer init, then manual wrap; impending-timeout error on the invocation and `killAll()` flushing an unfinished child before RIE terminates the runtime |
-| `cjs-timeout` | the same timeout contract through `DD_LAMBDA_HANDLER` and the npm redirect entrypoint, exercising the raw-handler hook also used by layers |
-| `manual-metrics-only` | `DD_TRACE_ENABLED=false` (metrics-only customers): enhanced + custom metrics still flush, no `aws.lambda` span, no trace JSON, no `dd.trace_id` log correlation |
-| `cjs-capture-payload` | `DD_CAPTURE_LAMBDA_PAYLOAD=true` in redirect mode; span meta gains `function.request` / `function.response` with the captured payloads |
-| `cjs-http-requests` | downstream HTTP calls against a hermetic mock server in redirect mode; asserts injected `x-datadog-*`/`traceparent` headers and log injection via dd-trace's http plugin |
-| `manual-http-requests` | same handler, manual wrap without userland dd-trace init; exercises the library's own `patchHttp` fallback (request wrapping + per-request logging + exact header set via mock echo) |
-| `cjs-fetch-requests` | fetch variant of `cjs-http-requests`: the global fetch (undici) is instrumented by a different dd-trace plugin than http/https; mock echo pins the injected headers on that path |
-| `cjs-custom-extractor` | `DD_TRACE_EXTRACTOR=extractor.extract`; asserts `_dd.parent_source: event` on the inferred span |
-| `cjs-proactive-init` | eager-init managed-instances RIE path with a 15 s init→invoke gap; asserts proactive-initialization markers on the raw logs |
+Choose `CASE_PARAM` from the **Existing L2 fixture** column in the
+[coverage catalog](#handler-coverage-guide). It lists the current runnable
+cases alongside the plan for placing new tests.
 
 Two legacy aliases remain for muscle memory: `VARIANT_PARAM=cjs|esm` maps to
 `container-cjs`/`container-esm`, and `SIMULATE_PROACTIVE_INIT=true` maps to
@@ -107,6 +94,162 @@ environment-only, and an unexpected argument is rejected rather than ignored.
 Without `UPDATE_SNAPSHOTS=true`, every expected return-value and log snapshot
 must already exist. A missing snapshot fails the run and is never created
 implicitly. Update mode is the only path that creates or overwrites snapshots.
+
+## Handler coverage guide
+
+Choose the **lowest level that can confidently validate the case**: L1 first,
+L2 only when L1 is insufficient, and L3 only when L2 is insufficient. Each row
+below has exactly one populated level column. A dash means no additional test
+is planned at that level.
+
+- **L1 unittests:** library behavior that can be exercised directly in specs.
+  Adapter tests belong in `src/**/*.spec.ts`; timeout-monitor and module-hook
+  tests belong in [dd-trace-js's Lambda specs](https://github.com/DataDog/dd-trace-js/tree/master/packages/dd-trace/test/lambda).
+  Use real wrappers/helpers and fake timers for scheduling and cleanup.
+- **L2 integration tests:** cases requiring the built package, dependency
+  instrumentation, Node/Lambda module loading, or the actual Runtime Interface
+  Client (RIC). Use this Docker/RIE suite when isolated specs cannot establish
+  that those components work together.
+- **L3 serverless-e2e-test:** cases requiring AWS behavior that this local
+  harness cannot reproduce. Add them in
+  [serverless-e2e-tests](https://github.com/DataDog/serverless-e2e-tests), using
+  [handler-types](https://github.com/DataDog/serverless-e2e-tests/tree/main/handler-types)
+  or [lambda-features](https://github.com/DataDog/serverless-e2e-tests/tree/main/lambda-features)
+  as appropriate.
+
+**Implemented** reports automated coverage at the row's selected level:
+**Yes** means the described assertion is covered, **Partial** names the
+remaining variations/assertions, and **No** means that selected-level test is
+missing. It describes test existence, not the result of a test run. Update the
+status and evidence when tests are added or changed.
+
+Tests identified as **tracer PR** exist in
+[dd-trace-js #10775](https://github.com/DataDog/dd-trace-js/pull/10775) and are
+not yet merged. Temporary manual AWS validations do not count as automated
+L3 coverage.
+
+**Existing L2 fixture** records the current `CASE_PARAM` names so this catalog
+also serves as the runner's case list. Their current location does not decide
+where a new test belongs or satisfy a missing assertion at a different level.
+Keep existing tests; do not add coverage at a higher level just because an
+existing fixture happens to run there.
+
+### Customer handler behavior
+
+These rows describe library behavior. Runtime loading and completion contracts
+have their own rows below. Streaming adapter behavior (H08), for example, can
+be unit-tested; actual streaming delivery (D25) requires AWS. These are separate
+assertions, not a requirement to repeat the same test at multiple levels.
+
+| ID | Case / variations | Existing L2 fixture | Implemented | L1 unittests | L2 integration tests | L3 serverless-e2e-test |
+|---|---|---|---|---|---|---|
+| H01 | Synchronous object/string/`false`/`0`/`null`/`undefined` return; synchronous throw | `manual-throw-error` | Partial — [adapter specs](../src/utils/handler.spec.ts) cover objects/errors; primitive-return cases are missing there. The tracer PR covers monitor classification. | Assert the adapter's result/error or pending state and the monitor's cleanup decision directly; no runtime is needed to classify a supplied return value. | — | — |
+| H02 | `async` function or ordinary function returning a Promise: fulfill (including `undefined`), reject, never settle | — | Yes — [adapter specs](../src/utils/handler.spec.ts) cover async fulfillment/rejection; the tracer PR adds explicit-Promise, pending, and cleanup cases. | Assert settlement/error propagation, pending monitoring, and timer cleanup with controlled Promises and fake time. | — | — |
+| H03 | Explicit `(event, context, callback)`: immediate/delayed success/error, callback never called | `manual-callback` | Yes — [adapter specs](../src/utils/handler.spec.ts) cover callback success/error/delay; the tracer PR adds receiver, pending-timeout, and cleanup assertions. | Call the wrapped handler with a controlled callback; assert arguments, receiver, selected completion, and pending-timeout behavior. | — | — |
+| H04 | Rest/default-parameter callbacks (`handler.length < 3`) returning `undefined`, incidental `{}`, or a server/EventEmitter artifact | — | Partial — the tracer PR tests rest/default callback monitoring; the library adapter has no rest/default response-selection specs. | Use separate rest/default functions; assert the current adapter's response selection and monitor retention before a delayed callback. Arity and return classification are directly observable. | — | — |
+| H05 | `context.done`/`succeed`/`fail`: immediate/delayed completion after returning `undefined` or a server/EventEmitter artifact | — | Yes — [adapter specs](../src/utils/handler.spec.ts) cover context methods and artifacts; the tracer PR covers pending monitoring and cleanup. | Supply controlled context methods; assert result/error, arguments, immediate-completion semantics, and retention when completion never arrives. | — | — |
+| H06 | Callback + Promise, context + Promise, repeated callbacks, callback followed by throw/rejection | — | Partial — adapter specs cover callback-first Promise completion; the tracer PR covers monitor races. Adapter Promise-first, context races, and duplicates remain. | Cover both completion orders and duplicate/late signals with fake timers; assert the chosen result and exactly-once cleanup. | — | — |
+| H07 | Referenced handle drains later or never; native callback versus adapted Promise/context completion | — | No — no real-RIC handle-drain fixture. The tracer PR simulates this contract in L1 only. | — | Use the real legacy RIC: successful native callbacks can defer to before-exit, whereas context methods and the adapter's returned Promise complete immediately. Check both wait-flag settings and timeout monitoring while actually pending. | — |
+| H08 | Streaming adapter: two/three arguments, context position, metadata, Promise/non-Promise return, throw/rejection | — | Partial — [index specs](../src/index.spec.ts) check the streaming marker; the tracer PR covers monitor outcomes. Direct adapter forwarding/outcome specs are missing. | Assert metadata preservation, argument forwarding, and timer cleanup directly. These properties do not require sending a streamed response. | — | — |
+| H09 | Ordinary/arrow/bound function; frozen function/export; own configuration/helper/symbol data properties | — | Partial — tracer PR specs cover frozen/immutable exports, data properties, arity, and receiver; a bound-handler case is missing. | Construct the descriptors/functions in specs; assert property/receiver/arity preservation and safe handling of immutable exports. Actual ESM namespace loading is D02/D03. | — | — |
+| H10 | Throwing metadata/`length`/artifact accessors and callable Proxy traps | — | Partial — tracer PR specs cover metadata/artifact getters and Proxies; library-adapter artifact-accessor cases are missing. | Construct the actual accessor/Proxy; assert whether wrapping/invocation evaluates it and preserves the customer's result/error. No cold-start deployment is needed to reproduce a wrapping-time exception. | — | — |
+| H11 | Protected/frozen context, completion function with own `apply`, timer ID `0`, missing/throwing `unref` | — | Yes — tracer PR `timeout-monitor.spec.js` covers protected/frozen context, own `apply`, timer ID zero, and failing `unref`. | Inject each condition in specs; assert user completion survives optional instrumentation failures and every valid timer handle is cleaned up. | — | — |
+| H12 | Success/error A followed by pending B; A's late callback/Promise/timer while B is pending | — | Yes — tracer PR `timeout-monitor.spec.js` covers stale timers, both race winners, late signals, and later-invocation monitor ownership. | Invoke the same wrapper twice with fake time; assert A cannot tag, flush, or clear B's monitor. Invocation ownership does not require AWS freeze/thaw. | — | — |
+
+#### Completion contracts
+
+- A plain synchronous `undefined` return is not universally completion.
+  datadog-lambda-js may wait for a callback/context method; the legacy native
+  RIC may wait for before-exit; newer native runtimes can complete from the
+  return. Give each case an explicit result/error or pending expectation.
+- Rest/default parameters can hide callback intent from `handler.length`.
+  The current automatic adapter can select an incidental `{}` before an
+  asynchronous callback. Pin that behavior; this test plan does not introduce
+  the callback-mode feature proposed in
+  [#849](https://github.com/DataDog/datadog-lambda-js/pull/849).
+- The [legacy RIC attaches Promise fulfillment to `context.succeed`](https://github.com/aws/aws-lambda-nodejs-runtime-interface-client/blob/v3.3.0/src/Runtime.js#L73-L77),
+  whose [completion path bypasses the event-loop wait flag](https://github.com/aws/aws-lambda-nodejs-runtime-interface-client/blob/v3.3.0/src/CallbackContext.js#L53-L63).
+  datadog-lambda-js returns such a Promise even for a customer callback. H07
+  must distinguish this from a native third-argument callback.
+- Newer runtimes removed legacy callback/context hooks; see the
+  [RIC v4 release notes](https://github.com/aws/aws-lambda-nodejs-runtime-interface-client/releases/tag/v4.0.0).
+  Adapted customer callbacks and native runtime callbacks are separate paths.
+
+### Loading, runtime, and feature cases
+
+Each dimension value is a separate row, **not a Cartesian product**. Choose
+one representative handler and values for the other dimensions. A fixture can
+satisfy several rows at the same level when it asserts each relevant property.
+For example, one bundled ESM `.mjs` npm-redirect fixture can cover D02, D08,
+D09, and D16 in L2; it does not also need an L3 deployment.
+
+Use a simple fulfilled-Promise handler, unbundled CJS, one event payload, and
+one invocation unless the selected case requires something else. Existing
+runtime/architecture CI runs remain intact. Reuse an existing fixture where
+it already proves the assertion, and add combinations only for a concrete
+interaction such as ESM initialization order or native callback event-loop
+drain.
+
+| ID | Case / variation | Existing L2 fixture | Implemented | L1 unittests | L2 integration tests | L3 serverless-e2e-test |
+|---|---|---|---|---|---|---|
+| D01 | Module format: CJS `.js` / `.cjs` | `container-cjs`, `layer-cjs` | Partial — `container-cjs` and `layer-cjs` load `.js`; no `.cjs` customer fixture exists. | — | Load actual CommonJS exports through the runtime, including `.cjs`; verify resolution and invocation of the built package. | — |
+| D02 | Module format: genuine ESM `.mjs` | `container-esm`, `layer-esm` | Yes — `container-esm` and `layer-esm` invoke genuine `.mjs` exports with top-level await and strict trace/return snapshots. | — | Load a native ESM namespace through the real loader/hooks; verify instrumentation without illegal namespace redefinition. CJS transpilation cannot prove this. | — |
+| D03 | Module format: ESM `.js` with `"type": "module"` | — | No — the ESM fixture uses `.mjs`; it does not exercise a customer `.js` export resolved via `type: module`. | — | Include the real package boundary and invoke the emitted `.js` file; a mocked module object cannot validate resolution. | — |
+| D04 | Build output: unbundled JavaScript | — | Yes — existing adapter specs use ordinary, unbundled handler functions. Remaining behavior gaps are listed in H01–H06. | Use the plain handler fixtures in H01–H06; no additional build-specific test is needed. Package loading is covered by D01–D03. | — | — |
+| D05 | Build output: TypeScript compiled to CJS | — | No — the runner has no TypeScript-to-CJS customer artifact fixture; compiling the library itself does not cover this case. | — | Build and invoke the emitted CJS artifact so compiler changes to exports/arity are exercised. | — |
+| D06 | Build output: TypeScript compiled to ESM | — | No — the runner has no TypeScript-to-ESM customer artifact fixture. | — | Build and invoke emitted ESM with its actual package configuration. | — |
+| D07 | Build output: bundled CJS | — | No — the runner has no bundled CJS customer fixture. | — | Invoke the actual bundle with supported dependency externalization; source-level specs cannot prove the emitted artifact loads correctly. | — |
+| D08 | Build output: bundled ESM | — | No — the runner has no bundled ESM customer fixture. | — | Invoke the actual ESM bundle and assert instrumentation through the emitted import graph. | — |
+| D09 | Bootstrap: npm redirect with `DD_LAMBDA_HANDLER` | `container-cjs`, `container-esm` | Yes — `container-cjs` / `container-esm` run the packed npm entrypoint and compare trace/return snapshots. | — | Run the built npm entrypoint and `dist/utils/handler.js` helper; assert the customer export is loaded and instrumented. | — |
+| D10 | Bootstrap: layer redirect with `DD_LAMBDA_HANDLER` | `layer-cjs`, `layer-esm` | Yes — `layer-cjs` / `layer-esm` use [prepare-layer.js](prepare-layer.js) and release-shaped `/opt` contents. | — | Load the candidate layer contents from `/opt/nodejs/node_modules`, including `utils/handler.js`; packaging and loader behavior can be validated locally. | — |
+| D11 | Bootstrap: manual `datadog(handler)` | `manual-callback`, `manual-throw-error` | Yes — [index specs](../src/index.spec.ts) invoke public `datadog(handler)` directly. Completion-variation gaps remain in the H rows. | Invoke the public wrapper directly in specs; reuse H01–H06 for its completion contract. There is no separate runtime loader to validate. | — | — |
+| D12 | Bootstrap: direct dd-trace initialization/preload without datadog-lambda-js | — | No — no direct-tracer RIC fixture; the existing local cases all use datadog-lambda-js. | — | Use a tracer-owned runtime fixture for the independent raw-handler hook. Keep its CJS/ESM support contract explicit; do not add a library adapter to make it pass. | — |
+| D13 | Initialization order: library/helper loaded before tracer initialization | — | Partial — ESM startup runs locally, but cached-helper regression assertions exist only in the tracer PR's L1 specs. | — | Use a real ESM import graph and cached helper module; verify hooks reach the previously loaded adapter. Isolated mocks cannot prove loader/cache ordering. | — |
+| D14 | Initialization order: tracer initialized before library/helper | — | Yes — manual and redirect fixtures initialize tracing before handler wrapping; the timeout cases assert the resulting monitor export. | — | Exercise actual hook registration through preload/manual initialization; reuse a bootstrap fixture. | — |
+| D15 | Runtime model: legacy hooks and before-exit completion (representative Node.js 22) | — | No — no native non-Promise return plus referenced-handle RIC fixture. The tracer PR models it in L1 only. | — | Check real RIC behavior for non-Promise returns with a referenced handle; reuse H07 for native callback/context/Promise completion. | — |
+| D16 | Runtime model: return completion without legacy hooks (Node.js 24+) | — | Partial — Node.js 24+ adapter cases run in CI; raw return-based completion and hook availability lack dedicated RIC assertions. | — | Verify which completion signals the actual RIC provides and that raw return-based and adapted handlers really complete through their respective bootstrap paths. | — |
+| D17 | Lifecycle: construction/module initialization before first invocation | — | Partial — [cold-start specs](../src/utils/cold-start.spec.ts) cover first-invocation state; H09/H10 retain wrapping-time gaps. | Assert wrapping-time safety and first-invocation state using fresh module instances and fake time; reuse H09/H10. Loader resolution has separate L2 rows. | — | — |
+| D18 | Lifecycle: single completed invocation | — | Yes — basic adapter success/error specs and tracer PR monitor-cleanup specs cover this subset of H01/H02. | Reuse H01/H02 for success/error cleanup; no separate integration deployment is needed. | — | — |
+| D19 | Lifecycle: repeated invocations sharing wrapper/module state | — | Yes — reuse H12's tracer PR specs for repeated calls, late completions, and timer isolation. | Reuse H12 with distinct invocation markers to validate state/timer isolation. Actual AWS freeze/thaw delivery is a different assertion in D26. | — | — |
+| D20 | Lifecycle: genuine runtime deadline and pre-deadline trace export | `manual-timeout`, `cjs-timeout` | Yes — both timeout fixtures run [check-timeout-logs.js](check-timeout-logs.js), which checks exact roots/children, parenting, timing, and export before REPORT. | — | Let RIE terminate the invocation; assert exactly one impending-timeout root and unfinished child, correct parenting, and export before REPORT across both bootstrap paths. | — |
+| D21 | Architecture: `arm64` | `container-cjs` (arm64 CI) | Yes — the [local CI workflow](../.github/workflows/integration_tests_local.yml) runs the fixture matrix on native arm64 runners. | — | Load native dependencies and run a representative built-package fixture on native arm64. Reuse CI coverage rather than adding an AWS copy. | — |
+| D22 | Architecture: `x86_64` / Docker `amd64` | `container-cjs` (amd64 CI) | Yes — the [local CI workflow](../.github/workflows/integration_tests_local.yml) runs the fixture matrix on native amd64 runners. | — | Load native dependencies and run a representative built-package fixture on native amd64. Reuse CI coverage rather than duplicating every handler. | — |
+| D23 | Event-loop completion: `callbackWaitsForEmptyEventLoop = true` | — | No — the wait-enabled native/adapted RIC comparison in H07 has not been added. | — | Reuse H07: a successful native callback with a non-draining handle stays pending; context/adapter-Promise completion does not. The real RIC owns this distinction. | — |
+| D24 | Event-loop completion: `callbackWaitsForEmptyEventLoop = false` | — | No — the wait-disabled native/adapted RIC comparison in H07 has not been added. | — | Reuse H07 with the same handle and waiting disabled; verify actual immediate completion. | — |
+| D25 | Streaming protocol: response body/end/error and `time_to_first_byte` | — | Partial — [handler-types tests](https://github.com/DataDog/serverless-e2e-tests/blob/main/handler-types/tests/test_basic_support.py) cover streaming span/metric/log presence, not response body/end/error or first-byte timing. | — | — | Invoke the real streaming API and verify delivery/stream termination and timing with one representative handler. The current local RIE transport cannot stream; H08 already owns adapter logic. |
+| D26 | AWS lifecycle: extension delivery across freeze/thaw or deadline termination | — | Partial — [lambda-features span tests](https://github.com/DataDog/serverless-e2e-tests/blob/main/lambda-features/tests/test_spans.py) check success/timeout span counts; verified warm reuse and per-invocation child delivery are missing. | — | — | Verify stored traces in Datadog after AWS freezes/reuses or terminates the runtime. RIE does not reproduce this extension/platform lifecycle; reuse a known handler instead of repeating every completion variation. |
+| D27 | AWS-provided trace context for manual HTTP fallback | `manual-http-requests` (local wrapping only) | No — deployed propagation tests do not exercise the manual fallback with the AWS-provided trace header. | — | — | Verify the platform-provided trace header reaches fallback propagation. The RIC clears locally injected `_X_AMZN_TRACE_ID`; supplied-context header formatting is already covered by F07. |
+| F01 | Feature: API Gateway 500 response marks invocation error and enhanced error metric | `manual-status-500` | Partial — listener specs classify 500 responses and index specs cover thrown-error metrics; a 500-response-to-error-metric unit assertion is missing. | Drive response classification and listener/metric calls directly in specs; status-code handling does not require a real API Gateway or Lambda. | — | — |
+| F02 | Feature: custom distribution metrics inside/outside the handler | `manual-send-metrics` | Yes — [index specs](../src/index.spec.ts), [metric listener specs](../src/metrics/listener.spec.ts), and queue/batcher specs cover the public API and transport. | Assert metric payloads/tags, queueing, and flush calls through the public metric API with controlled transport. | — | — |
+| F03 | Feature: handler reads the active invocation span | `manual-process-input` | Yes — `manual-process-input` reads the active span and its [golden](snapshots/logs/manual-process-input.log) pins handler/helper span tags. | — | Use the real tracer/library together; assert the customer handler sees its own invocation span across the actual initialization path. | — |
+| F04 | Feature: metrics-only mode (`DD_TRACE_ENABLED=false`) | `manual-metrics-only` | Yes — `manual-metrics-only` compares metric output and absence of trace payloads/log correlation against strict goldens. | — | Run the built library and tracer together; assert enhanced/custom metric output while invocation spans, trace payloads, and trace log correlation remain absent. | — |
+| F05 | Feature: request/response payload capture | `cjs-capture-payload` | Partial — [tag-object specs](../src/utils/tag-object.spec.ts) cover serialization/depth; request/response capture wiring is asserted in L2, not listener unit specs. | Assert `function.request` / `function.response` tags and depth/serialization boundaries directly through payload/listener specs. | — | — |
+| F06 | Feature: tracer HTTP instrumentation and header/log injection | `cjs-http-requests` | Yes — `cjs-http-requests` pins mock-server received headers, trace output, and log correlation in its golden. | — | Bootstrap the actual HTTP plugin before the customer module; have a hermetic server assert received propagation headers and inspect emitted trace/log correlation. | — |
+| F07 | Feature: library `patchHttp` fallback wrapping/logging/header injection with supplied context | `manual-http-requests` | Partial — [HTTP specs](../src/trace/patch-http.spec.ts) cover headers and callbacks; per-request logging lacks a unit assertion. | Use patch-http specs with controlled context and transport; assert the exact headers and per-request logging. AWS context availability is D27. | — | — |
+| F08 | Feature: fetch/undici instrumentation | `cjs-fetch-requests` | Yes — `cjs-fetch-requests` pins received propagation headers and the real undici instrumentation output. | — | Bootstrap the real undici plugin and assert headers received by the hermetic server; a mocked HTTP plugin cannot validate this separate instrumentation path. | — |
+| F09 | Feature: configured custom extractor module | `cjs-custom-extractor` | Yes — `cjs-custom-extractor` loads the configured module and pins `_dd.parent_source: event` in its golden. | — | Load `DD_TRACE_EXTRACTOR=extractor.extract` from the customer fixture and verify its context reaches the actual invocation span (`_dd.parent_source: event`). | — |
+| F10 | Feature: proactive-initialization markers | `cjs-proactive-init` | Partial — cold-start, metric, and listener specs cover proactive classification/tags; exact threshold-boundary assertions are missing. | Use fake time around initialization/invocation thresholds; assert proactive-initialization and cold-start tags/metrics. A real 15-second sleep is unnecessary for this classification. | — | — |
+
+### Using the plan
+
+Implement a missing assertion at its selected level only. Rows that say to
+reuse another case do not request another test. If implementation reveals a
+specific dependency that the chosen level cannot exercise, update the row's
+assignment and explain the limitation before adding a higher-level test.
+
+For L2, use separate emitted exports when function/module shape matters and
+one simple event for lifecycle cases. Keep the existing nine trigger payloads
+for their extraction/propagation coverage; do not multiply every new handler
+variation by every payload, runtime, build, and architecture. Preserve strict
+snapshots and raw-trace checks rather than normalizing away failures.
+
+Within this catalog, L3 is limited to D25–D27's AWS-only assertions. Query
+stored traces with a bounded polling window; debug logs or an extension intake
+acknowledgment do not prove delivery. If D26 needs warm reuse, require a module-created
+environment ID and increasing invocation sequence across A/B. A concurrency
+limit alone does not prove reuse, and a new process after timeout does not
+prove freeze/thaw. Keep library completion/cleanup logic in its assigned
+L1/L2 tests instead of adding another AWS handler matrix.
 
 ## Snapshot layout: shared goldens with per-case overrides
 
