@@ -42,7 +42,7 @@ export class SpanContextWrapper implements SpanContext {
       return null;
     }
 
-    const samplingPriority = traceContext.sampleMode.toString(10);
+    const samplingPriority = traceContext.sampleMode;
     const source = traceContext.source;
     try {
       // Try requiring class from the tracer.
