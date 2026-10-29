@@ -60,6 +60,12 @@ const LAYER_MOVED_DEPENDENCIES = [
   "@opentelemetry/api",
   "@opentelemetry/api-logs",
 ];
+// Like the release build, take dd-trace's native addons at the versions dd-trace
+// declares rather than our hoisted devDependency pins.
+const DD_TRACE_NATIVE_DEPENDENCIES = ["@datadog/native-appsec", "@datadog/pprof"];
+const ddTraceOptionalDependencies = JSON.parse(
+  fs.readFileSync(path.join(repoDir, "node_modules", "dd-trace", "package.json"), "utf-8"),
+).optionalDependencies;
 
 function installedVersion(name) {
   // Read the hoisted install location directly: require.resolve("<name>/package.json")
@@ -86,7 +92,9 @@ for (const name of Object.keys(pkg.dependencies || {})) {
   dependencies[name] = installedVersion(name);
 }
 for (const name of LAYER_MOVED_DEPENDENCIES) {
-  dependencies[name] = installedVersion(name);
+  dependencies[name] = DD_TRACE_NATIVE_DEPENDENCIES.includes(name)
+    ? ddTraceOptionalDependencies[name]
+    : installedVersion(name);
 }
 
 fs.writeFileSync(

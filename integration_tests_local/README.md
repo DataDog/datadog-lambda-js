@@ -86,7 +86,9 @@ dependency manifest mirrors the release build's full dependency closure —
 production dependencies plus every package `scripts/move_ddtrace_dependency.js`
 moves (dd-trace, @datadog/native-appsec, @datadog/pprof, @opentelemetry/api,
 @opentelemetry/api-logs) — with versions pinned from the lockfile-resolved
-`node_modules` set.
+`node_modules` set, except dd-trace's native addons (@datadog/native-appsec,
+@datadog/pprof), which are pinned to the versions dd-trace declares, as in the
+release build.
 
 The harness takes no flags or positional arguments — configuration is
 environment-only, and an unexpected argument is rejected rather than ignored.
