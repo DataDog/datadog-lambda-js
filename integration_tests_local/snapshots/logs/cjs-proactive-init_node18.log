@@ -51,7 +51,8 @@ START RequestId: XXXX	Version: $LATEST
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-proactive-init",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -160,7 +161,8 @@ START RequestId: XXXX	Version: $LATEST
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-proactive-init",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -267,7 +269,8 @@ START RequestId: XXXX	Version: $LATEST
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-proactive-init",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -374,7 +377,8 @@ START RequestId: XXXX	Version: $LATEST
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-proactive-init",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -480,7 +484,8 @@ START RequestId: XXXX	Version: $LATEST
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-proactive-init",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -586,7 +591,8 @@ START RequestId: XXXX	Version: $LATEST
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-proactive-init",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -692,7 +698,8 @@ START RequestId: XXXX	Version: $LATEST
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-proactive-init",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -798,7 +805,8 @@ START RequestId: XXXX	Version: $LATEST
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-proactive-init",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -901,7 +909,8 @@ START RequestId: XXXX	Version: $LATEST
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-proactive-init",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
