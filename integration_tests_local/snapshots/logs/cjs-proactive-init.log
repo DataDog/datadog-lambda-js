@@ -67,7 +67,8 @@ START RequestId: XXXX	Version: $LATEST
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-proactive-init",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -145,8 +146,6 @@ START RequestId: XXXX	Version: $LATEST
   "requestId": "XXXX",
   "message": "[dd.trace_id=XXXX dd.span_id=XXXX] (node:XX) TimeoutOverflowWarning: XXXX does not fit into a 32-bit signed integer.\nTimeout duration was set to 1."
 }
-END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms
 {
   "traces": [
     [
@@ -182,7 +181,8 @@ REPORT RequestId: XXXX	Duration: XXXX ms
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-proactive-init",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -234,6 +234,8 @@ REPORT RequestId: XXXX	Duration: XXXX ms
     ]
   ]
 }
+END RequestId: XXXX
+REPORT RequestId: XXXX	Duration: XXXX ms
 START RequestId: XXXX	Version: $LATEST
 {
   "e": XXXX,
@@ -256,8 +258,6 @@ START RequestId: XXXX	Version: $LATEST
   "requestId": "XXXX",
   "message": "[dd.trace_id=XXXX dd.span_id=XXXX] (node:XX) TimeoutOverflowWarning: XXXX does not fit into a 32-bit signed integer.\nTimeout duration was set to 1."
 }
-END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms
 {
   "traces": [
     [
@@ -293,7 +293,8 @@ REPORT RequestId: XXXX	Duration: XXXX ms
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-proactive-init",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -345,6 +346,8 @@ REPORT RequestId: XXXX	Duration: XXXX ms
     ]
   ]
 }
+END RequestId: XXXX
+REPORT RequestId: XXXX	Duration: XXXX ms
 START RequestId: XXXX	Version: $LATEST
 {
   "e": XXXX,
@@ -402,7 +405,8 @@ START RequestId: XXXX	Version: $LATEST
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-proactive-init",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -512,7 +516,8 @@ START RequestId: XXXX	Version: $LATEST
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-proactive-init",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -622,7 +627,8 @@ START RequestId: XXXX	Version: $LATEST
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-proactive-init",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -732,7 +738,8 @@ START RequestId: XXXX	Version: $LATEST
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-proactive-init",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -808,6 +815,8 @@ START RequestId: XXXX	Version: $LATEST
   "requestId": "XXXX",
   "message": "[dd.trace_id=XXXX dd.span_id=XXXX] (node:XX) TimeoutOverflowWarning: XXXX does not fit into a 32-bit signed integer.\nTimeout duration was set to 1."
 }
+END RequestId: XXXX
+REPORT RequestId: XXXX	Duration: XXXX ms
 {
   "traces": [
     [
@@ -842,7 +851,8 @@ START RequestId: XXXX	Version: $LATEST
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-proactive-init",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -893,8 +903,6 @@ START RequestId: XXXX	Version: $LATEST
     ]
   ]
 }
-END RequestId: XXXX
-REPORT RequestId: XXXX	Duration: XXXX ms
 START RequestId: XXXX	Version: $LATEST
 {
   "e": XXXX,
@@ -949,7 +957,8 @@ START RequestId: XXXX	Version: $LATEST
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-proactive-init",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
