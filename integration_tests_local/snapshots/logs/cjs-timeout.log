@@ -54,7 +54,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-timeout",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -136,9 +137,9 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 XXXX [ERROR] (rapid) Invoke failed InvokeID=XXXX error=errResetReceived
 XXXX [WARNING] (rapid) Reset initiated: Timeout
 XXXX [INFO] (rapid) Sending SIGKILL to runtime-XX(XX).
+XXXX [INFO] (rapid) Waiting for runtime domain processes termination
 END RequestId: XXXX
 REPORT RequestId: XXXX	Init Duration: XXXX ms	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) Waiting for runtime domain processes termination
 START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INIT START(type: on-demand, phase: invoke)
 XXXX [INFO] (rapid) The extension's directory "/opt/extensions" does not exist, assuming no extensions to be loaded.
@@ -195,7 +196,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-timeout",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -276,8 +278,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 XXXX [ERROR] (rapid) Invoke failed InvokeID=XXXX error=errResetReceived
 XXXX [WARNING] (rapid) Reset initiated: Timeout
 XXXX [INFO] (rapid) Sending SIGKILL to runtime-XX(XX).
-XXXX [INFO] (rapid) Waiting for runtime domain processes termination
 END RequestId: XXXX
+XXXX [INFO] (rapid) Waiting for runtime domain processes termination
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
 START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INIT START(type: on-demand, phase: invoke)
@@ -335,7 +337,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-timeout",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -416,9 +419,9 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 XXXX [ERROR] (rapid) Invoke failed InvokeID=XXXX error=errResetReceived
 XXXX [WARNING] (rapid) Reset initiated: Timeout
 XXXX [INFO] (rapid) Sending SIGKILL to runtime-XX(XX).
-XXXX [INFO] (rapid) Waiting for runtime domain processes termination
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
+XXXX [INFO] (rapid) Waiting for runtime domain processes termination
 START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INIT START(type: on-demand, phase: invoke)
 XXXX [INFO] (rapid) The extension's directory "/opt/extensions" does not exist, assuming no extensions to be loaded.
@@ -475,7 +478,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-timeout",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -556,8 +560,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 XXXX [ERROR] (rapid) Invoke failed InvokeID=XXXX error=errResetReceived
 XXXX [WARNING] (rapid) Reset initiated: Timeout
 XXXX [INFO] (rapid) Sending SIGKILL to runtime-XX(XX).
-END RequestId: XXXX
 XXXX [INFO] (rapid) Waiting for runtime domain processes termination
+END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
 START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INIT START(type: on-demand, phase: invoke)
@@ -614,7 +618,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-timeout",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -753,7 +758,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-timeout",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -892,7 +898,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-timeout",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -1032,7 +1039,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-timeout",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -1169,7 +1177,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-cjs-timeout",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,

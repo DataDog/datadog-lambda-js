@@ -63,7 +63,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-manual-process-input",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -166,9 +167,9 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
     ]
   ]
 }
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Init Duration: XXXX ms	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 {
@@ -229,7 +230,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-manual-process-input",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -389,7 +391,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-manual-process-input",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -486,8 +489,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
     ]
   ]
 }
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
 START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
@@ -549,7 +552,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-manual-process-input",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -649,8 +653,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
 XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
-START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
+START RequestId: XXXX Version: $LATEST
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -708,7 +712,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-manual-process-input",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -785,9 +790,9 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
     ]
   ]
 }
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 {
@@ -847,7 +852,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-manual-process-input",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -924,11 +930,11 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
     ]
   ]
 }
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
-START RequestId: XXXX Version: $LATEST
 XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
+START RequestId: XXXX Version: $LATEST
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -986,7 +992,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-manual-process-input",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -1063,11 +1070,11 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
     ]
   ]
 }
-XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
-XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
+XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
 START RequestId: XXXX Version: $LATEST
+XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
 {
   "e": XXXX,
   "m": "aws.lambda.enhanced.invocations",
@@ -1125,7 +1132,8 @@ START RequestId: XXXX Version: $LATEST
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-manual-process-input",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -1261,7 +1269,8 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
           "_dd.integration": "opentracing",
           "_dd.svc_src": "m",
           "_dd.base_service": "integration-tests-js-local-manual-process-input",
-          "language": "javascript"
+          "language": "javascript",
+          "_dd.sdk.otlp_export": "false"
         },
         "metrics": {
           "_dd.agent_psr": 1,
@@ -1338,6 +1347,6 @@ XXXX [INFO] (rapid) INVOKE START(requestId: XXXX)
     ]
   ]
 }
-END RequestId: XXXX
 XXXX [INFO] (rapid) INVOKE RTDONE(status: success, produced bytes: 0, duration: XXXXms)
+END RequestId: XXXX
 REPORT RequestId: XXXX	Duration: XXXX ms	Billed Duration: XXXX ms	Memory Size: 3008 MB	Max Memory Used: XXXX MB
