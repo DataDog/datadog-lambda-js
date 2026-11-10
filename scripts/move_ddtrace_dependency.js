@@ -20,6 +20,7 @@ if (!process.argv[3]) {
 const ddTracePackage = JSON.parse(process.argv[3]);
 
 moveDependency('dd-trace', ddTracePackage.version)
+moveDependency('@datadog/libdatadog', ddTraceOptionalVersion('@datadog/libdatadog'))
 moveDependency('@datadog/native-appsec', ddTraceOptionalVersion('@datadog/native-appsec'))
 moveDependency('@datadog/pprof', ddTraceOptionalVersion('@datadog/pprof'))
 moveDependency('@opentelemetry/api')

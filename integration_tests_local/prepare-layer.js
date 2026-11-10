@@ -55,6 +55,7 @@ fs.writeFileSync(
 // tested on an absent-branch that real layer users never run.
 const LAYER_MOVED_DEPENDENCIES = [
   "dd-trace",
+  "@datadog/libdatadog",
   "@datadog/native-appsec",
   "@datadog/pprof",
   "@opentelemetry/api",
