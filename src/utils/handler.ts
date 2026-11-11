@@ -12,6 +12,8 @@ export function promisifiedHandler<TEvent, TResult>(handler: Handler<TEvent, TRe
     };
   }
 
+  const callbackCompletion = process.env.DD_LAMBDA_HANDLER_COMPLETION?.toLowerCase() === "callback";
+
   // Buffered Lambda function.
   return (event: TEvent, context: Context) => {
     // Lambda functions in node complete in one of two possible ways.
@@ -60,8 +62,8 @@ export function promisifiedHandler<TEvent, TResult>(handler: Handler<TEvent, TRe
     if (asyncProm !== undefined && typeof (asyncProm as any).then === "function") {
       // Mimics behaviour of lambda runtime, the first method of returning a result always wins.
       promise = Promise.race([callbackProm, asyncProm as Promise<TResult>]);
-    } else if (handler.length >= 3) {
-      // Handler takes a callback, wait for the callback to be called
+    } else if (callbackCompletion || handler.length >= 3) {
+      // Explicit callback completion also covers rest/default parameters, which reduce handler.length.
       promise = callbackProm;
     } else if (asyncProm === undefined) {
       // Handler returned nothing (implicit `undefined`) and doesn't take a callback parameter.
