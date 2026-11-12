@@ -8,7 +8,7 @@ stages:
 
 ci image:
   stage: build
-  image: registry.ddbuild.io/images/docker:20.10
+  image: registry.ddbuild.io/images/docker:v152559392-b10b485-20.10.13-jammy@sha256:28b59a7afd7367c583ed3454e922d6f5463a2e6c22d4c21e30dfd9844dd64f84
   tags: ["arch:arm64"]
   id_tokens:
     DDSIGN_ID_TOKEN:
@@ -55,3 +55,10 @@ build-layers:
     strategy: depend
   rules:
     - when: on_success
+
+validate-ci-builder:
+  stage: pre
+  image: registry.ddbuild.io/images/docker:v152559392-b10b485-20.10.13-jammy@sha256:28b59a7afd7367c583ed3454e922d6f5463a2e6c22d4c21e30dfd9844dd64f84
+  tags: ["arch:amd64"]
+  script:
+    - docker buildx version | grep -F "github.com/docker/buildx v0.38.2-dd.3 "

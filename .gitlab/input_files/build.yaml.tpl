@@ -142,6 +142,9 @@ publish layer {{ $environment.name }} ({{ $runtime.name }}):
   tags: ["arch:amd64"]
   image: ${CI_DOCKER_TARGET_IMAGE}:${CI_DOCKER_TARGET_VERSION}
   rules:
+    # Image maintenance cannot deploy Lambda layers or services.
+    - if: '$CI_COMMIT_BRANCH =~ /^ci-image\// || $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci-image\//'
+      when: never
     - if: '"{{ $environment.name }}" == "sandbox" && $REGION == "{{ $e2e_region }}"'
       when: on_success
     - if: '"{{ $environment.name }}" =~ /^(sandbox|staging)/'
@@ -230,6 +233,11 @@ publish npm package:
 
 e2e-test:
   stage: e2e
+  rules:
+    # Image maintenance cannot deploy Lambda layers or services.
+    - if: '$CI_COMMIT_BRANCH =~ /^ci-image\// || $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci-image\//'
+      when: never
+    - when: on_success
   trigger:
     project: DataDog/serverless-e2e-tests
     strategy: depend
@@ -246,8 +254,21 @@ e2e-test:
 
 e2e-test-status:
   stage: e2e
-  image: registry.ddbuild.io/images/docker:20.10-py3
+  rules:
+    # Image maintenance cannot deploy Lambda layers or services.
+    - if: '$CI_COMMIT_BRANCH =~ /^ci-image\// || $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci-image\//'
+      when: never
+    - when: on_success
+  image: registry.ddbuild.io/images/docker:v152575203-37c9356-20.10-py3-buildx-0382@sha256:f3a52d7dd87121dec7f09f3321e2ddf7c84b127dceaabe645ba612f4f4c81887
   tags: ["arch:amd64"]
   timeout: 3h
   script:
       - .gitlab/scripts/poll_e2e.sh
+
+validate-python-ci-tools:
+  stage: test
+  image: registry.ddbuild.io/images/docker:v152575203-37c9356-20.10-py3-buildx-0382@sha256:f3a52d7dd87121dec7f09f3321e2ddf7c84b127dceaabe645ba612f4f4c81887
+  tags: ["arch:amd64"]
+  script:
+    - python3 --version
+    - docker buildx version | grep -F "github.com/docker/buildx v0.38.2-dd.3 "
