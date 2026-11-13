@@ -8,7 +8,7 @@ stages:
 
 ci image:
   stage: build
-  image: registry.ddbuild.io/images/docker:20.10
+  image: registry.ddbuild.io/images/docker:20.10.13-jammy
   tags: ["arch:arm64"]
   id_tokens:
     DDSIGN_ID_TOKEN:
@@ -55,3 +55,10 @@ build-layers:
     strategy: depend
   rules:
     - when: on_success
+
+validate-ci-builder:
+  stage: pre
+  image: registry.ddbuild.io/images/docker:20.10.13-jammy
+  tags: ["arch:amd64"]
+  script:
+    - docker buildx version
