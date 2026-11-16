@@ -3570,9 +3570,9 @@ pprof-format@^2.3.1:
   integrity sha512-y51Z83qG2vEQBACPu6lkGFREVkHwQaCaNDdSFEMLIqSo3bmpADsbP6J3F2SSk7tYB741oTQ9Kt5YAdQsmiCRkA==
 
 pprof-format@^2.3.2:
-  version "2.3.2"
-  resolved "https://registry.yarnpkg.com/pprof-format/-/pprof-format-2.3.2.tgz#b2066ad0a3f1646040adb8b08c9c5c8f97f8e883"
-  integrity sha512-fcMM+sgKMOveSurz7i0BMHfy1hHNnI9+VWjd4kdclqQjSTuiHWaP69DGwvkw3zcLkM/F76LhVIKvPyrxmp6iiw==
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/pprof-format/-/pprof-format-2.4.0.tgz#e3513f20c9540da5bc6c63bfba132cea4d9ba5d3"
+  integrity sha512-7SDtSvsD996RFtlODgEmCR+GAfC3Dx6zlnef7duB1QNAkOStz+VAV60Ie/OQrkEijmBmcOZlKK0KQ/Oupd1frw==
 
 prettier@^2.3.0:
   version "2.8.8"
