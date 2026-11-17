@@ -1,7 +1,7 @@
 import http from "http";
 import nock from "nock";
 
-import { Context, Handler } from "aws-lambda";
+import { Callback, Context, Handler } from "aws-lambda";
 import {
   datadog,
   getTraceHeaders,
@@ -113,6 +113,51 @@ describe("datadog", () => {
   });
   afterEach(() => {
     process.env = oldEnv;
+  });
+
+  describe("explicit callback completion", () => {
+    it.each(["rest", "default"])("uses the environment setting for %s parameters", async (kind) => {
+      process.env.DD_LAMBDA_HANDLER_COMPLETION = "callback";
+      let complete: Callback<unknown> = () => {
+        throw new Error("handler has not started");
+      };
+      let entered: () => void = () => {};
+      const started = new Promise<void>((resolve) => {
+        entered = resolve;
+      });
+      const work = (callback: Callback<unknown>) => {
+        complete = callback;
+        entered();
+        return { incidental: true };
+      };
+      const candidate =
+        kind === "rest"
+          ? (...args: Parameters<Handler>) => work(args[2])
+          : (event: unknown, context: Context, callback: Callback<unknown> = () => {}) => work(callback);
+      const wrapped = datadog(candidate, { enhancedMetrics: false, autoPatchHTTP: false });
+      const result = wrapped({}, { ...mockContext });
+      await started;
+      const response = { statusCode: 200, body: "callback response" };
+      complete(null, response);
+      await expect(result).resolves.toBe(response);
+    });
+
+    it("restores automatic synchronous completion after the environment setting is removed", async () => {
+      process.env.DD_LAMBDA_HANDLER_COMPLETION = "callback";
+      const callbackResponse = { callback: true };
+      const callbackHandler = datadog(
+        (_event: unknown, context: Context) => {
+          context.succeed(callbackResponse);
+          return { incidental: true };
+        },
+        { enhancedMetrics: false, autoPatchHTTP: false },
+      );
+      await expect(callbackHandler({}, { ...mockContext })).resolves.toBe(callbackResponse);
+      delete process.env.DD_LAMBDA_HANDLER_COMPLETION;
+      const response = { synchronous: true };
+      const synchronousHandler = datadog(() => response, { enhancedMetrics: false, autoPatchHTTP: false });
+      await expect(synchronousHandler({}, { ...mockContext })).resolves.toBe(response);
+    });
   });
 
   it("patches http request when autoPatch enabled", async () => {

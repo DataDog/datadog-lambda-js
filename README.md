@@ -31,7 +31,30 @@ Besides the environment variables supported by dd-trace-js, the datadog-lambda-j
 | DD_CAPTURE_LAMBDA_PAYLOAD | [Captures incoming and outgoing AWS Lambda payloads][1] in the Datadog APM spans for Lambda invocations. | `false` |
 | DD_CAPTURE_LAMBDA_PAYLOAD_MAX_DEPTH | Determines the level of detail captured from AWS Lambda payloads, which are then assigned as tags for the `aws.lambda` span. It specifies the nesting depth of the JSON payload structure to process. Once the specified maximum depth is reached, the tag's value is set to the stringified value of any nested elements beyond this level.  <br> For example, given the input payload: <pre>{<br>  "lv1" : {<br>    "lv2": {<br>      "lv3": "val"<br>    }<br>  }<br>}</pre> If the depth is set to `2`, the resulting tag's key is set to `function.request.lv1.lv2` and the value is `{\"lv3\": \"val\"}`. <br> If the depth is set to `0`, the resulting tag's key is set to `function.request` and value is `{\"lv1\":{\"lv2\":{\"lv3\": \"val\"}}}` | `10` |
 | DD_DURABLE_CROSS_INVOCATION_TRACING_ENABLED | For AWS Durable functions, the tracer creates extra checkpoints named `_datadog_{N}` to propagate trace context across function invocations, keeping spans from multiple invocations in one intact trace for each durable execution. | `true` |
+| DD_LAMBDA_HANDLER_COMPLETION | Set to `callback` for buffered handlers that complete through a callback or `context.done/succeed/fail` and may return an incidental synchronous value. `auto` preserves existing completion selection. | `auto` |
 
+### Callback completion with rest or default parameters
+
+For a buffered handler that completes through its callback, set `DD_LAMBDA_HANDLER_COMPLETION=callback`
+to ignore ordinary synchronous return values. This supports rest/default-parameter handlers whose
+`length` is less than three, without changing the handler or adding another wrapper:
+
+```js
+exports.handler = function (...[event, context, callback]) {
+  startWork(event, (error, response) => callback(error, response));
+  return { incidental: true };
+};
+```
+
+With `callback`, the library waits for the callback or a legacy context completion method. If the handler
+returns a Promise, that Promise and the callback still race; whichever completes first wins. A handler
+that never signals completion remains pending until Lambda times out. Response-streaming handlers are
+unaffected.
+
+The default `auto` behavior uses declared arity, the return value, and the existing server/emitter
+heuristics to select completion. In particular, a rest/default-parameter handler returning a plain object
+can complete with that object before its asynchronous callback. Handlers that intentionally return
+synchronous responses should keep `auto`. Unknown values also fall back to `auto`.
 
 ## Tracer compatibility
 
