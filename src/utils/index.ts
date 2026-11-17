@@ -12,3 +12,4 @@ export { logWarning, logError, logDebug, Logger, setLogLevel, setLogger, LogLeve
 export { tagObject } from "./tag-object";
 export { updateDDTags } from "./dd_tags";
 export { batchItemFailureCount, isBatchItemFailure } from "./batch-item-failures";
+export { setFeatureFlagsBaseUrl } from "./feature-flags";

@@ -6,7 +6,7 @@ import {
   getEnvValue,
   emitTelemetryOnErrorOutsideHandler,
 } from "./index.js";
-import { logDebug, logError } from "./utils/index.js";
+import { logDebug, logError, setFeatureFlagsBaseUrl } from "./utils/index.js";
 import { load } from "./runtime/index.js";
 import { initTracer } from "./runtime/module_importer.js";
 
@@ -19,6 +19,8 @@ if (process.env.DD_TRACE_STARTUP_LOGS === undefined) {
   process.env.DD_TRACE_STARTUP_LOGS = "false";
   logDebug("disabled dd-trace startup logs");
 }
+
+setFeatureFlagsBaseUrl();
 
 if (getEnvValue("DD_TRACE_ENABLED", "true").toLowerCase() === "true") {
   initTracer();
