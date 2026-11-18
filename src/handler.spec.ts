@@ -9,6 +9,7 @@ import * as zlib from "node:zlib";
 const fixtureDirectory = path.join(__dirname, "runtime", "fixtures");
 const handlerEntry = pathToFileURL(path.join(__dirname, "..", "dist", "handler.mjs")).href;
 const runnerPath = path.join(fixtureDirectory, "published-handler-runner.mjs");
+const loaderRegistrationSpyPath = path.join(fixtureDirectory, "loader-registration-spy.cjs");
 const tracePayloads: Buffer[] = [];
 
 let agent: http.Server;
@@ -104,10 +105,25 @@ async function runPublishedHandler(traceEnabled: boolean): Promise<unknown> {
   delete env.OTEL_METRICS_EXPORTER;
   delete env.OTEL_TRACES_EXPORTER;
 
-  const child = spawn(process.execPath, [runnerPath], {
-    env,
-    stdio: ["ignore", "pipe", "pipe", "ipc"],
-  });
+  const child = spawn(
+    process.execPath,
+    [
+      // Test-only preload that records whether Module.register or
+      // Module.registerHooks was used for ESM loader registration.
+      "--require",
+      loaderRegistrationSpyPath,
+      // Mirrors the Lambda Node bootstrap, which disables require(esm) unless
+      // NODE_OPTIONS contains --experimental-require-module.
+      ...(process.allowedNodeEnvironmentFlags.has("--experimental-require-module")
+        ? ["--no-experimental-require-module"]
+        : []),
+      runnerPath,
+    ],
+    {
+      env,
+      stdio: ["ignore", "pipe", "pipe", "ipc"],
+    },
+  );
   const closePromise = once(child, "close") as Promise<[number | null, NodeJS.Signals | null]>;
   const messagePromise = once(child, "message") as Promise<[unknown]>;
   let standardOutput = "";
@@ -162,9 +178,19 @@ async function runPublishedHandler(traceEnabled: boolean): Promise<unknown> {
 }
 
 const moduleWithRegister = Module as typeof Module & { register?: unknown };
+const moduleWithRegisterHooks = Module as typeof Module & { registerHooks?: unknown };
 const nodeMajor = Number(process.versions.node.split(".")[0]);
 const supportsDurableFixture = nodeMajor >= 22 && typeof moduleWithRegister.register === "function";
 const describeWithESMLoader = supportsDurableFixture ? describe : describe.skip;
+
+// tslint:disable-next-line:no-var-requires
+const { isSyncLoaderHookVersionSupported } = require("./runtime/module_importer") as {
+  isSyncLoaderHookVersionSupported(nodeVersion: string): boolean;
+};
+
+const syncHooksExpected =
+  isSyncLoaderHookVersionSupported(process.versions.node) &&
+  typeof moduleWithRegisterHooks.registerHooks === "function";
 
 describeWithESMLoader("published ESM handler", () => {
   jest.setTimeout(30_000);
@@ -192,7 +218,8 @@ describeWithESMLoader("published ESM handler", () => {
     const payload = Buffer.concat(tracePayloads);
 
     expect(message).toEqual({
-      registerLoaded: true,
+      registerLoaded: !syncHooksExpected,
+      registrations: [syncHooksExpected ? "registerHooks" : "register"],
       result: expect.objectContaining({ Status: "SUCCEEDED" }),
     });
     expect(payload.includes(Buffer.from("aws.lambda"))).toBe(true);
@@ -204,6 +231,7 @@ describeWithESMLoader("published ESM handler", () => {
 
     expect(message).toEqual({
       registerLoaded: false,
+      registrations: [],
       result: expect.objectContaining({ Status: "SUCCEEDED" }),
     });
     expect(tracePayloads).toHaveLength(0);

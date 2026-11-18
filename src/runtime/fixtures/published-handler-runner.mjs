@@ -37,6 +37,7 @@ const result = await handler(
 const exitSignal = once(process, "message");
 process.send({
   registerLoaded: require.cache[registerPath] !== undefined,
+  registrations: globalThis.__ddLoaderRegistrations ?? [],
   result,
 });
 await exitSignal;
