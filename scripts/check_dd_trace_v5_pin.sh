@@ -9,6 +9,10 @@
 #   1. peerDependencies no longer lists both pins.
 #   2. The pin lags latest published v5. Dep-update only tracks the v6 lockfile,
 #      so 18/20 layers would ship a stale tracer.
+#
+# Exit codes: 0 = pin current, 2 = pin stale (case 2), 1 = anything else.
+# When run in GitHub Actions, a stale pin also writes configured=/latest= to
+# $GITHUB_OUTPUT so the workflow can report it.
 
 set -e
 
@@ -50,7 +54,11 @@ fi
 if [ "$DD_TRACE_V5_VERSION" != "$latest_v5" ]; then
     echo "dd-trace v5 pin is stale: configured=$DD_TRACE_V5_VERSION latest=$latest_v5" >&2
     echo "Bump DD_TRACE_V5_VERSION in scripts/dd_trace_versions.sh" >&2
-    exit 1
+    if [ -n "$GITHUB_OUTPUT" ]; then
+        echo "configured=$DD_TRACE_V5_VERSION" >> "$GITHUB_OUTPUT"
+        echo "latest=$latest_v5" >> "$GITHUB_OUTPUT"
+    fi
+    exit 2
 fi
 
 echo "dd-trace v5 pin is current: $DD_TRACE_V5_VERSION"
