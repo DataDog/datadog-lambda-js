@@ -104,7 +104,11 @@ async function runPublishedHandler(traceEnabled: boolean): Promise<unknown> {
   delete env.OTEL_METRICS_EXPORTER;
   delete env.OTEL_TRACES_EXPORTER;
 
-  const child = spawn(process.execPath, [runnerPath], {
+  // Lambda disables require(esm).
+  const flags = process.allowedNodeEnvironmentFlags.has("--experimental-require-module")
+    ? ["--no-experimental-require-module"]
+    : [];
+  const child = spawn(process.execPath, [...flags, runnerPath], {
     env,
     stdio: ["ignore", "pipe", "pipe", "ipc"],
   });
@@ -192,7 +196,7 @@ describeWithESMLoader("published ESM handler", () => {
     const payload = Buffer.concat(tracePayloads);
 
     expect(message).toEqual({
-      registerLoaded: true,
+      loaderRegistrations: 1,
       result: expect.objectContaining({ Status: "SUCCEEDED" }),
     });
     expect(payload.includes(Buffer.from("aws.lambda"))).toBe(true);
@@ -203,7 +207,7 @@ describeWithESMLoader("published ESM handler", () => {
     const message = await runPublishedHandler(false);
 
     expect(message).toEqual({
-      registerLoaded: false,
+      loaderRegistrations: 0,
       result: expect.objectContaining({ Status: "SUCCEEDED" }),
     });
     expect(tracePayloads).toHaveLength(0);

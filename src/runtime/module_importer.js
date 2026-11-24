@@ -1,3 +1,4 @@
+const { existsSync } = require("node:fs");
 const Module = require("node:module");
 const { dirname, join } = require("node:path");
 const { pathToFileURL } = require("node:url");
@@ -24,27 +25,44 @@ function esmLoaderAlreadyRegistered() {
 /**
  * @param {string} tracerPath
  */
-function registerESMLoaderHooks(tracerPath) {
-    if (typeof Module.register !== "function" || esmLoaderAlreadyRegistered()) {
+async function registerESMLoaderHooks(tracerPath) {
+    if (esmLoaderAlreadyRegistered()) {
         return;
     }
 
     const tracerDirectory = dirname(tracerPath);
-    const registerPath = join(tracerDirectory, "register.js");
+    const nativeRegisterPath = join(tracerDirectory, "register.mjs");
     try {
-        try {
-            require(registerPath);
-        } catch (error) {
-            const registerMissing = error?.code === "MODULE_NOT_FOUND" &&
-                error.message?.startsWith(`Cannot find module '${registerPath}'`);
-            if (!registerMissing) {
-                throw error;
-            }
-            Module.register(pathToFileURL(join(tracerDirectory, "loader-hook.mjs")));
+        if (existsSync(nativeRegisterPath)) {
+            // Native import() installs the synchronous hooks without require(esm), which Lambda disables.
+            await import(pathToFileURL(nativeRegisterPath).href);
+        } else if (typeof Module.register === "function") {
+            registerLegacyESMLoaderHooks(tracerDirectory);
+        } else {
+            return;
         }
         logDebug("registered dd-trace ESM loader hooks for ESM instrumentation");
     } catch (error) {
         logDebug("failed to register dd-trace ESM loader hooks", { error });
+    }
+}
+
+/**
+ * Tracers without register.mjs.
+ *
+ * @param {string} tracerDirectory
+ */
+function registerLegacyESMLoaderHooks(tracerDirectory) {
+    const registerPath = join(tracerDirectory, "register.js");
+    try {
+        require(registerPath);
+    } catch (error) {
+        const registerMissing = error?.code === "MODULE_NOT_FOUND" &&
+            error.message?.startsWith(`Cannot find module '${registerPath}'`);
+        if (!registerMissing) {
+            throw error;
+        }
+        Module.register(pathToFileURL(join(tracerDirectory, "loader-hook.mjs")));
     }
 }
 
@@ -54,7 +72,7 @@ exports.import = function (path) {
     return import(path);
 }
 
-exports.initTracer = function () {
+exports.initTracer = async function () {
     // Looks for the function local version of dd-trace first, before using
     // the version provided by the layer
     const searchPaths = ["/var/task/node_modules", ...module.paths];
@@ -70,6 +88,6 @@ exports.initTracer = function () {
         blocklist: /:8124\/lambda/,
     });
     // The durable runtime ignores NODE_OPTIONS, so install hooks explicitly.
-    registerESMLoaderHooks(tracerPath);
+    await registerESMLoaderHooks(tracerPath);
     return tracer;
 }
