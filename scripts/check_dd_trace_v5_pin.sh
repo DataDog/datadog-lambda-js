@@ -35,8 +35,10 @@ fi
 
 echo "peerDependencies['dd-trace'] advertises both pins: $peer_range"
 
-# npm may return a single string or an array of matching versions; take the last
-latest_v5=$(npm view 'dd-trace@5' version --json | node -e "
+# npm may return a single string or an array of matching versions; take the last.
+# On registry errors npm exits non-zero and prints a JSON error object: pipefail
+# keeps that exit status, and the version check rejects anything else unexpected.
+latest_v5=$(set -o pipefail; npm view 'dd-trace@5' version --json | node -e "
 let d = '';
 process.stdin
   .on('data', (c) => (d += c))
@@ -44,9 +46,9 @@ process.stdin
     const v = JSON.parse(d);
     console.log(Array.isArray(v) ? v[v.length - 1] : v);
   });
-")
+") || latest_v5=""
 
-if [ -z "$latest_v5" ]; then
+if ! [[ "$latest_v5" =~ ^5\.[0-9]+\.[0-9]+$ ]]; then
     echo "Could not determine the latest dd-trace v5 version from the npm registry" >&2
     exit 1
 fi
