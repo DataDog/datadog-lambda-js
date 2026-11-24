@@ -5,10 +5,11 @@ name: dd-trace v5 pin freshness
 # the v6 line). Runs when the pin file changes and weekly; the same check
 # gates the npm publish job in GitLab.
 #
-# A stale pin is the expected outcome of this job, not a failure: outside of
-# pull requests it posts a reminder to #apm-serverless and the job succeeds.
-# The job fails only when the check itself or the Slack notification fails.
-# On pull requests touching the pin, a stale pin still fails the job.
+# Outside of pull requests, results are reported to #apm-serverless:
+#   - stale pin: a reminder is posted and the job succeeds (it did its job);
+#   - the check itself fails: an alert is posted and the job fails.
+# On pull requests, nothing is posted and any non-zero exit fails the job.
+# A failing Slack notification also fails the job.
 
 on:
   push:
@@ -39,17 +40,14 @@ jobs:
 
       - name: Check the v5 pin against the npm registry
         id: check
+        # exit codes: 0 = pin current, 2 = pin stale, anything else = the check failed
         run: |
           status=0
           ./scripts/check_dd_trace_v5_pin.sh || status=$?
-          if [ "$status" -eq 2 ] && [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
-            echo "stale=true" >> "$GITHUB_OUTPUT"
-          elif [ "$status" -ne 0 ]; then
-            exit "$status"
-          fi
+          echo "status=$status" >> "$GITHUB_OUTPUT"
 
       - name: Notify #apm-serverless that the pin is stale
-        if: steps.check.outputs.stale == 'true'
+        if: steps.check.outputs.status == '2' && github.event_name != 'pull_request'
         env:
           # Incoming webhook bound to #apm-serverless
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERTS_WEBHOOK }}
@@ -57,17 +55,28 @@ jobs:
           LATEST: ${{ steps.check.outputs.latest }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          if [ -z "$CONFIGURED" ] || [ -z "$LATEST" ]; then
-            echo "The check exited 2 without reporting the configured/latest versions" >&2
-            exit 1
-          fi
-          if [ -z "$SLACK_WEBHOOK" ]; then
-            echo "SLACK_ALERTS_WEBHOOK secret is not set" >&2
-            exit 1
-          fi
           text=":warning: datadog-lambda-js: the dd-trace v5 pin is stale (configured \`$CONFIGURED\`, latest \`$LATEST\`). Bump \`DD_TRACE_V5_VERSION\` in \`scripts/dd_trace_versions.sh\`. <$RUN_URL|Workflow run>"
           payload=$(jq -n --arg text "$text" '{text: $text, unfurl_links: false}')
-          # Incoming webhooks answer non-2xx on errors (revoked webhook, bad payload, ...), so --fail fails the step
+          # Incoming webhooks answer non-2xx on errors (revoked webhook, bad payload, ...)
           curl -sS --fail-with-body -X POST "$SLACK_WEBHOOK" \
             -H "Content-Type: application/json; charset=utf-8" \
             --data "$payload"
+
+      - name: Notify #apm-serverless that the check failed
+        if: steps.check.outputs.status != '0' && steps.check.outputs.status != '2' && github.event_name != 'pull_request'
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_ALERTS_WEBHOOK }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          text=":x: datadog-lambda-js: the dd-trace v5 pin check unexpectedly failed. <$RUN_URL|Workflow run>"
+          payload=$(jq -n --arg text "$text" '{text: $text, unfurl_links: false}')
+          curl -sS --fail-with-body -X POST "$SLACK_WEBHOOK" \
+            -H "Content-Type: application/json; charset=utf-8" \
+            --data "$payload"
+
+      - name: Fail the job
+        # Any failure on pull requests; outside of them, only when the check itself failed
+        if: steps.check.outputs.status != '0' && (steps.check.outputs.status != '2' || github.event_name == 'pull_request')
+        run: |
+          echo "check_dd_trace_v5_pin.sh exited with ${{ steps.check.outputs.status }}" >&2
+          exit 1
