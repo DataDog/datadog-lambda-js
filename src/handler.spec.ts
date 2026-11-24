@@ -104,7 +104,10 @@ async function runPublishedHandler(traceEnabled: boolean): Promise<unknown> {
   delete env.OTEL_METRICS_EXPORTER;
   delete env.OTEL_TRACES_EXPORTER;
 
-  const child = spawn(process.execPath, [runnerPath], {
+  const flags = process.allowedNodeEnvironmentFlags.has("--no-experimental-require-module")
+    ? ["--no-experimental-require-module"]
+    : [];
+  const child = spawn(process.execPath, [...flags, runnerPath], {
     env,
     stdio: ["ignore", "pipe", "pipe", "ipc"],
   });
@@ -161,9 +164,11 @@ async function runPublishedHandler(traceEnabled: boolean): Promise<unknown> {
   }
 }
 
-const moduleWithRegister = Module as typeof Module & { register?: unknown };
+const moduleWithRegister = Module as typeof Module & { register?: unknown; registerHooks?: unknown };
 const nodeMajor = Number(process.versions.node.split(".")[0]);
-const supportsDurableFixture = nodeMajor >= 22 && typeof moduleWithRegister.register === "function";
+const supportsDurableFixture =
+  nodeMajor >= 22 &&
+  (typeof moduleWithRegister.register === "function" || typeof moduleWithRegister.registerHooks === "function");
 const describeWithESMLoader = supportsDurableFixture ? describe : describe.skip;
 
 describeWithESMLoader("published ESM handler", () => {
@@ -192,7 +197,7 @@ describeWithESMLoader("published ESM handler", () => {
     const payload = Buffer.concat(tracePayloads);
 
     expect(message).toEqual({
-      registerLoaded: true,
+      loaderRegistrations: 1,
       result: expect.objectContaining({ Status: "SUCCEEDED" }),
     });
     expect(payload.includes(Buffer.from("aws.lambda"))).toBe(true);
@@ -203,7 +208,7 @@ describeWithESMLoader("published ESM handler", () => {
     const message = await runPublishedHandler(false);
 
     expect(message).toEqual({
-      registerLoaded: false,
+      loaderRegistrations: 0,
       result: expect.objectContaining({ Status: "SUCCEEDED" }),
     });
     expect(tracePayloads).toHaveLength(0);
