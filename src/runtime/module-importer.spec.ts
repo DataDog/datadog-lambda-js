@@ -1,13 +1,17 @@
+import * as fs from "node:fs";
 import * as path from "node:path";
 import { pathToFileURL } from "node:url";
 
 const ddTracePath = require.resolve("dd-trace");
 const ddTraceRegisterPath = path.join(path.dirname(ddTracePath), "register.js");
+const ddTraceNativeRegisterPath = path.join(path.dirname(ddTracePath), "register.mjs");
 
 type Tracer = {
   use: jest.Mock<void, [string, { blocklist: RegExp }]>;
 };
 
+// Covers tracers without register.mjs. Jest cannot run the native import() that loads register.mjs,
+// so handler-esm-registration.spec.ts covers that path in child processes.
 describe("module importer", () => {
   let init: jest.Mock<Tracer, [{ tags: string }]>;
   let logDebug: jest.Mock<void, [string, { error: Error }?]>;
@@ -40,6 +44,10 @@ describe("module importer", () => {
       ...jest.requireActual<typeof import("node:module")>("node:module"),
       register: moduleRegister,
     }));
+    jest.doMock("node:fs", () => ({
+      ...jest.requireActual<typeof fs>("node:fs"),
+      existsSync: (file: fs.PathLike) => file !== ddTraceNativeRegisterPath && fs.existsSync(file),
+    }));
   });
 
   afterEach(() => {
@@ -51,74 +59,74 @@ describe("module importer", () => {
     }
   });
 
-  it("initializes the tracer and loads its ESM registration entry point", () => {
+  it("initializes the tracer and loads its ESM registration entry point", async () => {
     const { initTracer } = require("./module_importer");
 
-    expect(initTracer()).toBe(tracer);
+    await expect(initTracer()).resolves.toBe(tracer);
     expect(updateDDTags).toHaveBeenCalledWith({ "_dd.origin": "lambda" });
     expect(init).toHaveBeenCalledWith({ tags: "_dd.origin:lambda" });
     expect(tracer.use).toHaveBeenCalledWith("http", { blocklist: expect.any(RegExp) });
     expect(registerLoader).toHaveBeenCalledTimes(1);
   });
 
-  it("does not register again when NODE_OPTIONS preloads dd-trace", () => {
+  it("does not register again when NODE_OPTIONS preloads dd-trace", async () => {
     process.env.NODE_OPTIONS = "--import dd-trace/initialize.mjs";
     const { initTracer } = require("./module_importer");
 
-    expect(initTracer()).toBe(tracer);
+    await expect(initTracer()).resolves.toBe(tracer);
     expect(registerLoader).not.toHaveBeenCalled();
   });
 
-  it("does not register again when execArgv preloads dd-trace", () => {
+  it("does not register again when execArgv preloads dd-trace", async () => {
     process.execArgv.push("--require", "dd-trace/register.js");
     const { initTracer } = require("./module_importer");
 
-    expect(initTracer()).toBe(tracer);
+    await expect(initTracer()).resolves.toBe(tracer);
     expect(registerLoader).not.toHaveBeenCalled();
   });
 
-  it("registers when the Node arguments do not preload dd-trace", () => {
+  it("registers when the Node arguments do not preload dd-trace", async () => {
     process.env.NODE_OPTIONS = "--enable-source-maps";
     process.execArgv.push("--trace-warnings");
     const { initTracer } = require("./module_importer");
 
-    expect(initTracer()).toBe(tracer);
+    await expect(initTracer()).resolves.toBe(tracer);
     expect(registerLoader).toHaveBeenCalledTimes(1);
   });
 
-  it("falls back to the legacy loader when dd-trace has no registration entry point", () => {
+  it("falls back to the legacy loader when dd-trace has no registration entry point", async () => {
     const error = Object.assign(new Error(`Cannot find module '${ddTraceRegisterPath}'`), { code: "MODULE_NOT_FOUND" });
     jest.doMock(ddTraceRegisterPath, () => {
       throw error;
     });
     const { initTracer } = require("./module_importer");
 
-    expect(initTracer()).toBe(tracer);
+    await expect(initTracer()).resolves.toBe(tracer);
     expect(moduleRegister).toHaveBeenCalledWith(
       pathToFileURL(path.join(path.dirname(ddTracePath), "loader-hook.mjs")),
     );
     expect(logDebug).toHaveBeenCalledWith("registered dd-trace ESM loader hooks for ESM instrumentation");
   });
 
-  it("does not load the registration entry point without module.register", () => {
+  it("does not load the registration entry point without module.register", async () => {
     jest.doMock("node:module", () => ({
       ...jest.requireActual<typeof import("node:module")>("node:module"),
       register: undefined,
     }));
     const { initTracer } = require("./module_importer");
 
-    expect(initTracer()).toBe(tracer);
+    await expect(initTracer()).resolves.toBe(tracer);
     expect(registerLoader).not.toHaveBeenCalled();
   });
 
-  it("keeps the initialized tracer when loader registration fails", () => {
+  it("keeps the initialized tracer when loader registration fails", async () => {
     const error = new Error("registration failed");
     jest.doMock(ddTraceRegisterPath, () => {
       throw error;
     });
     const { initTracer } = require("./module_importer");
 
-    expect(initTracer()).toBe(tracer);
+    await expect(initTracer()).resolves.toBe(tracer);
     expect(moduleRegister).not.toHaveBeenCalled();
     expect(logDebug).toHaveBeenCalledWith("failed to register dd-trace ESM loader hooks", { error });
   });

@@ -1,5 +1,5 @@
 import { once } from "node:events";
-import { createRequire } from "node:module";
+import Module from "node:module";
 
 const handlerEntry = process.env.HANDLER_TEST_ENTRY;
 if (handlerEntry === undefined) {
@@ -9,9 +9,20 @@ if (process.send === undefined) {
   throw new Error("The published handler runner requires an IPC channel");
 }
 
+// Count loader installations: register.mjs and register.js both end in one of these calls.
+let loaderRegistrations = 0;
+for (const name of ["register", "registerHooks"]) {
+  const original = Module[name];
+  if (typeof original === "function") {
+    Module[name] = (...args) => {
+      loaderRegistrations++;
+      return original(...args);
+    };
+  }
+}
+Module.syncBuiltinESMExports();
+
 const { handler } = await import(handlerEntry);
-const require = createRequire(handlerEntry);
-const registerPath = require.resolve("dd-trace/register.js");
 const result = await handler(
   {
     DurableExecutionArn:
@@ -36,7 +47,7 @@ const result = await handler(
 
 const exitSignal = once(process, "message");
 process.send({
-  registerLoaded: require.cache[registerPath] !== undefined,
+  loaderRegistrations,
   result,
 });
 await exitSignal;
