@@ -46,7 +46,7 @@ jobs:
           ./scripts/check_dd_trace_v5_pin.sh || status=$?
           echo "status=$status" >> "$GITHUB_OUTPUT"
 
-      - name: Notify #apm-serverless that the pin is stale
+      - name: "Notify #apm-serverless that the pin is stale"
         if: steps.check.outputs.status == '2' && github.event_name != 'pull_request'
         env:
           # Incoming webhook bound to #apm-serverless
@@ -62,7 +62,7 @@ jobs:
             -H "Content-Type: application/json; charset=utf-8" \
             --data "$payload"
 
-      - name: Notify #apm-serverless that the check failed
+      - name: "Notify #apm-serverless that the check failed"
         if: steps.check.outputs.status != '0' && steps.check.outputs.status != '2' && github.event_name != 'pull_request'
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERTS_WEBHOOK }}
