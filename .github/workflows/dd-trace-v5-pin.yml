@@ -4,6 +4,12 @@ name: dd-trace v5 pin freshness
 # scripts/dd_trace_versions.sh (the dependency-update workflow only tracks
 # the v6 line). Runs when the pin file changes and weekly; the same check
 # gates the npm publish job in GitLab.
+#
+# Outside of pull requests, results are reported to #apm-serverless:
+#   - stale pin: a reminder is posted and the job succeeds (it did its job);
+#   - the check itself fails: an alert is posted and the job fails.
+# On pull requests, nothing is posted and any non-zero exit fails the job.
+# A failing Slack notification also fails the job.
 
 on:
   push:
@@ -33,4 +39,44 @@ jobs:
           node-version: "22.x"
 
       - name: Check the v5 pin against the npm registry
-        run: ./scripts/check_dd_trace_v5_pin.sh
+        id: check
+        # exit codes: 0 = pin current, 2 = pin stale, anything else = the check failed
+        run: |
+          status=0
+          ./scripts/check_dd_trace_v5_pin.sh || status=$?
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+
+      - name: "Notify #apm-serverless that the pin is stale"
+        if: steps.check.outputs.status == '2' && github.event_name != 'pull_request'
+        env:
+          # Incoming webhook bound to #apm-serverless
+          SLACK_WEBHOOK: ${{ secrets.SLACK_ALERTS_WEBHOOK }}
+          CONFIGURED: ${{ steps.check.outputs.configured }}
+          LATEST: ${{ steps.check.outputs.latest }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          text=":warning: datadog-lambda-js: the dd-trace v5 pin is stale (configured \`$CONFIGURED\`, latest \`$LATEST\`). Bump \`DD_TRACE_V5_VERSION\` in \`scripts/dd_trace_versions.sh\`. <$RUN_URL|Workflow run>"
+          payload=$(jq -n --arg text "$text" '{text: $text, unfurl_links: false}')
+          # Incoming webhooks answer non-2xx on errors (revoked webhook, bad payload, ...)
+          curl -sS --fail-with-body -X POST "$SLACK_WEBHOOK" \
+            -H "Content-Type: application/json; charset=utf-8" \
+            --data "$payload"
+
+      - name: "Notify #apm-serverless that the check failed"
+        if: steps.check.outputs.status != '0' && steps.check.outputs.status != '2' && github.event_name != 'pull_request'
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_ALERTS_WEBHOOK }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          text=":x: datadog-lambda-js: the dd-trace v5 pin check unexpectedly failed. <$RUN_URL|Workflow run>"
+          payload=$(jq -n --arg text "$text" '{text: $text, unfurl_links: false}')
+          curl -sS --fail-with-body -X POST "$SLACK_WEBHOOK" \
+            -H "Content-Type: application/json; charset=utf-8" \
+            --data "$payload"
+
+      - name: Fail the job
+        # Any failure on pull requests; outside of them, only when the check itself failed
+        if: steps.check.outputs.status != '0' && (steps.check.outputs.status != '2' || github.event_name == 'pull_request')
+        run: |
+          echo "check_dd_trace_v5_pin.sh exited with ${{ steps.check.outputs.status }}" >&2
+          exit 1

@@ -9,6 +9,10 @@
 #   1. peerDependencies no longer lists both pins.
 #   2. The pin lags latest published v5. Dep-update only tracks the v6 lockfile,
 #      so 18/20 layers would ship a stale tracer.
+#
+# Exit codes: 0 = pin current, 2 = pin stale (case 2), 1 = anything else.
+# When run in GitHub Actions, a stale pin also writes configured=/latest= to
+# $GITHUB_OUTPUT so the workflow can report it.
 
 set -e
 
@@ -31,8 +35,10 @@ fi
 
 echo "peerDependencies['dd-trace'] advertises both pins: $peer_range"
 
-# npm may return a single string or an array of matching versions; take the last
-latest_v5=$(npm view 'dd-trace@5' version --json | node -e "
+# npm may return a single string or an array of matching versions; take the last.
+# On registry errors npm exits non-zero and prints a JSON error object: pipefail
+# keeps that exit status, and the version check rejects anything else unexpected.
+latest_v5=$(set -o pipefail; npm view 'dd-trace@5' version --json | node -e "
 let d = '';
 process.stdin
   .on('data', (c) => (d += c))
@@ -40,9 +46,9 @@ process.stdin
     const v = JSON.parse(d);
     console.log(Array.isArray(v) ? v[v.length - 1] : v);
   });
-")
+") || latest_v5=""
 
-if [ -z "$latest_v5" ]; then
+if ! [[ "$latest_v5" =~ ^5\.[0-9]+\.[0-9]+$ ]]; then
     echo "Could not determine the latest dd-trace v5 version from the npm registry" >&2
     exit 1
 fi
@@ -50,7 +56,11 @@ fi
 if [ "$DD_TRACE_V5_VERSION" != "$latest_v5" ]; then
     echo "dd-trace v5 pin is stale: configured=$DD_TRACE_V5_VERSION latest=$latest_v5" >&2
     echo "Bump DD_TRACE_V5_VERSION in scripts/dd_trace_versions.sh" >&2
-    exit 1
+    if [ -n "$GITHUB_OUTPUT" ]; then
+        echo "configured=$DD_TRACE_V5_VERSION" >> "$GITHUB_OUTPUT"
+        echo "latest=$latest_v5" >> "$GITHUB_OUTPUT"
+    fi
+    exit 2
 fi
 
 echo "dd-trace v5 pin is current: $DD_TRACE_V5_VERSION"
