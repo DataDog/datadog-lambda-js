@@ -115,6 +115,60 @@ describe("datadog", () => {
     process.env = oldEnv;
   });
 
+  describe("tracer metrics", () => {
+    it.each([false, true])("flushes after each invocation (handler throws: %p)", async (shouldThrow) => {
+      const tracer = require("dd-trace");
+      const flush = jest.spyOn(tracer.dogstatsd, "flush").mockImplementation(() => {});
+      const handlerError = new Error("handler failed");
+      const metricHandler = jest.fn(async () => {
+        expect(flush).toHaveBeenCalledTimes(metricHandler.mock.calls.length - 1);
+        tracer.dogstatsd.distribution("custom.metric", 1);
+        if (shouldThrow) throw handlerError;
+        return "result";
+      });
+      const wrapped = datadog(metricHandler, { logForwarding: true, enhancedMetrics: false });
+
+      try {
+        for (let invocation = 1; invocation <= 2; invocation++) {
+          if (shouldThrow) {
+            await expect(wrapped({}, mockContext, () => {})).rejects.toBe(handlerError);
+          } else {
+            await expect(wrapped({}, mockContext, () => {})).resolves.toBe("result");
+          }
+          expect(flush).toHaveBeenCalledTimes(invocation);
+        }
+      } finally {
+        flush.mockRestore();
+      }
+    });
+
+    it.each([false, true])("ignores flush errors (handler throws: %p)", async (shouldThrow) => {
+      const tracer = require("dd-trace");
+      const flush = jest.spyOn(tracer.dogstatsd, "flush").mockImplementation(() => {
+        throw new Error("flush failed");
+      });
+      const handlerError = new Error("handler failed");
+      const wrapped = datadog(
+        async () => {
+          if (shouldThrow) throw handlerError;
+          return "result";
+        },
+        { logForwarding: true, enhancedMetrics: false },
+      );
+
+      try {
+        if (shouldThrow) {
+          await expect(wrapped({}, mockContext, () => {})).rejects.toBe(handlerError);
+        } else {
+          await expect(wrapped({}, mockContext, () => {})).resolves.toBe("result");
+        }
+        expect(flush).toHaveBeenCalledTimes(1);
+      } finally {
+        flush.mockRestore();
+      }
+    });
+  });
+
   it("patches http request when autoPatch enabled", async () => {
     mockTraceHeaders = {
       "x-datadog-parent-id": "9101112",

@@ -3,6 +3,7 @@ import { TracerWrapper } from "./tracer-wrapper";
 let mockNoTracer = false;
 let mockTracerInitialised = false;
 let mockSpan: any = null;
+let mockDogstatsd: any;
 let mockDataStreamsCheckpointer: any = {
   setConsumeCheckpoint: jest.fn(),
 };
@@ -28,6 +29,7 @@ jest.mock("dd-trace", () => {
         active: () => mockSpan,
       }),
       dataStreamsCheckpointer: mockDataStreamsCheckpointer,
+      dogstatsd: mockDogstatsd,
     };
   }
 });
@@ -53,6 +55,7 @@ describe("TracerWrapper", () => {
     mockNoTracer = false;
     mockTracerInitialised = true;
     mockSpan = null;
+    mockDogstatsd = { flush: jest.fn() };
     mockDataStreamsCheckpointer.setConsumeCheckpoint.mockClear();
   });
   afterEach(() => {
@@ -117,6 +120,51 @@ describe("TracerWrapper", () => {
     const traceContext = wrapper.traceContext();
     expect(traceContext).toBeNull();
   });
+  describe("flushMetrics", () => {
+    it("flushes the tracer's DogStatsD client with its receiver", () => {
+      const wrapper = new TracerWrapper();
+
+      wrapper.flushMetrics();
+
+      expect(mockDogstatsd.flush).toHaveBeenCalledTimes(1);
+      expect(mockDogstatsd.flush.mock.instances[0]).toBe(mockDogstatsd);
+    });
+
+    it("flushes metrics independently of tracing availability", () => {
+      mockTracerInitialised = false;
+      const wrapper = new TracerWrapper();
+
+      wrapper.flushMetrics();
+
+      expect(mockDogstatsd.flush).toHaveBeenCalledTimes(1);
+    });
+
+    it("does nothing when the tracer is absent", () => {
+      mockNoTracer = true;
+      const wrapper = new TracerWrapper();
+
+      expect(() => wrapper.flushMetrics()).not.toThrow();
+      expect(mockDogstatsd.flush).not.toHaveBeenCalled();
+    });
+
+    it.each([undefined, {}, { flush: true }])("supports a tracer without a flush API: %p", (dogstatsd) => {
+      mockDogstatsd = dogstatsd;
+      const wrapper = new TracerWrapper();
+
+      expect(() => wrapper.flushMetrics()).not.toThrow();
+    });
+
+    it("contains errors from the DogStatsD client", () => {
+      mockDogstatsd.flush.mockImplementation(() => {
+        throw new Error("flush failed");
+      });
+      const wrapper = new TracerWrapper();
+
+      expect(() => wrapper.flushMetrics()).not.toThrow();
+      expect(mockDogstatsd.flush).toHaveBeenCalledTimes(1);
+    });
+  });
+
   it("should not call internal setConsumeCheckpoint when arn is not provided", () => {
     process.env["DD_DATA_STREAMS_ENABLED"] = "true";
     const wrapper = new TracerWrapper();

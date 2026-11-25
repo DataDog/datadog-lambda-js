@@ -341,6 +341,9 @@ export class TraceListener {
     this.durableFunctionContext = undefined;
     StepFunctionContextService.reset();
     this.contextService.reset();
+
+    // Flush custom tracer metrics before Lambda can freeze the execution environment.
+    this.tracerWrapper.flushMetrics();
   }
 
   public onWrap<T = (...args: any[]) => any>(func: T): T {

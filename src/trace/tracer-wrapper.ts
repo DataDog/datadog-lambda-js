@@ -123,6 +123,19 @@ export class TracerWrapper {
     }
   }
 
+  public flushMetrics(): void {
+    try {
+      const dogstatsd = this.tracer?.dogstatsd;
+      if (typeof dogstatsd?.flush === "function") {
+        dogstatsd.flush();
+      }
+    } catch (err) {
+      if (err instanceof Object || err instanceof Error) {
+        logDebug("Failed to flush dd-trace metrics", err);
+      }
+    }
+  }
+
   public injectSpan(span: SpanContext): any {
     const dest = {};
     this.tracer.inject(span, "text_map", dest);
